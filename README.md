@@ -1,2 +1,0 @@
-# Voronyz
-Future of footwear

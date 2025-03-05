@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voronoi Slides - The Future of Footwear</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Orbitron', sans-serif;
+            background: #000;
+            color: #FFF; /* Lighter text color */
+            text-align: center;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #333; /* Lighter background */
+            border-bottom: 2px solid #FFF; /* Lighter border */
+            border-radius: 0 0 20px 20px; /* Rounded bottom corners */
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            background: #001100; /* Placeholder for your logo */
+            border-radius: 50%;
+        }
+        .logo-text {
+            font-size: 1.8em;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        .buy-btn {
+            background: none;
+            color: #00ff00;
+            padding: 12px 24px;
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out, background 0.3s ease-in-out;
+            font-weight: bold;
+        }
+        .buy-btn:hover {
+            background: #00ff00;
+            color: black;
+            transform: scale(1.05);
+        }
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: auto;
+            padding: 40px 20px; /* Added padding for mobile */
+        }
+        .product-container {
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden; /* This ensures the image doesn't overflow the rounded corners */
+            border-radius: 20px; /* Rounded corners for the product container */
+            box-shadow: 0 5px 15px rgba(50, 50, 50, 0.2); /* Optional: subtle green glow */
+        }
+        .logo-image {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+        }
+        .product-image {
+            width: 100%;
+            height: auto;
+            display: block; /* Removes any extra space below image */
+            border-radius: 20px; /* Rounded corners for the image itself */
+        }
+        .hero-text {
+            margin-top: 20px;
+        }
+        .features {
+            display: flex;
+            flex-direction: column; /* Stack boxes vertically */
+            padding: 50px 20px; /* Padding for mobile */
+            gap: 20px;
+        }
+        .feature {
+            padding: 20px;
+            background: #333; /* Lighter feature background */
+            border-radius: 10px;
+            border: 1px solid #FFF; /* Lighter border */
+        }
+        footer {
+            padding: 20px;
+            background: #333; /* Lighter background */
+            border-top: 2px solid #fff; /* Lighter border */
+            border-radius: 20px 20px 0 0; /* Rounded top corners */
+        }
+        
+        /* Media Query for Mobile Devices */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            .logo-container {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            
+            <img src="vlogo.png" class="logo-image">
+            <h1 class="logo-text">Voronyz</h1>
+        </div>
+        <nav>
+            <button class="buy-btn">Buy Now</button>
+        </nav>
+    </header>
+    <section class="hero">
+        <div class="product-container">
+            <img src="slide-image.jpg" alt="Voronoi Slides" class="product-image">
+        </div>
+        <div class="hero-text">
+            <h2>Step Into the Future</h2>
+            <p>Lightweight. 3D-Printed. Engineered for Maximum Comfort.</p>
+            <button class="buy-btn">Buy Now</button>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="feature">
+            <h3>Futuristic Design</h3>
+            <p>Inspired by nature's Voronoi patterns, these slides redefine aesthetics.</p>
+        </div>
+        <div class="feature">
+            <h3>Precision 3D Printing</h3>
+            <p>Each pair is crafted with cutting-edge manufacturing techniques.</p>
+        </div>
+        <div class="feature">
+            <h3>Extreme Comfort</h3>
+            <p>Designed for all-day wear with ultra-soft, flexible TPU.</p>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2025 Manufactured by Max. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>
