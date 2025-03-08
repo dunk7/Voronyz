@@ -3,154 +3,662 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voronoi Slides - The Future of Footwear</title>
+    <title>Voronyz - V3 Slides</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        /* General Styles */
         body {
+            background-color: #000;
+            color: rgb(18, 180, 18); /* All white text now this green */
+            font-family: 'Roboto', sans-serif;
             margin: 0;
-            font-family: 'Orbitron', sans-serif;
-            background: #000;
-            color: #FFF; /* Lighter text color */
-            text-align: center;
+            padding: 0;
+            line-height: 1.6;
         }
+
+        h1, h2, h3, h4 {
+            font-family: 'Orbitron', sans-serif;
+            color: rgb(18, 180, 18);
+        }
+
+        a {
+            color: rgb(18, 180, 18);
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #1A002B;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background-color: #1A002B;
+            color: rgb(18, 180, 18);
+            border-radius: 20px;
+            transition: background-color 0.3s ease;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-color: rgb(18, 180, 18);
+            color: #000;
+        }
+
+        /* Header */
         header {
+            position: sticky;
+            top: 0;
+            background-color: #1A002B;
+            padding: 10px 0;
+            z-index: 1000;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+
+        nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px;
-            background: #333; /* Lighter background */
-            border-bottom: 2px solid #FFF; /* Lighter border */
-            border-radius: 0 0 20px 20px; /* Rounded bottom corners */
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
-        .logo-container {
+
+        .logo {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
+            padding: 10px;
         }
-        .brand-logo {
-            width: 40px;
-            height: 40px;
-            background: #001100; /* Placeholder for your logo */
-            border-radius: 50%;
+
+        .logo img {
+            width: 75px;
+            height: auto;
         }
-        .logo-text {
-            font-size: 1.8em;
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
-        .buy-btn {
-            background: none;
+
+        .brand {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
             color: #00ff00;
-            padding: 12px 24px;
-            border: 2px solid #00ff00;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.3s ease-in-out, background 0.3s ease-in-out;
-            font-weight: bold;
         }
-        .buy-btn:hover {
-            background: #00ff00;
-            color: black;
-            transform: scale(1.05);
-        }
-        .hero {
+
+        ul {
+            list-style: none;
             display: flex;
-            flex-direction: column;
+            margin: 0;
+            padding: 0;
+        }
+
+        li {
+            margin: 0 15px;
+        }
+
+        nav a {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #111;
+            padding: 10px 20px;
+            border-radius: 20px;
+            transition: background-color 0.3s ease;
+            color: rgb(18, 180, 18);
+        }
+
+        nav a:hover {
+            background-color: rgb(18, 180, 18);
+            color: #000;
+        }
+
+        /* Hero */
+        #hero {
+            text-align: center;
+            padding: 0; /* No padding, image flush with top */
+        }
+
+        #hero img {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0;
+        }
+
+        #hero .hero-text {
+            padding: 50px 0;
+        }
+
+        #hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #00ff00;
+        }
+
+        #hero p {
+            font-size: 24px;
+            margin-bottom: 30px;
+            color: rgb(18, 180, 18);
+        }
+
+        #hero .btn {
+            margin-bottom: 0;
+        }
+
+        /* Buy/Customize */
+        #buy-customize {
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        .gallery {
+            margin: 20px 0;
+        }
+
+        #main-display {
+            width: 90%;
+            max-width: 1200px;
+            height: auto;
+            border-radius: 10px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .thumbnails {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            overflow-x: auto;
+        }
+
+        .thumbnails img {
+            width: 80px;
+            height: auto;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: opacity 0.3s ease;
+        }
+
+        .thumbnails img:hover {
+            opacity: 0.8;
+        }
+
+        .custom-options {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 20px;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+
+        .color-group, .size-row {
+            display: flex;
             align-items: center;
             justify-content: center;
-            height: auto;
-            padding: 40px 20px; /* Added padding for mobile */
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
         }
-        .product-container {
+
+        .color-group h4, .size-row h4 {
             width: 100%;
-            max-width: 500px;
-            overflow: hidden; /* This ensures the image doesn't overflow the rounded corners */
-            border-radius: 20px; /* Rounded corners for the product container */
-            box-shadow: 0 5px 15px rgba(50, 50, 50, 0.2); /* Optional: subtle green glow */
+            margin-bottom: 10px;
         }
-        .logo-image {
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
+
+        .color-swatch {
+            width: 25px;
+            height: 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: border 0.3s ease;
+            border: none;
         }
-        .product-image {
-            width: 100%;
-            height: auto;
-            display: block; /* Removes any extra space below image */
-            border-radius: 20px; /* Rounded corners for the image itself */
+
+        .color-swatch.selected[style*="background-color: #fff"] {
+            border: 3px solid rgb(18, 180, 18); /* Green border for white */
         }
-        .hero-text {
-            margin-top: 20px;
+
+        .color-swatch.selected:not([style*="background-color: #fff"]) {
+            border: 3px solid #fff;
         }
+
+        .size-btn {
+            padding: 5px 0;
+            width: 40px;
+            background-color: #111;
+            color: rgb(18, 180, 18);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-align: center;
+        }
+
+        .size-btn:hover, .size-btn.selected {
+            background-color: rgb(18, 180, 18);
+            color: #000;
+        }
+
         .features {
             display: flex;
-            flex-direction: column; /* Stack boxes vertically */
-            padding: 50px 20px; /* Padding for mobile */
+            flex-wrap: wrap;
+            justify-content: center;
             gap: 20px;
+            margin: 30px 0;
         }
-        .feature {
-            padding: 20px;
-            background: #333; /* Lighter feature background */
+
+        .feature img {
+            width: 200px;
+            height: auto;
             border-radius: 10px;
-            border: 1px solid #FFF; /* Lighter border */
         }
+
+        .price-section {
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .price-toggle {
+            background-color: #222;
+            padding: 15px 25px;
+            border-radius: 15px;
+            display: inline-block;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .price-toggle:hover {
+            background-color: #333;
+        }
+
+        .price-toggle .summary {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .price-toggle .summary .original {
+            text-decoration: line-through;
+            color: #888;
+            font-size: 24px;
+        }
+
+        .price-toggle .summary .discount {
+            color: rgb(18, 180, 18);
+            font-weight: bold;
+            font-size: 28px;
+        }
+
+        .price-toggle .summary .shipping {
+            color: rgb(18, 180, 18);
+            font-style: italic;
+            font-size: 20px;
+        }
+
+        .price-toggle .summary .arrow {
+            font-size: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .price-toggle .summary .arrow.open {
+            transform: rotate(180deg);
+        }
+
+        .price-details {
+            display: none;
+            padding: 15px;
+            background-color: #111;
+            border-radius: 0 0 15px 15px;
+            margin-top: 5px;
+            text-align: left;
+            font-size: 16px;
+        }
+
+        .price-details p {
+            margin: 5px 0;
+        }
+
+        .timer {
+            font-size: 18px;
+            color: #ff0000;
+            margin: 20px 0;
+        }
+
+        .timer span {
+            animation: blink 3s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* About */
+        #about {
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        .about-images {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .about-images img {
+            width: 200px;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        /* Contact */
+        #contact {
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        .social-links {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            background-color: #222;
+            border-radius: 20px;
+            transition: background-color 0.3s ease;
+            font-size: 18px;
+            color: rgb(18, 180, 18);
+        }
+
+        .social-links a:hover {
+            background-color: rgb(18, 180, 18);
+            color: #000;
+        }
+
+        .social-links img {
+            width: 20px;
+            height: 20px;
+            filter: brightness(0) saturate(100%) invert(68%) sepia(58%) saturate(1000%) hue-rotate(70deg) brightness(95%) contrast(95%);
+        }
+
+        .social-links a:hover img {
+            filter: none;
+        }
+
+        /* Footer */
         footer {
-            padding: 20px;
-            background: #333; /* Lighter background */
-            border-top: 2px solid #fff; /* Lighter border */
-            border-radius: 20px 20px 0 0; /* Rounded top corners */
+            text-align: center;
+            padding: 20px 0;
+            background-color: #111;
         }
-        
-        /* Media Query for Mobile Devices */
+
+        footer .social-links {
+            margin-top: 10px;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-            header {
+            nav {
                 flex-direction: column;
-                gap: 20px;
             }
-            .logo-container {
-                margin-bottom: 10px;
+            ul {
+                flex-direction: column;
+                align-items: center;
+            }
+            li {
+                margin: 10px 0;
+            }
+            #hero h1 {
+                font-size: 36px;
+            }
+            #hero p {
+                font-size: 18px;
+            }
+            #main-display {
+                width: 100%;
+                max-width: 300px;
+            }
+            .thumbnails img {
+                width: 60px;
+            }
+            .features {
+                flex-direction: column;
+                align-items: center;
+            }
+            .social-links {
+                flex-direction: column;
+                gap: 15px;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Header -->
     <header>
-        <div class="logo-container">
-            
-            <img src="vlogo.png" class="logo-image">
-            <h1 class="logo-text">Voronyz</h1>
-        </div>
         <nav>
-            <button class="buy-btn">Buy Now</button>
+            <div class="logo">
+                <img src="logo.png" alt="Voronyz Logo">
+                <span class="brand">Voronyz</span>
+            </div>
+            <ul>
+                <li><a href="#hero">Home</a></li>
+                <li><a href="#buy-customize">Buy/Customize</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
         </nav>
     </header>
-    <section class="hero">
-        <div class="product-container">
-            <img src="slide-image.jpg" alt="Voronoi Slides" class="product-image">
-        </div>
+
+    <!-- Hero -->
+    <section id="hero">
+        <img src="hero-image.jpg" alt="V3 Slides Hero">
         <div class="hero-text">
-            <h2>Step Into the Future</h2>
-            <p>Lightweight. 3D-Printed. Engineered for Maximum Comfort.</p>
-            <button class="buy-btn">Buy Now</button>
+            <h1>Step into the Future</h1>
+            <p>with <span class="brand">Voronyz V3 Slides</span></p>
+            <a href="#buy-customize" class="btn">Discover More</a>
         </div>
     </section>
 
-    <section class="features">
-        <div class="feature">
-            <h3>Futuristic Design</h3>
-            <p>Inspired by nature's Voronoi patterns, these slides redefine aesthetics.</p>
+    <!-- Buy/Customize -->
+    <section id="buy-customize">
+        <h2><span class="brand">V3 Slides</span></h2>
+        <div class="gallery">
+            <img id="main-display" src="v3-front.jpg" alt="V3 Slides">
+            <div class="thumbnails">
+                <img src="v3-front.jpg" onclick="changeDisplay('v3-front.jpg', 'image')" alt="Front">
+                <img src="v3-side.jpg" onclick="changeDisplay('v3-side.jpg', 'image')" alt="Side">
+                <img src="v3-top.jpg" onclick="changeDisplay('v3-top.jpg', 'image')" alt="Top">
+                <img src="v3-back.jpg" onclick="changeDisplay('v3-back.jpg', 'image')" alt="Back">
+                <img src="v3-detail.jpg" onclick="changeDisplay('v3-detail.jpg', 'image')" alt="Detail">
+                <img src="v3-video-thumb.jpg" onclick="changeDisplay('v3-video.mp4', 'video')" alt="Video Thumbnail">
+            </div>
         </div>
-        <div class="feature">
-            <h3>Precision 3D Printing</h3>
-            <p>Each pair is crafted with cutting-edge manufacturing techniques.</p>
+        <div class="custom-options">
+            <div class="color-group main-body">
+                <h4>Main Body Color</h4>
+                <div class="color-swatch" style="background-color: #fff;" title="White"></div>
+                <div class="color-swatch" style="background-color: #000;" title="Black"></div>
+                <div class="color-swatch" style="background-color: #0000ff;" title="Blue"></div>
+                <div class="color-swatch" style="background-color: #00ff00;" title="Green"></div>
+                <div class="color-swatch" style="background-color: #ff0000;" title="Red"></div>
+            </div>
+            <div class="color-group logo-color">
+                <h4>Logo Color</h4>
+                <div class="color-swatch" style="background-color: #fff;" title="White"></div>
+                <div class="color-swatch" style="background-color: #000;" title="Black"></div>
+                <div class="color-swatch" style="background-color: #0000ff;" title="Blue"></div>
+                <div class="color-swatch" style="background-color: #00ff00;" title="Green"></div>
+                <div class="color-swatch" style="background-color: #ff0000;" title="Red"></div>
+            </div>
+            <div class="size-row">
+                <h4>Size:</h4>
+                <div class="size-group">
+                    <button class="size-btn">8</button>
+                    <button class="size-btn">9</button>
+                    <button class="size-btn">10</button>
+                    <button class="size-btn">11</button>
+                    <button class="size-btn">12</button>
+                </div>
+            </div>
         </div>
-        <div class="feature">
-            <h3>Extreme Comfort</h3>
-            <p>Designed for all-day wear with ultra-soft, flexible TPU.</p>
+        <div class="features">
+            <div class="feature">
+                <img src="feature1.jpg" alt="3D Printed">
+                <p>3D Printed Fit</p>
+            </div>
+            <div class="feature">
+                <img src="feature2.jpg" alt="Durable">
+                <p>Durable Materials</p>
+            </div>
+            <div class="feature">
+                <img src="feature3.jpg" alt="Customizable">
+                <p>Customizable</p>
+            </div>
+            <div class="feature">
+                <img src="feature4.jpg" alt="Eco-Friendly">
+                <p>Eco-Friendly</p>
+            </div>
+            <div class="feature">
+                <img src="feature5.jpg" alt="Stylish">
+                <p>Stylish Design</p>
+            </div>
+        </div>
+        <div class="price-section">
+            <div class="price-toggle">
+                <div class="summary">
+                    <span class="original">$75</span>
+                    <span class="discount">$50</span>
+                    <span class="shipping">+ Free Shipping</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="price-details">
+                    <p><strong>Limited Time Offer:</strong> Save $25 off the regular price of $75!</p>
+                    <p><strong>Discounted Price:</strong> Only $50 for a premium pair of Voronyz V3 Slides.</p>
+                    <p><strong>Free Shipping:</strong> No additional shipping costs - delivered straight to your door!</p>
+                    <p>Hurry, this deal won't last long - check the timer below!</p>
+                </div>
+            </div>
+        </div>
+        <div class="timer">
+            <p>Offer ends in: <span id="countdown">00:00:00</span></p>
+        </div>
+        <a href="#" class="btn">Buy Now</a>
+    </section>
+
+    <!-- About -->
+    <section id="about">
+        <h2>About <span class="brand">Voronyz</span></h2>
+        <p>Redefining footwear with 3D printing technology.</p>
+        <div class="about-images">
+            <img src="about1.jpg" alt="About 1">
+            <img src="about2.jpg" alt="About 2">
+            <img src="about3.jpg" alt="About 3">
         </div>
     </section>
 
+    <!-- Contact -->
+    <section id="contact">
+        <h2>Contact Us</h2>
+        <p>Email: <a href="mailto:info@voronyz.com">info@voronyz.com</a></p>
+        <div class="social-links">
+            <a href="https://instagram.com/voronyz" target="_blank">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/20px-Instagram_logo_2022.svg.png" alt="Instagram">
+                Instagram
+            </a>
+            <a href="https://x.com/voronyz" target="_blank">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/X_icon_2.svg/20px-X_icon_2.svg.png" alt="X">
+                X
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
     <footer>
-        <p>© 2025 Manufactured by Max. All Rights Reserved.</p>
+        <p>© 2025 <span class="brand">Voronyz</span>. All rights reserved.</p>
+        <div class="social-links">
+            <a href="https://instagram.com/voronyz" target="_blank">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/20px-Instagram_logo_2022.svg.png" alt="Instagram">
+                Instagram
+            </a>
+            <a href="https://x.com/voronyz" target="_blank">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/X_icon_2.svg/20px-X_icon_2.svg.png" alt="X">
+                X
+            </a>
+        </div>
     </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Gallery Display Switcher
+        function changeDisplay(src, type) {
+            const mainDisplay = document.getElementById('main-display');
+            if (type === 'image') {
+                mainDisplay.outerHTML = `<img id="main-display" src="${src}" alt="V3 Slides">`;
+            } else if (type === 'video') {
+                mainDisplay.outerHTML = `<video id="main-display" controls><source src="${src}" type="video/mp4">Your browser does not support the video tag.</video>`;
+            }
+        }
+
+        // Color and Size Selection
+        document.querySelectorAll('.color-group').forEach(group => {
+            group.querySelectorAll('.color-swatch').forEach(swatch => {
+                swatch.addEventListener('click', () => {
+                    group.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+                    swatch.classList.add('selected');
+                });
+            });
+        });
+
+        document.querySelector('.size-group').querySelectorAll('.size-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+            });
+        });
+
+        // Price Toggle
+        document.querySelector('.price-toggle').addEventListener('click', function() {
+            const details = this.querySelector('.price-details');
+            const arrow = this.querySelector('.arrow');
+            if (details.style.display === 'block') {
+                details.style.display = 'none';
+                arrow.classList.remove('open');
+            } else {
+                details.style.display = 'block';
+                arrow.classList.add('open');
+            }
+        });
+
+        // Countdown Timer
+        let timeLeft = localStorage.getItem('timeLeft');
+        if (!timeLeft) {
+            const hours = Math.floor(Math.random() * 5) + 1;
+            const minutes = Math.floor(Math.random() * 60);
+            const seconds = Math.floor(Math.random() * 60);
+            timeLeft = hours * 3600 + minutes * 60 + seconds;
+            localStorage.setItem('timeLeft', timeLeft);
+        } else {
+            timeLeft = parseInt(timeLeft);
+        }
+
+        const countdownElement = document.getElementById('countdown');
+        const interval = setInterval(() => {
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                countdownElement.textContent = 'Offer Expired';
+                localStorage.removeItem('timeLeft');
+            } else {
+                timeLeft--;
+                localStorage.setItem('timeLeft', timeLeft);
+                const hours = Math.floor(timeLeft / 3600);
+                const minutes = Math.floor((timeLeft % 3600) / 60);
+                const seconds = timeLeft % 60;
+                countdownElement.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+        }, 1000);
+    </script>
 </body>
 </html>
