@@ -9,7 +9,7 @@
         /* General Styles */
         body {
             background-color: #000;
-            color: #fff; /* Changed from rgb(18, 180, 18) */
+            color: #fff;
             font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 0;
@@ -18,11 +18,11 @@
 
         h1, h2, h3, h4 {
             font-family: 'Orbitron', sans-serif;
-            color: #fff; /* Changed from rgb(18, 180, 18) */
+            color: #fff;
         }
 
         a {
-            color: #fff; /* Changed from rgb(18, 180, 18) */
+            color: #fff;
             text-decoration: none;
         }
 
@@ -33,14 +33,14 @@
         .btn {
             padding: 10px 20px;
             background-color: #1A002B;
-            color: #fff; /* Changed from rgb(18, 180, 18) */
+            color: rgb(18, 180, 18);
             border-radius: 20px;
             transition: background-color 0.3s ease;
             display: inline-block;
         }
 
         .btn:hover {
-            background-color: #fff; /* Changed from rgb(18, 180, 18) */
+            background-color: rgb(18, 180, 18);
             color: #000;
         }
 
@@ -79,7 +79,7 @@
         .brand {
             font-family: 'Orbitron', sans-serif;
             font-size: 32px;
-            color: #00ff00; /* Kept green for Voronyz */
+            color: rgb(18, 180, 18);
         }
 
         ul {
@@ -99,18 +99,19 @@
             padding: 10px 20px;
             border-radius: 20px;
             transition: background-color 0.3s ease;
-            color: #fff; /* Changed from rgb(18, 180, 18) */
+            color: rgb(18, 180, 18);
         }
 
         nav a:hover {
-            background-color: #fff; /* Changed from rgb(18, 180, 18) */
+            background-color: rgb(18, 180, 18);
             color: #000;
         }
 
         /* Hero */
         #hero {
             text-align: center;
-            padding: 0; /* No padding, image flush with top */
+            padding: 0;
+            position: relative;
         }
 
         #hero img {
@@ -120,6 +121,22 @@
             margin: 0;
         }
 
+        #hero .hero-overlay {
+            position: absolute;
+            top: 20px; /* Positioned near the top */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+        }
+
+        #hero .hero-overlay h1 {
+            font-size: 48px;
+            margin: 0;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
         #hero .hero-text {
             padding: 50px 0;
         }
@@ -127,13 +144,13 @@
         #hero h1 {
             font-size: 48px;
             margin-bottom: 20px;
-            color: #fff; /* Changed from #00ff00 */
+            color: #fff;
         }
 
         #hero p {
             font-size: 24px;
             margin-bottom: 30px;
-            color: #fff; /* Changed from rgb(18, 180, 18) */
+            color: rgb(18, 180, 18);
         }
 
         #hero .btn {
@@ -198,7 +215,7 @@
 
         .color-group h4, .size-row h4 {
             width: 100%;
-            margin-bottom: 10px;
+            margin-bottom: 5px; /* Reduced from 10px */
         }
 
         .color-swatch {
@@ -211,7 +228,7 @@
         }
 
         .color-swatch.selected[style*="background-color: #fff"] {
-            border: 3px solid #fff; /* Changed from rgb(18, 180, 18) for white swatch */
+            border: 3px solid rgb(18, 180, 18);
         }
 
         .color-swatch.selected:not([style*="background-color: #fff"]) {
@@ -222,7 +239,7 @@
             padding: 5px 0;
             width: 40px;
             background-color: #111;
-            color: #fff; /* Changed from rgb(18, 180, 18) */
+            color: rgb(18, 180, 18);
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -231,7 +248,7 @@
         }
 
         .size-btn:hover, .size-btn.selected {
-            background-color: #fff; /* Changed from rgb(18, 180, 18) */
+            background-color: rgb(18, 180, 18);
             color: #000;
         }
 
@@ -280,13 +297,13 @@
         }
 
         .price-toggle .summary .discount {
-            color: #fff; /* Changed from rgb(18, 180, 18) */
+            color: rgb(18, 180, 18);
             font-weight: bold;
             font-size: 28px;
         }
 
         .price-toggle .summary .shipping {
-            color: #fff; /* Changed from rgb(18, 180, 18) */
+            color: rgb(18, 180, 18);
             font-style: italic;
             font-size: 20px;
         }
@@ -370,11 +387,11 @@
             border-radius: 20px;
             transition: background-color 0.3s ease;
             font-size: 18px;
-            color: #fff; /* Changed from rgb(18, 180, 18) */
+            color: rgb(18, 180, 18);
         }
 
         .social-links a:hover {
-            background-color: #fff; /* Changed from rgb(18, 180, 18) */
+            background-color: rgb(18, 180, 18);
             color: #000;
         }
 
@@ -455,6 +472,9 @@
     <!-- Hero -->
     <section id="hero">
         <img src="hero-image.jpg" alt="V3 Slides Hero">
+        <div class="hero-overlay">
+            <h1>Revolutionizing Footwear One Pair at a Time</h1>
+        </div>
         <div class="hero-text">
             <h1>Step into the Future</h1>
             <p>with <span class="brand">Voronyz V3 Slides</span></p>
