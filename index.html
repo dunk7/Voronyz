@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voronyz - V3 Slides</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* General Styles */
@@ -14,6 +15,9 @@
             margin: 0;
             padding: 0;
             line-height: 1.6;
+            overflow-y: scroll;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
         }
 
         h1, h2, h3, h4 {
@@ -30,17 +34,18 @@
             color: #1A002B;
         }
 
-        .btn {
+        .btn, .size-btn, .price-details .promo-section button, nav a {
             padding: 10px 20px;
             background-color: #1A002B;
-            color: rgb(18, 180, 18);
+            color: #fff;
             border-radius: 20px;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, color 0.3s ease;
             display: inline-block;
+            font-family: 'Orbitron', sans-serif;
         }
 
-        .btn:hover {
-            background-color: rgb(18, 180, 18);
+        .btn:hover, .size-btn:hover, .size-btn.selected, .price-details .promo-section button:hover, nav a:hover {
+            background-color: #fff;
             color: #000;
         }
 
@@ -48,11 +53,13 @@
         header {
             position: sticky;
             top: 0;
-            background-color: #1A002B;
+            background-color: rgba(26, 0, 43, 0.6);
             padding: 10px 0;
             z-index: 1000;
             border-bottom-left-radius: 20px;
             border-bottom-right-radius: 20px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
         nav {
@@ -93,52 +100,33 @@
             margin: 0 15px;
         }
 
-        nav a {
-            font-family: 'Orbitron', sans-serif;
-            background-color: #111;
-            padding: 10px 20px;
-            border-radius: 20px;
-            transition: background-color 0.3s ease;
-            color: rgb(18, 180, 18);
-        }
-
-        nav a:hover {
-            background-color: rgb(18, 180, 18);
-            color: #000;
-        }
-
         /* Hero */
         #hero {
-            text-align: center;
-            padding: 0;
             position: relative;
+            width: 100%;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        #hero .hero-image {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: -1;
         }
 
         #hero img {
             width: 100%;
-            height: auto;
+            height: 100%;
+            object-fit: cover;
             display: block;
             margin: 0;
         }
 
-        #hero .hero-overlay {
-            position: absolute;
-            top: 20px; /* Positioned near the top */
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-        }
-
-        #hero .hero-overlay h1 {
-            font-size: 48px;
-            margin: 0;
-            color: #fff;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
         #hero .hero-text {
             padding: 50px 0;
+            text-align: center;
         }
 
         #hero h1 {
@@ -150,11 +138,14 @@
         #hero p {
             font-size: 24px;
             margin-bottom: 30px;
-            color: rgb(18, 180, 18);
+            color: #fff;
         }
 
-        #hero .btn {
-            margin-bottom: 0;
+        /* Content wrapper */
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+            background-color: #000;
         }
 
         /* Buy/Customize */
@@ -198,7 +189,7 @@
 
         .custom-options {
             background-color: #333;
-            padding: 20px;
+            padding: 15px;
             border-radius: 20px;
             max-width: 800px;
             margin: 20px auto;
@@ -208,14 +199,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
-            margin: 15px 0;
+            gap: 10px;
+            margin: 2px 0;
             flex-wrap: wrap;
         }
 
         .color-group h4, .size-row h4 {
             width: 100%;
-            margin-bottom: 5px; /* Reduced from 10px */
+            margin-bottom: 5px;
         }
 
         .color-swatch {
@@ -228,7 +219,7 @@
         }
 
         .color-swatch.selected[style*="background-color: #fff"] {
-            border: 3px solid rgb(18, 180, 18);
+            border: 3px solid #000;
         }
 
         .color-swatch.selected:not([style*="background-color: #fff"]) {
@@ -238,18 +229,10 @@
         .size-btn {
             padding: 5px 0;
             width: 40px;
-            background-color: #111;
-            color: rgb(18, 180, 18);
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
             text-align: center;
-        }
-
-        .size-btn:hover, .size-btn.selected {
-            background-color: rgb(18, 180, 18);
-            color: #000;
         }
 
         .features {
@@ -319,7 +302,7 @@
 
         .price-details {
             display: none;
-            padding: 15px;
+            padding: 10px;
             background-color: #111;
             border-radius: 0 0 15px 15px;
             margin-top: 5px;
@@ -328,7 +311,34 @@
         }
 
         .price-details p {
-            margin: 5px 0;
+            margin: 3px 0;
+        }
+
+        .price-details .promo-section {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #222;
+            border-radius: 10px;
+        }
+
+        .price-details .promo-section input {
+            padding: 5px;
+            border-radius: 5px;
+            border: none;
+            font-family: 'Roboto', sans-serif;
+            width: 100px;
+            margin-right: 10px;
+        }
+
+        .price-details .promo-section button {
+            padding: 10px 20px;
+            background-color: #1A002B;
+            color: #fff;
+            border-radius: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            border: none;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
         }
 
         .timer {
@@ -387,7 +397,7 @@
             border-radius: 20px;
             transition: background-color 0.3s ease;
             font-size: 18px;
-            color: rgb(18, 180, 18);
+            color: #fff;
         }
 
         .social-links a:hover {
@@ -398,10 +408,6 @@
         .social-links img {
             width: 20px;
             height: 20px;
-            filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
-        }
-
-        .social-links a:hover img {
             filter: none;
         }
 
@@ -471,9 +477,8 @@
 
     <!-- Hero -->
     <section id="hero">
-        <img src="hero-image.jpg" alt="V3 Slides Hero">
-        <div class="hero-overlay">
-            <h1>Revolutionizing Footwear One Pair at a Time</h1>
+        <div class="hero-image">
+            <img src="hero-image.jpg" alt="V3 Slides Hero">
         </div>
         <div class="hero-text">
             <h1>Step into the Future</h1>
@@ -482,136 +487,156 @@
         </div>
     </section>
 
-    <!-- Buy/Customize -->
-    <section id="buy-customize">
-        <h2><span class="brand">V3 Slides</span></h2>
-        <div class="gallery">
-            <img id="main-display" src="v3-front.jpg" alt="V3 Slides">
-            <div class="thumbnails">
-                <img src="v3-front.jpg" onclick="changeDisplay('v3-front.jpg', 'image')" alt="Front">
-                <img src="v3-side.jpg" onclick="changeDisplay('v3-side.jpg', 'image')" alt="Side">
-                <img src="v3-top.jpg" onclick="changeDisplay('v3-top.jpg', 'image')" alt="Top">
-                <img src="v3-back.jpg" onclick="changeDisplay('v3-back.jpg', 'image')" alt="Back">
-                <img src="v3-detail.jpg" onclick="changeDisplay('v3-detail.jpg', 'image')" alt="Detail">
-                <img src="v3-video-thumb.jpg" onclick="changeDisplay('v3-video.mp4', 'video')" alt="Video Thumbnail">
-            </div>
-        </div>
-        <div class="custom-options">
-            <div class="color-group main-body">
-                <h4>Main Body Color</h4>
-                <div class="color-swatch" style="background-color: #fff;" title="White"></div>
-                <div class="color-swatch" style="background-color: #000;" title="Black"></div>
-                <div class="color-swatch" style="background-color: #0000ff;" title="Blue"></div>
-                <div class="color-swatch" style="background-color: #00ff00;" title="Green"></div>
-                <div class="color-swatch" style="background-color: #ff0000;" title="Red"></div>
-            </div>
-            <div class="color-group logo-color">
-                <h4>Logo Color</h4>
-                <div class="color-swatch" style="background-color: #fff;" title="White"></div>
-                <div class="color-swatch" style="background-color: #000;" title="Black"></div>
-                <div class="color-swatch" style="background-color: #0000ff;" title="Blue"></div>
-                <div class="color-swatch" style="background-color: #00ff00;" title="Green"></div>
-                <div class="color-swatch" style="background-color: #ff0000;" title="Red"></div>
-            </div>
-            <div class="size-row">
-                <h4>Size:</h4>
-                <div class="size-group">
-                    <button class="size-btn">8</button>
-                    <button class="size-btn">9</button>
-                    <button class="size-btn">10</button>
-                    <button class="size-btn">11</button>
-                    <button class="size-btn">12</button>
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <!-- Buy/Customize -->
+        <section id="buy-customize">
+            <h2><span class="brand">V3 Slides</span></h2>
+            <div class="gallery">
+                <img id="main-display" src="v3-front.jpg" alt="V3 Slides">
+                <div class="thumbnails">
+                    <img src="v3-front.jpg" onclick="changeDisplay('v3-front.jpg', 'image')" alt="Front">
+                    <img src="v3-side.jpg" onclick="changeDisplay('v3-side.jpg', 'image')" alt="Side">
+                    <img src="v3-top.jpg" onclick="changeDisplay('v3-top.jpg', 'image')" alt="Top">
+                    <img src="v3-back.jpg" onclick="changeDisplay('v3-back.jpg', 'image')" alt="Back">
+                    <img src="v3-detail.jpg" onclick="changeDisplay('v3-detail.jpg', 'image')" alt="Detail">
+                    <img src="v3-video-thumb.jpg" onclick="changeDisplay('v3-video.mp4', 'video')" alt="Video Thumbnail">
                 </div>
             </div>
-        </div>
-        <div class="features">
-            <div class="feature">
-                <img src="feature1.jpg" alt="3D Printed">
-                <p>3D Printed Fit</p>
-            </div>
-            <div class="feature">
-                <img src="feature2.jpg" alt="Durable">
-                <p>Durable Materials</p>
-            </div>
-            <div class="feature">
-                <img src="feature3.jpg" alt="Customizable">
-                <p>Customizable</p>
-            </div>
-            <div class="feature">
-                <img src="feature4.jpg" alt="Eco-Friendly">
-                <p>Eco-Friendly</p>
-            </div>
-            <div class="feature">
-                <img src="feature5.jpg" alt="Stylish">
-                <p>Stylish Design</p>
-            </div>
-        </div>
-        <div class="price-section">
-            <div class="price-toggle">
-                <div class="summary">
-                    <span class="original">$75</span>
-                    <span class="discount">$50</span>
-                    <span class="shipping">+ Free Shipping</span>
-                    <span class="arrow">▼</span>
+            <div class="custom-options">
+                <div class="color-group main-body">
+                    <h4>Main Body Color</h4>
+                    <div class="color-swatch" style="background-color: #fff;" title="White"></div>
+                    <div class="color-swatch" style="background-color: #000;" title="Black"></div>
+                    <div class="color-swatch" style="background-color: #0000ff;" title="Blue"></div>
+                    <div class="color-swatch" style="background-color: rgb(18, 180, 18);" title="Green"></div>
+                    <div class="color-swatch" style="background-color: #ff0000;" title="Red"></div>
+                    <div class="color-swatch" style="background-color: #ff69b4;" title="Pink"></div>
+                    <div class="color-swatch" style="background-color: #800080;" title="Purple"></div>
+                    <div class="color-swatch" style="background-color: #808080;" title="Grey"></div>
                 </div>
-                <div class="price-details">
-                    <p><strong>Limited Time Offer:</strong> Save $25 off the regular price of $75!</p>
-                    <p><strong>Discounted Price:</strong> Only $50 for a premium pair of Voronyz V3 Slides.</p>
-                    <p><strong>Free Shipping:</strong> No additional shipping costs - delivered straight to your door!</p>
-                    <p>Hurry, this deal won't last long - check the timer below!</p>
+                <div class="color-group logo-color">
+                    <h4>Logo Color</h4>
+                    <div class="color-swatch" style="background-color: #fff;" title="White"></div>
+                    <div class="color-swatch" style="background-color: #000;" title="Black"></div>
+                    <div class="color-swatch" style="background-color: #0000ff;" title="Blue"></div>
+                    <div class="color-swatch" style="background-color: rgb(18, 180, 18);" title="Green"></div>
+                    <div class="color-swatch" style="background-color: #ff0000;" title="Red"></div>
+                    <div class="color-swatch" style="background-color: #ff69b4;" title="Pink"></div>
+                    <div class="color-swatch" style="background-color: #800080;" title="Purple"></div>
+                    <div class="color-swatch" style="background-color: #808080;" title="Grey"></div>
+                </div>
+                <div class="size-row">
+                    <h4>Size:</h4>
+                    <div class="size-group">
+                        <button class="size-btn">8</button>
+                        <button class="size-btn">9</button>
+                        <button class="size-btn">10</button>
+                        <button class="size-btn">11</button>
+                        <button class="size-btn">12</button>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="timer">
-            <p>Offer ends in: <span id="countdown">00:00:00</span></p>
-        </div>
-        <a href="#" class="btn">Buy Now</a>
-    </section>
+            <div class="features">
+                <div class="feature">
+                    <img src="feature1.jpg" alt="3D Printed">
+                    <p>3D Printed Fit</p>
+                </div>
+                <div class="feature">
+                    <img src="feature2.jpg" alt="Durable">
+                    <p>Durable Materials</p>
+                </div>
+                <div class="feature">
+                    <img src="feature3.jpg" alt="Customizable">
+                    <p>Customizable</p>
+                </div>
+                <div class="feature">
+                    <img src="feature4.jpg" alt="Eco-Friendly">
+                    <p>Eco-Friendly</p>
+                </div>
+                <div class="feature">
+                    <img src="feature5.jpg" alt="Stylish">
+                    <p>Stylish Design</p>
+                </div>
+            </div>
+            <div class="price-section">
+                <div class="price-toggle">
+                    <div class="summary">
+                        <span class="original">$75</span>
+                        <span class="discount" id="discount-price">$50</span>
+                        <span class="shipping">+ Free Shipping</span>
+                        <span class="arrow">▼</span>
+                    </div>
+                    <div class="price-details">
+                        <p>$25 off regular $75 price.</p>
+                        <p>Now only <span id="current-price">$50</span> with free shipping.</p>
+                        <p>Limited offer—see countdown.</p>
+                        <div class="promo-section">
+                            <input type="text" id="promo-code" placeholder="6-digit code" maxlength="6">
+                            <button onclick="applyPromoCode()">Apply</button>
+                            <div class="promo-message" id="promo-message"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="timer">
+                <p>Offer ends in: <span id="countdown">00:00:00</span></p>
+            </div>
+            <a href="#" class="btn">Buy Now</a>
+        </section>
 
-    <!-- About -->
-    <section id="about">
-        <h2>About <span class="brand">Voronyz</span></h2>
-        <p>Redefining footwear with 3D printing technology.</p>
-        <div class="about-images">
-            <img src="about1.jpg" alt="About 1">
-            <img src="about2.jpg" alt="About 2">
-            <img src="about3.jpg" alt="About 3">
-        </div>
-    </section>
+        <!-- About -->
+        <section id="about">
+            <h2>About <span class="brand">Voronyz</span></h2>
+            <p>Redefining footwear with 3D printing technology.</p>
+            <div class="about-images">
+                <img src="about1.jpg" alt="About 1">
+                <img src="about2.jpg" alt="About 2">
+                <img src="about3.jpg" alt="About 3">
+            </div>
+        </section>
 
-    <!-- Contact -->
-    <section id="contact">
-        <h2>Contact Us</h2>
-        <p>Email: <a href="mailto:info@voronyz.com">info@voronyz.com</a></p>
-        <div class="social-links">
-            <a href="https://instagram.com/voronyz" target="_blank">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/20px-Instagram_logo_2022.svg.png" alt="Instagram">
-                Instagram
-            </a>
-            <a href="https://x.com/voronyz" target="_blank">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/X_icon_2.svg/20px-X_icon_2.svg.png" alt="X">
-                X
-            </a>
-        </div>
-    </section>
+        <!-- Contact -->
+        <section id="contact">
+            <h2>Contact Us</h2>
+            <p>Email: <a href="mailto:info@voronyz.com">info@voronyz.com</a></p>
+            <div class="social-links">
+                <a href="https://instagram.com/voronyz" target="_blank">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/20px-Instagram_logo_2022.svg.png" alt="Instagram">
+                    Instagram
+                </a>
+                <a href="https://x.com/voronyz" target="_blank">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/X_icon_2.svg/20px-X_icon_2.svg.png" alt="X">
+                    X
+                </a>
+            </div>
+        </section>
 
-    <!-- Footer -->
-    <footer>
-        <p>© 2025 <span class="brand">Voronyz</span>. All rights reserved.</p>
-        <div class="social-links">
-            <a href="https://instagram.com/voronyz" target="_blank">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/20px-Instagram_logo_2022.svg.png" alt="Instagram">
-                Instagram
-            </a>
-            <a href="https://x.com/voronyz" target="_blank">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/X_icon_2.svg/20px-X_icon_2.svg.png" alt="X">
-                X
-            </a>
-        </div>
-    </footer>
+        <!-- Footer -->
+        <footer>
+            <p>© 2025 <span class="brand">Voronyz</span>. All rights reserved.</p>
+            <div class="social-links">
+                <a href="https://instagram.com/voronyz" target="_blank">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Instagram_logo_2022.svg/20px-Instagram_logo_2022.svg.png" alt="Instagram">
+                    Instagram
+                </a>
+                <a href="https://x.com/voronyz" target="_blank">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/X_icon_2.svg/20px-X_icon_2.svg.png" alt="X">
+                    X
+                </a>
+            </div>
+        </footer>
+    </div>
 
     <!-- JavaScript -->
     <script>
+        // Parallax effect
+        window.addEventListener('scroll', () => {
+            const heroImage = document.querySelector('#hero .hero-image');
+            const scrollPosition = window.scrollY;
+            heroImage.style.transform = `translateY(${scrollPosition * 0.5}px)`;
+        });
+
         // Gallery Display Switcher
         function changeDisplay(src, type) {
             const mainDisplay = document.getElementById('main-display');
@@ -640,17 +665,44 @@
         });
 
         // Price Toggle
-        document.querySelector('.price-toggle').addEventListener('click', function() {
-            const details = this.querySelector('.price-details');
-            const arrow = this.querySelector('.arrow');
-            if (details.style.display === 'block') {
-                details.style.display = 'none';
-                arrow.classList.remove('open');
-            } else {
-                details.style.display = 'block';
-                arrow.classList.add('open');
+        document.querySelector('.price-toggle').addEventListener('click', function(e) {
+            if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT') {
+                const details = this.querySelector('.price-details');
+                const arrow = this.querySelector('.arrow');
+                if (details.style.display === 'block') {
+                    details.style.display = 'none';
+                    arrow.classList.remove('open');
+                } else {
+                    details.style.display = 'block';
+                    arrow.classList.add('open');
+                }
             }
         });
+
+        // Promo Code Logic
+        function applyPromoCode() {
+            const input = document.getElementById('promo-code').value;
+            const message = document.getElementById('promo-message');
+            const discountPrice = document.getElementById('discount-price');
+            const currentPrice = document.getElementById('current-price');
+
+            const secretCode = '927481';
+            const hashedInput = String(input.split('').reduce((a, b) => a + b.charCodeAt(0), 0) * 13 % 1000000);
+            const hashedSecret = String(secretCode.split('').reduce((a, b) => a + b.charCodeAt(0), 0) * 13 % 1000000);
+
+            if (input.length !== 6) {
+                message.textContent = 'Please enter a valid 6-digit code.';
+                message.style.color = '#ff0000';
+            } else if (hashedInput === hashedSecret) {
+                discountPrice.textContent = '$45';
+                currentPrice.textContent = '$45';
+                message.textContent = 'Code applied! Now $45.';
+                message.style.color = 'rgb(18, 180, 18)';
+            } else {
+                message.textContent = 'Invalid code.';
+                message.style.color = '#ff0000';
+            }
+        }
 
         // Countdown Timer
         let timeLeft = localStorage.getItem('timeLeft');
@@ -679,6 +731,13 @@
                 countdownElement.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
             }
         }, 1000);
+
+        // Limit Upward Scrolling
+        window.addEventListener('scroll', () => {
+            if (window.scrollY < 0) {
+                window.scrollTo(0, 0);
+            }
+        });
     </script>
 </body>
 </html>
