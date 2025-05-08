@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-
     <title>Rotating STL Model with Three.js</title>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" as="style">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { display: block; }
@@ -17,7 +17,7 @@
             background-color: #4CAF50;
             color: white;
             text-decoration: none;
-            font-family: Arial, sans-serif;
+            font-family: 'Orbitron', Arial, sans-serif;
             font-size: 16px;
             border-radius: 5px;
             z-index: 1000;
@@ -33,6 +33,14 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script>
+        // Ensure font is loaded
+        document.fonts.load('24px "Orbitron"').then(() => {
+            console.log('Orbitron font loaded successfully');
+        }).catch(err => {
+            console.error('Error loading Orbitron font:', err);
+            console.log('Using fallback font');
+        });
+
         // Set up scene, camera, and renderer
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x000000);
@@ -71,7 +79,7 @@
                 console.log('STL model loaded successfully');
                 const material = new THREE.MeshPhongMaterial({ color: 0x00ff00, specular: 0x111111, shininess: 200 });
                 model = new THREE.Mesh(geometry, material);
-                model.scale.set(20,20,20);
+                model.scale.set(20, 20, 20);
                 model.position.set(0, 0, 0);
                 scene.add(model);
             },
@@ -102,26 +110,51 @@
         const topText = strings[strings.length - 1] || 'Default';
         const bottomText = strings.length >= 9 ? strings[8] : strings[strings.length - 1] || 'Default';
 
-        // Create text sprite for top text
-        function createTextSprite(text) {
+        // Create text sprite with wrapping
+        function createTextSprite(text, isTopText = false) {
             const canvas = document.createElement('canvas');
-            canvas.width = 256;
-            canvas.height = 64;
+            canvas.width = 512; // Increased width for longer text
+            canvas.height = 128; // Increased height for potential wrapping
             const ctx = canvas.getContext('2d');
             ctx.fillStyle = 'white';
-            ctx.font = '24px Orbitron';
+            ctx.font = '24px "Orbitron", Arial, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText(text, 128, 32);
+
+            // Wrap text if too wide
+            const maxWidth = 480;
+            const lineHeight = 30;
+            const words = text.split(' ');
+            let line = '';
+            let lines = [];
+            for (let i = 0; i < words.length; i++) {
+                const testLine = line + words[i] + ' ';
+                const metrics = ctx.measureText(testLine);
+                if (metrics.width > maxWidth && i > 0) {
+                    lines.push(line);
+                    line = words[i] + ' ';
+                } else {
+                    line = testLine;
+                }
+            }
+            lines.push(line);
+
+            // Draw text centered
+            const totalHeight = lines.length * lineHeight;
+            const startY = (canvas.height - totalHeight) / 2 + lineHeight / 2;
+            lines.forEach((line, index) => {
+                ctx.fillText(line.trim(), canvas.width / 2, startY + index * lineHeight);
+            });
+
             const texture = new THREE.CanvasTexture(canvas);
             const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
             const sprite = new THREE.Sprite(spriteMaterial);
-            sprite.scale.set(20, 5, 1);
+            sprite.scale.set(isTopText ? 30 : 20, isTopText ? 7.5 : 5, 1); // Larger scale for top text
             return sprite;
         }
 
         // Add top text (above model)
-        const topTextSprite = createTextSprite(topText);
+        const topTextSprite = createTextSprite(topText, true);
         topTextSprite.position.set(0, 10, 0);
         scene.add(topTextSprite);
 
