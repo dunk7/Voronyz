@@ -31,13 +31,13 @@
         }
 
         a:hover {
-            color: #1A002B;
+            color: #eee;
         }
 
         .btn, .size-btn, .price-details .promo-section button, nav a {
             padding: 12px 24px;
-            background-color: #1A002B;
-            color: #fff;
+            background-color: #fff;
+            color: #000;
             border-radius: 25px;
             transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
             display: inline-block;
@@ -47,8 +47,8 @@
         }
 
         .btn:hover, .size-btn:hover, .size-btn.selected, .price-details .promo-section button:hover, nav a:hover {
-            background-color: #fff;
-            color: #000;
+            background-color: #000;
+            color: #fff;
             transform: scale(1.05);
         }
 
@@ -56,7 +56,7 @@
         header {
             position: sticky;
             top: 0;
-            background-color: rgba(26, 0, 43, 0.7);
+            background-color: rgba(0,0,0, 0.7);
             padding: 15px 0;
             z-index: 1000;
             backdrop-filter: blur(12px);
@@ -75,7 +75,7 @@
         .logo {
             display: flex;
             align-items: center;
-            gap: 20px; /* Increased from 10px */
+            gap: 15px; /* Increased from 10px */
             padding: 10px;
         }
 
@@ -92,7 +92,7 @@
         .brand {
             font-family: 'Orbitron', sans-serif;
             font-size: 36px;
-            color: rgb(18, 180, 18);
+            color: rgb(255, 255, 255);
         }
 
         .nav-links {
@@ -104,7 +104,7 @@
         }
 
         .nav-links li {
-            margin: 0 20px;
+            margin: 0 18px;
         }
 
         .menu-toggle {
@@ -208,7 +208,7 @@
         }
 
         .custom-options {
-            background-color: #333;
+            background-color: #DDD;
             padding: 20px;
             border-radius: 25px;
             max-width: 900px;
@@ -229,6 +229,7 @@
             width: 100%;
             margin-bottom: 10px;
             font-size: 20px;
+            color: #000
         }
 
         .color-swatch {
@@ -322,13 +323,13 @@
         }
 
         .price-toggle .summary .discount {
-            color: rgb(18, 180, 18);
+            color: #fff;
             font-weight: bold;
             font-size: 32px;
         }
 
         .price-toggle .summary .shipping {
-            color: rgb(18, 180, 18);
+            color: #fff;
             font-style: italic;
             font-size: 22px;
         }
@@ -436,7 +437,7 @@
         }
 
         .social-links a:hover {
-            background-color: rgb(18, 180, 18);
+            background-color: #fff;
             color: #000;
             transform: scale(1.05);
         }
@@ -475,7 +476,7 @@
                 top:120%;
                 right: 0;
                 width: 50%;
-                background-color: rgba(26, 0, 43, 0.9);
+                background-color: rgba(0, 0, 0, 0.9);
                 padding: 20px;
                 border-radius: 0 0 0 20px;
                 box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
@@ -556,7 +557,7 @@
         </div>
         <div class="hero-text">
             <h1>Step into the Future</h1>
-            <p>with <span class="brand">Voronyz V3 Slides</span></p>
+            
             <a href="#buy-customize" class="btn">Discover More</a>
         </div>
     </section>
@@ -567,7 +568,7 @@
         <section id="buy-customize">
             <h2><span class="brand">V3 Slides</span></h2>
             <div class="gallery">
-                <img id="main-display" src="v3-front.jpg" alt="V3 Slides">
+                <img id="main-display" src="v3-side.jpg" alt="V3 Slides">
                 <div class="thumbnails">
                     <img src="v3-front.jpg" onclick="changeDisplay('v3-front.jpg', 'image')" alt="Front">
                     <img src="v3-side.jpg" onclick="changeDisplay('v3-side.jpg', 'image')" alt="Side">
@@ -579,25 +580,25 @@
             </div>
             <div class="custom-options">
                 <div class="color-group main-body">
-                    <h4>Main Body Color</h4>
+                    <h4>Main Body Color:</h4>
                     <div class="color-swatch" style="background-color: #fff;" title="White"></div>
                     <div class="color-swatch" style="background-color: #000;" title="Black"></div>
                     <div class="color-swatch" style="background-color: #0000ff;" title="Blue"></div>
                     <div class="color-swatch" style="background-color: rgb(18, 180, 18);" title="Green"></div>
                     <div class="color-swatch" style="background-color: #ff0000;" title="Red"></div>
                     <div class="color-swatch" style="background-color: #ff69b4;" title="Pink"></div>
-                    <div class="color-swatch" style="background-color: #800080;" title="Purple"></div>
+                    
                     <div class="color-swatch" style="background-color: #808080;" title="Grey"></div>
                 </div>
                 <div class="color-group logo-color">
-                    <h4>Logo Color</h4>
+                    <h4>Logo Color:</h4>
                     <div class="color-swatch" style="background-color: #fff;" title="White"></div>
                     <div class="color-swatch" style="background-color: #000;" title="Black"></div>
                     <div class="color-swatch" style="background-color: #0000ff;" title="Blue"></div>
                     <div class="color-swatch" style="background-color: rgb(18, 180, 18);" title="Green"></div>
                     <div class="color-swatch" style="background-color: #ff0000;" title="Red"></div>
                     <div class="color-swatch" style="background-color: #ff69b4;" title="Pink"></div>
-                    <div class="color-swatch" style="background-color: #800080;" title="Purple"></div>
+                    
                     <div class="color-swatch" style="background-color: #808080;" title="Grey"></div>
                 </div>
                 <div class="size-row">
@@ -627,10 +628,6 @@
                 <div class="feature">
                     <img src="feature4.jpg" alt="Eco-Friendly">
                     <p>Eco-Friendly</p>
-                </div>
-                <div class="feature">
-                    <img src="feature5.jpg" alt="Stylish">
-                    <p>Stylish Design</p>
                 </div>
             </div>
             <div class="price-section">
