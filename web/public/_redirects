@@ -1,0 +1,2 @@
+# Handle Next.js Image Optimization API requests
+/_next/image?url=:image&* :image 200
