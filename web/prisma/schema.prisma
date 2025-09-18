@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  name              String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  cart              Cart?
+  orders            Order[]
+  footScanMetadata  Json?
+  preferences       Json?
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         String
+  description  String
+  priceCents   Int
+  currency     String   @default("usd")
+  images       Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  variants     Variant[]
+}
+
+model Variant {
+  id          String   @id @default(cuid())
+  product     Product  @relation(fields: [productId], references: [id])
+  productId   String
+  name        String
+  sku         String   @unique
+  priceCents  Int?
+  attributes  Json?    // e.g., size, color, material
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  cartItems   CartItem[]
+}
+
+model Cart {
+  id          String     @id @default(cuid())
+  user        User?      @relation(fields: [userId], references: [id])
+  userId      String?    @unique
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  items       CartItem[]
+}
+
+model CartItem {
+  id         String   @id @default(cuid())
+  cart       Cart     @relation(fields: [cartId], references: [id])
+  cartId     String
+  variant    Variant  @relation(fields: [variantId], references: [id])
+  variantId  String
+  quantity   Int      @default(1)
+  priceCents Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([cartId, variantId])
+  @@index([cartId])
+}
+
+model Order {
+  id           String   @id @default(cuid())
+  user         User?    @relation(fields: [userId], references: [id])
+  userId       String?
+  status       String   @default("pending")
+  currency     String   @default("usd")
+  subtotalCents Int
+  totalCents   Int
+  stripeId     String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
