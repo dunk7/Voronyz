@@ -37,11 +37,23 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Deploy on Netlify
 
-This project is configured for Netlify deployment. The `netlify.toml` file in the repository root tells Netlify to build from the `web/` folder. Make sure to set the following environment variables in your Netlify dashboard:
+This project is configured for Netlify deployment. The `netlify.toml` file in the repository root tells Netlify to build from the `web/` folder.
+
+### Environment Variables (Optional for Testing)
+
+For **production deployment**, set these environment variables in your Netlify dashboard:
 
 - `DATABASE_URL`: PostgreSQL connection string (required for production)
 - `STRIPE_SECRET_KEY`: Your Stripe secret key for payments
-- `AUTH_STUB_ENABLED`: Set to "true" for development/demo purposes
+- `AUTH_STUB_ENABLED`: Set to "false" to disable demo auth (enabled by default)
+
+### Testing Without Environment Variables
+
+For **testing/demo purposes**, you can deploy without any environment variables:
+- ✅ Authentication works with demo mode (enabled by default)
+- ✅ Mock database provides sample products and cart functionality
+- ✅ Checkout redirects to success page (Stripe not required for testing)
+- ✅ All core features work with in-memory data
 
 ### Database Setup
 
