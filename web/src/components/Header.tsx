@@ -47,15 +47,8 @@ export default function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Prevent body scroll when mobile menu is open
+  // Allow body scroll even when mobile menu is open (no scroll lock)
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    // Cleanup on unmount
     return () => {
       document.body.style.overflow = 'unset';
     };
@@ -140,8 +133,12 @@ export default function Header() {
                 variant="secondary"
                 size="md"
                 className="ring-white/20 text-white hover:bg-white/10"
+                aria-label="Sign out"
               >
-                Sign out
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <circle cx="12" cy="8" r="3.25" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M5 19.25c1.8-2.5 4.2-3.75 7-3.75s5.2 1.25 7 3.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
               </Button>
             ) : (
               <Link href="/sign-in" className="hidden sm:inline-flex" aria-label="Sign in">
@@ -244,12 +241,12 @@ export default function Header() {
                     setOpen(false);
                   }}
                   className="py-4 px-4 rounded-lg uppercase tracking-[0.22em] text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 text-lg font-medium flex items-center gap-3 w-full text-left"
+                  aria-label="Sign out"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <circle cx="12" cy="8" r="3.25" stroke="currentColor" strokeWidth="1.5"/>
                     <path d="M5 19.25c1.8-2.5 4.2-3.75 7-3.75s5.2 1.25 7 3.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
-                  <span>Sign Out</span>
                 </button>
               ) : (
                 <Link

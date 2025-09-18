@@ -20,10 +20,10 @@ export default function Home() {
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(800px_400px_at_50%_30%,rgba(255,255,255,0.08),transparent)]" />
 
         {/* Mobile-first responsive padding */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-16 sm:py-20 md:py-24 lg:py-32 lg:px-8 fade-in-up">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-16 sm:py-20 md:py-24 lg:py-8 xl:py-10 2xl:py-12 lg:px-8 fade-in-up">
           <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-8 sm:gap-10 lg:gap-12">
             {/* Content Section - Improved mobile spacing */}
-            <div className="lg:col-span-5 space-y-4 sm:space-y-5 md:space-y-6 order-2 lg:order-1">
+            <div className="lg:col-span-4 space-y-4 sm:space-y-5 md:space-y-6 order-2 lg:order-1">
               <p className="uppercase tracking-[0.25em] text-xs sm:text-sm text-neutral-400">Voronyz Engineering</p>
 
               {/* Improved responsive typography */}
@@ -53,23 +53,13 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Image Section - Optimized for mobile */}
-            <div className="lg:col-span-7 order-1 lg:order-2">
-              {/* Disable parallax on mobile for better performance */}
-              <div className="hidden sm:block">
-                <HeroParallax>
-                  <div className="relative aspect-[5/4] sm:aspect-[4/3] lg:aspect-[5/4] w-full rounded-2xl overflow-hidden">
-                    <Image src="/side-render-of-both.png" alt="Voronyz V3 Slides" fill priority className="object-contain" />
-                  </div>
-                </HeroParallax>
-              </div>
-
-              {/* Static image on mobile */}
-              <div className="sm:hidden">
-                <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden">
+            {/* Image Section - Video Animation */}
+            <div className="lg:col-span-8 order-1 lg:order-2">
+              <HeroParallax>
+                <div className="relative w-full rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-[4/3] lg:h-full xl:h-full 2xl:h-full">
                   <Image src="/side-render-of-both.png" alt="Voronyz V3 Slides" fill priority className="object-contain" />
                 </div>
-              </div>
+              </HeroParallax>
             </div>
           </div>
         </div>
