@@ -12,33 +12,64 @@ export default function Home() {
           style={{
             backgroundImage: "url('/hero-bg.png')",
             backgroundSize: "cover",
-            backgroundPosition: "center",
+            backgroundPosition: "center bottom",
             backgroundRepeat: "no-repeat",
             filter: "brightness(0.4)"
           }}
         />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(1200px_600px_at_50%_-10%,rgba(255,255,255,0.08),transparent)]" />
-        <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8 fade-in-up">
-          <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-10">
-            <div className="lg:col-span-5 space-y-6">
-              <p className="uppercase tracking-[0.25em] text-xs text-neutral-400">Voronyz Engineering</p>
-              <h1 className="text-4xl sm:text-6xl font-semibold leading-tight tracking-[0.15em] text-white uppercase">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(800px_400px_at_50%_30%,rgba(255,255,255,0.08),transparent)]" />
+
+        {/* Mobile-first responsive padding */}
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-16 sm:py-20 md:py-24 lg:py-32 lg:px-8 fade-in-up">
+          <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-8 sm:gap-10 lg:gap-12">
+            {/* Content Section - Improved mobile spacing */}
+            <div className="lg:col-span-5 space-y-4 sm:space-y-5 md:space-y-6 order-2 lg:order-1">
+              <p className="uppercase tracking-[0.25em] text-xs sm:text-sm text-neutral-400">Voronyz Engineering</p>
+
+              {/* Improved responsive typography */}
+              <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-semibold leading-[1.1] sm:leading-tight tracking-[0.15em] text-white uppercase">
                 Step into the Future
               </h1>
-              <p className="text-neutral-300 text-lg sm:text-xl max-w-xl leading-relaxed">
+
+              {/* Better mobile text sizing and spacing */}
+              <p className="text-neutral-300 text-base sm:text-lg md:text-xl max-w-xl leading-relaxed">
                 Step into otherworldly comfort, performance, and style. Start by checking out our latest models or watching the short introduction video.
               </p>
-              <div className="flex items-center gap-3">
-                <Link href="/products/v3-slides" className="rounded-full bg-white text-black px-5 py-3 text-sm font-medium hover:bg-neutral-200 transition">Shop the new Slides</Link>
-                <Link href="/products" className="rounded-full ring-1 ring-white/20 text-white px-5 py-3 text-sm font-medium hover:bg-white/5 transition">Watch the video</Link>
+
+              {/* Improved mobile button layout */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2">
+                <Link
+                  href="/products/v3-slides"
+                  className="rounded-full bg-white text-black px-6 py-3 sm:px-5 sm:py-3 text-sm font-medium hover:bg-neutral-200 transition text-center sm:text-left"
+                >
+                  Shop the new Slides
+                </Link>
+                <Link
+                  href="/products"
+                  className="rounded-full ring-1 ring-white/20 text-white px-6 py-3 sm:px-5 sm:py-3 text-sm font-medium hover:bg-white/5 transition text-center sm:text-left"
+                >
+                  Watch the video
+                </Link>
               </div>
             </div>
-            <div className="lg:col-span-7">
-              <HeroParallax>
-                <div className="relative aspect-[5/4] w-full rounded-2xl overflow-hidden">
+
+            {/* Image Section - Optimized for mobile */}
+            <div className="lg:col-span-7 order-1 lg:order-2">
+              {/* Disable parallax on mobile for better performance */}
+              <div className="hidden sm:block">
+                <HeroParallax>
+                  <div className="relative aspect-[5/4] sm:aspect-[4/3] lg:aspect-[5/4] w-full rounded-2xl overflow-hidden">
+                    <Image src="/side-render-of-both.png" alt="Voronyz V3 Slides" fill priority className="object-contain" />
+                  </div>
+                </HeroParallax>
+              </div>
+
+              {/* Static image on mobile */}
+              <div className="sm:hidden">
+                <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden">
                   <Image src="/side-render-of-both.png" alt="Voronyz V3 Slides" fill priority className="object-contain" />
                 </div>
-              </HeroParallax>
+              </div>
             </div>
           </div>
         </div>

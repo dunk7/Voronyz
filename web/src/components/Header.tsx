@@ -142,12 +142,45 @@ export default function Header() {
         </div>
       </div>
       {open && (
-        <div className="md:hidden border-t border-black/5 bg-white">
+        <div className="md:hidden border-t border-white/10 bg-neutral-950/95 backdrop-blur">
           <div className="container py-4 grid gap-1 text-sm">
-            <Link href="/products" className="py-3 uppercase tracking-[0.22em]">All Footwear</Link>
-            <Link href="/files" className="py-3 uppercase tracking-[0.22em]">Files</Link>
-            <Link href="/about" className="py-3 uppercase tracking-[0.22em]">About</Link>
-            <Link href="/cart" className="py-3 uppercase tracking-[0.22em]">Cart</Link>
+            <Link
+              href="/products"
+              className="py-3 uppercase tracking-[0.22em] text-white/70 hover:text-white transition-colors"
+              onClick={() => setOpen(false)}
+            >
+              All Footwear
+            </Link>
+            <Link
+              href="/files"
+              className="py-3 uppercase tracking-[0.22em] text-white/70 hover:text-white transition-colors"
+              onClick={() => setOpen(false)}
+            >
+              Files
+            </Link>
+            <Link
+              href="/about"
+              className="py-3 uppercase tracking-[0.22em] text-white/70 hover:text-white transition-colors"
+              onClick={() => setOpen(false)}
+            >
+              About
+            </Link>
+            <Link
+              href="/cart"
+              className="py-3 uppercase tracking-[0.22em] text-white/70 hover:text-white transition-colors"
+              onClick={() => setOpen(false)}
+            >
+              Cart
+            </Link>
+            <div className="border-t border-white/10 mt-2 pt-3">
+              <Link
+                href="/sign-in"
+                className="py-3 uppercase tracking-[0.22em] text-white/70 hover:text-white transition-colors"
+                onClick={() => setOpen(false)}
+              >
+                Sign In
+              </Link>
+            </div>
           </div>
         </div>
       )}
