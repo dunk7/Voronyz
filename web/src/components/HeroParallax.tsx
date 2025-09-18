@@ -115,11 +115,15 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas to container size and keep aspect ratio
+    // Set canvas to container size (scaled by devicePixelRatio) and keep aspect ratio
     const resize = () => {
       const { width, height } = container.getBoundingClientRect();
-      canvas.width = Math.max(1, Math.floor(width));
-      canvas.height = Math.max(1, Math.floor(height));
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      canvas.width = Math.max(1, Math.round(width * dpr));
+      canvas.height = Math.max(1, Math.round(height * dpr));
+      // Reset then scale to map logical CSS pixels to device pixels
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
       // Re-render current frame on resize
       renderFrame(smoothedRef.current);
     };
@@ -152,24 +156,40 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
       const frameIndex = Math.max(0, Math.min(total - 1, idx));
       const img = imagesRef.current[frameIndex];
 
-      // Clear and draw with contain behavior (letterbox/pillarbox)
+      // Determine logical (CSS pixel) canvas size from container
+      const { width: logicalWidth, height: logicalHeight } = container.getBoundingClientRect();
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const targetWidth = Math.max(1, Math.round(logicalWidth * dpr));
+      const targetHeight = Math.max(1, Math.round(logicalHeight * dpr));
+
+      // Ensure backing store matches current size
+      if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(dpr, dpr);
+      }
+
+      // Clear in device pixels (reset transform to avoid partial clear), then restore scale
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const canvasAspect = canvas.width / canvas.height;
+      ctx.scale(dpr, dpr);
+
+      // Compute draw rect in logical pixels and draw
+      const canvasAspect = logicalWidth / logicalHeight;
       const imageAspect = img.width / img.height;
-      let drawWidth = canvas.width;
-      let drawHeight = canvas.height;
+      let drawWidth = logicalWidth;
+      let drawHeight = logicalHeight;
       let dx = 0;
       let dy = 0;
       if (imageAspect > canvasAspect) {
-        // Image is wider than canvas
-        drawWidth = canvas.width;
+        drawWidth = logicalWidth;
         drawHeight = Math.round(drawWidth / imageAspect);
-        dy = Math.round((canvas.height - drawHeight) / 2);
+        dy = Math.round((logicalHeight - drawHeight) / 2);
       } else {
-        // Image is taller than canvas
-        drawHeight = canvas.height;
+        drawHeight = logicalHeight;
         drawWidth = Math.round(drawHeight * imageAspect);
-        dx = Math.round((canvas.width - drawWidth) / 2);
+        dx = Math.round((logicalWidth - drawWidth) / 2);
       }
       ctx.drawImage(img, dx, dy, drawWidth, drawHeight);
     };
@@ -201,26 +221,39 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
       const frameIndex = Math.max(0, Math.min(total - 1, idx));
       const img = imagesRef.current[frameIndex];
       const container = ref.current!;
-      const { width, height } = container.getBoundingClientRect();
-      canvas.width = Math.max(1, Math.floor(width));
-      canvas.height = Math.max(1, Math.floor(height));
 
-      const canvasAspect = canvas.width / canvas.height;
+      const { width: logicalWidth, height: logicalHeight } = container.getBoundingClientRect();
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const targetWidth = Math.max(1, Math.round(logicalWidth * dpr));
+      const targetHeight = Math.max(1, Math.round(logicalHeight * dpr));
+
+      if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(dpr, dpr);
+      }
+
+      // Clear full buffer then draw in logical pixels
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.scale(dpr, dpr);
+
+      const canvasAspect = logicalWidth / logicalHeight;
       const imageAspect = img.width / img.height;
-      let drawWidth = canvas.width;
-      let drawHeight = canvas.height;
+      let drawWidth = logicalWidth;
+      let drawHeight = logicalHeight;
       let dx = 0;
       let dy = 0;
       if (imageAspect > canvasAspect) {
-        drawWidth = canvas.width;
+        drawWidth = logicalWidth;
         drawHeight = Math.round(drawWidth / imageAspect);
-        dy = Math.round((canvas.height - drawHeight) / 2);
+        dy = Math.round((logicalHeight - drawHeight) / 2);
       } else {
-        drawHeight = canvas.height;
+        drawHeight = logicalHeight;
         drawWidth = Math.round(drawHeight * imageAspect);
-        dx = Math.round((canvas.width - drawWidth) / 2);
+        dx = Math.round((logicalWidth - drawWidth) / 2);
       }
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, dx, dy, drawWidth, drawHeight);
     };
 
