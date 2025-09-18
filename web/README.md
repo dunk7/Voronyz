@@ -51,9 +51,10 @@ For **production deployment**, set these environment variables in your Netlify d
 
 For **testing/demo purposes**, you can deploy without any environment variables:
 - ✅ Authentication works with demo mode (enabled by default)
-- ✅ Mock database provides sample products and cart functionality
-- ✅ Checkout redirects to success page (Stripe not required for testing)
-- ✅ All core features work with in-memory data
+- ✅ Sample products are included
+- ✅ Cart functionality works with localStorage persistence
+- ✅ Checkout redirects to success page
+- ✅ All core features work client-side
 
 ### Database Setup
 

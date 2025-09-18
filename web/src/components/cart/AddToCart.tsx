@@ -6,23 +6,61 @@ type Props = {
   variants: Variant[];
 };
 
+interface CartItem {
+  id: string;
+  variantId: string;
+  quantity: number;
+  priceCents: number;
+  variant: { name: string };
+}
+
 export default function AddToCart({ variants }: Props) {
   const [variantId, setVariantId] = useState<string | undefined>(variants[0]?.id);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState(false);
 
-  async function add() {
+  function add() {
     setLoading(true);
     setAdded(false);
+
     try {
-      const res = await fetch("/api/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ variantId, quantity }),
-      });
-      if (!res.ok) throw new Error("Failed to add to cart");
+      // Get existing cart from localStorage
+      const cartData = localStorage.getItem("cart");
+      let cart: CartItem[] = [];
+      if (cartData) {
+        cart = JSON.parse(cartData);
+      }
+
+      // Find selected variant
+      const selectedVariant = variants.find(v => v.id === variantId);
+      if (!selectedVariant) {
+        throw new Error("Variant not found");
+      }
+
+      // Check if item already exists in cart
+      const existingItemIndex = cart.findIndex(item => item.variantId === variantId);
+
+      if (existingItemIndex >= 0) {
+        // Update existing item
+        cart[existingItemIndex].quantity += quantity;
+      } else {
+        // Add new item
+        const newItem: CartItem = {
+          id: `item-${Date.now()}`,
+          variantId: selectedVariant.id,
+          quantity,
+          priceCents: selectedVariant.priceCents || 0,
+          variant: { name: selectedVariant.name || "Default" }
+        };
+        cart.push(newItem);
+      }
+
+      // Save to localStorage
+      localStorage.setItem("cart", JSON.stringify(cart));
       setAdded(true);
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
     } finally {
       setLoading(false);
     }

@@ -2,19 +2,38 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import useSWR from "swr";
 import { Button } from "@/components/ui/Button";
 import { usePathname } from "next/navigation";
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [hide, setHide] = useState(false);
-  const { data, mutate } = useSWR("/api/auth/me", fetcher);
-  const { data: cartData } = useSWR("/api/cart", fetcher);
-  const user = data?.user;
-  const cartCount = (cartData?.items ?? []).reduce((n: number, it: { quantity?: number }) => n + (it.quantity ?? 0), 0);
+  const [user, setUser] = useState<{ id: string; email: string; name: string } | null>({ id: "demo-user", email: "demo@example.com", name: "Demo User" });
+  const [cartCount, setCartCount] = useState(0);
+
+  // Load cart count from localStorage
+  useEffect(() => {
+    const updateCartCount = () => {
+      const cartData = localStorage.getItem("cart");
+      if (cartData) {
+        try {
+          const cart = JSON.parse(cartData);
+          const count = cart.reduce((sum: number, item: { quantity?: number }) => sum + (item.quantity || 0), 0);
+          setCartCount(count);
+        } catch (error) {
+          console.error("Failed to parse cart data:", error);
+          setCartCount(0);
+        }
+      } else {
+        setCartCount(0);
+      }
+    };
+
+    updateCartCount();
+    // Listen for storage changes
+    window.addEventListener('storage', updateCartCount);
+    return () => window.removeEventListener('storage', updateCartCount);
+  }, []);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -99,9 +118,9 @@ export default function Header() {
           </Link>
           {user ? (
             <Button
-              onClick={async () => {
-                await fetch("/api/auth/sign-out", { method: "POST" });
-                mutate();
+              onClick={() => {
+                // Mock sign out - just show demo user is signed out
+                setUser(null);
               }}
               variant="secondary"
               size="md"

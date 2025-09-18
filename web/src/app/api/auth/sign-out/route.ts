@@ -1,11 +1,8 @@
-import { NextResponse } from "next/server";
-import { clearUserSessionCookie, isAuthStubEnabled } from "@/lib/session";
-
+// Client-side only auth API for static export
 export async function POST() {
-  if (!isAuthStubEnabled()) return NextResponse.json({ error: "disabled" }, { status: 403 });
-  const res = NextResponse.json({ ok: true });
-  clearUserSessionCookie(res);
-  return res;
+  return new Response(JSON.stringify({ ok: true }), {
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
 
 

@@ -15,6 +15,8 @@ You can deploy this app to Netlify **without any environment variables** for tes
 2. Connect your repository to Netlify
 3. Deploy - it will work out of the box with demo data!
 
+The app uses static export, so all features work client-side with localStorage for cart persistence.
+
 ## Deployment
 
 This project is configured for deployment on Netlify. The Next.js app is located in the `web/` folder, and the `netlify.toml` file in the root configures Netlify to build from that directory.

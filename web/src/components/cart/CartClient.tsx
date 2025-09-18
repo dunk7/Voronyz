@@ -1,19 +1,43 @@
 "use client";
-import useSWR from "swr";
+import { useState, useEffect } from "react";
 import { formatCentsAsCurrency } from "@/lib/money";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+interface CartItem {
+  id: string;
+  variantId: string;
+  quantity: number;
+  priceCents: number;
+  variant: { name: string };
+}
 
 export default function CartClient() {
-  const { data, mutate, isLoading } = useSWR("/api/cart", fetcher);
-  const items = (data?.items ?? []) as Array<{ id: string; quantity?: number; priceCents?: number; variant?: { name?: string } }>;
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  async function remove(itemId: string) {
-    await fetch(`/api/cart?itemId=${itemId}`, { method: "DELETE" });
-    mutate();
+  useEffect(() => {
+    // Load cart from localStorage
+    const cartData = localStorage.getItem("cart");
+    if (cartData) {
+      try {
+        setItems(JSON.parse(cartData));
+      } catch (error) {
+        console.error("Failed to parse cart data:", error);
+      }
+    }
+    setIsLoading(false);
+  }, []);
+
+  const saveCart = (newItems: CartItem[]) => {
+    setItems(newItems);
+    localStorage.setItem("cart", JSON.stringify(newItems));
+  };
+
+  function remove(itemId: string) {
+    const newItems = items.filter(item => item.id !== itemId);
+    saveCart(newItems);
   }
 
-  const subtotal = items.reduce((sum, it) => sum + (it.priceCents ?? 0) * (it.quantity ?? 1), 0);
+  const subtotal = items.reduce((sum, it) => sum + it.priceCents * it.quantity, 0);
 
   if (isLoading) return <div>Loading…</div>;
   if (!items.length) return <div>Your cart is empty.</div>;
@@ -28,7 +52,7 @@ export default function CartClient() {
               <div className="text-neutral-600">Qty {it.quantity}</div>
             </div>
             <div className="flex items-center gap-4">
-              <div className="text-sm text-neutral-800">{formatCentsAsCurrency((it.priceCents ?? 0) * (it.quantity ?? 1))}</div>
+              <div className="text-sm text-neutral-800">{formatCentsAsCurrency(it.priceCents * it.quantity)}</div>
               <button onClick={() => remove(it.id)} className="text-sm text-red-600 hover:underline">Remove</button>
             </div>
           </div>
@@ -44,9 +68,8 @@ export default function CartClient() {
         <form
           onSubmit={async (e) => {
             e.preventDefault();
-            const res = await fetch("/api/checkout", { method: "POST" });
-            const data = await res.json();
-            if (data?.url) window.location.href = data.url as string;
+            // Mock checkout - redirect to success page
+            window.location.href = `/checkout/success?session_id=mock-session-${Date.now()}`;
           }}
         >
           <button type="submit" className="w-full rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800">
