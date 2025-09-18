@@ -6,8 +6,8 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function AccountPage() {
   const { data, isLoading } = useSWR("/api/account", fetcher);
-  const [preferences, setPreferences] = useState<any>(data?.preferences ?? {});
-  const [footScanMetadata, setFootScanMetadata] = useState<any>(data?.footScanMetadata ?? {});
+  const [preferences, setPreferences] = useState<Record<string, unknown>>(data?.preferences ?? {});
+  const [footScanMetadata, setFootScanMetadata] = useState<Record<string, unknown>>(data?.footScanMetadata ?? {});
   const [message, setMessage] = useState<string | null>(null);
 
   async function save() {

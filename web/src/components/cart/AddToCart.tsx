@@ -3,12 +3,10 @@ import { Variant } from "@prisma/client";
 import { useState } from "react";
 
 type Props = {
-  productId: string;
   variants: Variant[];
-  defaultPriceCents: number;
 };
 
-export default function AddToCart({ productId, variants, defaultPriceCents }: Props) {
+export default function AddToCart({ variants }: Props) {
   const [variantId, setVariantId] = useState<string | undefined>(variants[0]?.id);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);

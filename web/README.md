@@ -34,3 +34,23 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Deploy on Netlify
+
+This project is configured for Netlify deployment. Make sure to set the following environment variables in your Netlify dashboard:
+
+- `DATABASE_URL`: PostgreSQL connection string (required for production)
+- `STRIPE_SECRET_KEY`: Your Stripe secret key for payments
+- `AUTH_STUB_ENABLED`: Set to "true" for development/demo purposes
+
+### Database Setup
+
+This project uses PostgreSQL. For Netlify deployment:
+
+1. Use a cloud PostgreSQL service like Supabase, Neon, or Railway
+2. Set the `DATABASE_URL` environment variable
+3. Run `npx prisma migrate deploy` to apply migrations (can be done in build command if needed)
+
+### Build Settings
+
+The `netlify.toml` file configures the build settings automatically. The build command is `npm run build` and the publish directory is `.next`.

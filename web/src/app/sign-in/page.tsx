@@ -21,8 +21,8 @@ export default function SignInPage() {
       });
       if (!res.ok) throw new Error("Sign-in failed");
       router.push("/account");
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "An error occurred");
     } finally {
       setLoading(false);
     }

@@ -30,7 +30,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <div className="mt-1 text-neutral-600">{formatCentsAsCurrency(product.priceCents, product.currency)}</div>
           </div>
           <p className="text-neutral-700 leading-relaxed">{product.description}</p>
-          <AddToCart productId={product.id} variants={product.variants} defaultPriceCents={product.priceCents} />
+          <AddToCart variants={product.variants} />
         </div>
       </div>
     </div>

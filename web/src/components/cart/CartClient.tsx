@@ -6,8 +6,7 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function CartClient() {
   const { data, mutate, isLoading } = useSWR("/api/cart", fetcher);
-  const items = (data?.items ?? []) as Array<any>;
-  const count = items.reduce((n, it) => n + (it.quantity ?? 0), 0);
+  const items = (data?.items ?? []) as Array<{ id: string; quantity?: number; priceCents?: number; variant?: { name?: string } }>;
 
   async function remove(itemId: string) {
     await fetch(`/api/cart?itemId=${itemId}`, { method: "DELETE" });
@@ -22,7 +21,7 @@ export default function CartClient() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2 space-y-4">
-        {items.map((it: any) => (
+        {items.map((it) => (
           <div key={it.id} className="flex items-center justify-between rounded-xl border border-black/10 p-4">
             <div className="text-sm">
               <div className="font-medium">{it.variant?.name ?? "Item"}</div>

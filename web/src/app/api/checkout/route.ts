@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   const stripeSecret = process.env.STRIPE_SECRET_KEY;
   if (!stripeSecret) return NextResponse.json({ error: "Stripe not configured" }, { status: 500 });
 
-  const stripe = new Stripe(stripeSecret, { apiVersion: "2024-12-18.acacia" });
+  const stripe = new Stripe(stripeSecret, { apiVersion: "2025-08-27.basil" });
 
   const line_items = cart.items.map((it) => ({
     quantity: it.quantity,

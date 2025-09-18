@@ -14,7 +14,7 @@ export default function Header() {
   const { data, mutate } = useSWR("/api/auth/me", fetcher);
   const { data: cartData } = useSWR("/api/cart", fetcher);
   const user = data?.user;
-  const cartCount = (cartData?.items ?? []).reduce((n: number, it: any) => n + (it.quantity ?? 0), 0);
+  const cartCount = (cartData?.items ?? []).reduce((n: number, it: { quantity?: number }) => n + (it.quantity ?? 0), 0);
   const pathname = usePathname();
 
   useEffect(() => {
