@@ -37,7 +37,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Deploy on Netlify
 
-This project is configured for Netlify deployment. Make sure to set the following environment variables in your Netlify dashboard:
+This project is configured for Netlify deployment. The `netlify.toml` file in the repository root tells Netlify to build from the `web/` folder. Make sure to set the following environment variables in your Netlify dashboard:
 
 - `DATABASE_URL`: PostgreSQL connection string (required for production)
 - `STRIPE_SECRET_KEY`: Your Stripe secret key for payments
@@ -53,4 +53,7 @@ This project uses PostgreSQL. For Netlify deployment:
 
 ### Build Settings
 
-The `netlify.toml` file configures the build settings automatically. The build command is `npm run build` and the publish directory is `.next`.
+The `netlify.toml` file in the repository root configures the build settings automatically:
+- **Base directory**: `web/` (where the Next.js app is located)
+- **Build command**: `npm run build`
+- **Publish directory**: `.next`
