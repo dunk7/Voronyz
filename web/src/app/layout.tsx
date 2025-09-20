@@ -20,9 +20,12 @@ export const metadata: Metadata = {
     "Futuristic footwear engineered with 3D scanning, TPU 95A lattices, and performance uppers. Shop the V3 Slides and more.",
   metadataBase: new URL("https://voronyz.local"),
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.png", sizes: "512x512", type: "image/png" },
+    ],
     shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
+    apple: "/favicon.png",
   },
   openGraph: {
     title: "Voronyz — Advanced 3D Printed Footwear",

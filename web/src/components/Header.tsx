@@ -1,15 +1,17 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { usePathname } from "next/navigation";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [hide, setHide] = useState(false);
-  const [user, setUser] = useState<{ id: string; email: string; name: string } | null>({ id: "demo-user", email: "demo@example.com", name: "Demo User" });
+  const [user, setUser] = useState<{ id: string; email: string; name: string } | null>(null);
   const [cartCount, setCartCount] = useState(0);
+  const [cartCountLoaded, setCartCountLoaded] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   // Load cart count from localStorage
   useEffect(() => {
@@ -27,6 +29,7 @@ export default function Header() {
       } else {
         setCartCount(0);
       }
+      setCartCountLoaded(true);
     };
 
     updateCartCount();
@@ -45,6 +48,33 @@ export default function Header() {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Track viewport size to avoid rendering desktop-only auth buttons on mobile during SSR/hydration
+  useLayoutEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 768px)'); // md breakpoint
+    const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      // Support both initial set (MediaQueryList) and change events
+      // @ts-ignore - handle both types
+      setIsDesktop((e.matches !== undefined ? e.matches : e.currentTarget?.matches) ?? mediaQuery.matches);
+    };
+    // Initial
+    setIsDesktop(mediaQuery.matches);
+    // Subscribe
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange as (ev: MediaQueryListEvent) => void);
+    } else {
+      // @ts-ignore - Safari
+      mediaQuery.addListener(handleChange);
+    }
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleChange as (ev: MediaQueryListEvent) => void);
+      } else {
+        // @ts-ignore - Safari
+        mediaQuery.removeListener(handleChange);
+      }
+    };
   }, []);
 
   // Allow body scroll even when mobile menu is open (no scroll lock)
@@ -120,35 +150,37 @@ export default function Header() {
                   <circle cx="17" cy="19" r="1.5" fill="currentColor"/>
                 </svg>
               </Button>
-              {cartCount > 0 && (
+              {cartCountLoaded && cartCount > 0 && (
                 <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white text-black px-1 text-xs font-medium">{cartCount}</span>
               )}
             </Link>
-            {user ? (
-              <Button
-                onClick={() => {
-                  // Mock sign out - just show demo user is signed out
-                  setUser(null);
-                }}
-                variant="secondary"
-                size="md"
-                className="ring-white/20 text-white hover:bg-white/10"
-                aria-label="Sign out"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <circle cx="12" cy="8" r="3.25" stroke="currentColor" strokeWidth="1.5"/>
-                  <path d="M5 19.25c1.8-2.5 4.2-3.75 7-3.75s5.2 1.25 7 3.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-              </Button>
-            ) : (
-              <Link href="/sign-in" className="hidden sm:inline-flex" aria-label="Sign in">
-                <Button variant="secondary" size="md" className="ring-white/20 text-white hover:bg-white/10" aria-label="Sign in">
+            {isDesktop && (
+              user ? (
+                <Button
+                  onClick={() => {
+                    // Mock sign out - just show demo user is signed out
+                    setUser(null);
+                  }}
+                  variant="secondary"
+                  size="md"
+                  className="ring-white/20 text-white hover:bg-white/10"
+                  aria-label="Sign out"
+                >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <circle cx="12" cy="8" r="3.25" stroke="currentColor" strokeWidth="1.5"/>
                     <path d="M5 19.25c1.8-2.5 4.2-3.75 7-3.75s5.2 1.25 7 3.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
                 </Button>
-              </Link>
+              ) : (
+                <Link href="/sign-in" aria-label="Sign in">
+                  <Button variant="secondary" size="md" className="ring-white/20 text-white hover:bg-white/10" aria-label="Sign in">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <circle cx="12" cy="8" r="3.25" stroke="currentColor" strokeWidth="1.5"/>
+                      <path d="M5 19.25c1.8-2.5 4.2-3.75 7-3.75s5.2 1.25 7 3.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                  </Button>
+                </Link>
+              )
             )}
             <button
               className="md:hidden rounded-full p-3 ring-1 ring-white/15 text-white hover:bg-white/10 hover:ring-white/25 transition-all duration-200 group active:scale-95"
@@ -229,7 +261,7 @@ export default function Header() {
                   <circle cx="9" cy="19" r="1.5" fill="currentColor"/>
                   <circle cx="17" cy="19" r="1.5" fill="currentColor"/>
                 </svg>
-                <span>Cart ({cartCount})</span>
+                <span>Cart {cartCountLoaded ? `(${cartCount})` : ""}</span>
               </Link>
             </nav>
 
@@ -249,17 +281,19 @@ export default function Header() {
                   </svg>
                 </button>
               ) : (
-                <Link
-                  href="/sign-in"
-                  className="py-4 px-4 rounded-lg uppercase tracking-[0.22em] text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 text-lg font-medium flex items-center gap-3"
-                  onClick={() => setOpen(false)}
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    window.location.href = '/sign-in';
+                  }}
+                  className="py-4 px-4 rounded-lg uppercase tracking-[0.22em] text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 text-lg font-medium flex items-center gap-3 w-full text-left"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <circle cx="12" cy="8" r="3.25" stroke="currentColor" strokeWidth="1.5"/>
                     <path d="M5 19.25c1.8-2.5 4.2-3.75 7-3.75s5.2 1.25 7 3.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
                   <span>Sign In</span>
-                </Link>
+                </button>
               )}
             </div>
           </div>
