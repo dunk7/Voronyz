@@ -11,8 +11,8 @@ export default function ContactPage() {
             Get In Touch
           </h1>
           <p className="text-xl text-neutral-600 max-w-2xl mx-auto leading-relaxed">
-            Ready to step into the future of footwear? We'd love to hear from you.
-            Whether you're interested in our products, partnership opportunities, or joining our team.
+            Ready to step into the future of footwear? We&apos;d love to hear from you.
+            Whether you&apos;re interested in our products, partnership opportunities, or joining our team.
           </p>
         </div>
       </div>
@@ -197,7 +197,7 @@ export default function ContactPage() {
         <div className="container text-center">
           <h2 className="text-2xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-neutral-300 mb-6 max-w-xl mx-auto">
-            Join thousands of satisfied customers who've discovered the perfect fit for their feet.
+            Join thousands of satisfied customers who&apos;ve discovered the perfect fit for their feet.
           </p>
           <Link
             href="/products"

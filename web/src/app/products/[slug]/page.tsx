@@ -3,6 +3,14 @@ import { formatCentsAsCurrency } from "@/lib/money";
 import AddToCart from "@/components/cart/AddToCart";
 import V3Gallery from "@/components/V3Gallery";
 import FAQ from "@/components/FAQ";
+import { Metadata } from "next";
+
+type Media = {
+  type: "image" | "video";
+  src: string;
+  alt?: string;
+  poster?: string;
+};
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -91,14 +99,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     slug === "v3-slides"
       ? ([{ type: "video", src: "/v3-video.mp4", poster: "/v3-video-thumb.jpg" }] as const)
       : ([] as const)
-  ) as any[];
+  ) as Media[];
   const galleryMedia = [...media, ...images.map((src) => ({ type: "image", src, alt: product.name }))];
 
   return (
     <div className="bg-white">
       <div className="container py-12 grid grid-cols-1 lg:grid-cols-12 gap-10">
         <div className="lg:col-span-7">
-          <V3Gallery media={galleryMedia as any} />
+          <V3Gallery media={galleryMedia} />
         </div>
         <div className="lg:col-span-5">
           <div className="lg:sticky lg:top-20 space-y-6">
@@ -174,7 +182,7 @@ function FeatureCard({ title, text }: { title: string; text: string }) {
   );
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const { slug } = params;
   try {
     const product = await prisma.product.findUnique({ where: { slug } });
@@ -187,7 +195,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
         description,
         openGraph: { title, description, images },
         twitter: { card: "summary_large_image", title, description, images },
-      } as any;
+      };
     }
   } catch {}
   const fallbackTitle = "V3 Slides – Voronyz";
@@ -197,7 +205,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     description: fallbackDescription,
     openGraph: { title: fallbackTitle, description: fallbackDescription, images: ["/v3-front.jpg"] },
     twitter: { card: "summary_large_image", title: fallbackTitle, description: fallbackDescription, images: ["/v3-front.jpg"] },
-  } as any;
+  };
 }
 
 

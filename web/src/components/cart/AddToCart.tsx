@@ -8,6 +8,11 @@ type Props = {
   coverImage?: string;
 };
 
+type VariantAttributes = {
+  size?: number | string;
+  color?: string;
+};
+
 interface CartItem {
   id: string;
   productName?: string;
@@ -27,7 +32,7 @@ export default function AddToCart({ variants, productName, coverImage }: Props) 
   const allSizes = useMemo(() => {
     const values = new Set<(number | string) | undefined>();
     variants.forEach((v) => {
-      const size = (v.attributes as any)?.size as number | string | undefined;
+      const size = (v.attributes as VariantAttributes)?.size;
       if (size !== undefined) values.add(size);
     });
     return Array.from(values).filter((v): v is number | string => v !== undefined);
@@ -36,7 +41,7 @@ export default function AddToCart({ variants, productName, coverImage }: Props) 
   const allColors = useMemo(() => {
     const values = new Set<string | undefined>();
     variants.forEach((v) => {
-      const color = (v.attributes as any)?.color as string | undefined;
+      const color = (v.attributes as VariantAttributes)?.color;
       if (color) values.add(String(color).toLowerCase());
     });
     return Array.from(values).filter((v): v is string => !!v);
@@ -52,7 +57,7 @@ export default function AddToCart({ variants, productName, coverImage }: Props) 
   const selectedVariant = useMemo(() => {
     // Prefer exact match by size/color; fall back to first
     const byAttrs = variants.find((v) => {
-      const attrs = (v.attributes as any) || {};
+      const attrs = (v.attributes as VariantAttributes) || {};
       const sizeMatch = selectedSize === undefined || attrs.size == selectedSize;
       const colorMatch = selectedColor === undefined || String(attrs.color).toLowerCase() === String(selectedColor).toLowerCase();
       return sizeMatch && colorMatch;

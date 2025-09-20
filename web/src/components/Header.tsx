@@ -55,7 +55,7 @@ export default function Header() {
     const mediaQuery = window.matchMedia('(min-width: 768px)'); // md breakpoint
     const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
       // Support both initial set (MediaQueryList) and change events
-      // @ts-ignore - handle both types
+      // @ts-expect-error - handle both types
       setIsDesktop((e.matches !== undefined ? e.matches : e.currentTarget?.matches) ?? mediaQuery.matches);
     };
     // Initial
@@ -64,14 +64,14 @@ export default function Header() {
     if (mediaQuery.addEventListener) {
       mediaQuery.addEventListener('change', handleChange as (ev: MediaQueryListEvent) => void);
     } else {
-      // @ts-ignore - Safari
+      // @ts-expect-error - Safari
       mediaQuery.addListener(handleChange);
     }
     return () => {
       if (mediaQuery.removeEventListener) {
         mediaQuery.removeEventListener('change', handleChange as (ev: MediaQueryListEvent) => void);
       } else {
-        // @ts-ignore - Safari
+        // @ts-expect-error - Safari
         mediaQuery.removeListener(handleChange);
       }
     };

@@ -4,57 +4,24 @@ import { useEffect, useRef, useState } from "react";
 export default function HeroParallax({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
   
   const [smoothedProgress, setSmoothedProgress] = useState(0);
   const smoothedRef = useRef(0);
   const lastScrollYRef = useRef(0);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [hasError, setHasError] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const [frameCount] = useState(20);
   const [, setIsFullyLoaded] = useState(false);
   type FetchPriority = 'high' | 'low' | 'auto';
 
-  useEffect(() => {
-    // Check for reduced motion preference
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mediaQuery.matches);
-
-    // Check for mobile device
-    const mobileQuery = window.matchMedia('(max-width: 768px)');
-    setIsMobile(mobileQuery.matches);
-
-    const handleMediaQueryChange = (e: MediaQueryListEvent) => {
-      if (e.media === '(prefers-reduced-motion: reduce)') {
-        setPrefersReducedMotion(e.matches);
-      }
-    };
-
-    const handleMobileChange = (e: MediaQueryListEvent) => {
-      setIsMobile(e.matches);
-    };
-
-    mediaQuery.addEventListener('change', handleMediaQueryChange);
-    mobileQuery.addEventListener('change', handleMobileChange);
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleMediaQueryChange);
-      mobileQuery.removeEventListener('change', handleMobileChange);
-    };
-  }, []);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
     // Intersection Observer for visibility detection (kept lightweight)
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        setIsVisible(entry.isIntersecting);
-      });
+    const observer = new IntersectionObserver(() => {
+      // Visibility detection removed - no longer used
     }, { threshold: 0.1, rootMargin: '0px 0px -50% 0px' });
 
     observer.observe(el);
@@ -65,11 +32,8 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
       if (!ticking) {
         requestAnimationFrame(() => {
           const y = window.scrollY;
-          const lastY = lastScrollYRef.current;
-          const scrollingUp = y < lastY;
           const rect = el.getBoundingClientRect();
           const elementHeight = rect.height || 1;
-          const windowHeight = window.innerHeight;
 
           // Uniform-speed mapping across the hero's own height
           // Progress = 0 when page scroll is before hero's top, 1 after its bottom
@@ -136,7 +100,7 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
     const loadSingleFrame = (index: number, priority: FetchPriority): Promise<void> => {
       return new Promise<void>((resolve) => {
         const img = new Image();
-        (img as any).fetchPriority = priority;
+        img.fetchPriority = priority;
         img.decoding = 'async';
         img.src = `/hero_frames/frame_${String(index + 1).padStart(3, '0')}.png`;
         img.onload = () => {
@@ -174,7 +138,7 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
       return order;
     };
 
-    const connection = (navigator as any).connection as { effectiveType?: string } | undefined;
+    const connection = (navigator as { connection?: { effectiveType?: string } }).connection;
     const isSlowNetwork = connection && typeof connection.effectiveType === 'string' && /(^2g|3g)/i.test(connection.effectiveType);
     const maxConcurrent = isSlowNetwork ? 2 : 4;
 
@@ -268,13 +232,15 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
     const onResize = () => resize();
     window.addEventListener('resize', onResize, { passive: true });
     resize();
-    loadImages().catch(() => setHasError(true));
+    loadImages().catch(() => {
+      // Error loading images - could handle this in the future
+    });
 
     return () => {
       isMounted = false;
       window.removeEventListener('resize', onResize);
     };
-  }, [frameCount]);
+  }, [frameCount, isLoaded]);
 
   // Re-render canvas when progress changes
   useEffect(() => {
@@ -343,7 +309,7 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
 
     raf = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(raf);
-  }, [smoothedProgress]);
+  }, [smoothedProgress, frameCount]);
 
   return (
     <div ref={ref} className="will-change-transform relative overflow-hidden rounded-2xl min-h-[300px] md:min-h-[60vh] lg:min-h-[80vh] xl:min-h-[100vh] 2xl:min-h-[100vh]">
