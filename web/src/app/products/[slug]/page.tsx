@@ -100,7 +100,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       ? ([{ type: "video", src: "/v3-video.mp4", poster: "/v3-video-thumb.jpg" }] as const)
       : ([] as const)
   ) as Media[];
-  const galleryMedia = [...media, ...images.map((src) => ({ type: "image", src, alt: product.name }))];
+  const galleryMedia = [...media, ...images.map((src) => ({ type: "image" as const, src, alt: product.name }))];
 
   return (
     <div className="bg-white">

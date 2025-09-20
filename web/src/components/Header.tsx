@@ -64,14 +64,12 @@ export default function Header() {
     if (mediaQuery.addEventListener) {
       mediaQuery.addEventListener('change', handleChange as (ev: MediaQueryListEvent) => void);
     } else {
-      // @ts-expect-error - Safari
       mediaQuery.addListener(handleChange);
     }
     return () => {
       if (mediaQuery.removeEventListener) {
         mediaQuery.removeEventListener('change', handleChange as (ev: MediaQueryListEvent) => void);
       } else {
-        // @ts-expect-error - Safari
         mediaQuery.removeListener(handleChange);
       }
     };
