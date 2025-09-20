@@ -15,6 +15,8 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
   const [isMobile, setIsMobile] = useState(false);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const [frameCount] = useState(20);
+  const [, setIsFullyLoaded] = useState(false);
+  type FetchPriority = 'high' | 'low' | 'auto';
 
   useEffect(() => {
     // Check for reduced motion preference
@@ -105,7 +107,7 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
     };
   }, []);
 
-  // Preload image sequence and render on canvas (eliminates video seek flicker)
+  // Preload image sequence progressively and render on canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = ref.current;
@@ -128,33 +130,102 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
       renderFrame(smoothedRef.current);
     };
 
-    const loadImages = async () => {
-      const frames: HTMLImageElement[] = [];
-      for (let i = 1; i <= frameCount; i++) {
+    // Maintain an array of frames that may be null until loaded
+    imagesRef.current = new Array(frameCount).fill(null) as unknown as HTMLImageElement[];
+
+    const loadSingleFrame = (index: number, priority: FetchPriority): Promise<void> => {
+      return new Promise<void>((resolve) => {
         const img = new Image();
+        (img as any).fetchPriority = priority;
         img.decoding = 'async';
-        img.loading = 'eager';
-        // Prefer alpha-enabled PNG frames if present
-        img.src = `/hero_frames/frame_${String(i).padStart(3, '0')}.png`;
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => resolve();
-          img.onerror = () => reject(new Error('Failed to load frame ' + i));
-        });
-        frames.push(img);
+        img.src = `/hero_frames/frame_${String(index + 1).padStart(3, '0')}.png`;
+        img.onload = () => {
+          if (!isMounted) return resolve();
+          imagesRef.current[index] = img;
+          // If this is the very first frame we loaded, reveal canvas
+          if (!isLoaded && imagesRef.current[0]) {
+            setIsLoaded(true);
+            renderFrame(smoothedRef.current);
+          }
+          resolve();
+        };
+        img.onerror = () => resolve();
+      });
+    };
+
+    /**
+     * Build a progressive load order that quickly covers the whole timeline,
+     * then fills remaining gaps. Example for 20: 0, 19, 9, 4, 14, 2, 6, 12, 16, 1, 3, 5, ...
+     */
+    const buildProgressiveOrder = (count: number): number[] => {
+      const order: number[] = [];
+      const pushUnique = (i: number) => { if (i >= 0 && i < count && !order.includes(i)) order.push(i); };
+      // Seed with first and last for instant coverage
+      pushUnique(0);
+      pushUnique(count - 1);
+      // Then binary-split sampling
+      let step = Math.floor(count / 2);
+      while (step > 0) {
+        for (let i = step; i < count - 1; i += step) pushUnique(i);
+        step = Math.floor(step / 2);
       }
+      // Finally ensure all indices are there
+      for (let i = 0; i < count; i++) pushUnique(i);
+      return order;
+    };
+
+    const connection = (navigator as any).connection as { effectiveType?: string } | undefined;
+    const isSlowNetwork = connection && typeof connection.effectiveType === 'string' && /(^2g|3g)/i.test(connection.effectiveType);
+    const maxConcurrent = isSlowNetwork ? 2 : 4;
+
+    const loadImages = async () => {
+      // Load first frame immediately (high priority)
+      await loadSingleFrame(0, 'high');
       if (!isMounted) return;
-      imagesRef.current = frames;
-      setIsLoaded(true);
-      // Render the first frame immediately
-      renderFrame(smoothedRef.current);
+
+      // Start progressive loading in background with limited concurrency
+      const order = buildProgressiveOrder(frameCount).filter(i => i !== 0);
+      let cursor = 0;
+      const inFlight: Promise<void>[] = [];
+
+      const launchNext = () => {
+        if (cursor >= order.length) return;
+        const idx = order[cursor++];
+        const p = loadSingleFrame(idx, 'auto').then(() => {
+          // After each frame, try to render the current progress frame
+          renderFrame(smoothedRef.current);
+          launchNext();
+        });
+        inFlight.push(p);
+      };
+
+      // Prime the pool
+      for (let i = 0; i < maxConcurrent; i++) launchNext();
+      await Promise.all(inFlight);
+      if (!isMounted) return;
+      setIsFullyLoaded(true);
+    };
+
+    const findNearestLoadedIndex = (targetIndex: number): number | null => {
+      if (imagesRef.current[targetIndex]) return targetIndex;
+      // Search outwards for nearest loaded
+      for (let offset = 1; offset < frameCount; offset++) {
+        const left = targetIndex - offset;
+        const right = targetIndex + offset;
+        if (left >= 0 && imagesRef.current[left]) return left;
+        if (right < frameCount && imagesRef.current[right]) return right;
+      }
+      return null;
     };
 
     const renderFrame = (progress: number) => {
-      if (!ctx || imagesRef.current.length === 0) return;
-      const total = imagesRef.current.length;
+      if (!ctx) return;
+      const total = frameCount;
       const idx = progress >= 0.999 ? total - 1 : Math.floor(progress * (total - 1));
       const frameIndex = Math.max(0, Math.min(total - 1, idx));
-      const img = imagesRef.current[frameIndex];
+      const nearest = findNearestLoadedIndex(frameIndex);
+      if (nearest === null) return;
+      const img = imagesRef.current[nearest]!;
 
       // Determine logical (CSS pixel) canvas size from container
       const { width: logicalWidth, height: logicalHeight } = container.getBoundingClientRect();
@@ -214,12 +285,25 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
 
     // Use requestAnimationFrame to coalesce rapid updates
     let raf = 0;
+    const findNearestLoadedIndex = (targetIndex: number): number | null => {
+      if (imagesRef.current[targetIndex]) return targetIndex;
+      for (let offset = 1; offset < frameCount; offset++) {
+        const left = targetIndex - offset;
+        const right = targetIndex + offset;
+        if (left >= 0 && imagesRef.current[left]) return left;
+        if (right < frameCount && imagesRef.current[right]) return right;
+      }
+      return null;
+    };
+
     const draw = () => {
       const progress = smoothedRef.current;
-      const total = imagesRef.current.length;
+      const total = frameCount;
       const idx = progress >= 0.999 ? total - 1 : Math.floor(progress * (total - 1));
       const frameIndex = Math.max(0, Math.min(total - 1, idx));
-      const img = imagesRef.current[frameIndex];
+      const nearest = findNearestLoadedIndex(frameIndex);
+      if (nearest === null) return;
+      const img = imagesRef.current[nearest]!;
       const container = ref.current!;
 
       const { width: logicalWidth, height: logicalHeight } = container.getBoundingClientRect();
