@@ -3,6 +3,7 @@ import { formatCentsAsCurrency } from "@/lib/money";
 import AddToCart from "@/components/cart/AddToCart";
 import V3Gallery from "@/components/V3Gallery";
 import FAQ from "@/components/FAQ";
+import Link from "next/link";
 import { Metadata } from "next";
 
 type Media = {
@@ -34,8 +35,29 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         "/Screenshot From 2025-09-20 00-08-34.png",
       ],
       variants: [
+        // Black variants (sizes 5-12)
         {
-          id: "demo-variant-7",
+          id: "demo-variant-5-black",
+          productId: "demo-product",
+          name: "Size 5 / Black",
+          sku: "V3-5-BLK",
+          priceCents: 9900,
+          attributes: { size: 5, color: "black" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-6-black",
+          productId: "demo-product",
+          name: "Size 6 / Black",
+          sku: "V3-6-BLK",
+          priceCents: 9900,
+          attributes: { size: 6, color: "black" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-7-black",
           productId: "demo-product",
           name: "Size 7 / Black",
           sku: "V3-7-BLK",
@@ -45,7 +67,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           updatedAt: new Date(),
         },
         {
-          id: "demo-variant-8",
+          id: "demo-variant-8-black",
           productId: "demo-product",
           name: "Size 8 / Black",
           sku: "V3-8-BLK",
@@ -55,7 +77,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           updatedAt: new Date(),
         },
         {
-          id: "demo-variant-9",
+          id: "demo-variant-9-black",
           productId: "demo-product",
           name: "Size 9 / Black",
           sku: "V3-9-BLK",
@@ -65,7 +87,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           updatedAt: new Date(),
         },
         {
-          id: "demo-variant-10",
+          id: "demo-variant-10-black",
           productId: "demo-product",
           name: "Size 10 / Black",
           sku: "V3-10-BLK",
@@ -75,12 +97,265 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           updatedAt: new Date(),
         },
         {
-          id: "demo-variant-11",
+          id: "demo-variant-11-black",
           productId: "demo-product",
           name: "Size 11 / Black",
           sku: "V3-11-BLK",
           priceCents: 9900,
           attributes: { size: 11, color: "black" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-12-black",
+          productId: "demo-product",
+          name: "Size 12 / Black",
+          sku: "V3-12-BLK",
+          priceCents: 9900,
+          attributes: { size: 12, color: "black" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        // White variants (sizes 5-12)
+        {
+          id: "demo-variant-5-white",
+          productId: "demo-product",
+          name: "Size 5 / White",
+          sku: "V3-5-WHT",
+          priceCents: 9900,
+          attributes: { size: 5, color: "white" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-6-white",
+          productId: "demo-product",
+          name: "Size 6 / White",
+          sku: "V3-6-WHT",
+          priceCents: 9900,
+          attributes: { size: 6, color: "white" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-7-white",
+          productId: "demo-product",
+          name: "Size 7 / White",
+          sku: "V3-7-WHT",
+          priceCents: 9900,
+          attributes: { size: 7, color: "white" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-8-white",
+          productId: "demo-product",
+          name: "Size 8 / White",
+          sku: "V3-8-WHT",
+          priceCents: 9900,
+          attributes: { size: 8, color: "white" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-9-white",
+          productId: "demo-product",
+          name: "Size 9 / White",
+          sku: "V3-9-WHT",
+          priceCents: 9900,
+          attributes: { size: 9, color: "white" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-10-white",
+          productId: "demo-product",
+          name: "Size 10 / White",
+          sku: "V3-10-WHT",
+          priceCents: 9900,
+          attributes: { size: 10, color: "white" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-11-white",
+          productId: "demo-product",
+          name: "Size 11 / White",
+          sku: "V3-11-WHT",
+          priceCents: 9900,
+          attributes: { size: 11, color: "white" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-12-white",
+          productId: "demo-product",
+          name: "Size 12 / White",
+          sku: "V3-12-WHT",
+          priceCents: 9900,
+          attributes: { size: 12, color: "white" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        // Navy variants (sizes 5-12)
+        {
+          id: "demo-variant-5-navy",
+          productId: "demo-product",
+          name: "Size 5 / Navy",
+          sku: "V3-5-NVY",
+          priceCents: 9900,
+          attributes: { size: 5, color: "navy" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-6-navy",
+          productId: "demo-product",
+          name: "Size 6 / Navy",
+          sku: "V3-6-NVY",
+          priceCents: 9900,
+          attributes: { size: 6, color: "navy" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-7-navy",
+          productId: "demo-product",
+          name: "Size 7 / Navy",
+          sku: "V3-7-NVY",
+          priceCents: 9900,
+          attributes: { size: 7, color: "navy" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-8-navy",
+          productId: "demo-product",
+          name: "Size 8 / Navy",
+          sku: "V3-8-NVY",
+          priceCents: 9900,
+          attributes: { size: 8, color: "navy" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-9-navy",
+          productId: "demo-product",
+          name: "Size 9 / Navy",
+          sku: "V3-9-NVY",
+          priceCents: 9900,
+          attributes: { size: 9, color: "navy" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-10-navy",
+          productId: "demo-product",
+          name: "Size 10 / Navy",
+          sku: "V3-10-NVY",
+          priceCents: 9900,
+          attributes: { size: 10, color: "navy" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-11-navy",
+          productId: "demo-product",
+          name: "Size 11 / Navy",
+          sku: "V3-11-NVY",
+          priceCents: 9900,
+          attributes: { size: 11, color: "navy" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-12-navy",
+          productId: "demo-product",
+          name: "Size 12 / Navy",
+          sku: "V3-12-NVY",
+          priceCents: 9900,
+          attributes: { size: 12, color: "navy" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        // Red variants (sizes 5-12)
+        {
+          id: "demo-variant-5-red",
+          productId: "demo-product",
+          name: "Size 5 / Red",
+          sku: "V3-5-RED",
+          priceCents: 9900,
+          attributes: { size: 5, color: "red" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-6-red",
+          productId: "demo-product",
+          name: "Size 6 / Red",
+          sku: "V3-6-RED",
+          priceCents: 9900,
+          attributes: { size: 6, color: "red" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-7-red",
+          productId: "demo-product",
+          name: "Size 7 / Red",
+          sku: "V3-7-RED",
+          priceCents: 9900,
+          attributes: { size: 7, color: "red" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-8-red",
+          productId: "demo-product",
+          name: "Size 8 / Red",
+          sku: "V3-8-RED",
+          priceCents: 9900,
+          attributes: { size: 8, color: "red" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-9-red",
+          productId: "demo-product",
+          name: "Size 9 / Red",
+          sku: "V3-9-RED",
+          priceCents: 9900,
+          attributes: { size: 9, color: "red" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-10-red",
+          productId: "demo-product",
+          name: "Size 10 / Red",
+          sku: "V3-10-RED",
+          priceCents: 9900,
+          attributes: { size: 10, color: "red" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-11-red",
+          productId: "demo-product",
+          name: "Size 11 / Red",
+          sku: "V3-11-RED",
+          priceCents: 9900,
+          attributes: { size: 11, color: "red" },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "demo-variant-12-red",
+          productId: "demo-product",
+          name: "Size 12 / Red",
+          sku: "V3-12-RED",
+          priceCents: 9900,
+          attributes: { size: 12, color: "red" },
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -104,7 +379,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="bg-white">
-      <div className="container py-12 grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div className="container pt-4 pb-12 grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <nav className="col-span-full text-sm text-neutral-500 mb-6">
+          <Link href="/" className="hover:text-neutral-900">Home</Link>
+          <span className="mx-2">/</span>
+          <Link href="/products" className="hover:text-neutral-900">Products</Link>
+          <span className="mx-2">/</span>
+          <span className="text-neutral-900">{product.name}</span>
+        </nav>
         <div className="lg:col-span-7">
           <V3Gallery media={galleryMedia} />
         </div>
@@ -112,23 +394,31 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <div className="lg:sticky lg:top-20 space-y-6">
             <div>
               <h1 className="text-2xl font-semibold text-neutral-900">{product.name}</h1>
-              <div className="mt-1 text-neutral-600">{formatCentsAsCurrency(product.priceCents, product.currency)}</div>
             </div>
             <p className="text-neutral-700 leading-relaxed">{product.description}</p>
 
             <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Made to order ~7 days</span>
-              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Free size exchange</span>
-              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">30-day comfort guarantee</span>
+              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Made to order in &lt;7 days</span>
+              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Lasts 2-5 years</span>
+              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Programmable NFC chip</span>
+              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Free shipping</span>
+            </div>
+
+            <div className="mt-4 text-xs text-neutral-600">
+              All sizes are in US Men's. For women, subtract 1.5 from your usual women's size (e.g., women's 7 = men's 5.5).
             </div>
 
             <AddToCart
               variants={product.variants}
               productName={product.name}
               coverImage={(images[0] as string) || defaultImages[0]}
+              productSlug={slug}
             />
 
-            <div className="text-xs text-neutral-500">Ships worldwide. Taxes calculated at checkout.</div>
+            <div className="flex gap-4 text-xs text-neutral-500">
+              <Link href="/products" className="underline hover:no-underline">← Back to Shop</Link>
+              <span>Ships worldwide. Taxes calculated at checkout.</span>
+            </div>
           </div>
         </div>
       </div>
@@ -151,9 +441,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <h2 className="text-lg font-semibold text-neutral-900 mb-4">FAQs</h2>
           <FAQ
             items={[
-              { q: "What if my size doesn’t fit?", a: "We offer a free size exchange within 30 days. Just keep them clean and unmodified." },
+              { q: "What if my size doesn’t fit?", a: "Please choose carefully using our size guide. Exchanges are not available for custom-made products." },
               { q: "Are they waterproof?", a: "They’re water-resistant and easy to rinse clean. Avoid extended high-heat exposure." },
-              { q: "How long does production take?", a: "Most orders are printed within 5–7 business days before shipping." },
+              { q: "How long does production take?", a: "Most orders are printed within &lt;7 business days before shipping." },
             ]}
           />
         </div>

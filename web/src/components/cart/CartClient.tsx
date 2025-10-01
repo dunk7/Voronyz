@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { formatCentsAsCurrency } from "@/lib/money";
 import Image from "next/image";
+import Link from "next/link";
 
 interface CartItem {
   id: string;
@@ -11,53 +12,116 @@ interface CartItem {
   quantity: number;
   priceCents: number;
   variant: { name: string };
-  attributes?: { size?: number | string; color?: string };
+  attributes?: { size?: number | string; color?: string; resolution?: 'normal' | 'high' };
+  productSlug?: string;
+}
+
+interface CartData {
+  items: CartItem[];
+  discountCode?: string | null;
 }
 
 export default function CartClient() {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [discountCode, setDiscountCode] = useState<string | null>(null);
+  const [inputValue, setInputValue] = useState("");
+  const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   useEffect(() => {
     // Load cart from localStorage
-    const cartData = localStorage.getItem("cart");
-    if (cartData) {
-      try {
-        setItems(JSON.parse(cartData));
-      } catch (error) {
-        console.error("Failed to parse cart data:", error);
+    try {
+      const cartDataStr = localStorage.getItem("cart");
+      if (cartDataStr) {
+        const parsed = JSON.parse(cartDataStr) as CartData;
+        if (Array.isArray(parsed)) {
+          // Legacy array format, migrate
+          setItems(parsed);
+          setDiscountCode(null);
+          saveCart({ items: parsed, discountCode: null });
+        } else {
+          setItems(parsed.items || []);
+          setDiscountCode(parsed.discountCode ?? null);
+        }
       }
+    } catch (error) {
+      console.error("Failed to load cart from localStorage:", error);
+      localStorage.removeItem("cart");
     }
     setIsLoading(false);
   }, []);
 
-  const saveCart = (newItems: CartItem[]) => {
-    setItems(newItems);
-    localStorage.setItem("cart", JSON.stringify(newItems));
+  const clearMessage = () => setMessage("");
+  const saveCart = (cartData: CartData) => {
+    setItems(cartData.items);
+    setDiscountCode(cartData.discountCode);
+    try {
+      localStorage.setItem("cart", JSON.stringify(cartData));
+    } catch (error) {
+      console.error("Failed to save cart to localStorage:", error);
+    }
+  };
+
+  const applyDiscount = () => {
+    clearMessage();
+    if (inputValue === "fam45") {
+      const updatedItems = items.map(item => {
+        const resolution = item.attributes?.resolution || 'normal';
+        const newPrice = resolution === 'high' ? 5000 : 4500;
+        return { ...item, priceCents: newPrice };
+      });
+      saveCart({ items: updatedItems, discountCode: "fam45" });
+      setInputValue("");
+      setMessage("Discount applied successfully!");
+      setTimeout(clearMessage, 3000);
+    } else {
+      setMessage("Invalid discount code.");
+      setTimeout(clearMessage, 3000);
+    }
+  };
+
+  const clearDiscount = () => {
+    const updatedItems = items.map(item => {
+      const resolution = item.attributes?.resolution || 'normal';
+      const originalPrice = 9900 + (resolution === 'high' ? 500 : 0);
+      return { ...item, priceCents: originalPrice };
+    });
+    saveCart({ items: updatedItems, discountCode: null });
+    setInputValue("");
+    setMessage("Discount removed.");
+    setTimeout(clearMessage, 3000);
   };
 
   function remove(itemId: string) {
     const newItems = items.filter(item => item.id !== itemId);
-    saveCart(newItems);
+    saveCart({ items: newItems, discountCode });
   }
 
   function updateQuantity(itemId: string, nextQty: number) {
-    const qty = Math.max(1, Number(nextQty) || 1);
+    const qty = Math.min(99, Math.max(1, Number(nextQty) || 1));
     const newItems = items.map((it) => (it.id === itemId ? { ...it, quantity: qty } : it));
-    saveCart(newItems);
+    saveCart({ items: newItems, discountCode });
   }
 
   const subtotal = items.reduce((sum, it) => sum + it.priceCents * it.quantity, 0);
 
-  if (isLoading) return <div>Loading…</div>;
-  if (!items.length) return <div>Your cart is empty.</div>;
+  if (isLoading) return <div className="text-neutral-900">Loading…</div>;
+  if (!items.length) return <div className="text-neutral-900">Your cart is empty.</div>;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2 space-y-4">
         {items.map((it) => (
           <div key={it.id} className="flex items-center justify-between rounded-xl ring-1 ring-black/10 p-4">
-            <div className="flex items-center gap-4 min-w-0">
+            <Link 
+              href={
+                it.productSlug 
+                  ? `/products/${it.productSlug}${it.attributes?.size ? `?size=${it.attributes.size}` : ''}${it.attributes?.color ? (it.attributes.size ? '&' : '?') + `color=${it.attributes.color}` : ''}` 
+                  : "/products"
+              } 
+              className="flex items-center gap-4 min-w-0 hover:opacity-80 transition-opacity cursor-pointer"
+            >
               <div className="relative h-16 w-16 overflow-hidden rounded-xl ring-1 ring-black/5">
                 {it.image ? (
                   <Image src={it.image} alt={it.productName || it.variant?.name || "Item"} fill className="object-cover" />
@@ -67,7 +131,7 @@ export default function CartClient() {
               </div>
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium text-neutral-900">{it.productName || it.variant?.name || "Item"}</div>
-                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-neutral-600">
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-neutral-700">
                   {it.variant?.name && <span className="rounded-full bg-black/5 px-2 py-0.5">{it.variant.name}</span>}
                   {it.attributes?.size !== undefined && <span className="rounded-full bg-black/5 px-2 py-0.5">Size {String(it.attributes.size)}</span>}
                   {it.attributes?.color && (
@@ -76,43 +140,142 @@ export default function CartClient() {
                       {String(it.attributes.color)}
                     </span>
                   )}
+                  {it.attributes?.resolution === 'high' && <span className="rounded-full bg-black/5 px-2 py-0.5">High Quality</span>}
                 </div>
               </div>
-            </div>
+            </Link>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <button onClick={() => updateQuantity(it.id, it.quantity - 1)} className="h-8 w-8 rounded-full ring-1 ring-black/10 hover:bg-black/5">-</button>
+                <button
+                  onClick={() => updateQuantity(it.id, it.quantity - 1)}
+                  disabled={it.quantity <= 1}
+                  className="h-8 w-8 rounded-full ring-1 ring-black/10 hover:bg-black/5 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Decrease quantity"
+                >
+                  -
+                </button>
                 <input
                   type="number"
                   min={1}
+                  max={99}
                   value={it.quantity}
-                  onChange={(e) => updateQuantity(it.id, Number(e.target.value))}
-                  className="w-14 rounded-md border border-black/10 px-2 py-1 text-sm"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '' || isNaN(Number(value))) return;
+                    updateQuantity(it.id, Number(value));
+                  }}
+                  className="w-14 rounded-md border border-black/10 px-2 py-1 text-sm text-neutral-900"
+                  aria-label={`Quantity for ${it.productName || it.variant?.name || "item"}`}
                 />
-                <button onClick={() => updateQuantity(it.id, it.quantity + 1)} className="h-8 w-8 rounded-full ring-1 ring-black/10 hover:bg-black/5">+</button>
+                <button
+                  onClick={() => updateQuantity(it.id, it.quantity + 1)}
+                  disabled={it.quantity >= 99}
+                  className="h-8 w-8 rounded-full ring-1 ring-black/10 hover:bg-black/5 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
               </div>
-              <div className="text-sm text-neutral-800 min-w-[5rem] text-right">{formatCentsAsCurrency(it.priceCents * it.quantity)}</div>
-              <button onClick={() => remove(it.id)} className="text-xs text-red-600 hover:underline">Remove</button>
+              <div className="text-sm text-neutral-900 min-w-[5rem] text-right">{formatCentsAsCurrency(it.priceCents * it.quantity)}</div>
+              <button
+                onClick={() => remove(it.id)}
+                className="text-xs text-red-700 hover:text-red-800 hover:underline"
+                aria-label={`Remove ${it.productName || it.variant?.name || "item"} from cart`}
+              >
+                Remove
+              </button>
             </div>
           </div>
         ))}
       </div>
       <div className="space-y-4">
-        <div className="rounded-xl border border-black/10 p-4">
-          <div className="flex items-center justify-between text-sm">
-            <div className="text-neutral-600">Subtotal</div>
-            <div className="font-medium">{formatCentsAsCurrency(subtotal)}</div>
+        <div className="text-xs text-neutral-600 text-center">Free shipping on all orders</div>
+        {/* Combined Discount and Subtotal Section */}
+        <div className="rounded-xl border border-black/10 p-4 space-y-4">
+          {/* Discount Input */}
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">Discount Code</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => {
+                  setInputValue(e.target.value);
+                  clearMessage();
+                }}
+                placeholder="Enter code"
+                className="flex-1 rounded-md border border-black/10 px-3 py-2 text-sm text-neutral-900"
+              />
+              <button
+                onClick={applyDiscount}
+                className="px-4 py-2 bg-black text-white rounded-md text-sm hover:bg-neutral-800"
+              >
+                Apply
+              </button>
+            </div>
+            {message && (
+              <div className={`mt-2 text-sm p-2 rounded-md ${message.includes('applied') || message.includes('removed') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                {message}
+              </div>
+            )}
+            {discountCode && (
+              <div className="mt-2 text-sm text-green-600 flex justify-between items-center">
+                Discount "fam45" applied! 
+                <button onClick={clearDiscount} className="text-sm underline">Remove</button>
+              </div>
+            )}
+          </div>
+          {/* Subtotal */}
+          <div className="flex items-center justify-between text-sm pt-2 border-t border-black/10">
+            <div className="text-neutral-700">Subtotal</div>
+            <div className="font-medium text-neutral-900">{formatCentsAsCurrency(subtotal)}</div>
           </div>
         </div>
         <form
           onSubmit={async (e) => {
             e.preventDefault();
-            // Mock checkout - redirect to success page
-            window.location.href = `/checkout/success?session_id=mock-session-${Date.now()}`;
+            if (isCheckingOut) return;
+
+            setIsCheckingOut(true);
+            try {
+              const checkoutItems = items.map(item => ({
+                variantId: item.variantId,
+                quantity: item.quantity,
+                resolution: item.attributes?.resolution || 'normal'
+              }));
+              const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  items: checkoutItems,
+                  discountCode: discountCode || '',
+                  successUrl: `${window.location.origin}/checkout/success`,
+                  cancelUrl: `${window.location.origin}/checkout/cancel`,
+                }),
+              });
+
+              if (!response.ok) {
+                throw new Error('Failed to create checkout session');
+              }
+
+              const { url } = await response.json();
+              window.location.href = url;
+            } catch (error) {
+              console.error('Checkout failed:', error);
+              setIsCheckingOut(false);
+              alert('Checkout failed. Please try again.');
+            }
           }}
         >
-          <button type="submit" className="w-full rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800">
-            Checkout
+          <button
+            type="submit"
+            disabled={isCheckingOut}
+            className="w-full rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Proceed to checkout"
+          >
+            {isCheckingOut ? "Processing..." : "Checkout"}
           </button>
         </form>
       </div>

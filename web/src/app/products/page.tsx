@@ -26,8 +26,8 @@ export default async function ProductsPage() {
     <div className="bg-white">
       <div className="container py-12">
         <div className="flex items-end justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-semibold">Footwear</h1>
-          <div className="text-xs text-neutral-600">{products.length} product{products.length === 1 ? "" : "s"}</div>
+          <h1 className="text-2xl font-semibold text-neutral-900">Footwear</h1>
+          <div className="text-xs text-neutral-700">{products.length} product{products.length === 1 ? "" : "s"}</div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map((p) => {
@@ -45,9 +45,9 @@ export default async function ProductsPage() {
                 <div className="mt-3">
                   <div className="flex items-center justify-between">
                     <div className="text-sm font-medium text-neutral-900">{p.name}</div>
-                    <div className="text-sm text-neutral-600">{formatCentsAsCurrency(p.priceCents, p.currency)}</div>
+                    <div className="text-sm text-neutral-700">{formatCentsAsCurrency(p.priceCents, p.currency)}</div>
                   </div>
-                  <div className="mt-1 text-xs text-neutral-600 line-clamp-2">{p.description}</div>
+                  <div className="mt-1 text-xs text-neutral-700 line-clamp-2">{p.description}</div>
                 </div>
               </Link>
             );

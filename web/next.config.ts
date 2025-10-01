@@ -1,10 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'export',
-  trailingSlash: true,
   images: {
-    unoptimized: true, // Disable Next.js Image Optimization for static export
+    unoptimized: true, // Keep for Netlify compatibility
   },
   turbopack: {
     root: __dirname,

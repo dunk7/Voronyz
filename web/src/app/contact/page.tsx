@@ -174,11 +174,11 @@ export default function ContactPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <FAQItem
               question="How long does custom production take?"
-              answer="Most orders are printed within 5-7 business days before shipping worldwide."
+              answer="Most orders are printed within under 7 business days before shipping worldwide."
             />
             <FAQItem
               question="Do you offer size exchanges?"
-              answer="Yes! We offer a free size exchange within 30 days. Just keep them clean and unworn."
+              answer="Custom products are made to order and exchanges are not available. Please use our size guide for the best fit."
             />
             <FAQItem
               question="Are your shoes waterproof?"

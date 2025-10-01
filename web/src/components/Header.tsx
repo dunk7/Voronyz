@@ -5,6 +5,16 @@ import { useEffect, useLayoutEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { usePathname } from "next/navigation";
 
+interface CartItem {
+  quantity: number;
+  // other props...
+}
+
+interface CartData {
+  items: CartItem[];
+  discountCode?: string | null;
+}
+
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [hide, setHide] = useState(false);
@@ -16,26 +26,40 @@ export default function Header() {
   // Load cart count from localStorage
   useEffect(() => {
     const updateCartCount = () => {
-      const cartData = localStorage.getItem("cart");
-      if (cartData) {
-        try {
-          const cart = JSON.parse(cartData);
-          const count = cart.reduce((sum: number, item: { quantity?: number }) => sum + (item.quantity || 0), 0);
+      try {
+        const cartDataStr = localStorage.getItem("cart");
+        if (cartDataStr) {
+          const parsed = JSON.parse(cartDataStr);
+          let items: CartItem[];
+          if (Array.isArray(parsed)) {
+            // Legacy array format
+            items = parsed;
+          } else {
+            // New object format
+            items = parsed.items || [];
+          }
+          const count = items.reduce((sum: number, item: CartItem) => sum + (item.quantity || 0), 0);
           setCartCount(count);
-        } catch (error) {
-          console.error("Failed to parse cart data:", error);
+        } else {
           setCartCount(0);
         }
-      } else {
+      } catch (error) {
+        console.error("Failed to parse cart data:", error);
         setCartCount(0);
       }
-      setCartCountLoaded(true);
     };
 
     updateCartCount();
-    // Listen for storage changes
-    window.addEventListener('storage', updateCartCount);
-    return () => window.removeEventListener('storage', updateCartCount);
+
+    // Listen for storage changes from other tabs
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "cart") {
+        updateCartCount();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
   const pathname = usePathname();
 

@@ -1,0 +1,18 @@
+
+> web@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.5.3 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://10.157.149.220:3000
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 1518ms
+ ○ Compiling / ...
+ ✓ Compiled / in 4s
+ GET / 200 in 4747ms
+ ✓ Compiled /_not-found/page in 360ms
+ POST /api/checkout/ 404 in 544ms
+ POST /api/checkout/ 404 in 172ms
+[?25h
