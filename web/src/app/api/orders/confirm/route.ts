@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       expand: ['line_items', 'shipping_details', 'payment_intent'],
     });
 
-    const actualSession = (sessionResponse as any).data as CheckoutSession;
+    const actualSession = (sessionResponse as unknown).data as CheckoutSession;
 
     if (actualSession.payment_status !== 'paid') {
       return NextResponse.json({ error: "Payment not completed" }, { status: 400 });
