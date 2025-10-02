@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { formatCentsAsCurrency } from "@/lib/money";
 
 interface OrderDetails {
@@ -136,16 +137,16 @@ export default function SuccessPage() {
         )}
 
         <div className="text-sm text-neutral-600 space-y-2">
-          <p>We'll process your custom slides within 7 business days. You'll receive a shipping update soon.</p>
+          <p>We&apos;ll process your custom slides within 7 business days. You&apos;ll receive a shipping update soon.</p>
           <p>Order ID: <span className="font-medium">{details.stripeId}</span> | Track in your account once logged in.</p>
         </div>
 
-        <a
+        <Link
           href="/products"
           className="inline-block bg-black text-white px-6 py-3 rounded-full hover:bg-neutral-800"
         >
           Continue Shopping
-        </a>
+        </Link>
       </div>
     </div>
   );

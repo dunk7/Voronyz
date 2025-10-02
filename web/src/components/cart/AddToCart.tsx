@@ -1,24 +1,24 @@
 "use client";
-import { Variant } from "@prisma/client";
 import { useMemo, useState, useEffect } from "react";
 import { formatCentsAsCurrency } from "@/lib/money";
-import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 
+interface VariantProps {
+  id: string;
+  color: string;
+  stock: number;
+  sku: string;
+  priceCents: number | null;
+}
+
 type Props = {
-  variants: Variant[];
+  variants: VariantProps[];
   primaryColors: string[];
   secondaryColors: string[];
   sizes: string[];
   productName?: string;
   coverImage?: string;
   productSlug?: string;
-};
-
-type VariantAttributes = {
-  primaryColor?: string;
-  secondaryColor?: string;
-  size?: string;
 };
 
 interface CartItem {
@@ -267,7 +267,7 @@ export default function AddToCart({
 
         {/* Size */}
         <div className="grid gap-2">
-          <label className="text-sm text-neutral-700">Size (US Men's)</label>
+          <label className="text-sm text-neutral-700">Size (US Men&apos;s)</label>
           <div className="flex flex-wrap gap-2">
             {sizes.map((size) => {
               const isSelected = selectedSize === size;

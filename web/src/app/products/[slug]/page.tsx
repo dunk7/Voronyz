@@ -22,9 +22,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       include: { 
         variants: {
           select: {
+            id: true,
             color: true,
             stock: true,
             sku: true,
+            priceCents: true,
           }
         }
       } 
