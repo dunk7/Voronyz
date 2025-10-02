@@ -130,28 +130,31 @@ export default function CartClient() {
   if (!items.length) return <div className="text-neutral-900">Your cart is empty.</div>;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 gap-4 lg:gap-8 lg:grid-cols-3">
       <div className="lg:col-span-2 space-y-4">
         {items.map((it) => (
-          <div key={it.id} className="flex items-center justify-between rounded-xl ring-1 ring-black/10 p-4">
+          <div 
+            key={it.id} 
+            className="flex flex-col lg:flex-row lg:items-center lg:justify-between rounded-xl ring-1 ring-black/10 p-3 lg:p-4 gap-3 lg:gap-0"
+          >
             <Link 
               href={
                 it.productSlug 
                   ? `/products/${it.productSlug}?primary=${encodeURIComponent(it.variant?.name || '')}${it.attributes?.size ? `&size=${it.attributes.size}` : ''}${it.attributes?.color ? `&secondary=${encodeURIComponent(it.attributes.color)}` : ''}`
                   : "/products"
               } 
-              className="flex items-center gap-4 min-w-0 hover:opacity-80 transition-opacity cursor-pointer"
+              className="flex items-start gap-3 lg:gap-4 min-w-0 hover:opacity-80 transition-opacity cursor-pointer flex-1 lg:flex-auto"
             >
-              <div className="relative h-16 w-16 overflow-hidden rounded-xl ring-1 ring-black/5">
+              <div className="relative h-14 w-14 lg:h-16 lg:w-16 overflow-hidden rounded-xl ring-1 ring-black/5 flex-shrink-0">
                 {it.image ? (
                   <Image src={it.image} alt={it.productName || it.variant?.name || "Item"} fill className="object-cover" />
                 ) : (
                   <div className="h-full w-full bg-black/5" />
                 )}
               </div>
-              <div className="min-w-0">
-                <div className="truncate text-sm font-medium text-neutral-900">{it.productName || it.variant?.name || "Item"}</div>
-                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-neutral-700">
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm lg:text-base font-medium text-neutral-900">{it.productName || it.variant?.name || "Item"}</div>
+                <div className="mt-1 flex flex-wrap items-center gap-1 lg:gap-2 text-xs text-neutral-700">
                   {it.variant?.name && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-black/5 px-2 py-0.5 capitalize">
                       <span className="inline-block h-3 w-3 rounded-full ring-1 ring-black/10" style={{ backgroundColor: it.variant.name }} />
@@ -169,12 +172,12 @@ export default function CartClient() {
                 </div>
               </div>
             </Link>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between lg:justify-start gap-2 lg:gap-4 w-full lg:w-auto mt-2 lg:mt-0">
+              <div className="flex items-center gap-1 lg:gap-2 flex-1 lg:flex-none">
                 <button
                   onClick={() => updateQuantity(it.id, it.quantity - 1)}
                   disabled={it.quantity <= 1}
-                  className="h-8 w-8 rounded-full ring-1 ring-black/10 hover:bg-black/5 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="h-7 w-7 lg:h-8 lg:w-8 rounded-full ring-1 ring-black/10 hover:bg-black/5 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed text-sm lg:text-base"
                   aria-label="Decrease quantity"
                 >
                   -
@@ -189,26 +192,28 @@ export default function CartClient() {
                     if (value === '' || isNaN(Number(value))) return;
                     updateQuantity(it.id, Number(value));
                   }}
-                  className="w-14 rounded-md border border-black/10 px-2 py-1 text-sm text-neutral-900"
+                  className="w-10 lg:w-14 rounded-md border border-black/10 px-1 lg:px-2 py-1 text-sm text-neutral-900"
                   aria-label={`Quantity for ${it.productName || it.variant?.name || "item"}`}
                 />
                 <button
                   onClick={() => updateQuantity(it.id, it.quantity + 1)}
                   disabled={it.quantity >= 99}
-                  className="h-8 w-8 rounded-full ring-1 ring-black/10 hover:bg-black/5 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="h-7 w-7 lg:h-8 lg:w-8 rounded-full ring-1 ring-black/10 hover:bg-black/5 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed text-sm lg:text-base"
                   aria-label="Increase quantity"
                 >
                   +
                 </button>
               </div>
-              <div className="text-sm text-neutral-900 min-w-[5rem] text-right">{formatCentsAsCurrency(it.priceCents * it.quantity)}</div>
-              <button
-                onClick={() => remove(it.id)}
-                className="text-xs text-red-700 hover:text-red-800 hover:underline"
-                aria-label={`Remove ${it.productName || it.variant?.name || "item"} from cart`}
-              >
-                Remove
-              </button>
+              <div className="flex items-center gap-2 lg:gap-4 flex-1 lg:flex-none justify-end min-w-0 lg:min-w-[5rem]">
+                <div className="text-sm text-neutral-900 text-right flex-1 lg:flex-none">{formatCentsAsCurrency(it.priceCents * it.quantity)}</div>
+                <button
+                  onClick={() => remove(it.id)}
+                  className="text-xs lg:text-sm text-red-700 hover:text-red-800 hover:underline whitespace-nowrap"
+                  aria-label={`Remove ${it.productName || it.variant?.name || "item"} from cart`}
+                >
+                  Remove
+                </button>
+              </div>
             </div>
           </div>
         ))}
