@@ -48,10 +48,7 @@ export async function POST(request: NextRequest) {
         console.log(`Fetching variant ${item.variantId} from DB`);
         const variant = await prisma.variant.findUnique({
           where: { id: item.variantId },
-          select: {
-            id: true,
-            color: true,
-            priceCents: true,
+          include: {
             product: {
               select: {
                 name: true,
@@ -78,7 +75,7 @@ export async function POST(request: NextRequest) {
           unitAmount = item.resolution === 'high' ? 3200 : 2700;
           resolutionSuffix = item.resolution === 'high' ? ' (High Resolution)' : ' (Standard)';
         } else {
-          unitAmount = variant ? (variant.priceCents || variant.product?.priceCents || 0) : 9900;
+          unitAmount = variant ? (variant.priceCents || variant.product.priceCents || 0) : 9900;
           resolutionSuffix = '';
         }
 
