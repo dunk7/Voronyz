@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       expand: ['line_items', 'shipping_details', 'payment_intent'],
     });
 
-    const actualSession = sessionResponse.data as Stripe.Checkout.Session;
+    const actualSession = sessionResponse as Stripe.Checkout.Session;
 
     if (actualSession.payment_status !== 'paid') {
       return NextResponse.json({ error: "Payment not completed" }, { status: 400 });
