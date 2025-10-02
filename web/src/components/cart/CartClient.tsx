@@ -18,7 +18,7 @@ interface CartItem {
 
 interface CartData {
   items: CartItem[];
-  discountCode?: string | null;
+  discountCode: string | null;
 }
 
 export default function CartClient() {
@@ -42,7 +42,7 @@ export default function CartClient() {
           saveCart({ items: parsed, discountCode: null });
         } else {
           setItems(parsed.items || []);
-          setDiscountCode(parsed.discountCode ?? null);
+          setDiscountCode(parsed.discountCode !== undefined ? parsed.discountCode : null);
         }
       }
     } catch (error) {
@@ -220,7 +220,7 @@ export default function CartClient() {
             )}
             {discountCode && (
               <div className="mt-2 text-sm text-green-600 flex justify-between items-center">
-                Discount "fam45" applied! 
+                Discount &quot;fam45&quot; applied! 
                 <button onClick={clearDiscount} className="text-sm underline">Remove</button>
               </div>
             )}

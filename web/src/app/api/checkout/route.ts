@@ -38,28 +38,17 @@ export async function POST(request: NextRequest) {
           include: { product: true },
         });
 
-        let unitAmount: number;
-        let productName: string;
-        let resolutionSuffix = '';
+        const unitAmount = discountCode === 'fam45' 
+          ? (item.resolution === 'high' ? 5000 : 4500)
+          : (variant ? (variant.priceCents || variant.product?.priceCents || 0) : 9900);
 
-        if (discountCode === 'fam45') {
-          unitAmount = item.resolution === 'high' ? 5000 : 4500;
-          resolutionSuffix = item.resolution === 'high' ? ' (High Quality)' : ' (Standard)';
-        }
+        const resolutionSuffix = discountCode === 'fam45' 
+          ? (item.resolution === 'high' ? ' (High Quality)' : ' (Standard)')
+          : '';
 
-        if (variant) {
-          productName = `${variant.product.name} - ${variant.name}${resolutionSuffix}`;
-          if (!discountCode || discountCode !== 'fam45') {
-            unitAmount = variant.priceCents || variant.product.priceCents;
-          }
-        } else {
-          // Fallback to mock data
-          console.log(`⚠️  Variant ${item.variantId} not found, using mock data`);
-          productName = `Product Variant ${item.variantId}${resolutionSuffix}`;
-          if (!discountCode || discountCode !== 'fam45') {
-            unitAmount = 9900;
-          }
-        }
+        const productName = variant 
+          ? `${variant.product.name} - ${variant.name}${resolutionSuffix}`
+          : `Product Variant ${item.variantId}${resolutionSuffix}`;
 
         lineItems.push({
           price_data: {
@@ -74,17 +63,23 @@ export async function POST(request: NextRequest) {
       } catch {
         console.log(`⚠️  Database error for variant ${item.variantId}, using mock data`);
         let unitAmount: number;
+        let resolutionSuffix = '';
+
         if (discountCode === 'fam45') {
           unitAmount = item.resolution === 'high' ? 5000 : 4500;
+          resolutionSuffix = item.resolution === 'high' ? ' (High Quality)' : ' (Standard)';
         } else {
           unitAmount = 9900;
+          resolutionSuffix = '';
         }
-        const resolutionSuffix = discountCode === 'fam45' ? (item.resolution === 'high' ? ' (High Quality)' : ' (Standard)') : '';
+
+        const productName = `Product Variant ${item.variantId}${resolutionSuffix}`;
+
         lineItems.push({
           price_data: {
             currency: 'usd',
             product_data: {
-              name: `Product Variant ${item.variantId}${resolutionSuffix}`,
+              name: productName,
             },
             unit_amount: unitAmount,
           },

@@ -2,6 +2,7 @@
 import { Variant } from "@prisma/client";
 import { useMemo, useState, useEffect } from "react";
 import { formatCentsAsCurrency } from "@/lib/money";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 
 type Props = {
@@ -101,7 +102,7 @@ export default function AddToCart({ variants, productName, coverImage, productSl
     if (added) {
       setAdded(false);
     }
-  }, [selectedSize, selectedColor, quantity, selectedResolution]);
+  }, [selectedSize, selectedColor, quantity, selectedResolution, added]);
 
   function add() {
     setLoading(true);
@@ -123,7 +124,7 @@ export default function AddToCart({ variants, productName, coverImage, productSl
         fullCart = { items: [], discountCode: null };
       }
 
-      let cart = fullCart.items; // Extract items array
+      const cart = fullCart.items; // Extract items array
 
       // Ensure selected variant exists
       if (!selectedVariant) {
@@ -325,11 +326,13 @@ export default function AddToCart({ variants, productName, coverImage, productSl
                 </button>
               </div>
               <div className="text-center">
-                <div className="border border-neutral-200 rounded-lg p-4 bg-neutral-50 mx-auto max-w-sm">
-                  <img 
+                <div className="relative border border-neutral-200 rounded-lg p-4 bg-neutral-50 mx-auto max-w-sm">
+                  <Image 
                     src="/resolution-high.png" 
                     alt="High Quality Resolution" 
+                    fill 
                     className="max-w-full h-64 object-cover rounded-md shadow-md mb-3"
+                    sizes="(max-width: 640px) 100vw, 640px"
                   />
                 </div>
                 <p className="text-sm text-neutral-700 font-medium mb-2">High Quality Resolution</p>

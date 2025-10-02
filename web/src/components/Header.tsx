@@ -5,16 +5,6 @@ import { useEffect, useLayoutEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { usePathname } from "next/navigation";
 
-interface CartItem {
-  quantity: number;
-  // other props...
-}
-
-interface CartData {
-  items: CartItem[];
-  discountCode?: string | null;
-}
-
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [hide, setHide] = useState(false);
@@ -30,7 +20,7 @@ export default function Header() {
         const cartDataStr = localStorage.getItem("cart");
         if (cartDataStr) {
           const parsed = JSON.parse(cartDataStr);
-          let items: CartItem[];
+          let items: Array<{quantity: number}> = [];
           if (Array.isArray(parsed)) {
             // Legacy array format
             items = parsed;
@@ -38,7 +28,7 @@ export default function Header() {
             // New object format
             items = parsed.items || [];
           }
-          const count = items.reduce((sum: number, item: CartItem) => sum + (item.quantity || 0), 0);
+          const count = items.reduce((sum, item) => sum + (item?.quantity || 0), 0);
           setCartCount(count);
         } else {
           setCartCount(0);
@@ -50,11 +40,13 @@ export default function Header() {
     };
 
     updateCartCount();
+    setCartCountLoaded(true);
 
     // Listen for storage changes from other tabs
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "cart") {
         updateCartCount();
+        setCartCountLoaded(true);
       }
     };
 

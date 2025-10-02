@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { formatCentsAsCurrency } from "@/lib/money";
 import AddToCart from "@/components/cart/AddToCart";
 import V3Gallery from "@/components/V3Gallery";
 import FAQ from "@/components/FAQ";
+import { Suspense } from "react";
 import Link from "next/link";
 import { Metadata } from "next";
 
@@ -405,15 +405,17 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             </div>
 
             <div className="mt-4 text-xs text-neutral-600">
-              All sizes are in US Men's. For women, subtract 1.5 from your usual women's size (e.g., women's 7 = men's 5.5).
+              All sizes are in US Men&apos;s. For women, subtract 1.5 from your usual women&apos;s size (e.g., women&apos;s 7 = men&apos;s 5.5).
             </div>
 
-            <AddToCart
-              variants={product.variants}
-              productName={product.name}
-              coverImage={(images[0] as string) || defaultImages[0]}
-              productSlug={slug}
-            />
+            <Suspense fallback={<div className="h-[48px] bg-gray-200 rounded-full animate-pulse" />}>
+              <AddToCart
+                variants={product.variants}
+                productName={product.name}
+                coverImage={(images[0] as string) || defaultImages[0]}
+                productSlug={slug}
+              />
+            </Suspense>
 
             <div className="flex gap-4 text-xs text-neutral-500">
               <Link href="/products" className="underline hover:no-underline">← Back to Shop</Link>
