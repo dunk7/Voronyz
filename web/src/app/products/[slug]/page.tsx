@@ -17,7 +17,18 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const { slug } = await params;
   let product;
   try {
-    product = await prisma.product.findUnique({ where: { slug }, include: { variants: true } });
+    product = await prisma.product.findUnique({ 
+      where: { slug }, 
+      include: { 
+        variants: {
+          select: {
+            color: true,
+            stock: true,
+            sku: true,
+          }
+        }
+      } 
+    });
   } catch {
     // For testing without database, use mock data
     console.log("⚠️  Using mock product for testing");
@@ -34,335 +45,22 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         "/Screenshot From 2025-09-20 00-08-22.png",
         "/Screenshot From 2025-09-20 00-08-34.png",
       ],
+      primaryColors: ["black", "white", "grey", "green", "pink"],
+      secondaryColors: ["black", "white", "grey", "green", "blue", "red", "maroon", "pink", "purple"],
+      sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
       variants: [
-        // Black variants (sizes 5-12)
-        {
-          id: "demo-variant-5-black",
-          productId: "demo-product",
-          name: "Size 5 / Black",
-          sku: "V3-5-BLK",
-          priceCents: 9900,
-          attributes: { size: 5, color: "black" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-6-black",
-          productId: "demo-product",
-          name: "Size 6 / Black",
-          sku: "V3-6-BLK",
-          priceCents: 9900,
-          attributes: { size: 6, color: "black" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-7-black",
-          productId: "demo-product",
-          name: "Size 7 / Black",
-          sku: "V3-7-BLK",
-          priceCents: 9900,
-          attributes: { size: 7, color: "black" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-8-black",
-          productId: "demo-product",
-          name: "Size 8 / Black",
-          sku: "V3-8-BLK",
-          priceCents: 9900,
-          attributes: { size: 8, color: "black" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-9-black",
-          productId: "demo-product",
-          name: "Size 9 / Black",
-          sku: "V3-9-BLK",
-          priceCents: 9900,
-          attributes: { size: 9, color: "black" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-10-black",
-          productId: "demo-product",
-          name: "Size 10 / Black",
-          sku: "V3-10-BLK",
-          priceCents: 9900,
-          attributes: { size: 10, color: "black" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-11-black",
-          productId: "demo-product",
-          name: "Size 11 / Black",
-          sku: "V3-11-BLK",
-          priceCents: 9900,
-          attributes: { size: 11, color: "black" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-12-black",
-          productId: "demo-product",
-          name: "Size 12 / Black",
-          sku: "V3-12-BLK",
-          priceCents: 9900,
-          attributes: { size: 12, color: "black" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        // White variants (sizes 5-12)
-        {
-          id: "demo-variant-5-white",
-          productId: "demo-product",
-          name: "Size 5 / White",
-          sku: "V3-5-WHT",
-          priceCents: 9900,
-          attributes: { size: 5, color: "white" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-6-white",
-          productId: "demo-product",
-          name: "Size 6 / White",
-          sku: "V3-6-WHT",
-          priceCents: 9900,
-          attributes: { size: 6, color: "white" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-7-white",
-          productId: "demo-product",
-          name: "Size 7 / White",
-          sku: "V3-7-WHT",
-          priceCents: 9900,
-          attributes: { size: 7, color: "white" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-8-white",
-          productId: "demo-product",
-          name: "Size 8 / White",
-          sku: "V3-8-WHT",
-          priceCents: 9900,
-          attributes: { size: 8, color: "white" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-9-white",
-          productId: "demo-product",
-          name: "Size 9 / White",
-          sku: "V3-9-WHT",
-          priceCents: 9900,
-          attributes: { size: 9, color: "white" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-10-white",
-          productId: "demo-product",
-          name: "Size 10 / White",
-          sku: "V3-10-WHT",
-          priceCents: 9900,
-          attributes: { size: 10, color: "white" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-11-white",
-          productId: "demo-product",
-          name: "Size 11 / White",
-          sku: "V3-11-WHT",
-          priceCents: 9900,
-          attributes: { size: 11, color: "white" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-12-white",
-          productId: "demo-product",
-          name: "Size 12 / White",
-          sku: "V3-12-WHT",
-          priceCents: 9900,
-          attributes: { size: 12, color: "white" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        // Navy variants (sizes 5-12)
-        {
-          id: "demo-variant-5-navy",
-          productId: "demo-product",
-          name: "Size 5 / Navy",
-          sku: "V3-5-NVY",
-          priceCents: 9900,
-          attributes: { size: 5, color: "navy" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-6-navy",
-          productId: "demo-product",
-          name: "Size 6 / Navy",
-          sku: "V3-6-NVY",
-          priceCents: 9900,
-          attributes: { size: 6, color: "navy" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-7-navy",
-          productId: "demo-product",
-          name: "Size 7 / Navy",
-          sku: "V3-7-NVY",
-          priceCents: 9900,
-          attributes: { size: 7, color: "navy" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-8-navy",
-          productId: "demo-product",
-          name: "Size 8 / Navy",
-          sku: "V3-8-NVY",
-          priceCents: 9900,
-          attributes: { size: 8, color: "navy" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-9-navy",
-          productId: "demo-product",
-          name: "Size 9 / Navy",
-          sku: "V3-9-NVY",
-          priceCents: 9900,
-          attributes: { size: 9, color: "navy" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-10-navy",
-          productId: "demo-product",
-          name: "Size 10 / Navy",
-          sku: "V3-10-NVY",
-          priceCents: 9900,
-          attributes: { size: 10, color: "navy" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-11-navy",
-          productId: "demo-product",
-          name: "Size 11 / Navy",
-          sku: "V3-11-NVY",
-          priceCents: 9900,
-          attributes: { size: 11, color: "navy" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-12-navy",
-          productId: "demo-product",
-          name: "Size 12 / Navy",
-          sku: "V3-12-NVY",
-          priceCents: 9900,
-          attributes: { size: 12, color: "navy" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        // Red variants (sizes 5-12)
-        {
-          id: "demo-variant-5-red",
-          productId: "demo-product",
-          name: "Size 5 / Red",
-          sku: "V3-5-RED",
-          priceCents: 9900,
-          attributes: { size: 5, color: "red" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-6-red",
-          productId: "demo-product",
-          name: "Size 6 / Red",
-          sku: "V3-6-RED",
-          priceCents: 9900,
-          attributes: { size: 6, color: "red" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-7-red",
-          productId: "demo-product",
-          name: "Size 7 / Red",
-          sku: "V3-7-RED",
-          priceCents: 9900,
-          attributes: { size: 7, color: "red" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-8-red",
-          productId: "demo-product",
-          name: "Size 8 / Red",
-          sku: "V3-8-RED",
-          priceCents: 9900,
-          attributes: { size: 8, color: "red" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-9-red",
-          productId: "demo-product",
-          name: "Size 9 / Red",
-          sku: "V3-9-RED",
-          priceCents: 9900,
-          attributes: { size: 9, color: "red" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-10-red",
-          productId: "demo-product",
-          name: "Size 10 / Red",
-          sku: "V3-10-RED",
-          priceCents: 9900,
-          attributes: { size: 10, color: "red" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-11-red",
-          productId: "demo-product",
-          name: "Size 11 / Red",
-          sku: "V3-11-RED",
-          priceCents: 9900,
-          attributes: { size: 11, color: "red" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "demo-variant-12-red",
-          productId: "demo-product",
-          name: "Size 12 / Red",
-          sku: "V3-12-RED",
-          priceCents: 9900,
-          attributes: { size: 12, color: "red" },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
+        { id: "demo-black", productId: "demo-product", color: "black", sku: "V3-BLK", stock: 999 },
+        { id: "demo-white", productId: "demo-product", color: "white", sku: "V3-WHT", stock: 999 },
+        { id: "demo-grey", productId: "demo-product", color: "grey", sku: "V3-GRY", stock: 999 },
+        { id: "demo-green", productId: "demo-product", color: "green", sku: "V3-GRN", stock: 999 },
+        { id: "demo-pink", productId: "demo-product", color: "pink", sku: "V3-PNK", stock: 0 },
       ],
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
   }
   if (!product) return <div className="container py-12">Not found.</div>;
+
   const defaultImages = [
     "/Screenshot From 2025-09-20 00-08-02.png",
     "/Screenshot From 2025-09-20 00-08-15.png",
@@ -411,9 +109,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <Suspense fallback={<div className="h-[48px] bg-gray-200 rounded-full animate-pulse" />}>
               <AddToCart
                 variants={product.variants}
+                primaryColors={product.primaryColors as string[]}
+                secondaryColors={product.secondaryColors as string[]}
+                sizes={product.sizes as string[]}
                 productName={product.name}
                 coverImage={(images[0] as string) || defaultImages[0]}
                 productSlug={slug}
+                // Note: Update AddToCart component to handle primary color selection (with stock check), size, and secondary color choice.
+                // For example, use state for selectedPrimary, selectedSize, selectedSecondary; disable add if primary out of stock or no selections.
+                // When adding to cart, create CartItem with attributes {primaryColor, size, secondaryColor}, linked to the variant SKU for primary.
               />
             </Suspense>
 
@@ -474,8 +178,8 @@ function FeatureCard({ title, text }: { title: string; text: string }) {
   );
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const { slug } = params;
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
   try {
     const product = await prisma.product.findUnique({ where: { slug } });
     if (product) {

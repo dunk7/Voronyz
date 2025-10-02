@@ -65,13 +65,33 @@ export default function CartClient() {
 
   const applyDiscount = () => {
     clearMessage();
-    if (inputValue === "fam45") {
-      const updatedItems = items.map(item => {
+    const lowerInput = inputValue.toLowerCase().trim();
+    let newPrices;
+    let isValid = false;
+    if (lowerInput === "fam45") {
+      newPrices = items.map(item => {
         const resolution = item.attributes?.resolution || 'normal';
         const newPrice = resolution === 'high' ? 5000 : 4500;
         return { ...item, priceCents: newPrice };
       });
-      saveCart({ items: updatedItems, discountCode: "fam45" });
+      isValid = true;
+    } else if (lowerInput === "superdeal35") {
+      newPrices = items.map(item => {
+        const resolution = item.attributes?.resolution || 'normal';
+        const newPrice = resolution === 'high' ? 3500 : 3000;
+        return { ...item, priceCents: newPrice };
+      });
+      isValid = true;
+    } else if (lowerInput === "maximus27") {
+      newPrices = items.map(item => {
+        const resolution = item.attributes?.resolution || 'normal';
+        const newPrice = resolution === 'high' ? 3200 : 2700;
+        return { ...item, priceCents: newPrice };
+      });
+      isValid = true;
+    }
+    if (isValid) {
+      saveCart({ items: newPrices, discountCode: inputValue });
       setInputValue("");
       setMessage("Discount applied successfully!");
       setTimeout(clearMessage, 3000);
@@ -117,7 +137,7 @@ export default function CartClient() {
             <Link 
               href={
                 it.productSlug 
-                  ? `/products/${it.productSlug}${it.attributes?.size ? `?size=${it.attributes.size}` : ''}${it.attributes?.color ? (it.attributes.size ? '&' : '?') + `color=${it.attributes.color}` : ''}` 
+                  ? `/products/${it.productSlug}?primary=${encodeURIComponent(it.variant?.name || '')}${it.attributes?.size ? `&size=${it.attributes.size}` : ''}${it.attributes?.color ? `&secondary=${encodeURIComponent(it.attributes.color)}` : ''}`
                   : "/products"
               } 
               className="flex items-center gap-4 min-w-0 hover:opacity-80 transition-opacity cursor-pointer"
@@ -132,7 +152,12 @@ export default function CartClient() {
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium text-neutral-900">{it.productName || it.variant?.name || "Item"}</div>
                 <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-neutral-700">
-                  {it.variant?.name && <span className="rounded-full bg-black/5 px-2 py-0.5">{it.variant.name}</span>}
+                  {it.variant?.name && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-black/5 px-2 py-0.5 capitalize">
+                      <span className="inline-block h-3 w-3 rounded-full ring-1 ring-black/10" style={{ backgroundColor: it.variant.name }} />
+                      {it.variant.name}
+                    </span>
+                  )}
                   {it.attributes?.size !== undefined && <span className="rounded-full bg-black/5 px-2 py-0.5">Size {String(it.attributes.size)}</span>}
                   {it.attributes?.color && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-black/5 px-2 py-0.5 capitalize">
@@ -140,7 +165,7 @@ export default function CartClient() {
                       {String(it.attributes.color)}
                     </span>
                   )}
-                  {it.attributes?.resolution === 'high' && <span className="rounded-full bg-black/5 px-2 py-0.5">High Quality</span>}
+                  {it.attributes?.resolution === 'high' && <span className="rounded-full bg-black/5 px-2 py-0.5">High Resolution</span>}
                 </div>
               </div>
             </Link>
@@ -220,7 +245,7 @@ export default function CartClient() {
             )}
             {discountCode && (
               <div className="mt-2 text-sm text-green-600 flex justify-between items-center">
-                Discount &quot;fam45&quot; applied! 
+                Discount &quot;{discountCode}&quot; applied! 
                 <button onClick={clearDiscount} className="text-sm underline">Remove</button>
               </div>
             )}
@@ -240,9 +265,14 @@ export default function CartClient() {
             try {
               const checkoutItems = items.map(item => ({
                 variantId: item.variantId,
+                productName: item.productName,
+                variantName: item.variant?.name,
+                secondaryColor: item.attributes?.color,
+                size: item.attributes?.size,
                 quantity: item.quantity,
                 resolution: item.attributes?.resolution || 'normal'
               }));
+              console.log('Sending checkout items:', checkoutItems); // Add this log
               const response = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: {
@@ -257,7 +287,15 @@ export default function CartClient() {
               });
 
               if (!response.ok) {
-                throw new Error('Failed to create checkout session');
+                const rawText = await response.text();
+                console.error('Checkout API error - Status:', response.status, 'Raw response:', rawText);
+                let errorData = {};
+                try {
+                  errorData = JSON.parse(rawText);
+                } catch {
+                  // Not JSON, use raw text as message
+                }
+                throw new Error(`Failed to create checkout session: ${errorData.error || rawText || 'Unknown error'}`);
               }
 
               const { url } = await response.json();

@@ -7,14 +7,18 @@ import { useSearchParams } from "next/navigation";
 
 type Props = {
   variants: Variant[];
+  primaryColors: string[];
+  secondaryColors: string[];
+  sizes: string[];
   productName?: string;
   coverImage?: string;
   productSlug?: string;
 };
 
 type VariantAttributes = {
-  size?: number | string;
-  color?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  size?: string;
 };
 
 interface CartItem {
@@ -25,7 +29,7 @@ interface CartItem {
   quantity: number;
   priceCents: number;
   variant: { name: string };
-  attributes?: { size?: number | string; color?: string; resolution?: 'normal' | 'high' };
+  attributes?: { color?: string; size?: string; resolution?: 'normal' | 'high' };
   productSlug?: string;
 }
 
@@ -34,77 +38,85 @@ interface CartData {
   discountCode?: string | null;
 }
 
-export default function AddToCart({ variants, productName, coverImage, productSlug }: Props) {
+export default function AddToCart({ 
+  variants, 
+  primaryColors, 
+  secondaryColors, 
+  sizes, 
+  productName, 
+  coverImage, 
+  productSlug 
+}: Props) {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState(false);
 
   const searchParams = useSearchParams();
 
-  const allSizes = useMemo(() => {
-    const values = new Set<(number | string) | undefined>();
-    variants.forEach((v) => {
-      const size = (v.attributes as VariantAttributes)?.size;
-      if (size !== undefined) values.add(size);
-    });
-    return Array.from(values).sort((a, b) => Number(a) - Number(b)).filter((v): v is number | string => v !== undefined);
-  }, [variants]);
-
-  const allColors = useMemo(() => {
-    const values = new Set<string | undefined>();
-    variants.forEach((v) => {
-      const color = (v.attributes as VariantAttributes)?.color;
-      if (color) values.add(String(color).toLowerCase());
-    });
-    return Array.from(values).filter((v): v is string => !!v);
-  }, [variants]);
-
-  const [selectedSize, setSelectedSize] = useState<number | string | undefined>(
+  const [selectedPrimary, setSelectedPrimary] = useState<string | undefined>(
     () => {
-      const sizeParam = searchParams.get('size');
-      if (sizeParam && allSizes.includes(Number(sizeParam))) {
-        return Number(sizeParam);
+      const primaryParam = searchParams.get('primary');
+      if (primaryParam && primaryColors.includes(primaryParam.toLowerCase())) {
+        return primaryParam.toLowerCase();
       }
-      return allSizes[0];
+      return primaryColors[0];
     }
   );
-  const [selectedColor, setSelectedColor] = useState<string | undefined>(
+
+  const [selectedSecondary, setSelectedSecondary] = useState<string | undefined>(
     () => {
-      const colorParam = searchParams.get('color');
-      if (colorParam && allColors.includes(colorParam.toLowerCase())) {
-        return colorParam.toLowerCase();
+      const secondaryParam = searchParams.get('secondary');
+      if (secondaryParam && secondaryColors.includes(secondaryParam.toLowerCase())) {
+        return secondaryParam.toLowerCase();
       }
-      return allColors[0];
+      return secondaryColors[0];
+    }
+  );
+
+  const [selectedSize, setSelectedSize] = useState<string | undefined>(
+    () => {
+      const sizeParam = searchParams.get('size');
+      if (sizeParam && sizes.includes(sizeParam)) {
+        return sizeParam;
+      }
+      return sizes[0];
     }
   );
 
   const [selectedResolution, setSelectedResolution] = useState<'normal' | 'high'>('normal');
-  const [showResolutionPopup, setShowResolutionPopup] = useState(false);
+
+  // Get stock for a primary color
+  const getStockForPrimary = (color: string) => {
+    const variant = variants.find(v => v.color === color);
+    return variant ? variant.stock : 999;
+  };
+
+  // Check if primary is available
+  const isPrimaryAvailable = (color: string) => {
+    const stock = getStockForPrimary(color);
+    return stock > 0;
+  };
 
   const selectedVariant = useMemo(() => {
-    // Prefer exact match by size/color; fall back to first
-    const byAttrs = variants.find((v) => {
-      const attrs = (v.attributes as VariantAttributes) || {};
-      const sizeMatch = selectedSize === undefined || attrs.size == selectedSize;
-      const colorMatch = selectedColor === undefined || String(attrs.color).toLowerCase() === String(selectedColor).toLowerCase();
-      return sizeMatch && colorMatch;
-    });
-    return byAttrs ?? variants[0];
-  }, [variants, selectedSize, selectedColor]);
+    if (!selectedPrimary) return null;
+    return variants.find(v => v.color === selectedPrimary);
+  }, [variants, selectedPrimary]);
 
-  const priceCents = selectedVariant.priceCents || 0;
-  const effectivePrice = priceCents + (selectedResolution === 'high' ? 500 : 0);
-  const totalCents = effectivePrice * quantity;
+  const priceCents = (selectedVariant?.priceCents || 9900) + (selectedResolution === 'high' ? 500 : 0);
+  const totalCents = priceCents * quantity;
   const formattedTotal = formatCentsAsCurrency(totalCents);
 
-  // Reset added state if selections change
+  // Disable add if no selections or primary out of stock
+  const canAdd = selectedPrimary && selectedSecondary && selectedSize && selectedResolution && isPrimaryAvailable(selectedPrimary);
+
+  // Reset added if selections change
   useEffect(() => {
-    if (added) {
-      setAdded(false);
-    }
-  }, [selectedSize, selectedColor, quantity, selectedResolution, added]);
+    setAdded(false);
+  }, [selectedPrimary, selectedSecondary, selectedSize, selectedResolution]);
 
   function add() {
+    if (!canAdd) return;
+
     setLoading(true);
     setAdded(false);
 
@@ -124,54 +136,42 @@ export default function AddToCart({ variants, productName, coverImage, productSl
         fullCart = { items: [], discountCode: null };
       }
 
-      const cart = fullCart.items; // Extract items array
+      const cart = fullCart.items;
 
-      // Ensure selected variant exists
       if (!selectedVariant) {
         throw new Error("Variant not found");
       }
 
-      const isDiscountActive = fullCart.discountCode === 'fam45';
-      const resolution = selectedResolution;
-      const baseDiscountPrice = 4500;
-      const highDiscountPrice = 5000;
-      const baseOriginalPrice = effectivePrice;
-
-      // Check if item already exists in cart
-      const existingItemIndex = cart.findIndex(item => item.variantId === selectedVariant.id && 
-        item.attributes?.size === selectedSize && 
-        item.attributes?.color === selectedColor && 
-        item.attributes?.resolution === resolution);
+      // Check if item already exists (match variantId + attributes)
+      const existingItemIndex = cart.findIndex(item => 
+        item.variantId === selectedVariant.id && 
+        item.attributes?.color === selectedSecondary && 
+        item.attributes?.size === selectedSize &&
+        item.attributes?.resolution === selectedResolution
+      );
 
       if (existingItemIndex >= 0) {
-        // Update existing item
+        // Update existing
         const existingItem = cart[existingItemIndex];
-        let newPrice = existingItem.priceCents;
-        if (isDiscountActive) {
-          newPrice = resolution === 'high' ? highDiscountPrice : baseDiscountPrice;
-        } else {
-          newPrice = baseOriginalPrice;
-        }
         cart[existingItemIndex] = { 
           ...existingItem, 
           quantity: existingItem.quantity + quantity,
-          priceCents: newPrice 
+          priceCents: priceCents 
         };
       } else {
-        // Add new item
-        const newPrice = isDiscountActive ? (resolution === 'high' ? highDiscountPrice : baseDiscountPrice) : baseOriginalPrice;
+        // Add new
         const newItem: CartItem = {
           id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          productName: productName,
+          productName,
           image: coverImage,
           variantId: selectedVariant.id,
           quantity,
-          priceCents: newPrice,
-          variant: { name: selectedVariant.name || "Default" },
+          priceCents,
+          variant: { name: selectedPrimary },
           attributes: { 
-            size: selectedSize, 
-            color: selectedColor,
-            resolution
+            color: selectedSecondary, 
+            size: selectedSize,
+            resolution: selectedResolution
           },
           productSlug,
         };
@@ -182,7 +182,6 @@ export default function AddToCart({ variants, productName, coverImage, productSl
       fullCart.items = cart;
       localStorage.setItem("cart", JSON.stringify(fullCart));
       setAdded(true);
-      setTimeout(() => setAdded(false), 3000);
     } catch (error) {
       console.error("Failed to add to cart:", error);
     } finally {
@@ -207,74 +206,112 @@ export default function AddToCart({ variants, productName, coverImage, productSl
         }
       `}</style>
       <div className="space-y-4">
-        {(allSizes.length > 0) && (
-          <div className="grid gap-2">
-            <label className="text-sm text-neutral-700">Select Size</label>
-            <div className="flex flex-wrap gap-2">
-              {allSizes.map((size) => (
+        {/* Primary Color */}
+        <div className="grid gap-2">
+          <label className="text-sm text-neutral-700">Primary Color</label>
+          <div className="flex flex-wrap gap-2">
+            {primaryColors.map((color) => {
+              const isSelected = selectedPrimary === color;
+              const available = isPrimaryAvailable(color);
+              return (
+                <button
+                  key={`primary-${color}`}
+                  onClick={() => available && setSelectedPrimary(color)}
+                  disabled={!available}
+                  className={`flex items-center gap-0 rounded-full px-2 py-2 text-sm transition-all leading-none ${
+                    isSelected 
+                      ? "bg-black text-white ring-black glow" 
+                      : available 
+                        ? "ring-black/10 hover:bg-black/5 text-neutral-900" 
+                        : "bg-red-50 text-red-600 ring-red-300 cursor-not-allowed opacity-50"
+                  } ring-1`}
+                >
+                  <span className={`inline-block h-4 w-4 rounded-full mr-2 border flex-shrink-0 ${
+                    isSelected ? 'border-white' : 'border-black/20'
+                  }`} style={{ backgroundColor: color }} />
+                  <span className="capitalize">
+                    {color}
+                    {!available && " (Out of Stock)"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Secondary Color */}
+        <div className="grid gap-2">
+          <label className="text-sm text-neutral-700">Secondary Color</label>
+          <div className="flex flex-wrap gap-2">
+            {secondaryColors.map((color) => {
+              const isSelected = selectedSecondary === color;
+              return (
+                <button
+                  key={`secondary-${color}`}
+                  onClick={() => setSelectedSecondary(color)}
+                  className={`flex items-center gap-0 rounded-full px-2 py-2 text-sm text-neutral-900 ring-1 transition leading-none ${
+                    isSelected 
+                      ? "bg-black text-white ring-black glow" 
+                      : "ring-black/10 hover:bg-black/5"
+                  }`}
+                >
+                  <span className={`inline-block h-4 w-4 rounded-full mr-2 border flex-shrink-0 ${
+                    isSelected ? 'border-white' : 'border-black/20'
+                  }`} style={{ backgroundColor: color }} />
+                  <span className="capitalize">{color}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Size */}
+        <div className="grid gap-2">
+          <label className="text-sm text-neutral-700">Size (US Men's)</label>
+          <div className="flex flex-wrap gap-2">
+            {sizes.map((size) => {
+              const isSelected = selectedSize === size;
+              return (
                 <button
                   key={`size-${size}`}
                   onClick={() => setSelectedSize(size)}
-                  className={`rounded-full px-4 py-2 text-sm text-neutral-900 ring-1 transition ${selectedSize === size ? "bg-black text-white ring-black glow" : "ring-black/10 hover:bg-black/5"}`}
+                  className={`rounded-full px-2 py-2 text-sm text-neutral-900 ring-1 transition ${
+                    isSelected 
+                      ? "bg-black text-white ring-black glow" 
+                      : "ring-black/10 hover:bg-black/5"
+                  }`}
                 >
-                  {String(size)}
+                  {size}
                 </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {(allColors.length > 0) && (
-          <div className="grid gap-2">
-            <label className="text-sm text-neutral-700">Select Color</label>
-            <div className="flex flex-wrap gap-2">
-              {allColors.map((color) => {
-                const isSelected = selectedColor === color;
-                const swatchBorder = isSelected ? 'border-white' : 'border-black/20';
-                return (
-                  <button
-                    key={`color-${color}`}
-                    onClick={() => setSelectedColor(color)}
-                    title={color}
-                    className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm text-neutral-900 ring-1 transition relative overflow-hidden ${isSelected ? "bg-black text-white ring-black glow" : "ring-black/10 hover:bg-black/5"}`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 rounded-full border ${swatchBorder}`}
-                      style={{ backgroundColor: color }}
-                    />
-                    <span className={`capitalize ${isSelected ? 'text-white' : 'text-neutral-900'}`}>{color}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-        <div className="grid gap-2">
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-neutral-700">Select Resolution</label>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowResolutionPopup(true);
-              }}
-              className="text-xs font-bold text-neutral-500 hover:text-black rounded-full w-5 h-5 flex items-center justify-center border border-neutral-300 hover:border-neutral-500"
-              title="See difference"
-            >
-              ?
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {(['normal', 'high'] as const).map((res) => (
-              <button
-                key={`res-${res}`}
-                onClick={() => setSelectedResolution(res)}
-                className={`rounded-full px-4 py-2 text-sm text-neutral-900 ring-1 transition ${selectedResolution === res ? "bg-black text-white ring-black glow" : "ring-black/10 hover:bg-black/5"}`}
-              >
-                {res === 'normal' ? 'Normal' : 'High Quality'}
-              </button>
-            ))}
+              );
+            })}
           </div>
         </div>
+
+        {/* Resolution */}
+        <div className="grid gap-2">
+          <label className="text-sm text-neutral-700">Print Quality</label>
+          <div className="flex gap-2">
+            {(['normal' as const, 'high' as const] as const).map((res) => {
+              const isSelected = selectedResolution === res;
+              const label = res === 'high' ? 'High Resolution' : 'Standard';
+              return (
+                <button
+                  key={res}
+                  onClick={() => setSelectedResolution(res)}
+                  className={`rounded-full px-3 py-2 text-sm transition ring-1 ${
+                    isSelected 
+                      ? "bg-black text-white ring-black" 
+                      : "ring-black/10 hover:bg-black/5 text-neutral-900"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="flex items-center gap-3">
           <input
             type="number"
@@ -288,9 +325,9 @@ export default function AddToCart({ variants, productName, coverImage, productSl
           </div>
           <button 
             onClick={add} 
-            disabled={loading || added} 
+            disabled={loading || added || !canAdd} 
             className={`rounded-full px-6 py-3 text-sm font-medium h-[48px] flex-1 transition-colors ${
-              loading 
+              loading || !canAdd
                 ? "bg-neutral-300 text-neutral-500 cursor-not-allowed" 
                 : added 
                   ? "bg-green-600 text-white hover:bg-green-700" 
@@ -312,36 +349,6 @@ export default function AddToCart({ variants, productName, coverImage, productSl
           </button>
         </div>
       </div>
-      {showResolutionPopup && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-semibold text-neutral-900">High Resolution Upgrade</h3>
-                <button
-                  onClick={() => setShowResolutionPopup(false)}
-                  className="text-neutral-500 hover:text-neutral-900 text-xl font-bold rounded-full w-8 h-8 flex items-center justify-center hover:bg-neutral-100 transition-colors"
-                >
-                  ×
-                </button>
-              </div>
-              <div className="text-center">
-                <div className="relative border border-neutral-200 rounded-lg p-4 bg-neutral-50 mx-auto max-w-sm">
-                  <Image 
-                    src="/resolution-high.png" 
-                    alt="High Quality Resolution" 
-                    fill 
-                    className="max-w-full h-64 object-cover rounded-md shadow-md mb-3"
-                    sizes="(max-width: 640px) 100vw, 640px"
-                  />
-                </div>
-                <p className="text-sm text-neutral-700 font-medium mb-2">High Quality Resolution</p>
-                <p className="text-xs text-neutral-500">Finer details and smoother finish compared to normal resolution, for a premium look and feel. The upgrade adds $5 to enhance the print precision.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
