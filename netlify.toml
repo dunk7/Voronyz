@@ -5,6 +5,7 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  SECRETS_SCAN_OMIT_PATHS = "README.md,web/server.log,web/*.log"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
