@@ -21,31 +21,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Session ID required" }, { status: 400 });
     }
 
-    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+    const sessionResponse = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ['line_items', 'shipping_details', 'payment_intent'],
     });
 
-    if (session.data.payment_status !== 'paid') {
+    const actualSession = sessionResponse as Stripe.Checkout.Session;
+
+    if (actualSession.payment_status !== 'paid') {
       return NextResponse.json({ error: "Payment not completed" }, { status: 400 });
     }
 
-    const subtotalCents = session.data.amount_subtotal || 0;
-    const totalCents = session.data.amount_total || 0;
-    const currency = session.data.currency || 'usd';
-    const customerEmail = session.data.customer_details?.email || null;
-    const shipping = session.data.shipping_details ? {
-      name: session.data.shipping_details.name,
+    const subtotalCents = actualSession.amount_subtotal || 0;
+    const totalCents = actualSession.amount_total || 0;
+    const currency = actualSession.currency || 'usd';
+    const customerEmail = actualSession.customer_details?.email || null;
+    const shipping = actualSession.shipping_details ? {
+      name: actualSession.shipping_details.name,
       address: {
-        line1: session.data.shipping_details.address.line1,
-        line2: session.data.shipping_details.address.line2 || null,
-        city: session.data.shipping_details.address.city,
-        state: session.data.shipping_details.address.state,
-        postal_code: session.data.shipping_details.address.postal_code,
-        country: session.data.shipping_details.address.country,
+        line1: actualSession.shipping_details.address.line1,
+        line2: actualSession.shipping_details.address.line2 || null,
+        city: actualSession.shipping_details.address.city,
+        state: actualSession.shipping_details.address.state,
+        postal_code: actualSession.shipping_details.address.postal_code,
+        country: actualSession.shipping_details.address.country,
       },
     } : null;
 
-    const lineItems = session.data.line_items?.data.map(item => ({
+    const lineItems = actualSession.line_items?.data.map(item => ({
       name: item.description,
       amount: item.amount_total,
       quantity: item.quantity,
@@ -54,7 +56,7 @@ export async function POST(request: NextRequest) {
     // Create order in DB (link to user if you add auth later)
     const order = await prisma.order.create({
       data: {
-        stripeId: session.data.id,
+        stripeId: actualSession.id,
         status: 'completed',
         currency,
         subtotalCents,
@@ -65,7 +67,7 @@ export async function POST(request: NextRequest) {
           lineItems,
           shipping,
           customerEmail,
-          metadata: session.data.metadata,
+          metadata: actualSession.metadata,
         },
       },
     });
