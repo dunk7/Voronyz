@@ -45,6 +45,7 @@ For **production deployment**, set these environment variables in your Netlify d
 
 - `DATABASE_URL`: PostgreSQL connection string (required for production)
 - `STRIPE_SECRET_KEY`: Your Stripe secret key for payments
+- `NEXT_PUBLIC_SITE_URL`: Your site's base URL (e.g., https://voronyz.netlify.app) for metadata and redirects
 - `AUTH_STUB_ENABLED`: Set to "false" to disable demo auth (enabled by default)
 
 ### Testing Without Environment Variables

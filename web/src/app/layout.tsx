@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: "Voronyz — Advanced 3D Printed Footwear",
   description:
     "Futuristic footwear engineered with 3D scanning, TPU 95A lattices, and performance uppers. Shop the V3 Slides and more.",
-  metadataBase: new URL("https://voronyz.local"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://voronyz.local"),
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },

@@ -181,6 +181,8 @@ export default function AddToCart({
       // Update full cart and save
       fullCart.items = cart;
       localStorage.setItem("cart", JSON.stringify(fullCart));
+      // Dispatch event to update cart count in header
+      window.dispatchEvent(new Event('cartUpdated'));
       setAdded(true);
     } catch (error) {
       console.error("Failed to add to cart:", error);

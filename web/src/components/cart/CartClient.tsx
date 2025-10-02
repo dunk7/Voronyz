@@ -58,6 +58,8 @@ export default function CartClient() {
     setDiscountCode(cartData.discountCode);
     try {
       localStorage.setItem("cart", JSON.stringify(cartData));
+      // Dispatch event to update cart count in header
+      window.dispatchEvent(new Event('cartUpdated'));
     } catch (error) {
       console.error("Failed to save cart to localStorage:", error);
     }
@@ -286,8 +288,8 @@ export default function CartClient() {
                 body: JSON.stringify({
                   items: checkoutItems,
                   discountCode: discountCode || '',
-                  successUrl: `${window.location.origin}/checkout/success`,
-                  cancelUrl: `${window.location.origin}/checkout/cancel`,
+                  successUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/success`,
+                  cancelUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/cancel`,
                 }),
               });
 

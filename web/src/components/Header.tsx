@@ -51,7 +51,17 @@ export default function Header() {
     };
 
     window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    // Listen for custom cart updates in same tab
+    const handleCartUpdated = () => {
+      updateCartCount();
+      setCartCountLoaded(true);
+    };
+    window.addEventListener("cartUpdated", handleCartUpdated);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("cartUpdated", handleCartUpdated);
+    };
   }, []);
   const pathname = usePathname();
 
