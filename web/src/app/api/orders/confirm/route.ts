@@ -25,27 +25,27 @@ export async function POST(request: NextRequest) {
       expand: ['line_items', 'shipping_details', 'payment_intent'],
     });
 
-    if (session.payment_status !== 'paid') {
+    if (session.data.payment_status !== 'paid') {
       return NextResponse.json({ error: "Payment not completed" }, { status: 400 });
     }
 
-    const subtotalCents = session.amount_subtotal || 0;
-    const totalCents = session.amount_total || 0;
-    const currency = session.currency || 'usd';
-    const customerEmail = session.customer_details?.email || null;
-    const shipping = session.shipping_details ? {
-      name: session.shipping_details.name,
+    const subtotalCents = session.data.amount_subtotal || 0;
+    const totalCents = session.data.amount_total || 0;
+    const currency = session.data.currency || 'usd';
+    const customerEmail = session.data.customer_details?.email || null;
+    const shipping = session.data.shipping_details ? {
+      name: session.data.shipping_details.name,
       address: {
-        line1: session.shipping_details.address.line1,
-        line2: session.shipping_details.address.line2 || null,
-        city: session.shipping_details.address.city,
-        state: session.shipping_details.address.state,
-        postal_code: session.shipping_details.address.postal_code,
-        country: session.shipping_details.address.country,
+        line1: session.data.shipping_details.address.line1,
+        line2: session.data.shipping_details.address.line2 || null,
+        city: session.data.shipping_details.address.city,
+        state: session.data.shipping_details.address.state,
+        postal_code: session.data.shipping_details.address.postal_code,
+        country: session.data.shipping_details.address.country,
       },
     } : null;
 
-    const lineItems = session.line_items?.data.map(item => ({
+    const lineItems = session.data.line_items?.data.map(item => ({
       name: item.description,
       amount: item.amount_total,
       quantity: item.quantity,
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     // Create order in DB (link to user if you add auth later)
     const order = await prisma.order.create({
       data: {
-        stripeId: session.id,
+        stripeId: session.data.id,
         status: 'completed',
         currency,
         subtotalCents,
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
           lineItems,
           shipping,
           customerEmail,
-          metadata: session.metadata,
+          metadata: session.data.metadata,
         },
       },
     });
