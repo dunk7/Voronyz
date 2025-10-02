@@ -2,6 +2,34 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 
+type CheckoutSession = {
+  id: string;
+  payment_status: string;
+  amount_subtotal: number | null;
+  amount_total: number | null;
+  currency: string | null;
+  customer_details: { email?: string } | null;
+  shipping_details: {
+    name: string;
+    address: {
+      line1: string;
+      line2?: string;
+      city: string;
+      state: string;
+      postal_code: string;
+      country: string;
+    };
+  } | null;
+  line_items: {
+    data: Array<{
+      description: string;
+      amount_total: number;
+      quantity: number;
+    }>;
+  } | null;
+  metadata: Record<string, string> | null;
+};
+
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: "2025-08-27.basil",
@@ -25,7 +53,7 @@ export async function POST(request: NextRequest) {
       expand: ['line_items', 'shipping_details', 'payment_intent'],
     });
 
-    const actualSession: any = (sessionResponse as any).data;
+    const actualSession = (sessionResponse as any).data as CheckoutSession;
 
     if (actualSession.payment_status !== 'paid') {
       return NextResponse.json({ error: "Payment not completed" }, { status: 400 });
@@ -47,7 +75,7 @@ export async function POST(request: NextRequest) {
       },
     } : null;
 
-    const lineItems = actualSession.line_items?.data.map((item: Stripe.LineItem) => ({
+    const lineItems = actualSession.line_items?.data.map(item => ({
       name: item.description,
       amount: item.amount_total,
       quantity: item.quantity,
@@ -63,7 +91,7 @@ export async function POST(request: NextRequest) {
         totalCents,
         // Add userId if authenticated
         // Store extras as JSON
-        // @ts-ignore
+        // @ts-expect-error Prisma types lag
         metadata: {  
           lineItems,
           shipping,
