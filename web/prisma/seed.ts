@@ -64,7 +64,7 @@ async function main() {
           where: { sku },
           update: { stock: stockMap[color as keyof typeof stockMap] },
           create: {
-            productId: existing.id,
+            product: { connect: { id: existing.id } },
             color,
             sku,
             stock: stockMap[color as keyof typeof stockMap],

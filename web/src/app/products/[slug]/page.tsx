@@ -13,9 +13,31 @@ type Media = {
   poster?: string;
 };
 
+type ProductWithVariants = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  priceCents: number;
+  currency: string;
+  images: string[];
+  primaryColors: string[];
+  secondaryColors: string[];
+  sizes: string[];
+  variants: {
+    id: string;
+    color: string;
+    sku: string;
+    stock: number;
+    priceCents: number | null;
+  }[];
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  let product;
+  let product: ProductWithVariants;
   try {
     product = await prisma.product.findUnique({ 
       where: { slug }, 
@@ -30,7 +52,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           }
         }
       } 
-    });
+    }) as ProductWithVariants;
   } catch {
     // For testing without database, use mock data
     console.log("⚠️  Using mock product for testing");
@@ -51,11 +73,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       secondaryColors: ["black", "white", "grey", "green", "blue", "red", "maroon", "pink", "purple"],
       sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
       variants: [
-        { id: "demo-black", productId: "demo-product", color: "black", sku: "V3-BLK", stock: 999 },
-        { id: "demo-white", productId: "demo-product", color: "white", sku: "V3-WHT", stock: 999 },
-        { id: "demo-grey", productId: "demo-product", color: "grey", sku: "V3-GRY", stock: 999 },
-        { id: "demo-green", productId: "demo-product", color: "green", sku: "V3-GRN", stock: 999 },
-        { id: "demo-pink", productId: "demo-product", color: "pink", sku: "V3-PNK", stock: 0 },
+        { id: "demo-black", color: "black", sku: "V3-BLK", stock: 999, priceCents: 9900 },
+        { id: "demo-white", color: "white", sku: "V3-WHT", stock: 999, priceCents: 9900 },
+        { id: "demo-grey", color: "grey", sku: "V3-GRY", stock: 999, priceCents: 9900 },
+        { id: "demo-green", color: "green", sku: "V3-GRN", stock: 999, priceCents: 9900 },
+        { id: "demo-pink", color: "pink", sku: "V3-PNK", stock: 0, priceCents: 9900 },
       ],
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -163,7 +185,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 export async function generateStaticParams() {
   try {
     const products = await prisma.product.findMany({ select: { slug: true } });
-    return products.map((p) => ({ slug: p.slug }));
+    return products.map((p: { slug: string }) => ({ slug: p.slug }));
   } catch {
     // For testing without database, return known slugs
     console.log("⚠️  Using fallback static params for testing");

@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       expand: ['line_items', 'shipping_details', 'payment_intent'],
     });
 
-    const actualSession = (sessionResponse as unknown).data as CheckoutSession;
+    const actualSession = sessionResponse as unknown as CheckoutSession;
 
     if (actualSession.payment_status !== 'paid') {
       return NextResponse.json({ error: "Payment not completed" }, { status: 400 });
@@ -91,7 +91,6 @@ export async function POST(request: NextRequest) {
         totalCents,
         // Add userId if authenticated
         // Store extras as JSON
-        // @ts-expect-error Prisma types lag
         metadata: {  
           lineItems,
           shipping,
