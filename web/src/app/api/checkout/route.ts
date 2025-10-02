@@ -48,7 +48,17 @@ export async function POST(request: NextRequest) {
         console.log(`Fetching variant ${item.variantId} from DB`);
         const variant = await prisma.variant.findUnique({
           where: { id: item.variantId },
-          include: { product: true },
+          select: {
+            id: true,
+            color: true,
+            priceCents: true,
+            product: {
+              select: {
+                name: true,
+                priceCents: true,
+              }
+            }
+          },
         });
 
         if (!variant) {
