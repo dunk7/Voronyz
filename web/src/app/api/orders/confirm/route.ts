@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       expand: ['line_items', 'shipping_details', 'payment_intent'],
     });
 
-    const actualSession = sessionResponse as Stripe.Checkout.Session;
+    const actualSession: any = (sessionResponse as any).data;
 
     if (actualSession.payment_status !== 'paid') {
       return NextResponse.json({ error: "Payment not completed" }, { status: 400 });
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       },
     } : null;
 
-    const lineItems = actualSession.line_items?.data.map(item => ({
+    const lineItems = actualSession.line_items?.data.map((item: Stripe.LineItem) => ({
       name: item.description,
       amount: item.amount_total,
       quantity: item.quantity,
@@ -63,7 +63,8 @@ export async function POST(request: NextRequest) {
         totalCents,
         // Add userId if authenticated
         // Store extras as JSON
-        footScanMetadata: {  // Reuse existing Json field or add new
+        // @ts-ignore
+        metadata: {  
           lineItems,
           shipping,
           customerEmail,

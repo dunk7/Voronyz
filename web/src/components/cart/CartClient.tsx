@@ -66,7 +66,7 @@ export default function CartClient() {
   const applyDiscount = () => {
     clearMessage();
     const lowerInput = inputValue.toLowerCase().trim();
-    let newPrices;
+    let newPrices: CartItem[] | undefined;
     let isValid = false;
     if (lowerInput === "fam45") {
       newPrices = items.map(item => {
@@ -90,7 +90,7 @@ export default function CartClient() {
       });
       isValid = true;
     }
-    if (isValid) {
+    if (isValid && newPrices) {
       saveCart({ items: newPrices, discountCode: inputValue });
       setInputValue("");
       setMessage("Discount applied successfully!");
@@ -289,7 +289,7 @@ export default function CartClient() {
               if (!response.ok) {
                 const rawText = await response.text();
                 console.error('Checkout API error - Status:', response.status, 'Raw response:', rawText);
-                let errorData = {};
+                let errorData: { error?: string } = {};
                 try {
                   errorData = JSON.parse(rawText);
                 } catch {

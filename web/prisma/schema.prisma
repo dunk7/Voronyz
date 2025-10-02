@@ -89,6 +89,7 @@ model Order {
   subtotalCents Int
   totalCents   Int
   stripeId     String?  @unique
+  metadata     Json?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
