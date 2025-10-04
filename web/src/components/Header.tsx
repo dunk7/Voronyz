@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { usePathname } from "next/navigation";
 
@@ -11,7 +11,6 @@ export default function Header() {
   // const [user, setUser] = useState<{ id: string; email: string; name: string } | null>(null); // Removed user state
   const [cartCount, setCartCount] = useState(0);
   const [cartCountLoaded, setCartCountLoaded] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
 
   // Load cart count from localStorage
   useEffect(() => {
@@ -74,31 +73,6 @@ export default function Header() {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  // Track viewport size to avoid rendering desktop-only auth buttons on mobile during SSR/hydration
-  useLayoutEffect(() => {
-    const mediaQuery = window.matchMedia('(min-width: 768px)'); // md breakpoint
-    const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
-      // Support both initial set (MediaQueryList) and change events
-      // @ts-expect-error - handle both types
-      setIsDesktop((e.matches !== undefined ? e.matches : e.currentTarget?.matches) ?? mediaQuery.matches);
-    };
-    // Initial
-    setIsDesktop(mediaQuery.matches);
-    // Subscribe
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handleChange as (ev: MediaQueryListEvent) => void);
-    } else {
-      mediaQuery.addListener(handleChange);
-    }
-    return () => {
-      if (mediaQuery.removeEventListener) {
-        mediaQuery.removeEventListener('change', handleChange as (ev: MediaQueryListEvent) => void);
-      } else {
-        mediaQuery.removeListener(handleChange);
-      }
-    };
   }, []);
 
   // Allow body scroll even when mobile menu is open (no scroll lock)

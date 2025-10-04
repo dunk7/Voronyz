@@ -88,7 +88,7 @@ export default function CareersPage() {
           <div>
             <h3 className="text-2xl font-semibold text-neutral-900 mb-4">Work-Life Balance</h3>
             <p className="text-neutral-600 leading-relaxed mb-6">
-              We understand that great work comes from happy, well-rested people. That's why we offer flexible hours
+              We understand that great work comes from happy, well-rested people. That&apos;s why we offer flexible hours
               and the ability to work from anywhere in the world.
             </p>
             <ul className="space-y-2 text-neutral-600">
