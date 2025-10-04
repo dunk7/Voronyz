@@ -40,12 +40,12 @@ export default function CartClient() {
         let loadedItems: CartItem[];
         if (Array.isArray(parsed)) {
           // Legacy array format, migrate
-          loadedItems = parsed.map(item => ({ ...item, message: '' as any }));
+          loadedItems = parsed.map((item: unknown) => ({ ...(item as CartItem), message: '' }));
           setItems(loadedItems);
           setDiscountCode(null);
           saveCart({ items: loadedItems, discountCode: null });
         } else {
-          loadedItems = (parsed.items || []).map((item: any) => ({ ...item, message: item.message || '' }));
+          loadedItems = (parsed.items || []).map((item: unknown) => ({ ...(item as CartItem), message: item.message || '' }));
           setItems(loadedItems);
           setDiscountCode(parsed.discountCode !== undefined ? parsed.discountCode : null);
         }

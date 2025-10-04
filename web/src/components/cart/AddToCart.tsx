@@ -129,7 +129,10 @@ export default function AddToCart({
         const parsed = JSON.parse(cartDataStr);
         if (Array.isArray(parsed)) {
           // Legacy array format, migrate
-          fullCart = { items: parsed.map((item: any) => ({ ...item, message: '' })), discountCode: null };
+          fullCart = { items: parsed.map((item: unknown) => ({ 
+            ...(item as CartItem), 
+            message: '' 
+          })), discountCode: null };
         } else {
           fullCart = parsed as CartData;
         }

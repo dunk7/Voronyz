@@ -191,15 +191,6 @@ export async function generateStaticParams() {
   }
 }
 
-function FeatureCard({ title, text }: { title: string; text: string }) {
-  return (
-    <div className="rounded-2xl ring-1 ring-black/5 p-5">
-      <div className="text-sm font-medium text-neutral-900">{title}</div>
-      <p className="mt-2 text-sm text-neutral-700 leading-6">{text}</p>
-    </div>
-  );
-}
-
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   try {
