@@ -31,6 +31,7 @@ interface CartItem {
   variant: { name: string };
   attributes?: { color?: string; size?: string; resolution?: 'normal' | 'high' };
   productSlug?: string;
+  message?: string;
 }
 
 interface CartData {
@@ -128,7 +129,7 @@ export default function AddToCart({
         const parsed = JSON.parse(cartDataStr);
         if (Array.isArray(parsed)) {
           // Legacy array format, migrate
-          fullCart = { items: parsed, discountCode: null };
+          fullCart = { items: parsed.map((item: any) => ({ ...item, message: '' })), discountCode: null };
         } else {
           fullCart = parsed as CartData;
         }
@@ -156,7 +157,8 @@ export default function AddToCart({
         cart[existingItemIndex] = { 
           ...existingItem, 
           quantity: existingItem.quantity + quantity,
-          priceCents: priceCents 
+          priceCents: priceCents,
+          message: existingItem.message || ''
         };
       } else {
         // Add new
@@ -174,6 +176,7 @@ export default function AddToCart({
             resolution: selectedResolution
           },
           productSlug,
+          message: ''
         };
         cart.push(newItem);
       }

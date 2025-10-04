@@ -86,6 +86,7 @@ export async function POST(request: NextRequest) {
           : (item.productName && item.variantName 
             ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${item.size || 'N/A'}${resolutionSuffix}`
             : `Product Variant ${item.variantId || 'unknown'}${resolutionSuffix}`);
+        const description = item.message ? `Personal message: ${item.message}` : undefined;
 
         console.log(`Generated line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);
 
@@ -94,6 +95,7 @@ export async function POST(request: NextRequest) {
             currency: 'usd',
             product_data: {
               name: productName,
+              ...(description && { description }),
             },
             unit_amount: unitAmount,
           },
@@ -124,6 +126,7 @@ export async function POST(request: NextRequest) {
         const productName = item.productName && item.variantName && item.secondaryColor && item.size
           ? `${item.productName} - ${capitalize(item.variantName)} with ${capitalize(item.secondaryColor)} size ${item.size}${resolutionSuffix}`
           : `Product Variant ${item.variantId || 'unknown'}${resolutionSuffix}`;
+        const description = item.message ? `Personal message: ${item.message}` : undefined;
 
         console.log(`Fallback line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);
 
@@ -132,6 +135,7 @@ export async function POST(request: NextRequest) {
             currency: 'usd',
             product_data: {
               name: productName,
+              ...(description && { description }),
             },
             unit_amount: unitAmount,
           },
@@ -153,6 +157,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         itemCount: items.length.toString(),
         ...(discountCode && { discountCode }),
+        cartItems: JSON.stringify(items)
       },
     });
 

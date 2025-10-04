@@ -65,6 +65,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         status: "paid",
         totalCents: session.amount_total || 0,
         subtotalCents: session.amount_subtotal || 0,
+        metadata: {
+          lineItems: JSON.parse(session.metadata?.cartItems || '[]')
+        }
       },
       create: {
         stripeId: session.id,
@@ -74,6 +77,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         subtotalCents: session.amount_subtotal || 0,
         // You might want to associate with a user if you have user authentication
         // userId: session.metadata?.userId,
+        metadata: {
+          lineItems: JSON.parse(session.metadata?.cartItems || '[]')
+        }
       },
     });
 

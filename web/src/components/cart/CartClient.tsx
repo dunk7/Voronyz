@@ -14,6 +14,7 @@ interface CartItem {
   variant: { name: string };
   attributes?: { size?: number | string; color?: string; resolution?: 'normal' | 'high' };
   productSlug?: string;
+  message?: string;
 }
 
 interface CartData {
@@ -28,6 +29,7 @@ export default function CartClient() {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
   useEffect(() => {
     // Load cart from localStorage
@@ -35,13 +37,16 @@ export default function CartClient() {
       const cartDataStr = localStorage.getItem("cart");
       if (cartDataStr) {
         const parsed = JSON.parse(cartDataStr) as CartData;
+        let loadedItems: CartItem[];
         if (Array.isArray(parsed)) {
           // Legacy array format, migrate
-          setItems(parsed);
+          loadedItems = parsed.map(item => ({ ...item, message: '' as any }));
+          setItems(loadedItems);
           setDiscountCode(null);
-          saveCart({ items: parsed, discountCode: null });
+          saveCart({ items: loadedItems, discountCode: null });
         } else {
-          setItems(parsed.items || []);
+          loadedItems = (parsed.items || []).map((item: any) => ({ ...item, message: item.message || '' }));
+          setItems(loadedItems);
           setDiscountCode(parsed.discountCode !== undefined ? parsed.discountCode : null);
         }
       }
@@ -174,6 +179,53 @@ export default function CartClient() {
                 </div>
               </div>
             </Link>
+            {/* Message Section - outside Link */}
+            <div className="mt-2 pl-16 lg:pl-0 pr-4 lg:pr-6">
+              {editingItemId === it.id ? (
+                <textarea
+                  value={it.message || ''}
+                  onChange={(e) => {
+                    const newItems = items.map(item => 
+                      item.id === it.id ? { ...item, message: e.target.value } : item
+                    );
+                    setItems(newItems);
+                    saveCart({ items: newItems, discountCode });
+                  }}
+                  onBlur={() => setEditingItemId(null)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.shiftKey === false) {
+                      e.preventDefault();
+                      setEditingItemId(null);
+                    }
+                  }}
+                  placeholder="Enter a message or quote for this shoe..."
+                  className="w-full p-2 border border-gray-300 rounded-md text-sm text-neutral-900 resize-none max-h-20"
+                  rows={3}
+                  maxLength={100}
+                />
+              ) : (
+                <div className="flex items-center gap-2">
+                  {it.message ? (
+                    <>
+                      <span className="text-xs text-gray-600 italic bg-gray-50 px-2 py-1 rounded">{it.message}</span>
+                      <button
+                        onClick={() => setEditingItemId(it.id)}
+                        className="text-xs text-blue-600 hover:underline"
+                      >
+                        Edit
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => setEditingItemId(it.id)}
+                      className="text-xs text-gray-500 hover:text-gray-700 underline"
+                    >
+                      Add Message
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
             <div className="flex items-center justify-between lg:justify-start gap-2 lg:gap-4 w-full lg:w-auto mt-2 lg:mt-0">
               <div className="flex items-center gap-1 lg:gap-2 flex-1 lg:flex-none">
                 <button
@@ -277,7 +329,8 @@ export default function CartClient() {
                 secondaryColor: item.attributes?.color,
                 size: item.attributes?.size,
                 quantity: item.quantity,
-                resolution: item.attributes?.resolution || 'normal'
+                resolution: item.attributes?.resolution || 'normal',
+                message: item.message || ''
               }));
               console.log('Sending checkout items:', checkoutItems); // Add this log
               const response = await fetch('/api/checkout', {
