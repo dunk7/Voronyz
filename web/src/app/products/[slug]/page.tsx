@@ -64,10 +64,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       priceCents: 9900,
       currency: "usd",
       images: [
-        "/Screenshot From 2025-09-20 00-08-02.png",
-        "/Screenshot From 2025-09-20 00-08-15.png",
-        "/Screenshot From 2025-09-20 00-08-22.png",
-        "/Screenshot From 2025-09-20 00-08-34.png",
+        "/_DSC9913.JPG",
+        "/_DSC9910.JPG",
+        "/_DSC9914.JPG",
+        "/_DSC9930.JPG",
+        "/_DSC9933.JPG",
+        "/_DSC9921.JPG",
+        "/_DSC9932.JPG",
       ],
       primaryColors: ["black", "white", "grey", "green", "pink"],
       secondaryColors: ["black", "white", "grey", "green", "blue", "red", "maroon", "pink", "purple"],
@@ -86,23 +89,24 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   if (!product) return <div className="container py-12">Not found.</div>;
 
   const defaultImages = [
-    "/Screenshot From 2025-09-20 00-08-02.png",
-    "/Screenshot From 2025-09-20 00-08-15.png",
-    "/Screenshot From 2025-09-20 00-08-22.png",
-    "/Screenshot From 2025-09-20 00-08-34.png",
+    "/_DSC9933.JPG",
+    "/_DSC9930.JPG",
+    "/_DSC9931.JPG",
+    "/_DSC9932.JPG",
+    "/_DSC9936_1.JPG",
   ];
   const images = slug === "v3-slides" ? defaultImages : ((product.images as string[] | null) ?? defaultImages);
   const media = (
     slug === "v3-slides"
-      ? ([{ type: "video", src: "/v3-video.mp4", poster: "/v3-video-thumb.jpg" }] as const)
+      ? ([{ type: "video", src: "/C0964.MP4", poster: "/c0964-thumb.jpg" }] as const)
       : ([] as const)
   ) as Media[];
-  const galleryMedia = [...media, ...images.map((src) => ({ type: "image" as const, src, alt: product.name }))];
+  const galleryMedia = [...images.map((src) => ({ type: "image" as const, src, alt: product.name })), ...media];
 
   return (
     <div className="bg-white">
       <div className="container pt-4 pb-12 grid grid-cols-1 lg:grid-cols-12 gap-10">
-        <nav className="col-span-full text-sm text-neutral-500 mb-6">
+        <nav className="col-span-full text-sm text-neutral-500">
           <Link href="/" className="hover:text-neutral-900">Home</Link>
           <span className="mx-2">/</span>
           <Link href="/products" className="hover:text-neutral-900">Products</Link>
@@ -154,16 +158,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       </div>
 
       <div className="container pb-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <FeatureCard title="Scan-to-Fit" text="We tailor the lattice zones to your foot’s pressure map for all-day comfort." />
-          <FeatureCard title="TPU Lattice" text="Durable, springy 95A TPU with zoned cushioning and ventilation." />
-          <FeatureCard title="Sustainable" text="Printed locally on demand, minimizing waste and inventory." />
-        </div>
-
         <div className="mt-10 overflow-hidden rounded-3xl ring-1 ring-black/5">
           <div className="bg-black text-white px-6 py-4 text-sm font-medium">How it’s made</div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed bg-white">
-            Each pair is generated from your size selection. The outsole uses a parametric lattice for rebound and grip, while the upper is printed for breathable comfort. We tune infill and wall thickness for durability where it matters.
+            Each pair takes a full day to print using our proprietary TPU blend. Following printing, we perform heat-treated post-processing to ensure exceptional quality, comfort, and durability.
           </div>
         </div>
 
@@ -171,9 +169,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <h2 className="text-lg font-semibold text-neutral-900 mb-4">FAQs</h2>
           <FAQ
             items={[
-              { q: "What if my size doesn’t fit?", a: "Please choose carefully using our size guide. Exchanges are not available for custom-made products." },
-              { q: "Are they waterproof?", a: "They’re water-resistant and easy to rinse clean. Avoid extended high-heat exposure." },
-              { q: "How long does production take?", a: "Most orders are printed within &lt;7 business days before shipping." },
+              { q: "What if my size doesn’t fit?", a: "Don't worry – these slides are designed to fit well if you pick the right size. Unless you're off by a few full sizes, they should be perfect. Exchanges aren't available for custom-made products." },
+              { q: "Are they waterproof?", a: "Hell yeah! They're water-resistant and easy to clean – just don't toss them in an oven or anything that could melt them. Otherwise, they're built to last." },
+              { q: "How long does production take?", a: "Most orders are printed within <7 business days before shipping." },
             ]}
           />
         </div>
@@ -223,8 +221,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: fallbackTitle,
     description: fallbackDescription,
-    openGraph: { title: fallbackTitle, description: fallbackDescription, images: ["/v3-front.jpg"] },
-    twitter: { card: "summary_large_image", title: fallbackTitle, description: fallbackDescription, images: ["/v3-front.jpg"] },
+    openGraph: { title: fallbackTitle, description: fallbackDescription, images: ["/_DSC9930.JPG"] },
+    twitter: { card: "summary_large_image", title: fallbackTitle, description: fallbackDescription, images: ["/_DSC9930.JPG"] },
   };
 }
 

@@ -207,7 +207,7 @@ export default function CartClient() {
                 </button>
               </div>
               <div className="flex items-center gap-2 lg:gap-4 flex-1 lg:flex-none justify-end min-w-0 lg:min-w-[5rem]">
-                <div className="text-sm text-neutral-900 text-right flex-1 lg:flex-none">{formatCentsAsCurrency(it.priceCents * it.quantity)}</div>
+                <div className="text-base font-semibold text-neutral-900 text-right flex-1 lg:flex-none">{formatCentsAsCurrency(it.priceCents * it.quantity)}</div>
                 <button
                   onClick={() => remove(it.id)}
                   className="text-xs lg:text-sm text-red-700 hover:text-red-800 hover:underline whitespace-nowrap"
@@ -260,7 +260,7 @@ export default function CartClient() {
           {/* Subtotal */}
           <div className="flex items-center justify-between text-sm pt-2 border-t border-black/10">
             <div className="text-neutral-700">Subtotal</div>
-            <div className="font-medium text-neutral-900">{formatCentsAsCurrency(subtotal)}</div>
+            <div className="font-bold text-neutral-900">{formatCentsAsCurrency(subtotal)}</div>
           </div>
         </div>
         <form

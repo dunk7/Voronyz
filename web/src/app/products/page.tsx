@@ -34,7 +34,7 @@ export default async function ProductsPage() {
             const images = (p.images as string[] | null) ?? [];
             const isV3 = p.slug === "v3-slides";
             const cover = isV3
-              ? "/Screenshot From 2025-09-20 00-08-02.png"
+              ? "/_DSC9933.JPG"
               : (images[0] ?? "/v3-front.jpg");
             return (
               <Link key={p.id} href={`/products/${p.slug}`} className="group block">
@@ -45,7 +45,7 @@ export default async function ProductsPage() {
                 <div className="mt-3">
                   <div className="flex items-center justify-between">
                     <div className="text-sm font-medium text-neutral-900">{p.name}</div>
-                    <div className="text-sm text-neutral-700">{formatCentsAsCurrency(p.priceCents, p.currency)}</div>
+                    <div className="text-base font-semibold text-neutral-900">{formatCentsAsCurrency(p.priceCents, p.currency)}</div>
                   </div>
                   <div className="mt-1 text-xs text-neutral-700 line-clamp-2">{p.description}</div>
                 </div>

@@ -323,7 +323,7 @@ export default function AddToCart({
             className="w-20 h-[48px] rounded-md border border-black/10 px-3 py-2 text-sm text-neutral-900"
           />
           <div className="flex items-baseline gap-2 pt-1">
-            <span className="text-xl font-bold text-green-600">{formattedTotal}</span>
+            <span className="text-2xl font-bold text-neutral-900">{formattedTotal}</span>
           </div>
           <button 
             onClick={add} 

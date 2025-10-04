@@ -21,7 +21,7 @@ export default function V3Gallery({
 
   return (
     <div className={`w-full ${className}`}>
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl ring-1 ring-black/5">
+      <div className={`relative aspect-[4/3] w-full overflow-hidden rounded-3xl ring-1 ring-black/5 group`}>
         {active?.type === "image" ? (
           <Image
             key={active?.src}
@@ -41,15 +41,37 @@ export default function V3Gallery({
             preload="metadata"
           />
         )}
+        {media.length > 1 && (
+          <>
+            <button
+              onClick={() => setActiveIndex((prev) => Math.max(0, prev - 1))}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100"
+              aria-label="Previous image"
+            >
+              <svg className="h-5 w-5 text-neutral-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setActiveIndex((prev) => Math.min(media.length - 1, prev + 1))}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-all opacity-0 group-hover:opacity-100"
+              aria-label="Next image"
+            >
+              <svg className="h-5 w-5 text-neutral-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </>
+        )}
       </div>
 
       {media.length > 1 && (
-        <div className="mt-3 grid grid-cols-5 gap-3">
+        <div className="mt-3 flex flex-row overflow-x-auto gap-3 pb-2 scrollbar-thin scrollbar-thumb-neutral-300 scrollbar-track-transparent">
           {media.map((m, i) => (
             <button
               key={`${m.type}-${m.src}`}
               onClick={() => setActiveIndex(i)}
-              className={`group relative aspect-square overflow-hidden rounded-xl ring-1 transition ${
+              className={`group relative aspect-square w-24 overflow-hidden rounded-xl ring-1 transition flex-shrink-0 ${
                 i === activeIndex ? "ring-black" : "ring-black/5 hover:ring-black/20"
               }`}
               aria-label={`Show media ${i + 1}`}
