@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [hide, setHide] = useState(false);
-  const [user, setUser] = useState<{ id: string; email: string; name: string } | null>(null);
+  // const [user, setUser] = useState<{ id: string; email: string; name: string } | null>(null); // Removed user state
   const [cartCount, setCartCount] = useState(0);
   const [cartCountLoaded, setCartCountLoaded] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
@@ -126,13 +126,6 @@ export default function Header() {
                 <span className={`pointer-events-none absolute left-5 right-5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/products") ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
               <Link
-                href="/files"
-                className={`relative uppercase tracking-[0.24em] text-[12px] sm:text-[13px] rounded-full px-5 py-2.5 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname === "/files" ? "text-white" : "text-white/70"}`}
-              >
-                <span>Files</span>
-                <span className={`pointer-events-none absolute left-5 right-5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname === "/files" ? "opacity-100" : "opacity-0"}`} aria-hidden />
-              </Link>
-              <Link
                 href="/about"
                 className={`relative uppercase tracking-[0.24em] text-[12px] sm:text-[13px] rounded-full px-5 py-2.5 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname === "/about" ? "text-white" : "text-white/70"}`}
               >
@@ -178,34 +171,7 @@ export default function Header() {
                 <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white text-black px-1 text-xs font-medium">{cartCount}</span>
               )}
             </Link>
-            {isDesktop && (
-              user ? (
-                <Button
-                  onClick={() => {
-                    // Mock sign out - just show demo user is signed out
-                    setUser(null);
-                  }}
-                  variant="secondary"
-                  size="md"
-                  className="ring-white/20 text-white hover:bg-white/10"
-                  aria-label="Sign out"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <circle cx="12" cy="8" r="3.25" stroke="currentColor" strokeWidth="1.5"/>
-                    <path d="M5 19.25c1.8-2.5 4.2-3.75 7-3.75s5.2 1.25 7 3.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                  </svg>
-                </Button>
-              ) : (
-                <Link href="/sign-in" aria-label="Sign in">
-                  <Button variant="secondary" size="md" className="ring-white/20 text-white hover:bg-white/10" aria-label="Sign in">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                      <circle cx="12" cy="8" r="3.25" stroke="currentColor" strokeWidth="1.5"/>
-                      <path d="M5 19.25c1.8-2.5 4.2-3.75 7-3.75s5.2 1.25 7 3.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                    </svg>
-                  </Button>
-                </Link>
-              )
-            )}
+            {/* Removed isDesktop conditional auth buttons */}
             <button
               className="md:hidden rounded-full p-3 ring-1 ring-white/15 text-white hover:bg-white/10 hover:ring-white/25 transition-all duration-200 group active:scale-95"
               onClick={() => setOpen(!open)}
@@ -262,13 +228,6 @@ export default function Header() {
                 All Footwear
               </Link>
               <Link
-                href="/files"
-                className="py-4 px-4 rounded-lg uppercase tracking-[0.22em] text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 text-lg font-medium"
-                onClick={() => setOpen(false)}
-              >
-                Files
-              </Link>
-              <Link
                 href="/about"
                 className="py-4 px-4 rounded-lg uppercase tracking-[0.22em] text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 text-lg font-medium"
                 onClick={() => setOpen(false)}
@@ -288,39 +247,8 @@ export default function Header() {
                 <span>Cart {cartCountLoaded ? `(${cartCount})` : ""}</span>
               </Link>
             </nav>
-
-            <div className="border-t border-white/10 mt-6 pt-6">
-              {user ? (
-                <button
-                  onClick={() => {
-                    setUser(null);
-                    setOpen(false);
-                  }}
-                  className="py-4 px-4 rounded-lg uppercase tracking-[0.22em] text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 text-lg font-medium flex items-center gap-3 w-full text-left"
-                  aria-label="Sign out"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <circle cx="12" cy="8" r="3.25" stroke="currentColor" strokeWidth="1.5"/>
-                    <path d="M5 19.25c1.8-2.5 4.2-3.75 7-3.75s5.2 1.25 7 3.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                  </svg>
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    setOpen(false);
-                    window.location.href = '/sign-in';
-                  }}
-                  className="py-4 px-4 rounded-lg uppercase tracking-[0.22em] text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 text-lg font-medium flex items-center gap-3 w-full text-left"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <circle cx="12" cy="8" r="3.25" stroke="currentColor" strokeWidth="1.5"/>
-                    <path d="M5 19.25c1.8-2.5 4.2-3.75 7-3.75s5.2 1.25 7 3.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                  </svg>
-                  <span>Sign In</span>
-                </button>
-              )}
+            {/* Removed the border-t div with auth buttons */}
             </div>
-          </div>
           </div>
         </div>
       </div>

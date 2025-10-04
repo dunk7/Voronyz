@@ -191,8 +191,8 @@ export default function PrivacyPage() {
 
             <p className="text-neutral-700">
               To exercise these rights, please contact us at{" "}
-              <a href="mailto:privacy@voronyz.com" className="text-black hover:underline">
-                privacy@voronyz.com
+              <a href="mailto:maximus.chapman.23@gmail.com" className="text-black hover:underline">
+                maximus.chapman.23@gmail.com
               </a>
               . We will respond to your request within 30 days.
             </p>
@@ -236,9 +236,8 @@ export default function PrivacyPage() {
             If you have any questions about this Privacy Policy or our data practices, please contact us:
           </p>
           <div className="space-y-2 text-neutral-700">
-            <p><strong>Email:</strong> <a href="mailto:privacy@voronyz.com" className="text-black hover:underline">privacy@voronyz.com</a></p>
-            <p><strong>Address:</strong> 123 Innovation Drive, Dallas, Texas 75201</p>
-            <p><strong>Phone:</strong> <a href="tel:+12145551234" className="text-black hover:underline">(214) 555-1234</a></p>
+            <p><strong>Email:</strong> <a href="mailto:maximus.chapman.23@gmail.com" className="text-black hover:underline">maximus.chapman.23@gmail.com</a></p>
+            <p><strong>Phone:</strong> <a href="tel:+12066788381" className="text-black hover:underline">206 678 8381</a></p>
           </div>
         </section>
       </div>

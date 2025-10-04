@@ -103,7 +103,7 @@ export default function AddToCart({
     return variants.find(v => v.color === selectedPrimary);
   }, [variants, selectedPrimary]);
 
-  const priceCents = (selectedVariant?.priceCents || 9900) + (selectedResolution === 'high' ? 500 : 0);
+  const priceCents = (selectedVariant?.priceCents || 7500) + (selectedResolution === 'high' ? 500 : 0);
   const totalCents = priceCents * quantity;
   const formattedTotal = formatCentsAsCurrency(totalCents);
 

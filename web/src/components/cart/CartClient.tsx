@@ -111,7 +111,7 @@ export default function CartClient() {
   const clearDiscount = () => {
     const updatedItems = items.map(item => {
       const resolution = item.attributes?.resolution || 'normal';
-      const originalPrice = 9900 + (resolution === 'high' ? 500 : 0);
+      const originalPrice = 7500 + (resolution === 'high' ? 500 : 0);
       return { ...item, priceCents: originalPrice };
     });
     saveCart({ items: updatedItems, discountCode: null });

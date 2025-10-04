@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
           unitAmount = item.resolution === 'high' ? 3200 : 2700;
           resolutionSuffix = item.resolution === 'high' ? ' (High Resolution)' : ' (Standard)';
         } else {
-          unitAmount = variant ? (variant.priceCents || variant.product.priceCents || 0) : 9900;
+          unitAmount = variant ? (variant.priceCents || variant.product.priceCents || 0) : 7500;
           resolutionSuffix = '';
         }
 
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
           unitAmount = item.resolution === 'high' ? 3200 : 2700;
           resolutionSuffix = item.resolution === 'high' ? ' (High Resolution)' : ' (Standard)';
         } else {
-          unitAmount = 9900;
+          unitAmount = 7500;
           resolutionSuffix = '';
         }
 

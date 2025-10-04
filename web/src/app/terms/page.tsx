@@ -38,7 +38,7 @@ export default function TermsPage() {
             <div className="bg-neutral-50 p-6 rounded-lg">
               <h3 className="text-lg font-medium text-neutral-900 mb-3">Custom Footwear</h3>
               <p className="text-neutral-700 text-sm">
-                Precision 3D-printed footwear using advanced TPU 95A lattice midsoles and modern uppers,
+                Precision 3D-printed footwear using advanced TPU lattice midsoles and modern uppers,
                 customized to your exact foot measurements.
               </p>
             </div>
@@ -299,9 +299,8 @@ export default function TermsPage() {
             If you have any questions about these Terms of Service, please contact us:
           </p>
           <div className="space-y-2 text-neutral-700">
-            <p><strong>Email:</strong> <a href="mailto:legal@voronyz.com" className="text-black hover:underline">legal@voronyz.com</a></p>
-            <p><strong>Address:</strong> 123 Innovation Drive, Dallas, Texas 75201</p>
-            <p><strong>Phone:</strong> <a href="tel:+12145551234" className="text-black hover:underline">(214) 555-1234</a></p>
+            <p><strong>Email:</strong> <a href="mailto:maximus.chapman.23@gmail.com" className="text-black hover:underline">maximus.chapman.23@gmail.com</a></p>
+            <p><strong>Phone:</strong> <a href="tel:+12066788381" className="text-black hover:underline">206 678 8381</a></p>
           </div>
         </section>
       </div>

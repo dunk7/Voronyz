@@ -49,7 +49,7 @@ export default function Home() {
                   href="/products"
                   className="rounded-full ring-1 ring-white/20 text-white px-6 py-3 sm:px-5 sm:py-3 text-sm font-medium hover:bg-white/5 transition text-center sm:text-left"
                 >
-                  Watch the video
+                  View All
                 </Link>
               </div>
             </div>
@@ -98,22 +98,21 @@ export default function Home() {
       </section>
 
       {/* Swapped: Materials + Mechanics section now with dark bg and light text */}
-      <section className="bg-neutral-950">
+      <section className="bg-black">
         <div className="container py-16 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-          <div className="lg:col-span-6 space-y-4">
-            <p className="uppercase tracking-[0.25em] text-xs text-white/50">Materials + Mechanics</p>
-            <h2 className="text-2xl font-semibold text-white">Engineered for comfort, built for performance</h2>
-            <p className="text-white/70">Lattice densities tuned by region for cushioning and rebound. Breathable uppers, stable heel geometry, optional carbon fiber plates for court response.</p>
-            <ul className="text-sm text-white/70 grid gap-2 list-disc pl-5">
-              <li>Scan‑calibrated last</li>
-              <li>Adaptive lattice zones</li>
-              <li>Performance plate option</li>
-            </ul>
-          </div>
           <div className="lg:col-span-6">
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl">
               <Image src="/rend1.png" alt="Voronyz Render 1" fill className="object-cover" />
             </div>
+          </div>
+          <div className="lg:col-span-6 space-y-4">
+            <p className="uppercase tracking-[0.25em] text-xs text-white/50">Materials + Mechanics</p>
+            <h2 className="text-2xl font-semibold text-white">Engineered for comfort, built for performance</h2>
+            <ul className="text-sm text-white/70 grid gap-2 list-disc pl-5">
+              <li>Scan calibrated fit</li>
+              <li>Zoned cushioning and rebound</li>
+              <li>Breathable uppers</li>
+            </ul>
           </div>
         </div>
       </section>
@@ -133,7 +132,7 @@ export default function Home() {
           </div>
           <div className="lg:col-span-5 space-y-4">
             <h3 className="text-xl font-semibold text-neutral-900">See it in motion</h3>
-            <p className="text-neutral-600">A glimpse at lattice behavior and overall ride feel. The future of foot mechanics is printable.</p>
+            <p className="text-neutral-600">A glimpse at lattice behavior and overall feel. The future of foot mechanics is printable.</p>
             <div className="flex items-center gap-3">
               <Link href="/products/v3-slides" className="rounded-full bg-black text-white px-5 py-3 text-sm font-medium hover:bg-neutral-800 transition">Shop the new Slides</Link>
               <Link href="/products" className="rounded-full ring-1 ring-neutral-800 px-5 py-3 text-sm font-medium hover:bg-neutral-50 transition text-neutral-700">Explore All</Link>

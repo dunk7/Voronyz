@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Voronyz — Advanced 3D Printed Footwear",
   description:
-    "Futuristic footwear engineered with 3D scanning, TPU 95A lattices, and performance uppers. Shop the V3 Slides and more.",
+    "Futuristic footwear engineered with 3D scanning, TPU lattices, and performance uppers. Shop the V3 Slides and more.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://voronyz.local"),
   icons: {
     icon: [
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Voronyz — Advanced 3D Printed Footwear",
     description:
-      "Futuristic footwear engineered with 3D scanning, TPU 95A lattices, and performance uppers.",
+      "Futuristic footwear engineered with 3D scanning, TPU lattices, and performance uppers.",
     url: "/",
     siteName: "Voronyz",
     images: [
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Voronyz — Advanced 3D Printed Footwear",
     description:
-      "Futuristic footwear engineered with 3D scanning, TPU 95A lattices, and performance uppers.",
+      "Futuristic footwear engineered with 3D scanning, TPU lattices, and performance uppers.",
     images: ["/v3-front.jpg"],
   },
 };

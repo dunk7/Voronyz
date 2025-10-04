@@ -14,8 +14,8 @@ async function main() {
           slug: "v3-slides",
           name: "V3 Slides",
           description:
-            "World-class FDM printed slides with TPU 95A lattice lowers and breathable uppers. Engineered from precision 3D scans.",
-          priceCents: 9900,
+            "World-class FDM printed slides with TPU lattice lowers and breathable uppers. Engineered from precision 3D scans.",
+          priceCents: 7500,
           currency: "usd",
           images: ["/v3-front.jpg", "/v3-side.jpg", "/v3-top.jpg", "/v3-detail.jpg"],
           primaryColors: ["black", "white", "grey", "green", "pink"],

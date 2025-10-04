@@ -84,12 +84,12 @@ export default function CareersPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div className="grid grid-cols-1 gap-12">
           <div>
             <h3 className="text-2xl font-semibold text-neutral-900 mb-4">Work-Life Balance</h3>
             <p className="text-neutral-600 leading-relaxed mb-6">
-              We understand that great work comes from happy, well-rested people. That&apos;s why we offer flexible hours,
-              generous PTO, and the ability to work from anywhere in the world.
+              We understand that great work comes from happy, well-rested people. That's why we offer flexible hours
+              and the ability to work from anywhere in the world.
             </p>
             <ul className="space-y-2 text-neutral-600">
               <li className="flex items-center gap-2">
@@ -98,30 +98,14 @@ export default function CareersPage() {
               </li>
               <li className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-neutral-400 rounded-full"></span>
-                Unlimited PTO policy
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-neutral-400 rounded-full"></span>
                 Health and wellness benefits
               </li>
             </ul>
           </div>
-
-          <div className="relative">
-            <div className="aspect-[4/3] bg-gradient-to-br from-neutral-100 to-neutral-200 rounded-2xl flex items-center justify-center">
-              <div className="text-6xl">🏠</div>
-            </div>
-          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mt-20">
-          <div className="relative order-2 md:order-1">
-            <div className="aspect-[4/3] bg-gradient-to-br from-neutral-100 to-neutral-200 rounded-2xl flex items-center justify-center">
-              <div className="text-6xl">🚀</div>
-            </div>
-          </div>
-
-          <div className="order-1 md:order-2">
+        <div className="grid grid-cols-1 gap-12 mt-20">
+          <div>
             <h3 className="text-2xl font-semibold text-neutral-900 mb-4">Continuous Learning</h3>
             <p className="text-neutral-600 leading-relaxed mb-6">
               Technology moves fast, and so do we. We provide ongoing training, conference attendance,

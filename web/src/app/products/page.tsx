@@ -15,7 +15,7 @@ export default async function ProductsPage() {
       slug: "v3-slides",
       name: "Voronyz V3 Slides",
       description: "Custom 3D printed slides",
-      priceCents: 9900,
+      priceCents: 7500,
       currency: "usd",
       images: ["/v3-front.jpg"],
       createdAt: new Date(),

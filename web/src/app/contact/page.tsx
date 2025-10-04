@@ -29,7 +29,7 @@ export default function ContactPage() {
                   <label className="block text-sm font-medium text-neutral-700 mb-2">First name</label>
                   <input
                     type="text"
-                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                    className="w-full px-4 py-3 border border-neutral-500 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent text-neutral-900"
                     placeholder="John"
                   />
                 </div>
@@ -37,7 +37,7 @@ export default function ContactPage() {
                   <label className="block text-sm font-medium text-neutral-700 mb-2">Last name</label>
                   <input
                     type="text"
-                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                    className="w-full px-4 py-3 border border-neutral-500 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent text-neutral-900"
                     placeholder="Doe"
                   />
                 </div>
@@ -47,14 +47,14 @@ export default function ContactPage() {
                 <label className="block text-sm font-medium text-neutral-700 mb-2">Email</label>
                 <input
                   type="email"
-                  className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="w-full px-4 py-3 border border-neutral-500 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent text-neutral-900"
                   placeholder="john@example.com"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">Subject</label>
-                <select className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent">
+                <select className="w-full px-4 py-3 border border-neutral-500 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent text-neutral-900">
                   <option>General Inquiry</option>
                   <option>Product Questions</option>
                   <option>Partnership Opportunities</option>
@@ -68,7 +68,7 @@ export default function ContactPage() {
                 <label className="block text-sm font-medium text-neutral-700 mb-2">Message</label>
                 <textarea
                   rows={6}
-                  className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent resize-none"
+                  className="w-full px-4 py-3 border border-neutral-500 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent resize-none text-neutral-900"
                   placeholder="Tell us what's on your mind..."
                 />
               </div>
@@ -90,22 +90,12 @@ export default function ContactPage() {
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-neutral-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-sm">📍</span>
-                  </div>
-                  <div>
-                    <div className="font-medium text-neutral-900">Office</div>
-                    <div className="text-neutral-600">123 Innovation Drive<br />Dallas, Texas 75201</div>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-neutral-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-sm">📧</span>
                   </div>
                   <div>
                     <div className="font-medium text-neutral-900">Email</div>
-                    <a href="mailto:hello@voronyz.com" className="text-neutral-600 hover:text-black transition-colors">
-                      hello@voronyz.com
+                    <a href="mailto:maximus.chapman.23@gmail.com" className="text-neutral-600 hover:text-black transition-colors">
+                      maximus.chapman.23@gmail.com
                     </a>
                   </div>
                 </div>
@@ -116,8 +106,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <div className="font-medium text-neutral-900">Phone</div>
-                    <a href="tel:+12145551234" className="text-neutral-600 hover:text-black transition-colors">
-                      (214) 555-1234
+                    <a href="tel:+12066788381" className="text-neutral-600 hover:text-black transition-colors">
+                      206 678 8381
                     </a>
                   </div>
                 </div>
