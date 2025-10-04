@@ -45,7 +45,7 @@ export default function CartClient() {
           setDiscountCode(null);
           saveCart({ items: loadedItems, discountCode: null });
         } else {
-          loadedItems = (parsed.items || []).map((item: unknown) => ({ ...(item as CartItem), message: item.message || '' }));
+          loadedItems = (parsed.items || []).map((item: unknown) => ({ ...(item as CartItem), message: (item as CartItem).message || '' }));
           setItems(loadedItems);
           setDiscountCode(parsed.discountCode !== undefined ? parsed.discountCode : null);
         }
