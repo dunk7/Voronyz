@@ -17,6 +17,7 @@ export default function V3() {
   const groupRef = useRef<Rotatable | null>(null); // Parent group to rotate both meshes together
   const scaleRef = useRef<number | null>(null); // Shared scale factor for consistent sizing
   const platformRef = useRef<PositionScale | null>(null); // Platform under the model
+  type RotatableWithChildren = Rotatable & { children: unknown[] };
   
 
   useEffect(() => {
@@ -26,7 +27,8 @@ export default function V3() {
     // Scene setup
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, mount.clientWidth / mount.clientHeight, 0.1, 1000);
-    camera.fov = 50; // narrower field of view
+    const isSmallScreen = () => window.matchMedia('(max-width: 640px)').matches || mount.clientWidth <= 640;
+    camera.fov = isSmallScreen() ? 60 : 50; // slightly wider FOV on mobile so the model fits better
     camera.updateProjectionMatrix();
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -119,6 +121,40 @@ export default function V3() {
 
     camera.position.set(0, 0, 5); // side view pre-load
 
+    // Helper: fit camera to current group contents responsively
+    const fitCameraToGroup = () => {
+      if (!groupRef.current) return;
+      const group = groupRef.current as unknown as RotatableWithChildren;
+      if (group.children.length === 0) return;
+
+      // Update FOV per current screen size
+      camera.fov = isSmallScreen() ? 60 : 50;
+      camera.aspect = (mount.clientWidth || 1) / (mount.clientHeight || 1);
+      camera.updateProjectionMatrix();
+
+      const box = new THREE.Box3().setFromObject(group);
+      if (box.isEmpty()) return;
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+
+      // Compute distance that fits both width and height
+      const maxSize = Math.max(size.x, size.y, size.z);
+      const fov = camera.fov * (Math.PI / 180);
+      const fitHeightDistance = maxSize / (2 * Math.tan(fov / 2));
+      const fitWidthDistance = fitHeightDistance / Math.max(camera.aspect, 0.0001);
+      const padding = isSmallScreen() ? 1.35 : 1.15; // a bit more space on mobile
+      const distance = padding * Math.max(fitHeightDistance, fitWidthDistance);
+
+      // Keep an elevated, angled view while ensuring fit
+      const direction = new THREE.Vector3(0.9, 0.35, 0.4).normalize();
+      const cameraPos = direction.clone().multiplyScalar(distance).add(center);
+      camera.position.copy(cameraPos);
+      camera.near = Math.max(distance / 100, 0.01);
+      camera.far = distance * 100;
+      camera.updateProjectionMatrix();
+      camera.lookAt(center);
+    };
+
     // Load STL model (black)
     const loader = new STLLoader();
     loader.load('/v29.stl', (geometry: BufferGeometryLike) => {
@@ -152,17 +188,8 @@ export default function V3() {
       );
       mesh.quaternion.premultiply(zToY);
 
-      // Position camera to fit entire group
-      const boxSize = box.getSize(new THREE.Vector3()).length();
-      console.log('Model bounding box length (scaled):', boxSize);
-      const fov = camera.fov * (Math.PI / 180);
-      const fitDist = boxSize / (2 * Math.tan(fov / 2));
-      const distance = isFinite(fitDist) && fitDist > 0 ? fitDist * 0.9 : 5;
-      camera.position.set(distance * 0.9, distance * 0.35, distance * 0.4); // elevated, angled view
-      camera.near = Math.max(distance / 100, 0.01);
-      camera.far = distance * 100;
-      camera.updateProjectionMatrix();
-      camera.lookAt(0, 0, 0);
+      // Position camera to fit entire group responsively
+      fitCameraToGroup();
     }, undefined, (error: unknown) => {
       console.error('Error loading STL:', error);
       const fallbackGeometry = new THREE.BoxGeometry(1, 1, 1);
@@ -204,21 +231,13 @@ export default function V3() {
       );
       mesh.quaternion.premultiply(zToY);
 
-      // After adding, refit camera to entire group
-      const groupBox = new THREE.Box3().setFromObject(rootGroup);
-      const boxSize = groupBox.getSize(new THREE.Vector3()).length();
-      const fov = camera.fov * (Math.PI / 180);
-      const fitDist = boxSize / (2 * Math.tan(fov / 2));
-      const distance = isFinite(fitDist) && fitDist > 0 ? fitDist * 0.9 : camera.position.length();
-      camera.position.set(distance * 0.9, distance * 0.35, distance * 0.4); // elevated, angled view
-      camera.near = Math.max(distance / 100, 0.01);
-      camera.far = distance * 100;
-      camera.updateProjectionMatrix();
-      camera.lookAt(0, 0, 0);
+      // After adding, refit camera to entire group responsively
+      fitCameraToGroup();
 
       // Position the platform at the group's base
       const platform = platformRef.current;
       if (platform) {
+        const groupBox = new THREE.Box3().setFromObject(rootGroup);
         const min = groupBox.min;
         const max = groupBox.max;
         const radius = Math.max(max.x - min.x, max.z - min.z) * 3;
@@ -243,8 +262,11 @@ export default function V3() {
       const container = mountRef.current as HTMLDivElement | null;
       if (!container) return;
       camera.aspect = container.clientWidth / container.clientHeight;
+      camera.fov = isSmallScreen() ? 60 : 50;
       camera.updateProjectionMatrix();
       renderer.setSize(container.clientWidth, container.clientHeight);
+      // Refit after size/orientation change
+      fitCameraToGroup();
     };
     window.addEventListener('resize', handleResize);
 
@@ -265,7 +287,7 @@ export default function V3() {
       ref={mountRef}
       style={{
         width: '100%',
-        height: '100vh',
+        height: '100dvh',
         position: 'relative',
       }}
     />
