@@ -9,10 +9,14 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 
 export default function V3() {
   const mountRef = useRef<HTMLDivElement | null>(null);
-  const meshRef = useRef<any>(null); // To reference the loaded mesh for rotation
-  const groupRef = useRef<any>(null); // Parent group to rotate both meshes together
+  type Rotatable = { rotation: { y: number } };
+  type PositionScale = { position: { set: (x: number, y: number, z: number) => void }, scale: { set: (x: number, y: number, z: number) => void } };
+  type BufferGeometryLike = { computeVertexNormals: () => void };
+
+  const meshRef = useRef<unknown | null>(null); // To reference the loaded mesh for rotation
+  const groupRef = useRef<Rotatable | null>(null); // Parent group to rotate both meshes together
   const scaleRef = useRef<number | null>(null); // Shared scale factor for consistent sizing
-  const platformRef = useRef<any>(null); // Platform under the model
+  const platformRef = useRef<PositionScale | null>(null); // Platform under the model
   
 
   useEffect(() => {
@@ -117,7 +121,7 @@ export default function V3() {
 
     // Load STL model (black)
     const loader = new STLLoader();
-    loader.load('/v29.stl', (geometry: any) => {
+    loader.load('/v29.stl', (geometry: BufferGeometryLike) => {
       geometry.computeVertexNormals(); // For better lighting
 
       const material = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.6, metalness: 0.02, envMapIntensity: 0.6 });
@@ -169,7 +173,7 @@ export default function V3() {
     });
 
     // Load second STL model (white) with same transforms
-    loader.load('/v29g.stl', (geometry: any) => {
+    loader.load('/v29g.stl', (geometry: BufferGeometryLike) => {
       geometry.computeVertexNormals();
 
       const material = new THREE.MeshPhongMaterial({ color: 0xffffff, specular: 0x666666, shininess: 40 });
@@ -213,7 +217,7 @@ export default function V3() {
       camera.lookAt(0, 0, 0);
 
       // Position the platform at the group's base
-      const platform = platformRef.current as any;
+      const platform = platformRef.current;
       if (platform) {
         const min = groupBox.min;
         const max = groupBox.max;
@@ -250,7 +254,7 @@ export default function V3() {
       if (mount && mount.contains(renderer.domElement)) {
         mount.removeChild(renderer.domElement);
       }
-      scene.environment = null as any;
+      scene.environment = null;
       envRT.dispose();
       pmremGenerator.dispose();
     };
