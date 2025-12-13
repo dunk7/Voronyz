@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 type Media = {
   type: "image" | "video";
@@ -17,7 +17,18 @@ export default function V3Gallery({
   className?: string;
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const active = media[activeIndex] ?? media[0];
+
+  // Autoplay video when it becomes active
+  useEffect(() => {
+    if (active?.type === "video" && videoRef.current) {
+      videoRef.current.play().catch((error) => {
+        // Autoplay may fail due to browser policies, ignore the error
+        console.log("Autoplay prevented:", error);
+      });
+    }
+  }, [activeIndex, active?.type]);
 
   return (
     <div className={`w-full ${className}`}>
@@ -33,12 +44,14 @@ export default function V3Gallery({
           />
         ) : (
           <video
+            ref={videoRef}
             key={active?.src}
             src={active?.src}
             poster={active?.poster}
             className="h-full w-full object-cover"
             controls
             preload="metadata"
+            autoPlay
           />
         )}
         {media.length > 1 && (

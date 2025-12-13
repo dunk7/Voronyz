@@ -60,17 +60,16 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       id: "demo-product",
       slug: "v3-slides",
       name: "Voronyz V3 Slides",
-      description: "Custom 3D printed slides with adaptive lattice zones for comfort and performance.",
+      description: "Most Comfortable slides in the world",
       priceCents: 7500,
       currency: "usd",
       images: [
-        "/_DSC9913.JPG",
-        "/_DSC9910.JPG",
-        "/_DSC9914.JPG",
-        "/_DSC9930.JPG",
-        "/_DSC9933.JPG",
-        "/_DSC9921.JPG",
-        "/_DSC9932.JPG",
+        "/v3.4/Lumii_20251207_031125508.jpg",
+        "/v3.4/Lumii_20251207_030803361.jpg",
+        "/v3.4/Lumii_20251207_030803590.jpg",
+        "/v3.4/Lumii_20251207_030803848.jpg",
+        "/v3.4/Lumii_20251207_030804112.jpg",
+        "/v3.4/Lumii_20251207_030804394.jpg",
       ],
       primaryColors: ["black", "white", "grey", "green", "pink"],
       secondaryColors: ["black", "white", "grey", "green", "blue", "red", "maroon", "pink", "purple"],
@@ -79,7 +78,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         { id: "demo-black", color: "black", sku: "V3-BLK", stock: 999, priceCents: 7500 },
         { id: "demo-white", color: "white", sku: "V3-WHT", stock: 999, priceCents: 7500 },
         { id: "demo-grey", color: "grey", sku: "V3-GRY", stock: 999, priceCents: 7500 },
-        { id: "demo-green", color: "green", sku: "V3-GRN", stock: 999, priceCents: 7500 },
+        { id: "demo-green", color: "green", sku: "V3-GRN", stock: 0, priceCents: 7500 },
         { id: "demo-pink", color: "pink", sku: "V3-PNK", stock: 0, priceCents: 7500 },
       ],
       createdAt: new Date(),
@@ -89,19 +88,27 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   if (!product) return <div className="container py-12">Not found.</div>;
 
   const defaultImages = [
-    "/_DSC9933.JPG",
-    "/_DSC9930.JPG",
-    "/_DSC9931.JPG",
-    "/_DSC9932.JPG",
-    "/_DSC9936_1.JPG",
+    "/v3.4/Lumii_20251207_031125508.jpg",
+    "/v3.4/Lumii_20251207_030803361.jpg",
+    "/v3.4/Lumii_20251207_030803590.jpg",
+    "/v3.4/Lumii_20251207_030803848.jpg",
+    "/v3.4/Lumii_20251207_030804112.jpg",
+    "/v3.4/Lumii_20251207_030804394.jpg",
   ];
   const images = slug === "v3-slides" ? defaultImages : ((product.images as string[] | null) ?? defaultImages);
   const media = (
     slug === "v3-slides"
-      ? ([{ type: "video", src: "/C0964.MP4", poster: "/c0964-thumb.jpg" }] as const)
+      ? ([{ type: "video", src: "/v3.4/lv_0_20251207032243.mp4", poster: "/v3.4/Lumii_20251207_031125508.jpg" }] as const)
       : ([] as const)
   ) as Media[];
-  const galleryMedia = [...images.map((src) => ({ type: "image" as const, src, alt: product.name })), ...media];
+  // For v3-slides, place video second (after first image), otherwise append at end
+  const galleryMedia = slug === "v3-slides" && images.length > 0 && media.length > 0
+    ? [
+        { type: "image" as const, src: images[0], alt: product.name },
+        ...media,
+        ...images.slice(1).map((src) => ({ type: "image" as const, src, alt: product.name }))
+      ]
+    : [...images.map((src) => ({ type: "image" as const, src, alt: product.name })), ...media];
 
   return (
     <div className="bg-white">
@@ -169,9 +176,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <h2 className="text-lg font-semibold text-neutral-900 mb-4">FAQs</h2>
           <FAQ
             items={[
-              { q: "What if my size doesn’t fit?", a: "Don't worry – these slides are designed to fit well if you pick the right size. Unless you're off by a few full sizes, they should be perfect. Exchanges aren't available for custom-made products." },
-              { q: "Are they waterproof?", a: "Hell yeah! They're water-resistant and easy to clean – just don't toss them in an oven or anything that could melt them. Otherwise, they're built to last." },
-              { q: "How long does production take?", a: "Most orders are printed within <7 business days before shipping." },
+              { q: "What if my size doesn’t fit?", a: "Bruh they're slides. They're going to fit and also be extremely comfortable" },
+              { q: "Are they waterproof?", a: "Yes. 100% waterproof. Throw them in your washer to clean!" },
+              { q: "How long does production take?", a: "After 24 hours of printing, orders are shipped out next day" },
             ]}
           />
         </div>
@@ -208,12 +215,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     }
   } catch {}
   const fallbackTitle = "V3 Slides – Voronyz";
-  const fallbackDescription = "Custom 3D printed slides with adaptive lattice zones for comfort and performance.";
+  const fallbackDescription = "Most Comfortable slides in the world";
   return {
     title: fallbackTitle,
     description: fallbackDescription,
-    openGraph: { title: fallbackTitle, description: fallbackDescription, images: ["/_DSC9930.JPG"] },
-    twitter: { card: "summary_large_image", title: fallbackTitle, description: fallbackDescription, images: ["/_DSC9930.JPG"] },
+    openGraph: { title: fallbackTitle, description: fallbackDescription, images: ["/v3.4/Lumii_20251207_031125508.jpg"] },
+    twitter: { card: "summary_large_image", title: fallbackTitle, description: fallbackDescription, images: ["/v3.4/Lumii_20251207_031125508.jpg"] },
   };
 }
 

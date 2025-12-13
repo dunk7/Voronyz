@@ -26,7 +26,7 @@ async function main() {
               { color: "black", sku: "V3-BLK", stock: 999 },
               { color: "white", sku: "V3-WHT", stock: 999 },
               { color: "grey", sku: "V3-GRY", stock: 999 },
-              { color: "green", sku: "V3-GRN", stock: 999 },
+              { color: "green", sku: "V3-GRN", stock: 0 },  // Out of stock
               { color: "pink", sku: "V3-PNK", stock: 0 },  // Out of stock
             ],
           },
@@ -52,7 +52,7 @@ async function main() {
         black: 999,
         white: 999,
         grey: 999,
-        green: 999,
+        green: 0,
         pink: 0,
       };
 

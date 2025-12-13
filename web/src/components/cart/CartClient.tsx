@@ -12,7 +12,7 @@ interface CartItem {
   quantity: number;
   priceCents: number;
   variant: { name: string };
-  attributes?: { size?: number | string; color?: string; resolution?: 'normal' | 'high' };
+  attributes?: { size?: number | string; color?: string };
   productSlug?: string;
   message?: string;
 }
@@ -76,25 +76,13 @@ export default function CartClient() {
     let newPrices: CartItem[] | undefined;
     let isValid = false;
     if (lowerInput === "fam45") {
-      newPrices = items.map(item => {
-        const resolution = item.attributes?.resolution || 'normal';
-        const newPrice = resolution === 'high' ? 5000 : 4500;
-        return { ...item, priceCents: newPrice };
-      });
+      newPrices = items.map(item => ({ ...item, priceCents: 5000 }));
       isValid = true;
     } else if (lowerInput === "superdeal35") {
-      newPrices = items.map(item => {
-        const resolution = item.attributes?.resolution || 'normal';
-        const newPrice = resolution === 'high' ? 3500 : 3000;
-        return { ...item, priceCents: newPrice };
-      });
+      newPrices = items.map(item => ({ ...item, priceCents: 3500 }));
       isValid = true;
     } else if (lowerInput === "maximus27") {
-      newPrices = items.map(item => {
-        const resolution = item.attributes?.resolution || 'normal';
-        const newPrice = resolution === 'high' ? 3200 : 2700;
-        return { ...item, priceCents: newPrice };
-      });
+      newPrices = items.map(item => ({ ...item, priceCents: 3200 }));
       isValid = true;
     }
     if (isValid && newPrices) {
@@ -109,11 +97,7 @@ export default function CartClient() {
   };
 
   const clearDiscount = () => {
-    const updatedItems = items.map(item => {
-      const resolution = item.attributes?.resolution || 'normal';
-      const originalPrice = 7500 + (resolution === 'high' ? 500 : 0);
-      return { ...item, priceCents: originalPrice };
-    });
+    const updatedItems = items.map(item => ({ ...item, priceCents: 7500 }));
     saveCart({ items: updatedItems, discountCode: null });
     setInputValue("");
     setMessage("Discount removed.");
@@ -175,7 +159,6 @@ export default function CartClient() {
                       {String(it.attributes.color)}
                     </span>
                   )}
-                  {it.attributes?.resolution === 'high' && <span className="rounded-full bg-black/5 px-2 py-0.5">High Resolution</span>}
                 </div>
               </div>
             </Link>
@@ -329,7 +312,6 @@ export default function CartClient() {
                 secondaryColor: item.attributes?.color,
                 size: item.attributes?.size,
                 quantity: item.quantity,
-                resolution: item.attributes?.resolution || 'normal',
                 message: item.message || ''
               }));
               console.log('Sending checkout items:', checkoutItems); // Add this log

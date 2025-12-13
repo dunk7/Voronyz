@@ -64,28 +64,23 @@ export async function POST(request: NextRequest) {
 
         const lowerCode = discountCode ? discountCode.toLowerCase().trim() : '';
         let unitAmount: number;
-        let resolutionSuffix = '';
         if (lowerCode === 'fam45') {
-          unitAmount = item.resolution === 'high' ? 5000 : 4500;
-          resolutionSuffix = item.resolution === 'high' ? ' (High Resolution)' : ' (Standard)';
+          unitAmount = 5000;
         } else if (lowerCode === 'superdeal35') {
-          unitAmount = item.resolution === 'high' ? 3500 : 3000;
-          resolutionSuffix = item.resolution === 'high' ? ' (High Resolution)' : ' (Standard)';
+          unitAmount = 3500;
         } else if (lowerCode === 'maximus27') {
-          unitAmount = item.resolution === 'high' ? 3200 : 2700;
-          resolutionSuffix = item.resolution === 'high' ? ' (High Resolution)' : ' (Standard)';
+          unitAmount = 3200;
         } else {
           unitAmount = variant ? (variant.priceCents || variant.product.priceCents || 0) : 7500;
-          resolutionSuffix = '';
         }
 
         const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
         const productName = variant 
-          ? `${variant.product.name} - ${capitalize(variant.color)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${item.size || 'N/A'}${resolutionSuffix}`
+          ? `${variant.product.name} - ${capitalize(variant.color)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${item.size || 'N/A'}`
           : (item.productName && item.variantName 
-            ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${item.size || 'N/A'}${resolutionSuffix}`
-            : `Product Variant ${item.variantId || 'unknown'}${resolutionSuffix}`);
+            ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${item.size || 'N/A'}`
+            : `Product Variant ${item.variantId || 'unknown'}`);
         const description = item.message ? `Personal message: ${item.message}` : undefined;
 
         console.log(`Generated line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);
@@ -105,27 +100,22 @@ export async function POST(request: NextRequest) {
         console.error(`Database error for variant ${item.variantId}:`, dbError);
         // Fallback logic...
         let unitAmount: number;
-        let resolutionSuffix = '';
         const lowerCode = discountCode ? discountCode.toLowerCase().trim() : '';
         if (lowerCode === 'fam45') {
-          unitAmount = item.resolution === 'high' ? 5000 : 4500;
-          resolutionSuffix = item.resolution === 'high' ? ' (High Resolution)' : ' (Standard)';
+          unitAmount = 5000;
         } else if (lowerCode === 'superdeal35') {
-          unitAmount = item.resolution === 'high' ? 3500 : 3000;
-          resolutionSuffix = item.resolution === 'high' ? ' (High Resolution)' : ' (Standard)';
+          unitAmount = 3500;
         } else if (lowerCode === 'maximus27') {
-          unitAmount = item.resolution === 'high' ? 3200 : 2700;
-          resolutionSuffix = item.resolution === 'high' ? ' (High Resolution)' : ' (Standard)';
+          unitAmount = 3200;
         } else {
           unitAmount = 7500;
-          resolutionSuffix = '';
         }
 
         const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
         const productName = item.productName && item.variantName && item.secondaryColor && item.size
-          ? `${item.productName} - ${capitalize(item.variantName)} with ${capitalize(item.secondaryColor)} size ${item.size}${resolutionSuffix}`
-          : `Product Variant ${item.variantId || 'unknown'}${resolutionSuffix}`;
+          ? `${item.productName} - ${capitalize(item.variantName)} with ${capitalize(item.secondaryColor)} size ${item.size}`
+          : `Product Variant ${item.variantId || 'unknown'}`;
         const description = item.message ? `Personal message: ${item.message}` : undefined;
 
         console.log(`Fallback line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);

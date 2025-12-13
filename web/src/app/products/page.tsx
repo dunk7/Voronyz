@@ -17,7 +17,7 @@ export default async function ProductsPage() {
       description: "Custom 3D printed slides",
       priceCents: 7500,
       currency: "usd",
-      images: ["/v3-front.jpg"],
+      images: ["/v3.4/Lumii_20251207_030803361.jpg"],
       createdAt: new Date(),
       updatedAt: new Date(),
     }];
@@ -34,7 +34,7 @@ export default async function ProductsPage() {
             const images = (p.images as string[] | null) ?? [];
             const isV3 = p.slug === "v3-slides";
             const cover = isV3
-              ? "/_DSC9933.JPG"
+              ? "/v3.4/Lumii_20251207_031125508.jpg"
               : (images[0] ?? "/v3-front.jpg");
             return (
               <Link key={p.id} href={`/products/${p.slug}`} className="group block">

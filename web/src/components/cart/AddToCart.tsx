@@ -29,7 +29,7 @@ interface CartItem {
   quantity: number;
   priceCents: number;
   variant: { name: string };
-  attributes?: { color?: string; size?: string; resolution?: 'normal' | 'high' };
+  attributes?: { color?: string; size?: string };
   productSlug?: string;
   message?: string;
 }
@@ -84,8 +84,6 @@ export default function AddToCart({
     }
   );
 
-  const [selectedResolution, setSelectedResolution] = useState<'normal' | 'high'>('normal');
-
   // Get stock for a primary color
   const getStockForPrimary = (color: string) => {
     const variant = variants.find(v => v.color === color);
@@ -103,17 +101,17 @@ export default function AddToCart({
     return variants.find(v => v.color === selectedPrimary);
   }, [variants, selectedPrimary]);
 
-  const priceCents = (selectedVariant?.priceCents || 7500) + (selectedResolution === 'high' ? 500 : 0);
+  const priceCents = selectedVariant?.priceCents || 7500;
   const totalCents = priceCents * quantity;
   const formattedTotal = formatCentsAsCurrency(totalCents);
 
   // Disable add if no selections or primary out of stock
-  const canAdd = selectedPrimary && selectedSecondary && selectedSize && selectedResolution && isPrimaryAvailable(selectedPrimary);
+  const canAdd = selectedPrimary && selectedSecondary && selectedSize && isPrimaryAvailable(selectedPrimary);
 
   // Reset added if selections change
   useEffect(() => {
     setAdded(false);
-  }, [selectedPrimary, selectedSecondary, selectedSize, selectedResolution]);
+  }, [selectedPrimary, selectedSecondary, selectedSize]);
 
   function add() {
     if (!canAdd) return;
@@ -150,8 +148,7 @@ export default function AddToCart({
       const existingItemIndex = cart.findIndex(item => 
         item.variantId === selectedVariant.id && 
         item.attributes?.color === selectedSecondary && 
-        item.attributes?.size === selectedSize &&
-        item.attributes?.resolution === selectedResolution
+        item.attributes?.size === selectedSize
       );
 
       if (existingItemIndex >= 0) {
@@ -175,8 +172,7 @@ export default function AddToCart({
           variant: { name: selectedPrimary },
           attributes: { 
             color: selectedSecondary, 
-            size: selectedSize,
-            resolution: selectedResolution
+            size: selectedSize
           },
           productSlug,
           message: ''
@@ -290,30 +286,6 @@ export default function AddToCart({
                   }`}
                 >
                   {size}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Resolution */}
-        <div className="grid gap-2">
-          <label className="text-sm text-neutral-700">Print Quality</label>
-          <div className="flex gap-2">
-            {(['normal' as const, 'high' as const] as const).map((res) => {
-              const isSelected = selectedResolution === res;
-              const label = res === 'high' ? 'High Resolution' : 'Standard';
-              return (
-                <button
-                  key={res}
-                  onClick={() => setSelectedResolution(res)}
-                  className={`rounded-full px-3 py-2 text-sm transition ring-1 ${
-                    isSelected 
-                      ? "bg-black text-white ring-black" 
-                      : "ring-black/10 hover:bg-black/5 text-neutral-900"
-                  }`}
-                >
-                  {label}
                 </button>
               );
             })}
