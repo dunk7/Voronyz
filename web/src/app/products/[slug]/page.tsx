@@ -114,7 +114,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     <div className="bg-texture-white">
       <div className="container pt-4 pb-12 grid grid-cols-1 lg:grid-cols-12 gap-10">
         <nav className="col-span-full">
-          <Link href="/products" className="inline-flex items-center justify-center rounded-full px-4 py-2 ring-1 ring-black/10 hover:bg-black/5 text-sm text-neutral-900 transition-colors">
+          <Link href="/products" className="inline-flex items-center justify-center rounded-full px-4 py-2 ring-1 ring-black/10 hover:bg-black/5 text-sm text-neutral-900 transition-colors bg-white">
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
@@ -165,9 +165,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       </div>
 
       <div className="container pb-12">
-        <div className="mt-10 overflow-hidden rounded-3xl ring-1 ring-black/5">
+        <div className="mt-10 overflow-hidden rounded-3xl ring-1 ring-black/5 bg-white">
           <div className="bg-black text-white px-6 py-4 text-sm font-medium">How it’s made</div>
-          <div className="px-6 py-5 text-neutral-700 leading-relaxed bg-texture-white">
+          <div className="px-6 py-5 text-neutral-700 leading-relaxed">
             Each pair takes a full day to print using our proprietary TPU blend. Following printing, we perform heat-treated post-processing to ensure exceptional quality, comfort, and durability.
           </div>
         </div>

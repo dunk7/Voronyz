@@ -252,8 +252,8 @@ export default function AddToCart({
                     isSelected 
                       ? "bg-black text-white ring-black glow" 
                       : available 
-                        ? "ring-black/10 hover:bg-black/5 text-neutral-900" 
-                        : "bg-red-50 text-red-600 ring-red-300 cursor-not-allowed opacity-50"
+                        ? "bg-white ring-black/10 hover:bg-black/5 text-neutral-900" 
+                        : "bg-white text-red-600 ring-red-300 cursor-not-allowed opacity-50"
                   } ring-1`}
                 >
                   <span className={`inline-block h-4 w-4 rounded-full mr-2 border flex-shrink-0 ${
@@ -282,7 +282,7 @@ export default function AddToCart({
                   className={`flex items-center gap-0 rounded-full px-2 py-2 text-sm text-neutral-900 ring-1 transition leading-none ${
                     isSelected 
                       ? "bg-black text-white ring-black glow" 
-                      : "ring-black/10 hover:bg-black/5"
+                      : "bg-white ring-black/10 hover:bg-black/5"
                   }`}
                 >
                   <span className={`inline-block h-4 w-4 rounded-full mr-2 border flex-shrink-0 ${
@@ -307,7 +307,7 @@ export default function AddToCart({
                 className={`text-xs px-2 py-1 rounded-full transition ${
                   gender === "men"
                     ? "bg-black text-white"
-                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                    : "bg-white text-neutral-600 hover:bg-neutral-200"
                 }`}
               >
                 Men&apos;s
@@ -317,7 +317,7 @@ export default function AddToCart({
                 className={`text-xs px-2 py-1 rounded-full transition ${
                   gender === "women"
                     ? "bg-black text-white"
-                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                    : "bg-white text-neutral-600 hover:bg-neutral-200"
                 }`}
               >
                 Women&apos;s
@@ -327,7 +327,7 @@ export default function AddToCart({
                 className={`text-xs px-2 py-1 rounded-full transition ${
                   gender === "kids"
                     ? "bg-black text-white"
-                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                    : "bg-white text-neutral-600 hover:bg-neutral-200"
                 }`}
               >
                 Kids&apos;
@@ -346,7 +346,7 @@ export default function AddToCart({
                   className={`rounded-full h-10 w-10 text-sm text-neutral-900 ring-1 transition flex items-center justify-center ${
                     isSelected 
                       ? "bg-black text-white ring-black glow" 
-                      : "ring-black/10 hover:bg-black/5"
+                      : "bg-white ring-black/10 hover:bg-black/5"
                   }`}
                 >
                   {displaySize}
@@ -362,7 +362,7 @@ export default function AddToCart({
             min={1}
             value={quantity}
             onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-            className="w-20 h-[48px] rounded-md border border-black/10 px-3 py-2 text-sm text-neutral-900"
+            className="w-20 h-[48px] rounded-md border border-black/10 px-3 py-2 text-sm text-neutral-900 bg-white"
           />
           <div className="flex items-baseline gap-2 pt-1">
             <span className="text-2xl font-bold text-neutral-900">{formattedTotal}</span>

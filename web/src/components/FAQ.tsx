@@ -9,7 +9,7 @@ export type FAQItem = {
 export default function FAQ({ items, className = "" }: { items: FAQItem[]; className?: string }) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   return (
-    <div className={`divide-y divide-black/10 rounded-2xl ring-1 ring-black/5 ${className}`}>
+    <div className={`bg-white divide-y divide-black/10 rounded-2xl ring-1 ring-black/5 ${className}`}>
       {items.map((item, i) => {
         const open = openIndex === i;
         return (

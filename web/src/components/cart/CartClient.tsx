@@ -124,7 +124,7 @@ export default function CartClient() {
         {items.map((it) => (
           <div 
             key={it.id} 
-            className="flex flex-col lg:flex-row lg:items-center lg:justify-between rounded-xl ring-1 ring-black/10 p-3 lg:p-4 gap-3 lg:gap-0"
+            className="flex flex-col lg:flex-row lg:items-center lg:justify-between rounded-xl ring-1 ring-black/10 p-3 lg:p-4 gap-3 lg:gap-0 bg-white"
           >
             <Link 
               href={
@@ -174,7 +174,7 @@ export default function CartClient() {
                 <button
                   onClick={() => updateQuantity(it.id, it.quantity - 1)}
                   disabled={it.quantity <= 1}
-                  className="h-7 w-7 lg:h-8 lg:w-8 rounded-full ring-1 ring-black/10 hover:bg-black/5 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed text-sm lg:text-base"
+                  className="h-7 w-7 lg:h-8 lg:w-8 rounded-full ring-1 ring-black/10 hover:bg-black/5 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed text-sm lg:text-base bg-white"
                   aria-label="Decrease quantity"
                 >
                   -
@@ -189,13 +189,13 @@ export default function CartClient() {
                     if (value === '' || isNaN(Number(value))) return;
                     updateQuantity(it.id, Number(value));
                   }}
-                  className="w-10 lg:w-14 rounded-md border border-black/10 px-1 lg:px-2 py-1 text-sm text-neutral-900"
+                  className="w-10 lg:w-14 rounded-md border border-black/10 px-1 lg:px-2 py-1 text-sm text-neutral-900 bg-white"
                   aria-label={`Quantity for ${it.productName || it.variant?.name || "item"}`}
                 />
                 <button
                   onClick={() => updateQuantity(it.id, it.quantity + 1)}
                   disabled={it.quantity >= 99}
-                  className="h-7 w-7 lg:h-8 lg:w-8 rounded-full ring-1 ring-black/10 hover:bg-black/5 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed text-sm lg:text-base"
+                  className="h-7 w-7 lg:h-8 lg:w-8 rounded-full ring-1 ring-black/10 hover:bg-black/5 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed text-sm lg:text-base bg-white"
                   aria-label="Increase quantity"
                 >
                   +
@@ -218,7 +218,7 @@ export default function CartClient() {
       <div className="space-y-4">
         <div className="text-xs text-neutral-600 text-center">Free shipping on all orders</div>
         {/* Combined Discount and Subtotal Section */}
-        <div className="rounded-xl border border-black/10 p-4 space-y-4">
+        <div className="rounded-xl border border-black/10 p-4 space-y-4 bg-white">
           {/* Discount Input */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">Discount Code</label>
@@ -231,7 +231,7 @@ export default function CartClient() {
                   clearMessage();
                 }}
                 placeholder="Enter code"
-                className="flex-1 rounded-md border border-black/10 px-3 py-2 text-sm text-neutral-900"
+                className="flex-1 rounded-md border border-black/10 px-3 py-2 text-sm text-neutral-900 bg-white"
               />
               <button
                 onClick={applyDiscount}
@@ -241,12 +241,12 @@ export default function CartClient() {
               </button>
             </div>
             {message && (
-              <div className={`mt-2 text-sm p-2 rounded-md ${message.includes('applied') || message.includes('removed') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+              <div className={`mt-2 text-sm p-2 rounded-md bg-white ${message.includes('applied') || message.includes('removed') ? 'text-green-700 border border-green-200' : 'text-red-700 border border-red-200'}`}>
                 {message}
               </div>
             )}
             {discountCode && (
-              <div className="mt-2 text-sm text-green-600 flex justify-between items-center">
+              <div className="mt-2 text-sm text-green-600 flex justify-between items-center bg-white p-2 rounded-md border border-green-200">
                 Discount &quot;{discountCode}&quot; applied! 
                 <button onClick={clearDiscount} className="text-sm underline">Remove</button>
               </div>
