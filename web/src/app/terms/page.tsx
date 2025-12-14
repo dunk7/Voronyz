@@ -1,6 +1,6 @@
 export default function TermsPage() {
   return (
-    <div className="bg-white">
+    <div className="bg-texture-white">
       <div className="container py-12 space-y-8">
         {/* Header */}
         <div>

@@ -1,6 +1,6 @@
 export default function AboutPage() {
   return (
-    <div className="bg-white">
+    <div className="bg-texture-white">
       <div className="container py-20 space-y-12">
         <div className="text-center max-w-4xl mx-auto">
           <p className="uppercase tracking-[0.25em] text-xs text-neutral-500 mb-6">Voronyz Engineering</p>

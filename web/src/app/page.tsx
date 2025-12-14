@@ -67,7 +67,7 @@ export default function Home() {
       </section>
       
       {/* Swapped: Process section now with light bg and dark text */}
-      <section className="bg-white">
+      <section className="bg-texture-white">
         <div className="container py-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-5 space-y-3">
@@ -118,7 +118,7 @@ export default function Home() {
       </section>
 
       {/* Video Section - Keep light bg, polish with better spacing */}
-      <section className="bg-white border-t border-neutral-200">
+      <section className="bg-texture-white border-t border-neutral-200">
         <div className="container py-16 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-7">
             <div className="lg:col-span-7">

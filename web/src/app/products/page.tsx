@@ -23,7 +23,7 @@ export default async function ProductsPage() {
     }];
   }
   return (
-    <div className="bg-white">
+    <div className="bg-texture-white">
       <div className="container py-12">
         <div className="flex items-end justify-between gap-4 mb-6">
           <h1 className="text-2xl font-semibold text-neutral-900">Footwear</h1>

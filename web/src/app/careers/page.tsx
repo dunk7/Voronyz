@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function CareersPage() {
   return (
-    <div className="bg-white">
+    <div className="bg-texture-white">
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-neutral-50 to-neutral-100">
         <div className="absolute inset-0 bg-[url('/hero-bg.png')] bg-cover bg-center opacity-5" />

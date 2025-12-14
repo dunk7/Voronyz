@@ -23,7 +23,7 @@ export default function AccountPage() {
   if (isLoading) return <div className="container py-12">Loading…</div>;
 
   return (
-    <div className="bg-white">
+    <div className="bg-texture-white">
       <div className="container py-12 max-w-2xl space-y-6">
         <h1 className="text-2xl font-semibold">Account</h1>
         <div className="grid gap-4">
