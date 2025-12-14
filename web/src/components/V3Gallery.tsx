@@ -20,13 +20,19 @@ export default function V3Gallery({
   const videoRef = useRef<HTMLVideoElement>(null);
   const active = media[activeIndex] ?? media[0];
 
-  // Autoplay video when it becomes active
+  // Autoplay video when it becomes active, pause when switching away
   useEffect(() => {
     if (active?.type === "video" && videoRef.current) {
-      videoRef.current.play().catch((error) => {
+      const video = videoRef.current;
+      // Preload and play the video
+      video.load(); // Force reload to ensure proper buffering
+      video.play().catch((error) => {
         // Autoplay may fail due to browser policies, ignore the error
         console.log("Autoplay prevented:", error);
       });
+    } else if (videoRef.current) {
+      // Pause video when switching to non-video media
+      videoRef.current.pause();
     }
   }, [activeIndex, active?.type]);
 
@@ -50,8 +56,11 @@ export default function V3Gallery({
             poster={active?.poster}
             className="h-full w-full object-cover"
             controls
-            preload="metadata"
+            preload="auto"
             autoPlay
+            playsInline
+            muted
+            loop
           />
         )}
         {media.length > 1 && (
