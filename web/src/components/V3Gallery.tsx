@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 
 type Media = {
   type: "image" | "video";
@@ -18,7 +18,7 @@ export default function V3Gallery({
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const active = media[activeIndex] ?? media[0];
+  const active = useMemo(() => media[activeIndex] ?? media[0], [media, activeIndex]);
 
   // Autoplay video when it becomes active, pause when switching away
   useEffect(() => {
@@ -54,7 +54,7 @@ export default function V3Gallery({
       // Pause video when switching to non-video media
       videoRef.current.pause();
     }
-  }, [activeIndex, active?.type]);
+  }, [activeIndex, active]);
 
   return (
     <div className={`w-full ${className}`}>
@@ -66,7 +66,9 @@ export default function V3Gallery({
             alt={active?.alt || "Product image"}
             fill
             className="object-cover"
-            priority
+            priority={activeIndex === 0}
+            loading={activeIndex === 0 ? "eager" : "lazy"}
+            sizes="(max-width: 1024px) 100vw, 50vw"
           />
         ) : (
           <video
@@ -119,11 +121,25 @@ export default function V3Gallery({
               aria-label={`Show media ${i + 1}`}
             >
               {m.type === "image" ? (
-                <Image src={m.src} alt={m.alt || "Thumb"} fill className="object-cover transition group-hover:scale-105" />
+                <Image 
+                  src={m.src} 
+                  alt={m.alt || "Thumb"} 
+                  fill 
+                  className="object-cover transition group-hover:scale-105" 
+                  loading={i < 3 ? "eager" : "lazy"}
+                  sizes="96px"
+                />
               ) : (
                 <div className="h-full w-full">
                   {m.poster ? (
-                    <Image src={m.poster} alt="Video poster" fill className="object-cover" />
+                    <Image 
+                      src={m.poster} 
+                      alt="Video poster" 
+                      fill 
+                      className="object-cover" 
+                      loading="lazy"
+                      sizes="96px"
+                    />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-black/5 text-xs text-neutral-700">Video</div>
                   )}
