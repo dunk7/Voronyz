@@ -76,12 +76,13 @@ export async function POST(request: NextRequest) {
 
         const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
+        const genderLabel = item.gender === "men" ? "Men's" : item.gender === "women" ? "Women's" : item.gender === "kids" ? "Kids'" : "";
+        const sizeLabel = item.size ? `${item.size}${genderLabel ? ` (${genderLabel})` : ''}` : 'N/A';
         const productName = variant 
-          ? `${variant.product.name} - ${capitalize(variant.color)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${item.size || 'N/A'}`
+          ? `${variant.product.name} - ${capitalize(variant.color)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}`
           : (item.productName && item.variantName 
-            ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${item.size || 'N/A'}`
+            ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}`
             : `Product Variant ${item.variantId || 'unknown'}`);
-        const description = item.message ? `Personal message: ${item.message}` : undefined;
 
         console.log(`Generated line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);
 
@@ -90,7 +91,6 @@ export async function POST(request: NextRequest) {
             currency: 'usd',
             product_data: {
               name: productName,
-              ...(description && { description }),
             },
             unit_amount: unitAmount,
           },
@@ -113,10 +113,11 @@ export async function POST(request: NextRequest) {
 
         const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
+        const genderLabel = item.gender === "men" ? "Men's" : item.gender === "women" ? "Women's" : item.gender === "kids" ? "Kids'" : "";
+        const sizeLabel = item.size ? `${item.size}${genderLabel ? ` (${genderLabel})` : ''}` : 'N/A';
         const productName = item.productName && item.variantName && item.secondaryColor && item.size
-          ? `${item.productName} - ${capitalize(item.variantName)} with ${capitalize(item.secondaryColor)} size ${item.size}`
+          ? `${item.productName} - ${capitalize(item.variantName)} with ${capitalize(item.secondaryColor)} size ${sizeLabel}`
           : `Product Variant ${item.variantId || 'unknown'}`;
-        const description = item.message ? `Personal message: ${item.message}` : undefined;
 
         console.log(`Fallback line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);
 
@@ -125,7 +126,6 @@ export async function POST(request: NextRequest) {
             currency: 'usd',
             product_data: {
               name: productName,
-              ...(description && { description }),
             },
             unit_amount: unitAmount,
           },

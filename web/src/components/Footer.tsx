@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="container py-10 grid gap-8 md:grid-cols-3 text-sm text-neutral-600">
         <div className="space-y-3">
           <div className="text-black font-semibold">Voronyz</div>
-          <p>Advanced 3D printed footwear engineered with precision scanning and modern materials.</p>
+          <p>Nothing in the world compares to Voronyz. Trust me bro</p>
         </div>
         <div className="grid gap-2">
           <div className="text-neutral-900 font-medium">Company</div>

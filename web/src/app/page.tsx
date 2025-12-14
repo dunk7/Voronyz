@@ -101,8 +101,8 @@ export default function Home() {
       <section className="bg-black">
         <div className="container py-16 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-6">
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl">
-              <Image src="/rend1.png" alt="Voronyz Render 1" fill className="object-cover" />
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl" style={{ clipPath: 'inset(0 20px 0 0)' }}>
+              <Image src="/v3.4/1765680306879.jpg" alt="Voronyz V3 Slides" fill className="object-cover" />
             </div>
           </div>
           <div className="lg:col-span-6 space-y-4">
@@ -123,8 +123,8 @@ export default function Home() {
           <div className="lg:col-span-7">
             <div className="lg:col-span-7">
               <div className="relative aspect-video w-full overflow-hidden rounded-2xl ring-1 ring-neutral-200 shadow-lg">
-                <Image src="/c0964-thumb.jpg" alt="Voronyz slides video" fill className="object-cover" />
-                <a href="/C0964.MP4" target="_blank" rel="noopener noreferrer" className="absolute inset-0 grid place-items-center transition-opacity hover:opacity-90">
+                <Image src="/v3.4/Lumii_20251207_031125508.jpg" alt="Voronyz slides video" fill className="object-cover" />
+                <a href="/v3.4/lv_0_20251207032243.mp4" target="_blank" rel="noopener noreferrer" className="absolute inset-0 grid place-items-center transition-opacity hover:opacity-90">
                   <span className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-black/70 backdrop-blur text-white">▶</span>
                 </a>
               </div>

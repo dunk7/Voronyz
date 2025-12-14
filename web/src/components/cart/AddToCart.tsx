@@ -29,9 +29,8 @@ interface CartItem {
   quantity: number;
   priceCents: number;
   variant: { name: string };
-  attributes?: { color?: string; size?: string };
+  attributes?: { color?: string; size?: string; gender?: string };
   productSlug?: string;
-  message?: string;
 }
 
 interface CartData {
@@ -60,7 +59,7 @@ export default function AddToCart({
       if (primaryParam && primaryColors.includes(primaryParam.toLowerCase())) {
         return primaryParam.toLowerCase();
       }
-      return primaryColors[0];
+      return primaryColors.includes('white') ? 'white' : primaryColors[0];
     }
   );
 
@@ -70,17 +69,28 @@ export default function AddToCart({
       if (secondaryParam && secondaryColors.includes(secondaryParam.toLowerCase())) {
         return secondaryParam.toLowerCase();
       }
-      return secondaryColors[0];
+      return secondaryColors.includes('black') ? 'black' : secondaryColors[0];
     }
   );
 
+  const [gender, setGender] = useState<"men" | "women" | "kids">("men");
+  
+  // Standard size ranges for men's, women's, and kids'
+  // Men's: covers most common sizes
+  const mensSizes = ["6", "7", "8", "9", "10", "11", "12", "13"];
+  // Women's: covers small to large sizes
+  const womensSizes = ["4", "5", "6", "7", "8", "9", "10", "11"];
+  // Kids': covers toddler to youth sizes
+  const kidsSizes = ["1", "2", "3", "4", "5", "6", "7"];
+  
   const [selectedSize, setSelectedSize] = useState<string | undefined>(
     () => {
       const sizeParam = searchParams.get('size');
-      if (sizeParam && sizes.includes(sizeParam)) {
+      const defaultSizes = mensSizes;
+      if (sizeParam && defaultSizes.includes(sizeParam)) {
         return sizeParam;
       }
-      return sizes[0];
+      return defaultSizes[0];
     }
   );
 
@@ -108,10 +118,27 @@ export default function AddToCart({
   // Disable add if no selections or primary out of stock
   const canAdd = selectedPrimary && selectedSecondary && selectedSize && isPrimaryAvailable(selectedPrimary);
 
+  // Get display sizes based on gender
+  const displaySizes = useMemo(() => {
+    if (gender === "women") return womensSizes;
+    if (gender === "kids") return kidsSizes;
+    return mensSizes;
+  }, [gender]);
+
+  // Get size label based on gender
+  const sizeLabel = gender === "men" ? "Men's" : gender === "women" ? "Women's" : "Kids'";
+
+  // Reset selected size when gender changes if current size is not in new array
+  useEffect(() => {
+    if (selectedSize && !displaySizes.includes(selectedSize)) {
+      setSelectedSize(displaySizes[0]);
+    }
+  }, [gender, displaySizes, selectedSize]);
+
   // Reset added if selections change
   useEffect(() => {
     setAdded(false);
-  }, [selectedPrimary, selectedSecondary, selectedSize]);
+  }, [selectedPrimary, selectedSecondary, selectedSize, gender]);
 
   function add() {
     if (!canAdd) return;
@@ -128,8 +155,7 @@ export default function AddToCart({
         if (Array.isArray(parsed)) {
           // Legacy array format, migrate
           fullCart = { items: parsed.map((item: unknown) => ({ 
-            ...(item as CartItem), 
-            message: '' 
+            ...(item as CartItem)
           })), discountCode: null };
         } else {
           fullCart = parsed as CartData;
@@ -148,7 +174,8 @@ export default function AddToCart({
       const existingItemIndex = cart.findIndex(item => 
         item.variantId === selectedVariant.id && 
         item.attributes?.color === selectedSecondary && 
-        item.attributes?.size === selectedSize
+        item.attributes?.size === selectedSize &&
+        item.attributes?.gender === gender
       );
 
       if (existingItemIndex >= 0) {
@@ -157,8 +184,7 @@ export default function AddToCart({
         cart[existingItemIndex] = { 
           ...existingItem, 
           quantity: existingItem.quantity + quantity,
-          priceCents: priceCents,
-          message: existingItem.message || ''
+          priceCents: priceCents
         };
       } else {
         // Add new
@@ -172,10 +198,10 @@ export default function AddToCart({
           variant: { name: selectedPrimary },
           attributes: { 
             color: selectedSecondary, 
-            size: selectedSize
+            size: selectedSize,
+            gender: gender
           },
-          productSlug,
-          message: ''
+          productSlug
         };
         cart.push(newItem);
       }
@@ -271,21 +297,59 @@ export default function AddToCart({
 
         {/* Size */}
         <div className="grid gap-2">
-          <label className="text-sm text-neutral-700">Size (US Men&apos;s)</label>
+          <div className="flex items-center justify-between">
+            <label className="text-sm text-neutral-700">
+              Size (US {sizeLabel})
+            </label>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setGender("men")}
+                className={`text-xs px-2 py-1 rounded-full transition ${
+                  gender === "men"
+                    ? "bg-black text-white"
+                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                }`}
+              >
+                Men&apos;s
+              </button>
+              <button
+                onClick={() => setGender("women")}
+                className={`text-xs px-2 py-1 rounded-full transition ${
+                  gender === "women"
+                    ? "bg-black text-white"
+                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                }`}
+              >
+                Women&apos;s
+              </button>
+              <button
+                onClick={() => setGender("kids")}
+                className={`text-xs px-2 py-1 rounded-full transition ${
+                  gender === "kids"
+                    ? "bg-black text-white"
+                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                }`}
+              >
+                Kids&apos;
+              </button>
+            </div>
+          </div>
           <div className="flex flex-wrap gap-2">
-            {sizes.map((size) => {
-              const isSelected = selectedSize === size;
+            {displaySizes.map((displaySize) => {
+              const isSelected = selectedSize === displaySize;
               return (
                 <button
-                  key={`size-${size}`}
-                  onClick={() => setSelectedSize(size)}
-                  className={`rounded-full px-2 py-2 text-sm text-neutral-900 ring-1 transition ${
+                  key={`size-${displaySize}-${gender}`}
+                  onClick={() => {
+                    setSelectedSize(displaySize);
+                  }}
+                  className={`rounded-full h-10 w-10 text-sm text-neutral-900 ring-1 transition flex items-center justify-center ${
                     isSelected 
                       ? "bg-black text-white ring-black glow" 
                       : "ring-black/10 hover:bg-black/5"
                   }`}
                 >
-                  {size}
+                  {displaySize}
                 </button>
               );
             })}

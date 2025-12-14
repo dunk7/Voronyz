@@ -60,7 +60,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       id: "demo-product",
       slug: "v3-slides",
       name: "Voronyz V3 Slides",
-      description: "Most Comfortable slides in the world",
+      description: "Hands down most Comfortable slides in the world",
       priceCents: 7500,
       currency: "usd",
       images: [
@@ -113,12 +113,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   return (
     <div className="bg-white">
       <div className="container pt-4 pb-12 grid grid-cols-1 lg:grid-cols-12 gap-10">
-        <nav className="col-span-full text-sm text-neutral-500">
-          <Link href="/" className="hover:text-neutral-900">Home</Link>
-          <span className="mx-2">/</span>
-          <Link href="/products" className="hover:text-neutral-900">Products</Link>
-          <span className="mx-2">/</span>
-          <span className="text-neutral-900">{product.name}</span>
+        <nav className="col-span-full">
+          <Link href="/products" className="inline-flex items-center justify-center rounded-full px-4 py-2 ring-1 ring-black/10 hover:bg-black/5 text-sm text-neutral-900 transition-colors">
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back
+          </Link>
         </nav>
         <div className="lg:col-span-7">
           <V3Gallery media={galleryMedia} />
@@ -131,14 +132,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <p className="text-neutral-700 leading-relaxed">{product.description}</p>
 
             <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Made to order in &lt;7 days</span>
+              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Made to order in &lt;2 days</span>
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Lasts 2-5 years</span>
-              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Programmable NFC chip</span>
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Free shipping</span>
             </div>
 
             <div className="mt-4 text-xs text-neutral-600">
-              All sizes are in US Men&apos;s. For women, subtract 1.5 from your usual women&apos;s size (e.g., women&apos;s 7 = men&apos;s 5.5).
+              Select your preferred sizing (Men&apos;s or Women&apos;s) when choosing a size. Sizes are automatically converted for you.
             </div>
 
             <Suspense fallback={<div className="h-[48px] bg-gray-200 rounded-full animate-pulse" />}>
@@ -215,7 +215,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     }
   } catch {}
   const fallbackTitle = "V3 Slides – Voronyz";
-  const fallbackDescription = "Most Comfortable slides in the world";
+  const fallbackDescription = "Hands down most Comfortable slides in the world";
   return {
     title: fallbackTitle,
     description: fallbackDescription,

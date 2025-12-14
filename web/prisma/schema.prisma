@@ -10,59 +10,58 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id                String   @id @default(cuid())
-  email             String   @unique
-  name              String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  cart              Cart?
-  orders            Order[]
-  footScanMetadata  Json?
-  preferences       Json?
+  id               String   @id @default(cuid())
+  email            String   @unique
+  name             String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  cart             Cart?
+  orders           Order[]
+  footScanMetadata Json?
+  preferences      Json?
 }
 
 model Product {
-  id           String   @id @default(cuid())
-  slug         String   @unique
-  name         String
-  description  String
-  priceCents   Int
-  currency     String   @default("usd")
-  images       Json?
-  primaryColors String[] @default(["black", "white", "grey", "green", "pink"])  // Available primary colors
-  secondaryColors String[] @default(["black", "white", "grey", "green", "blue", "red", "maroon", "pink", "purple"])  // Secondary color options, all in stock
-  sizes        String[] @default(["5", "6", "7", "8", "9", "10", "11", "12"])  // Available sizes
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  variants     Variant[]
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  name            String
+  description     String
+  priceCents      Int
+  currency        String    @default("usd")
+  images          Json?
+  primaryColors   String[]  @default(["black", "white", "grey", "green", "pink"]) // Available primary colors
+  secondaryColors String[]  @default(["black", "white", "grey", "green", "blue", "red", "maroon", "pink", "purple"]) // Secondary color options, all in stock
+  sizes           String[]  @default(["5", "6", "7", "8", "9", "10", "11", "12"]) // Available sizes
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  variants        Variant[]
 }
 
 model Variant {
-  id          String   @id @default(cuid())
-  product     Product  @relation(fields: [productId], references: [id])
-  productId   String
-  color       String   // Primary color (e.g., "black")
-  sku         String   @unique
-  priceCents  Int?
-  stock       Int      @default(999)  // Stock per color (999 = effectively unlimited/print on demand; 0 = out of stock)
-  attributes  Json?    // Optional extras if needed
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  cartItems   CartItem[]
+  id         String     @id @default(cuid())
+  product    Product    @relation(fields: [productId], references: [id])
+  productId  String
+  color      String // Primary color (e.g., "black")
+  sku        String     @unique
+  priceCents Int?
+  stock      Int        @default(999) // Stock per color (999 = effectively unlimited/print on demand; 0 = out of stock)
+  attributes Json? // Optional extras if needed
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  cartItems  CartItem[]
 
-  @@unique([productId, color])  // One variant per color per product
+  @@unique([productId, color]) // One variant per color per product
   @@index([productId])
 }
 
 model Cart {
-  id          String     @id @default(cuid())
-  user        User?      @relation(fields: [userId], references: [id])
-  userId      String?    @unique
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  items       CartItem[]
+  id        String     @id @default(cuid())
+  user      User?      @relation(fields: [userId], references: [id])
+  userId    String?    @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  items     CartItem[]
 }
 
 model CartItem {
@@ -81,16 +80,15 @@ model CartItem {
 }
 
 model Order {
-  id           String   @id @default(cuid())
-  user         User?    @relation(fields: [userId], references: [id])
-  userId       String?
-  status       String   @default("pending")
-  currency     String   @default("usd")
+  id            String   @id @default(cuid())
+  user          User?    @relation(fields: [userId], references: [id])
+  userId        String?
+  status        String   @default("pending")
+  currency      String   @default("usd")
   subtotalCents Int
-  totalCents   Int
-  stripeId     String?  @unique
-  metadata     Json?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  totalCents    Int
+  stripeId      String?  @unique
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
-
