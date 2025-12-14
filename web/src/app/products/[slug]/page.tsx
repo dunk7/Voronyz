@@ -110,10 +110,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       ]
     : [...images.map((src) => ({ type: "image" as const, src, alt: product.name })), ...media];
 
+  // For v3-slides, use the updated description
+  const displayDescription = slug === "v3-slides" 
+    ? "World-class FDM printed slides with TPU 95A lattice lowers and breathable uppers. Engineered from precision 3D scans."
+    : product.description;
+
   return (
     <div className="bg-texture-white">
-      <div className="container pt-4 pb-12 grid grid-cols-1 lg:grid-cols-12 gap-10">
-        <nav className="col-span-full">
+      <div className="container pt-4 pb-12">
+        <nav className="mb-6">
           <Link href="/products" className="inline-flex items-center justify-center rounded-full px-4 py-2 ring-1 ring-black/10 hover:bg-black/5 text-sm text-neutral-900 transition-colors bg-white">
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -121,44 +126,42 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             Back
           </Link>
         </nav>
-        <div className="lg:col-span-7">
-          <V3Gallery media={galleryMedia} />
+        
+        <div className="mb-8 space-y-4">
+          <h1 className="text-2xl font-semibold text-neutral-900">{product.name}</h1>
+          <p className="text-neutral-700 leading-relaxed">{displayDescription}</p>
+          <div className="flex flex-wrap gap-2">
+            <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Made to order in &lt;2 days</span>
+            <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Lasts 2-5 years</span>
+            <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Free shipping</span>
+          </div>
         </div>
-        <div className="lg:col-span-5">
-          <div className="lg:sticky lg:top-20 space-y-6">
-            <div>
-              <h1 className="text-2xl font-semibold text-neutral-900">{product.name}</h1>
-            </div>
-            <p className="text-neutral-700 leading-relaxed">{product.description}</p>
 
-            <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Made to order in &lt;2 days</span>
-              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Lasts 2-5 years</span>
-              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Free shipping</span>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          <div className="lg:col-span-7">
+            <V3Gallery media={galleryMedia} />
+          </div>
+          <div className="lg:col-span-5">
+            <div className="lg:sticky lg:top-20 space-y-6">
+              <Suspense fallback={<div className="h-[48px] bg-gray-200 rounded-full animate-pulse" />}>
+                <AddToCart
+                  variants={product.variants}
+                  primaryColors={product.primaryColors as string[]}
+                  secondaryColors={product.secondaryColors as string[]}
+                  sizes={product.sizes as string[]}
+                  productName={product.name}
+                  coverImage={(images[0] as string) || defaultImages[0]}
+                  productSlug={slug}
+                  // Note: Update AddToCart component to handle primary color selection (with stock check), size, and secondary color choice.
+                  // For example, use state for selectedPrimary, selectedSize, selectedSecondary; disable add if primary out of stock or no selections.
+                  // When adding to cart, create CartItem with attributes {primaryColor, size, secondaryColor}, linked to the variant SKU for primary.
+                />
+              </Suspense>
 
-            <div className="mt-4 text-xs text-neutral-600">
-              Select your preferred sizing (Men&apos;s or Women&apos;s) when choosing a size. Sizes are automatically converted for you.
-            </div>
-
-            <Suspense fallback={<div className="h-[48px] bg-gray-200 rounded-full animate-pulse" />}>
-              <AddToCart
-                variants={product.variants}
-                primaryColors={product.primaryColors as string[]}
-                secondaryColors={product.secondaryColors as string[]}
-                sizes={product.sizes as string[]}
-                productName={product.name}
-                coverImage={(images[0] as string) || defaultImages[0]}
-                productSlug={slug}
-                // Note: Update AddToCart component to handle primary color selection (with stock check), size, and secondary color choice.
-                // For example, use state for selectedPrimary, selectedSize, selectedSecondary; disable add if primary out of stock or no selections.
-                // When adding to cart, create CartItem with attributes {primaryColor, size, secondaryColor}, linked to the variant SKU for primary.
-              />
-            </Suspense>
-
-            <div className="flex gap-4 text-xs text-neutral-500">
-              <Link href="/products" className="underline hover:no-underline">← Back to Shop</Link>
-              <span>Ships worldwide. Taxes calculated at checkout.</span>
+              <div className="flex gap-4 text-xs text-neutral-500">
+                <Link href="/products" className="underline hover:no-underline">← Back to Shop</Link>
+                <span>Ships worldwide. Taxes calculated at checkout.</span>
+              </div>
             </div>
           </div>
         </div>
