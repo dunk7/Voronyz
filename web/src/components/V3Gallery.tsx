@@ -24,13 +24,33 @@ export default function V3Gallery({
   useEffect(() => {
     if (active?.type === "video" && videoRef.current) {
       const video = videoRef.current;
-      // Preload and play the video
-      video.load(); // Force reload to ensure proper buffering
-      video.play().catch((error) => {
-        // Autoplay may fail due to browser policies, ignore the error
-        console.log("Autoplay prevented:", error);
-      });
-    } else if (videoRef.current) {
+      
+      // For mobile, let the autoPlay attribute handle initial playback
+      // Only manually trigger play if autoPlay failed or if video is already loaded
+      const handleLoadedData = () => {
+        // Only attempt play if video is paused (autoplay didn't work)
+        if (video.paused) {
+          video.play().catch((error) => {
+            // Autoplay may fail due to browser policies, ignore the error
+            console.log("Autoplay prevented:", error);
+          });
+        }
+      };
+
+      // Handle videos that are already loaded
+      if (video.readyState >= 2) {
+        // HAVE_CURRENT_DATA or better
+        if (video.paused) {
+          video.play().catch(() => {});
+        }
+      } else {
+        video.addEventListener("loadeddata", handleLoadedData, { once: true });
+      }
+
+      return () => {
+        video.removeEventListener("loadeddata", handleLoadedData);
+      };
+    } else if (videoRef.current && !videoRef.current.paused) {
       // Pause video when switching to non-video media
       videoRef.current.pause();
     }
@@ -56,11 +76,11 @@ export default function V3Gallery({
             poster={active?.poster}
             className="h-full w-full object-cover"
             controls
-            preload="auto"
-            autoPlay
+            preload="metadata"
             playsInline
             muted
             loop
+            autoPlay
           />
         )}
         {media.length > 1 && (
