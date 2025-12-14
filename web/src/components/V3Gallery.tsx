@@ -77,7 +77,6 @@ export default function V3Gallery({
             src={active?.src}
             poster={active?.poster}
             className="h-full w-full object-cover"
-            controls
             preload="metadata"
             playsInline
             muted
