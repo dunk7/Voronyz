@@ -109,44 +109,50 @@ export default function V3Gallery({
       </div>
 
       {media.length > 1 && (
-        <div className="mt-3 flex flex-row overflow-x-auto gap-3 pb-2 scrollbar-thin scrollbar-thumb-neutral-300 scrollbar-track-transparent">
+        <div className="mt-3 flex flex-row overflow-x-auto gap-3 px-2 py-2 scrollbar-thin scrollbar-thumb-neutral-300 scrollbar-track-transparent">
           {media.map((m, i) => (
             <button
               key={`${m.type}-${m.src}`}
               onClick={() => setActiveIndex(i)}
-              className={`group relative aspect-square w-24 overflow-hidden rounded-xl ring-1 transition flex-shrink-0 ${
+              className={`group relative aspect-square w-24 rounded-xl ring-1 transition flex-shrink-0 focus:outline-none focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-2 ${
                 i === activeIndex ? "ring-black" : "ring-black/5 hover:ring-black/20"
               }`}
               aria-label={`Show media ${i + 1}`}
             >
-              {m.type === "image" ? (
-                <Image 
-                  src={m.src} 
-                  alt={m.alt || "Thumb"} 
-                  fill 
-                  className="object-cover transition group-hover:scale-105" 
-                  loading={i < 3 ? "eager" : "lazy"}
-                  sizes="96px"
-                />
-              ) : (
-                <div className="h-full w-full">
-                  {m.poster ? (
-                    <Image 
-                      src={m.poster} 
-                      alt="Video poster" 
-                      fill 
-                      className="object-cover" 
-                      loading="lazy"
-                      sizes="96px"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-black/5 text-xs text-neutral-700">Video</div>
-                  )}
-                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/80 text-white">►</span>
+              <div className="absolute inset-0 overflow-hidden rounded-xl">
+                {m.type === "image" ? (
+                  <Image 
+                    src={m.src} 
+                    alt={m.alt || "Thumb"} 
+                    fill 
+                    className="object-cover transition group-hover:scale-105" 
+                    loading={i < 3 ? "eager" : "lazy"}
+                    sizes="96px"
+                  />
+                ) : (
+                  <div className="h-full w-full">
+                    {m.poster ? (
+                      <Image 
+                        src={m.poster} 
+                        alt="Video poster" 
+                        fill 
+                        className="object-cover" 
+                        loading="lazy"
+                        sizes="96px"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-black/5 text-xs text-neutral-700">Video</div>
+                    )}
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                      <div className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/80 backdrop-blur-sm shadow-lg">
+                        <svg className="h-4 w-4 text-white ml+1" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </button>
           ))}
         </div>

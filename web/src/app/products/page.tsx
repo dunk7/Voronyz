@@ -37,7 +37,7 @@ export default async function ProductsPage() {
               ? "/v3.4/Lumii_20251207_031125508.jpg"
               : (images[0] ?? "/v3-front.jpg");
             return (
-              <Link key={p.id} href={`/products/${p.slug}`} className="group block">
+              <Link key={p.id} href={`/products/${p.slug}`} className="group block focus:outline-none focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-2 rounded-3xl">
                 <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl ring-1 ring-black/5">
                   <Image src={cover} alt={p.name} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
