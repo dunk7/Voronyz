@@ -1,2 +1,1 @@
-# Handle Next.js Image Optimization API requests
-/_next/image?url=:image&* :image 200
+# Next.js Image Optimization is handled automatically by @netlify/plugin-nextjs
