@@ -19,6 +19,23 @@ export async function POST(request: NextRequest) {
   }
 
   const { items, discountCode, successUrl, cancelUrl } = requestBody;
+  
+  // Get base URL for converting relative image paths to absolute URLs
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (successUrl ? new URL(successUrl).origin : 'https://voronyz.local');
+  
+  // Helper function to convert image path to absolute URL
+  const getAbsoluteImageUrl = (imagePath?: string): string[] => {
+    if (!imagePath) return [];
+    // If already an absolute URL, return as is
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return [imagePath];
+    }
+    // Convert relative path to absolute URL
+    const absoluteUrl = imagePath.startsWith('/') 
+      ? `${baseUrl}${imagePath}` 
+      : `${baseUrl}/${imagePath}`;
+    return [absoluteUrl];
+  };
 
   try {
     if (!stripe) {
@@ -53,6 +70,7 @@ export async function POST(request: NextRequest) {
               select: {
                 name: true,
                 priceCents: true,
+                images: true,
               }
             }
           },
@@ -86,11 +104,22 @@ export async function POST(request: NextRequest) {
 
         console.log(`Generated line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);
 
+        // Get product image - prefer image from request, then from DB, then fallback
+        let productImage: string | undefined = item.image;
+        if (!productImage && variant?.product.images) {
+          const productImages = variant.product.images as string[] | null;
+          if (productImages && productImages.length > 0) {
+            productImage = productImages[0];
+          }
+        }
+        const stripeImages = productImage ? getAbsoluteImageUrl(productImage) : [];
+
         lineItems.push({
           price_data: {
             currency: 'usd',
             product_data: {
               name: productName,
+              ...(stripeImages.length > 0 && { images: stripeImages }),
             },
             unit_amount: unitAmount,
           },
@@ -121,11 +150,15 @@ export async function POST(request: NextRequest) {
 
         console.log(`Fallback line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);
 
+        // Get product image from request
+        const stripeImages = item.image ? getAbsoluteImageUrl(item.image) : [];
+
         lineItems.push({
           price_data: {
             currency: 'usd',
             product_data: {
               name: productName,
+              ...(stripeImages.length > 0 && { images: stripeImages }),
             },
             unit_amount: unitAmount,
           },
