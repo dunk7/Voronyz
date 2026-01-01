@@ -4,6 +4,12 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.URL || // Netlify
+  process.env.DEPLOY_PRIME_URL || // Netlify previews
+  "http://localhost:3000";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -18,7 +24,7 @@ export const metadata: Metadata = {
   title: "Voronyz — Advanced 3D Printed Footwear",
   description:
     "Futuristic footwear engineered with 3D scanning, TPU lattices, and performance uppers. Shop the V3 Slides and more.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://voronyz.local"),
+  metadataBase: new URL(siteUrl),
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },

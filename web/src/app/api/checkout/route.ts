@@ -9,10 +9,13 @@ const stripe = process.env.STRIPE_SECRET_KEY
   : null;
 
 export async function POST(request: NextRequest) {
+  const debug = process.env.NODE_ENV !== "production";
   let requestBody;
   try {
     requestBody = await request.json();
-    console.log('Checkout request body:', JSON.stringify(requestBody, null, 2));
+    if (debug) {
+      console.log("Checkout request received");
+    }
   } catch (parseError) {
     console.error('Failed to parse request body:', parseError);
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
@@ -21,7 +24,11 @@ export async function POST(request: NextRequest) {
   const { items, discountCode, successUrl, cancelUrl } = requestBody;
   
   // Get base URL for converting relative image paths to absolute URLs
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (successUrl ? new URL(successUrl).origin : 'https://voronyz.local');
+  const baseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.URL || // Netlify
+    process.env.DEPLOY_PRIME_URL || // Netlify previews
+    (successUrl ? new URL(successUrl).origin : "http://localhost:3000");
   
   // Helper function to convert image path to absolute URL
   const getAbsoluteImageUrl = (imagePath?: string): string[] => {
@@ -47,14 +54,18 @@ export async function POST(request: NextRequest) {
     }
 
     if (!items || !Array.isArray(items) || items.length === 0) {
-      console.log('Checkout error: No items provided');
+      if (debug) {
+        console.log("Checkout error: No items provided");
+      }
       return NextResponse.json(
         { error: "No items provided" },
         { status: 400 }
       );
     }
 
-    console.log(`Processing ${items.length} items for checkout`);
+    if (debug) {
+      console.log(`Processing ${items.length} items for checkout`);
+    }
 
     // Get variant details from database or use mock data
     const lineItems = [];
@@ -169,7 +180,8 @@ export async function POST(request: NextRequest) {
 
     console.log('Creating Stripe session with line items:', lineItems);
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card', 'crypto'],
+      // Avoid unsupported/invalid methods; Stripe will handle available methods for the account.
+      payment_method_types: ["card"],
       line_items: lineItems,
       mode: 'payment',
       shipping_address_collection: {

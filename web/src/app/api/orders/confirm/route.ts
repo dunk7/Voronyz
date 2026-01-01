@@ -60,8 +60,29 @@ export async function POST(request: NextRequest) {
     sessionId = body.sessionId;
 
     if (!stripe) {
-      console.error("Order confirm: Stripe not configured");
-      return NextResponse.json({ error: "Stripe not configured" }, { status: 500 });
+      // Demo mode: allow the success page to work end-to-end without Stripe configured.
+      if (!sessionId) {
+        return NextResponse.json({ error: "Session ID required" }, { status: 400 });
+      }
+
+      return NextResponse.json({
+        success: true,
+        order: {
+          id: `demo-${sessionId}`,
+          stripeId: sessionId,
+          total: 7500,
+          subtotal: 7500,
+          currency: "usd",
+          lineItems: [
+            {
+              name: "Voronyz V3 Slides",
+              amount: 7500,
+              quantity: 1,
+            },
+          ],
+        },
+        warning: "Stripe is not configured; returning a demo order confirmation.",
+      });
     }
 
     if (!sessionId) {

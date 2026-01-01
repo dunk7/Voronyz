@@ -24,8 +24,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ received: true });
     }
 
+    if (!endpointSecret) {
+      console.error("Webhook misconfigured: missing STRIPE_WEBHOOK_SECRET");
+      // 500 so this is loud in logs/monitoring; Stripe will retry until fixed.
+      return NextResponse.json(
+        { error: "Webhook not configured" },
+        { status: 500 }
+      );
+    }
+
+    if (!sig) {
+      console.error("Webhook error: missing stripe-signature header");
+      return NextResponse.json({ error: "Missing signature" }, { status: 400 });
+    }
+
     try {
-      event = stripe.webhooks.constructEvent(body, sig!, endpointSecret!);
+      event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       console.error(`Webhook signature verification failed.`, errorMessage);
