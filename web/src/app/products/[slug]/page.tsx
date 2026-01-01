@@ -6,6 +6,10 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { Metadata } from "next";
 
+// Avoid build-time database access (SSG) in environments where the DB may not be reachable.
+// This page is rendered on-demand.
+export const dynamic = "force-dynamic";
+
 type Media = {
   type: "image" | "video";
   src: string;
@@ -188,17 +192,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       </div>
     </div>
   );
-}
-
-export async function generateStaticParams() {
-  try {
-    const products = await prisma.product.findMany({ select: { slug: true } });
-    return products.map((p: { slug: string }) => ({ slug: p.slug }));
-  } catch {
-    // For testing without database, return known slugs
-    console.log("⚠️  Using fallback static params for testing");
-    return [{ slug: "v3-slides" }];
-  }
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
