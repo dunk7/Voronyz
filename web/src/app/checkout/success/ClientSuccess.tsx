@@ -118,7 +118,7 @@ export default function ClientSuccess() {
           </div>
           <div className="space-y-2">
             <p className="text-sm text-neutral-600">
-              Please contact support with your session ID above, and we'll help you confirm your order.
+              Please contact support with your session ID above, and we&apos;ll help you confirm your order.
             </p>
             <div className="flex gap-4 justify-center">
               <a href="/cart" className="underline text-neutral-700 hover:text-neutral-900">Go back to cart</a>

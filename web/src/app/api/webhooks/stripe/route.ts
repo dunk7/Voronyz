@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       case "checkout.session.completed":
         const session = event.data.object as Stripe.Checkout.Session;
         try {
-          await handleCheckoutCompleted(session);
+          await handleCheckoutCompleted(stripe, session);
         } catch (error) {
           // Log error and return 500 so Stripe retries
           console.error(`❌ Error processing checkout.session.completed for ${session.id}:`, error);
@@ -67,13 +67,13 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Checkout.Session) {
   try {
     console.log(`Processing checkout.session.completed for session: ${session.id}`);
     
     // Retrieve full session data with expanded fields
-    const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
-      expand: ['line_items', 'shipping_details', 'payment_intent', 'customer'],
+    const fullSession = await stripeClient.checkout.sessions.retrieve(session.id, {
+      expand: ['line_items', 'payment_intent', 'customer'],
     });
 
     // Parse cart items from metadata to get full product details
@@ -128,22 +128,24 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
           amount: stripeItem.amount_total || 0,
         }));
 
+    const shippingDetails = fullSession.collected_information?.shipping_details ?? null;
+
     // Extract shipping information
-    const shipping = fullSession.shipping_details ? {
-      name: fullSession.shipping_details.name,
+    const shipping = shippingDetails ? {
+      name: shippingDetails.name,
       address: {
-        line1: fullSession.shipping_details.address.line1,
-        line2: fullSession.shipping_details.address.line2 || null,
-        city: fullSession.shipping_details.address.city,
-        state: fullSession.shipping_details.address.state,
-        postal_code: fullSession.shipping_details.address.postal_code,
-        country: fullSession.shipping_details.address.country,
+        line1: shippingDetails.address.line1,
+        line2: shippingDetails.address.line2 || null,
+        city: shippingDetails.address.city,
+        state: shippingDetails.address.state,
+        postal_code: shippingDetails.address.postal_code,
+        country: shippingDetails.address.country,
       },
     } : null;
 
     // Extract billing information (if different from shipping)
     const billing = fullSession.customer_details?.address ? {
-      name: fullSession.customer_details.name || fullSession.shipping_details?.name || null,
+      name: fullSession.customer_details.name || shippingDetails?.name || null,
       address: {
         line1: fullSession.customer_details.address.line1,
         line2: fullSession.customer_details.address.line2 || null,
@@ -155,7 +157,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     } : null;
 
     // Extract customer information
-    const customerName = fullSession.shipping_details?.name || 
+    const customerName = shippingDetails?.name || 
                         fullSession.customer_details?.name || 
                         fullSession.customer_details?.email?.split('@')[0] || 
                         null;

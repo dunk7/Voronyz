@@ -42,7 +42,7 @@ export default function AddToCart({
   variants, 
   primaryColors, 
   secondaryColors, 
-  sizes, 
+  sizes: _sizes, 
   productName, 
   coverImage, 
   productSlug 
@@ -123,7 +123,7 @@ export default function AddToCart({
     if (gender === "women") return womensSizes;
     if (gender === "kids") return kidsSizes;
     return mensSizes;
-  }, [gender]);
+  }, [gender, kidsSizes, mensSizes, womensSizes]);
 
   // Get size label based on gender
   const sizeLabel = gender === "men" ? "Men's" : gender === "women" ? "Women's" : "Kids'";
