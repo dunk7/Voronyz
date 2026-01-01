@@ -273,7 +273,8 @@ export default function CartClient() {
                 size: item.attributes?.size,
                 gender: item.attributes?.gender,
                 quantity: item.quantity,
-                image: item.image
+                image: item.image,
+                productSlug: item.productSlug
               }));
               console.log('Sending checkout items:', checkoutItems); // Add this log
               const response = await fetch('/api/checkout', {

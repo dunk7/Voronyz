@@ -55,11 +55,20 @@ export default function ClientSuccess() {
           body: JSON.stringify({ sessionId }),
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-          throw new Error("Failed to confirm order");
+          // If we got order data despite the error, use it
+          if (data.success && data.order) {
+            console.warn("Order confirmed but response had error status:", data);
+            setOrder(data);
+            localStorage.removeItem("cart");
+            setLoading(false);
+            return;
+          }
+          throw new Error(data.error || data.details || "Failed to confirm order");
         }
 
-        const data = await response.json();
         if (data.success) {
           setOrder(data);
           // Clear cart
@@ -68,7 +77,9 @@ export default function ClientSuccess() {
           throw new Error(data.error || "Order confirmation failed");
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        console.error("Order confirmation error:", err);
+        const errorMessage = err instanceof Error ? err.message : "An error occurred";
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -88,8 +99,33 @@ export default function ClientSuccess() {
   if (error || !order) {
     return (
       <div className="container py-12 text-center">
-        <div className="text-red-600 mb-4">{error || "Order not found."}</div>
-        <a href="/cart" className="underline">Go back to cart</a>
+        <div className="max-w-2xl mx-auto space-y-4">
+          <h1 className="text-2xl font-bold text-neutral-900">Order Confirmation Issue</h1>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+            <p className="text-yellow-800 font-medium mb-2">⚠️ Payment was successful, but we encountered an issue confirming your order.</p>
+            <p className="text-sm text-yellow-700 mb-2">
+              Your payment has been processed successfully. If you see a charge on your card, your order is being processed.
+            </p>
+            {sessionId && (
+              <p className="text-xs text-yellow-600 mt-2">
+                Session ID: <code className="bg-yellow-100 px-2 py-1 rounded">{sessionId}</code>
+              </p>
+            )}
+          </div>
+          <div className="text-red-600 mb-4">
+            <p className="font-medium">Error details:</p>
+            <p className="text-sm">{error || "Order not found."}</p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm text-neutral-600">
+              Please contact support with your session ID above, and we'll help you confirm your order.
+            </p>
+            <div className="flex gap-4 justify-center">
+              <a href="/cart" className="underline text-neutral-700 hover:text-neutral-900">Go back to cart</a>
+              <a href="/contact" className="underline text-neutral-700 hover:text-neutral-900">Contact support</a>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

@@ -175,6 +175,10 @@ export async function POST(request: NextRequest) {
       shipping_address_collection: {
         allowed_countries: ['US', 'CA', 'GB', 'AU', 'DE', 'FR', 'IT', 'JP', 'MX'],
       },
+      phone_number_collection: {
+        enabled: true,
+      },
+      billing_address_collection: 'required',
       success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl,
       metadata: {
