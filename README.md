@@ -22,3 +22,7 @@ The app uses static export, so all features work client-side with localStorage f
 This project is configured for deployment on Netlify. The Next.js app is located in the `web/` folder, and the `netlify.toml` file in the root configures Netlify to build from that directory.
 
 See `web/README.md` for detailed setup and deployment instructions.
+
+### Production database note (poolers)
+
+If you use a Postgres pooler/pgBouncer URL for `DATABASE_URL` (common on Supabase), also set `DIRECT_DATABASE_URL` to a **direct (non-pooler)** connection string so Prisma migrations can run reliably.

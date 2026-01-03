@@ -1,6 +1,8 @@
 [build]
   base = "web"
-  command = "npx prisma generate && npm run build"
+  # Run migrations in CI/CD only when DATABASE_URL is provided (production).
+  # This ensures the Order table exists so paid checkouts can be persisted.
+  command = "npx prisma generate && (test -n \"$DATABASE_URL\" && npx prisma migrate deploy || echo \"Skipping prisma migrate deploy (no DATABASE_URL)\") && npm run build"
   publish = ".next"
 
 [build.environment]

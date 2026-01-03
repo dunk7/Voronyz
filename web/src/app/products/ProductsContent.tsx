@@ -13,8 +13,9 @@ interface Product {
   priceCents: number;
   currency: string;
   images: string[] | null;
-  createdAt: Date;
-  updatedAt: Date;
+  thumbnail?: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
 }
 
 export default function ProductsContent() {
@@ -50,6 +51,7 @@ export default function ProductsContent() {
           priceCents: 7500,
           currency: "usd",
           images: ["/v3.4/Lumii_20251207_030803361.jpg"],
+          thumbnail: "/v3.4/Lumii_20251207_031125508.jpg",
           createdAt: new Date(),
           updatedAt: new Date(),
         }]);
@@ -124,21 +126,41 @@ export default function ProductsContent() {
 
               const cover = isV3
                 ? "/v3.4/Lumii_20251207_031125508.jpg"
-                : correctedCover;
+                : (p.thumbnail || correctedCover);
               return (
-                <Link key={p.id} href={`/products/${p.slug}`} className="group block focus:outline-none focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-2 rounded-3xl">
-                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl ring-1 ring-black/5">
-                    <Image src={cover} alt={p.name} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
-                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                  </div>
-                  <div className="mt-3">
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm font-medium text-neutral-900">{p.name}</div>
-                      <div className="text-base font-semibold text-neutral-900">{formatCentsAsCurrency(p.priceCents, p.currency)}</div>
+                <div
+                  key={p.id}
+                  className="group block rounded-3xl focus-within:outline-none focus-within:ring-2 focus-within:ring-black focus-within:ring-offset-2 focus-within:ring-offset-transparent"
+                >
+                  <Link
+                    href={`/products/${p.slug}`}
+                    className="block focus:outline-none rounded-3xl"
+                  >
+                    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl ring-1 ring-black/5">
+                      <Image src={cover} alt={p.name} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     </div>
-                    <div className="mt-1 text-xs text-neutral-700 line-clamp-2">{p.description}</div>
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="text-sm font-medium text-neutral-900">{p.name}</div>
+                        <div className="text-base font-semibold text-neutral-900 whitespace-nowrap">
+                          {formatCentsAsCurrency(p.priceCents, p.currency)}
+                        </div>
+                      </div>
+                      <div className="mt-1 text-xs text-neutral-700 line-clamp-2">{p.description}</div>
+                    </div>
+                  </Link>
+
+                  <div className="mt-3">
+                    <Link
+                      href={`/products/${p.slug}`}
+                      className="w-full inline-flex items-center justify-center rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800"
+                      aria-label={`View ${p.name}`}
+                    >
+                      View
+                    </Link>
                   </div>
-                </Link>
+                </div>
               );
             })}
           </div>

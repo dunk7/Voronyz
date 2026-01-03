@@ -43,8 +43,10 @@ This project is configured for Netlify deployment. The `netlify.toml` file in th
 
 For **production deployment**, set these environment variables in your Netlify dashboard:
 
-- `DATABASE_URL`: PostgreSQL connection string (required for production)
+- `DATABASE_URL`: PostgreSQL connection string (required for production). If you use a pooler/pgBouncer URL, that’s fine for runtime.
+- `DIRECT_DATABASE_URL`: Direct (non-pooler) PostgreSQL connection string (recommended). Prisma will use this for migrations/DDL.
 - `STRIPE_SECRET_KEY`: Your Stripe secret key for payments
+- `STRIPE_WEBHOOK_SECRET`: Stripe webhook signing secret (required for reliable order persistence)
 - `NEXT_PUBLIC_SITE_URL`: Your site's base URL (e.g., https://voronyz.netlify.app) for metadata and redirects
 - `AUTH_STUB_ENABLED`: Set to "false" to disable demo auth (enabled by default)
 
@@ -62,8 +64,8 @@ For **testing/demo purposes**, you can deploy without any environment variables:
 This project uses PostgreSQL. For Netlify deployment:
 
 1. Use a cloud PostgreSQL service like Supabase, Neon, or Railway
-2. Set the `DATABASE_URL` environment variable
-3. Run `npx prisma migrate deploy` to apply migrations (can be done in build command if needed)
+2. Set `DATABASE_URL` (runtime; can be a pooler URL) and `DIRECT_DATABASE_URL` (direct DB URL; recommended)
+3. Run `npx prisma migrate deploy` to apply migrations (this repo runs it automatically on Netlify when `DATABASE_URL` is set)
 
 ### Build Settings
 

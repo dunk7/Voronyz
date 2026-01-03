@@ -55,26 +55,38 @@ export default function ClientSuccess() {
           body: JSON.stringify({ sessionId }),
         });
 
-        const data = await response.json();
+        const raw = await response.text();
+        let data: OrderDetails | { [key: string]: unknown } | null = null;
+        try {
+          data = raw ? (JSON.parse(raw) as OrderDetails) : null;
+        } catch {
+          // Non-JSON response (often an HTML 404/500 page in misconfigured deployments)
+          const preview = raw ? raw.slice(0, 300) : "(empty response body)";
+          throw new Error(
+            `Order confirmation API returned non-JSON (HTTP ${response.status}). Body: ${preview}`
+          );
+        }
 
         if (!response.ok) {
           // If we got order data despite the error, use it
-          if (data.success && data.order) {
+          if ((data as OrderDetails)?.success && (data as OrderDetails)?.order) {
             console.warn("Order confirmed but response had error status:", data);
-            setOrder(data);
+            setOrder(data as OrderDetails);
             localStorage.removeItem("cart");
             setLoading(false);
             return;
           }
-          throw new Error(data.error || data.details || "Failed to confirm order");
+          const maybeDetails = data as { error?: string; details?: string };
+          throw new Error(maybeDetails.error || maybeDetails.details || "Failed to confirm order");
         }
 
-        if (data.success) {
-          setOrder(data);
+        if ((data as OrderDetails)?.success) {
+          setOrder(data as OrderDetails);
           // Clear cart
           localStorage.removeItem("cart");
         } else {
-          throw new Error(data.error || "Order confirmation failed");
+          const maybeDetails = data as { error?: string; details?: string };
+          throw new Error(maybeDetails.error || maybeDetails.details || "Order confirmation failed");
         }
       } catch (err) {
         console.error("Order confirmation error:", err);

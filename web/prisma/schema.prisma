@@ -8,6 +8,10 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  // Optional but strongly recommended in production:
+  // Use a direct (non-pooler) connection for migrations/DDL (e.g. Supabase direct DB host:5432).
+  // Keep DATABASE_URL pointing at a pooler for runtime connections if you want.
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 model User {
