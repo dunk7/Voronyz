@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 type CheckoutSession = {
   id: string;
@@ -53,6 +54,10 @@ const stripe = process.env.STRIPE_SECRET_KEY
     })
   : null;
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
 export async function POST(request: NextRequest) {
   let sessionId: string | undefined;
   try {
@@ -93,17 +98,25 @@ export async function POST(request: NextRequest) {
     console.log(`Order confirm: Retrieving session ${sessionId}`);
 
     const sessionResponse = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['line_items', 'shipping_details', 'payment_intent'],
+      // NOTE: `shipping_details` is NOT expandable; including it can cause Stripe to error.
+      expand: ["line_items", "payment_intent"],
     });
 
     const actualSession = sessionResponse as unknown as CheckoutSession;
 
     if (actualSession.payment_status !== 'paid') {
       console.warn(`Order confirm: Payment not completed for session ${sessionId}, status: ${actualSession.payment_status}`);
-      return NextResponse.json({ 
-        error: "Payment not completed",
-        paymentStatus: actualSession.payment_status 
-      }, { status: 400 });
+      // Treat as a transient/pending state: the UI can poll this endpoint until paid.
+      return NextResponse.json(
+        {
+          success: false,
+          pending: true,
+          error: "Payment not completed",
+          paymentStatus: actualSession.payment_status,
+          sessionId,
+        },
+        { status: 202 }
+      );
     }
 
     console.log(`Order confirm: Payment confirmed for session ${sessionId}`);
@@ -216,66 +229,59 @@ export async function POST(request: NextRequest) {
         where: { stripeId: actualSession.id },
       });
       
-      const finalOrderNumber = existingOrder?.metadata && typeof existingOrder.metadata === 'object' && 'orderNumber' in existingOrder.metadata
-        ? (existingOrder.metadata as { orderNumber?: string }).orderNumber || orderNumber
-        : orderNumber;
+      const existingMetadata: Prisma.JsonObject =
+        existingOrder?.metadata && isRecord(existingOrder.metadata)
+          ? (existingOrder.metadata as Prisma.JsonObject)
+          : {};
+      const existingOrderNumber = typeof existingMetadata.orderNumber === "string" ? existingMetadata.orderNumber : undefined;
+      const finalOrderNumber = existingOrderNumber || orderNumber;
+
+      // Merge to avoid losing fields written by the webhook (tax, shippingCost, etc.)
+      const mergedMetadata: Prisma.InputJsonObject = {
+        ...existingMetadata,
+        orderNumber: finalOrderNumber,
+        lineItems,
+        shipping,
+        billing,
+        customer: {
+          name: customerName,
+          email: customerEmail,
+          phone: customerPhone,
+        },
+        paymentStatus: actualSession.payment_status,
+        paymentIntentId:
+          typeof actualSession.payment_intent === "string"
+            ? actualSession.payment_intent
+            : (actualSession.payment_intent as { id?: string })?.id || null,
+        discountCode: actualSession.metadata?.discountCode || null,
+        tax: {
+          amountCents: taxCents,
+          currency,
+        },
+        shippingCost: {
+          amountCents: shippingCents,
+          currency,
+        },
+        createdAt: existingOrder?.createdAt.toISOString() || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
       order = await prisma.order.upsert({
         where: { stripeId: actualSession.id },
         update: {
-          status: 'completed',
+          status: "paid",
           currency,
           subtotalCents,
           totalCents,
-          metadata: {  
-            orderNumber: finalOrderNumber,
-            lineItems,
-            shipping,
-            billing,
-            customer: {
-              name: customerName,
-              email: customerEmail,
-              phone: customerPhone,
-            },
-            paymentStatus: actualSession.payment_status,
-            paymentIntentId: typeof actualSession.payment_intent === 'string' 
-              ? actualSession.payment_intent 
-              : (actualSession.payment_intent as { id?: string })?.id || null,
-            discountCode: actualSession.metadata?.discountCode || null,
-            tax: {
-              amountCents: taxCents,
-              currency,
-            },
-            shippingCost: {
-              amountCents: shippingCents,
-              currency,
-            },
-            createdAt: existingOrder?.createdAt.toISOString() || new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
+          metadata: mergedMetadata,
         },
         create: {
           stripeId: actualSession.id,
-          status: 'completed',
+          status: "paid",
           currency,
           subtotalCents,
           totalCents,
-          metadata: {  
-            orderNumber: finalOrderNumber,
-            lineItems,
-            shipping,
-            customer: {
-              name: customerName,
-              email: customerEmail,
-              phone: customerPhone,
-            },
-            paymentStatus: actualSession.payment_status,
-            paymentIntentId: typeof actualSession.payment_intent === 'string' 
-              ? actualSession.payment_intent 
-              : (actualSession.payment_intent as { id?: string })?.id || null,
-            discountCode: actualSession.metadata?.discountCode || null,
-            createdAt: new Date().toISOString(),
-          },
+          metadata: mergedMetadata,
         },
       });
       console.log(`✅ Order confirm: Order ${order.id} created/updated successfully`);
@@ -285,9 +291,11 @@ export async function POST(request: NextRequest) {
       // This way the user sees their order even if DB write fails
       return NextResponse.json({
         success: true,
+        dbSaved: false,
         order: {
           id: `temp-${actualSession.id}`,
           stripeId: actualSession.id,
+          orderNumber,
           total: totalCents,
           subtotal: subtotalCents,
           currency,
@@ -303,9 +311,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      dbSaved: true,
       order: {
         id: order.id,
         stripeId: order.stripeId,
+        orderNumber: (order.metadata && isRecord(order.metadata) && typeof order.metadata.orderNumber === "string")
+          ? (order.metadata.orderNumber as string)
+          : undefined,
         total: totalCents,
         subtotal: subtotalCents,
         currency,
@@ -329,12 +341,12 @@ export async function POST(request: NextRequest) {
         if (existingOrder) {
           console.log(`Order confirm: Found existing order ${existingOrder.id}`);
           const sessionResponse = await stripe.checkout.sessions.retrieve(sessionId, {
-            expand: ['line_items', 'shipping_details', 'payment_intent'],
+            expand: ["line_items", "payment_intent"],
           });
           const actualSession = sessionResponse as unknown as CheckoutSession;
           // Parse metadata from existing order
-          const existingMetadata = existingOrder.metadata && typeof existingOrder.metadata === 'object' 
-            ? existingOrder.metadata as Record<string, unknown>
+          const existingMetadata = existingOrder.metadata && isRecord(existingOrder.metadata)
+            ? (existingOrder.metadata as Record<string, unknown>)
             : {};
           
           const existingLineItems = Array.isArray(existingMetadata.lineItems) 
@@ -365,6 +377,7 @@ export async function POST(request: NextRequest) {
           
           return NextResponse.json({
             success: true,
+            dbSaved: true,
             order: {
               id: existingOrder.id,
               stripeId: existingOrder.stripeId,

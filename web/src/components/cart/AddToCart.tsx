@@ -27,7 +27,9 @@ interface CartItem {
   image?: string;
   variantId: string;
   quantity: number;
+  // Base (non-discounted) unit price. `priceCents` is kept for backward compatibility.
   priceCents: number;
+  basePriceCents?: number;
   variant: { name: string };
   attributes?: { color?: string; size?: string; gender?: string };
   productSlug?: string;
@@ -181,20 +183,24 @@ export default function AddToCart({
       if (existingItemIndex >= 0) {
         // Update existing
         const existingItem = cart[existingItemIndex];
+        const baseUnitPriceCents = priceCents;
         cart[existingItemIndex] = { 
           ...existingItem, 
           quantity: existingItem.quantity + quantity,
-          priceCents: priceCents
+          basePriceCents: baseUnitPriceCents,
+          priceCents: baseUnitPriceCents
         };
       } else {
         // Add new
+        const baseUnitPriceCents = priceCents;
         const newItem: CartItem = {
           id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           productName,
           image: coverImage,
           variantId: selectedVariant.id,
           quantity,
-          priceCents,
+          basePriceCents: baseUnitPriceCents,
+          priceCents: baseUnitPriceCents,
           variant: { name: selectedPrimary },
           attributes: { 
             color: selectedSecondary, 

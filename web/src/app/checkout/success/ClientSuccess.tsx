@@ -1,14 +1,20 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { formatCentsAsCurrency } from "@/lib/money";
 
 interface OrderDetails {
   success: boolean;
+  pending?: boolean;
+  dbSaved?: boolean;
+  warning?: string;
+  paymentStatus?: string;
+  sessionId?: string;
   order: {
     id: string;
     stripeId: string;
+    orderNumber?: string;
     total: number;
     subtotal: number;
     currency: string;
@@ -39,15 +45,20 @@ export default function ClientSuccess() {
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [attempt, setAttempt] = useState(0);
 
-  useEffect(() => {
-    if (!sessionId) {
-      setError("No session ID found. Please go back to checkout.");
-      setLoading(false);
-      return;
-    }
+  const canRetry = useMemo(() => !!sessionId, [sessionId]);
 
-    async function confirmOrder() {
+  const confirmOrder = useCallback(
+    async (opts?: { isRetry?: boolean }) => {
+      if (!sessionId) return;
+
+      const isRetry = !!opts?.isRetry;
+      if (isRetry) {
+        setError("");
+        setLoading(true);
+      }
+
       try {
         const response = await fetch("/api/orders/confirm", {
           method: "POST",
@@ -60,11 +71,17 @@ export default function ClientSuccess() {
         try {
           data = raw ? (JSON.parse(raw) as OrderDetails) : null;
         } catch {
-          // Non-JSON response (often an HTML 404/500 page in misconfigured deployments)
           const preview = raw ? raw.slice(0, 300) : "(empty response body)";
           throw new Error(
             `Order confirmation API returned non-JSON (HTTP ${response.status}). Body: ${preview}`
           );
+        }
+
+        // 202 means "pending" (payment still settling); keep polling.
+        if (response.status === 202) {
+          setAttempt((a) => a + 1);
+          setOrder(data as OrderDetails);
+          return;
         }
 
         if (!response.ok) {
@@ -73,7 +90,6 @@ export default function ClientSuccess() {
             console.warn("Order confirmed but response had error status:", data);
             setOrder(data as OrderDetails);
             localStorage.removeItem("cart");
-            setLoading(false);
             return;
           }
           const maybeDetails = data as { error?: string; details?: string };
@@ -82,7 +98,7 @@ export default function ClientSuccess() {
 
         if ((data as OrderDetails)?.success) {
           setOrder(data as OrderDetails);
-          // Clear cart
+          // Clear cart only once we have a successful confirmation payload
           localStorage.removeItem("cart");
         } else {
           const maybeDetails = data as { error?: string; details?: string };
@@ -95,10 +111,32 @@ export default function ClientSuccess() {
       } finally {
         setLoading(false);
       }
+    },
+    [sessionId]
+  );
+
+  useEffect(() => {
+    if (!sessionId) {
+      setError("No session ID found. Please go back to checkout.");
+      setLoading(false);
+      return;
     }
 
     confirmOrder();
-  }, [sessionId]);
+  }, [confirmOrder, sessionId]);
+
+  // If Stripe says the payment is still settling, poll a few times automatically.
+  useEffect(() => {
+    const isPending = !!order?.pending;
+    const shouldPoll = isPending && !error && canRetry && attempt < 6;
+    if (!shouldPoll) return;
+
+    const backoffMs = Math.min(2000 + attempt * 1500, 12000);
+    const t = setTimeout(() => {
+      confirmOrder();
+    }, backoffMs);
+    return () => clearTimeout(t);
+  }, [attempt, canRetry, confirmOrder, error, order?.pending]);
 
   if (loading) {
     return (
@@ -108,7 +146,9 @@ export default function ClientSuccess() {
     );
   }
 
-  if (error || !order) {
+  const isPending = !!order?.pending;
+
+  if ((error && !isPending) || !order) {
     return (
       <div className="container py-12 text-center">
         <div className="max-w-2xl mx-auto space-y-4">
@@ -135,6 +175,15 @@ export default function ClientSuccess() {
             <div className="flex gap-4 justify-center">
               <a href="/cart" className="underline text-neutral-700 hover:text-neutral-900">Go back to cart</a>
               <a href="/contact" className="underline text-neutral-700 hover:text-neutral-900">Contact support</a>
+              {canRetry && (
+                <button
+                  type="button"
+                  onClick={() => confirmOrder({ isRetry: true })}
+                  className="underline text-neutral-700 hover:text-neutral-900"
+                >
+                  Try again
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -147,12 +196,21 @@ export default function ClientSuccess() {
   return (
     <div className="container py-12">
       <div className="max-w-2xl mx-auto text-center space-y-6">
-        <h1 className="text-3xl font-bold text-neutral-900">Thank you for your order!</h1>
+        <h1 className="text-3xl font-bold text-neutral-900">
+          {isPending ? "Finalizing your order…" : "Thank you for your order!"}
+        </h1>
         <p className="text-lg text-neutral-700">
-          Your order #{details.id.slice(-6)} has been placed successfully.
+          {isPending
+            ? "Your payment is processing. This can take a moment — please keep this page open."
+            : `Your order ${details.orderNumber ? `#${details.orderNumber}` : `#${details.id.slice(-6)}`} has been placed successfully.`}
         </p>
         {details.email && (
           <p className="text-sm text-neutral-600">Confirmation sent to {details.email}</p>
+        )}
+        {order.warning && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-left text-sm text-yellow-800">
+            {order.warning}
+          </div>
         )}
 
         <div className="bg-white rounded-xl ring-1 ring-black/10 p-6 space-y-4">
@@ -186,7 +244,21 @@ export default function ClientSuccess() {
 
         <div className="text-sm text-neutral-600 space-y-2">
           <p>We&apos;ll process your custom slides within 7 business days. You&apos;ll receive a shipping update soon.</p>
-          <p>Order ID: <span className="font-medium">{details.stripeId}</span> | Track in your account once logged in.</p>
+          <p>
+            Order session: <span className="font-medium">{details.stripeId}</span>
+            {" "} | Track in your account once logged in.
+          </p>
+          {isPending && canRetry && (
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => confirmOrder({ isRetry: true })}
+                className="inline-block bg-black text-white px-5 py-2 rounded-full hover:bg-neutral-800"
+              >
+                Refresh status
+              </button>
+            </div>
+          )}
         </div>
 
         <Link

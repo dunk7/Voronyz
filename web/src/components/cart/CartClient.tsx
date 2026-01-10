@@ -10,7 +10,9 @@ interface CartItem {
   image?: string;
   variantId: string;
   quantity: number;
+  // Base (non-discounted) unit price. Older carts may only have `priceCents`.
   priceCents: number;
+  basePriceCents?: number;
   variant: { name: string };
   attributes?: { size?: number | string; color?: string; gender?: string };
   productSlug?: string;
@@ -29,6 +31,28 @@ export default function CartClient() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
+  const normalizeDiscountCode = (code: string | null | undefined) => {
+    const trimmed = (code ?? "").trim();
+    return trimmed ? trimmed.toLowerCase() : null;
+  };
+
+  const isValidDiscountCode = (code: string | null) => {
+    if (!code) return false;
+    return code === "fam45" || code === "superdeal35" || code === "maximus27";
+  };
+
+  const getBaseUnitPriceCents = (it: CartItem) => {
+    return typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
+  };
+
+  const getDiscountedUnitPriceCents = (baseUnitPriceCents: number, code: string | null) => {
+    const lower = normalizeDiscountCode(code);
+    if (lower === "fam45") return 5000;
+    if (lower === "superdeal35") return 3500;
+    if (lower === "maximus27") return 3200;
+    return baseUnitPriceCents;
+  };
+
   useEffect(() => {
     // Load cart from localStorage
     try {
@@ -43,9 +67,28 @@ export default function CartClient() {
           setDiscountCode(null);
           saveCart({ items: loadedItems, discountCode: null });
         } else {
-          loadedItems = parsed.items || [];
+          const normalizedCode = normalizeDiscountCode(parsed.discountCode);
+          loadedItems = (parsed.items || []).map((it) => {
+            // Migrate to always have a base unit price.
+            const base = typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
+
+            // Heuristic: older carts used to overwrite `priceCents` when a coupon was applied.
+            // If we have a coupon and the stored "base" looks like one of the coupon prices,
+            // restore the typical base price so clearing the coupon works as expected.
+            const looksLikeCouponPrice = base === 5000 || base === 3500 || base === 3200;
+            const repairedBase =
+              normalizedCode && isValidDiscountCode(normalizedCode) && looksLikeCouponPrice ? 7500 : base;
+
+            return {
+              ...it,
+              basePriceCents: repairedBase,
+              priceCents: repairedBase, // keep backwards compatibility for any code reading `priceCents`
+            };
+          });
           setItems(loadedItems);
-          setDiscountCode(parsed.discountCode !== undefined ? parsed.discountCode : null);
+          setDiscountCode(normalizedCode);
+          // Persist the normalized/migrated shape so pricing stays consistent.
+          saveCart({ items: loadedItems, discountCode: normalizedCode });
         }
       }
     } catch (error) {
@@ -70,21 +113,14 @@ export default function CartClient() {
 
   const applyDiscount = () => {
     clearMessage();
-    const lowerInput = inputValue.toLowerCase().trim();
-    let newPrices: CartItem[] | undefined;
-    let isValid = false;
-    if (lowerInput === "fam45") {
-      newPrices = items.map(item => ({ ...item, priceCents: 5000 }));
-      isValid = true;
-    } else if (lowerInput === "superdeal35") {
-      newPrices = items.map(item => ({ ...item, priceCents: 3500 }));
-      isValid = true;
-    } else if (lowerInput === "maximus27") {
-      newPrices = items.map(item => ({ ...item, priceCents: 3200 }));
-      isValid = true;
-    }
-    if (isValid && newPrices) {
-      saveCart({ items: newPrices, discountCode: inputValue });
+    const normalized = normalizeDiscountCode(inputValue);
+    if (isValidDiscountCode(normalized)) {
+      // Do NOT mutate stored item prices; compute discounted totals from `discountCode` so UI can't desync.
+      const migratedItems = items.map((it) => {
+        const base = getBaseUnitPriceCents(it);
+        return { ...it, basePriceCents: base, priceCents: base };
+      });
+      saveCart({ items: migratedItems, discountCode: normalized });
       setInputValue("");
       setMessage("Discount applied successfully!");
       setTimeout(clearMessage, 3000);
@@ -95,8 +131,11 @@ export default function CartClient() {
   };
 
   const clearDiscount = () => {
-    const updatedItems = items.map(item => ({ ...item, priceCents: 7500 }));
-    saveCart({ items: updatedItems, discountCode: null });
+    const migratedItems = items.map((it) => {
+      const base = getBaseUnitPriceCents(it);
+      return { ...it, basePriceCents: base, priceCents: base };
+    });
+    saveCart({ items: migratedItems, discountCode: null });
     setInputValue("");
     setMessage("Discount removed.");
     setTimeout(clearMessage, 3000);
@@ -113,7 +152,11 @@ export default function CartClient() {
     saveCart({ items: newItems, discountCode });
   }
 
-  const subtotal = items.reduce((sum, it) => sum + it.priceCents * it.quantity, 0);
+  const subtotal = items.reduce((sum, it) => {
+    const base = getBaseUnitPriceCents(it);
+    const unit = getDiscountedUnitPriceCents(base, discountCode);
+    return sum + unit * it.quantity;
+  }, 0);
 
   if (isLoading) return <div className="text-neutral-900">Loading…</div>;
   if (!items.length) return <div className="text-neutral-900">Your cart is empty.</div>;
@@ -202,7 +245,9 @@ export default function CartClient() {
                 </button>
               </div>
               <div className="flex items-center gap-2 lg:gap-4 flex-1 lg:flex-none justify-end min-w-0 lg:min-w-[5rem]">
-                <div className="text-base font-semibold text-neutral-900 text-right flex-1 lg:flex-none">{formatCentsAsCurrency(it.priceCents * it.quantity)}</div>
+                <div className="text-base font-semibold text-neutral-900 text-right flex-1 lg:flex-none">
+                  {formatCentsAsCurrency(getDiscountedUnitPriceCents(getBaseUnitPriceCents(it), discountCode) * it.quantity)}
+                </div>
                 <button
                   onClick={() => remove(it.id)}
                   className="text-xs lg:text-sm text-red-700 hover:text-red-800 hover:underline whitespace-nowrap"
