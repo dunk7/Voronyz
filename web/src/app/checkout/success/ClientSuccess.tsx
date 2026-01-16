@@ -1,43 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { formatCentsAsCurrency } from "@/lib/money";
-
-interface OrderDetails {
-  success: boolean;
-  pending?: boolean;
-  dbSaved?: boolean;
-  warning?: string;
-  paymentStatus?: string;
-  sessionId?: string;
-  order: {
-    id: string;
-    stripeId: string;
-    orderNumber?: string;
-    total: number;
-    subtotal: number;
-    currency: string;
-    lineItems: Array<{
-      name: string;
-      amount: number;
-      quantity: number;
-    }>;
-    shipping?: {
-      name: string;
-      address: {
-        line1: string;
-        line2?: string | null;
-        city: string;
-        state: string;
-        postal_code: string;
-        country: string;
-      };
-    };
-    email?: string;
-  };
-  error?: string;
-}
+import { OrderDetails, OrderSuccessContent } from "@/app/checkout/success/OrderSuccessContent";
 
 export default function ClientSuccess() {
   const searchParams = useSearchParams();
@@ -194,80 +158,11 @@ export default function ClientSuccess() {
   const { order: details } = order;
 
   return (
-    <div className="container py-12">
-      <div className="max-w-2xl mx-auto text-center space-y-6">
-        <h1 className="text-3xl font-bold text-neutral-900">
-          {isPending ? "Finalizing your order…" : "Thank you for your order!"}
-        </h1>
-        <p className="text-lg text-neutral-700">
-          {isPending
-            ? "Your payment is processing. This can take a moment — please keep this page open."
-            : `Your order ${details.orderNumber ? `#${details.orderNumber}` : `#${details.id.slice(-6)}`} has been placed successfully.`}
-        </p>
-        {details.email && (
-          <p className="text-sm text-neutral-600">Confirmation sent to {details.email}</p>
-        )}
-        {order.warning && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-left text-sm text-yellow-800">
-            {order.warning}
-          </div>
-        )}
-
-        <div className="bg-white rounded-xl ring-1 ring-black/10 p-6 space-y-4">
-          <h2 className="text-xl font-semibold">Order Summary</h2>
-          <div className="space-y-2">
-            {details.lineItems.map((item, idx) => (
-              <div key={idx} className="flex justify-between text-sm">
-                <span>{item.name} × {item.quantity}</span>
-                <span>{formatCentsAsCurrency(item.amount * item.quantity)}</span>
-              </div>
-            ))}
-            <div className="pt-2 border-t border-black/10 flex justify-between font-medium">
-              <span>Total</span>
-              <span>{formatCentsAsCurrency(details.total)}</span>
-            </div>
-          </div>
-        </div>
-
-        {details.shipping && (
-          <div className="bg-white rounded-xl ring-1 ring-black/10 p-6">
-            <h3 className="text-lg font-semibold mb-2">Shipping To</h3>
-            <div className="text-sm space-y-1">
-              <div>{details.shipping.name}</div>
-              <div>{details.shipping.address.line1}</div>
-              {details.shipping.address.line2 && <div>{details.shipping.address.line2}</div>}
-              <div>{details.shipping.address.city}, {details.shipping.address.state} {details.shipping.address.postal_code}</div>
-              <div>{details.shipping.address.country}</div>
-            </div>
-          </div>
-        )}
-
-        <div className="text-sm text-neutral-600 space-y-2">
-          <p>We&apos;ll process your custom slides within 7 business days. You&apos;ll receive a shipping update soon.</p>
-          <p>
-            Order session: <span className="font-medium">{details.stripeId}</span>
-            {" "} | Track in your account once logged in.
-          </p>
-          {isPending && canRetry && (
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={() => confirmOrder({ isRetry: true })}
-                className="inline-block bg-black text-white px-5 py-2 rounded-full hover:bg-neutral-800"
-              >
-                Refresh status
-              </button>
-            </div>
-          )}
-        </div>
-
-        <Link
-          href="/products"
-          className="inline-block bg-black text-white px-6 py-3 rounded-full hover:bg-neutral-800"
-        >
-          Continue Shopping
-        </Link>
-      </div>
-    </div>
+    <OrderSuccessContent
+      order={order}
+      isPending={isPending}
+      canRetry={canRetry}
+      onRetry={() => confirmOrder({ isRetry: true })}
+    />
   );
 }
