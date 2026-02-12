@@ -1,13 +1,14 @@
 import { OrderDetails, OrderSuccessContent } from "@/app/checkout/success/OrderSuccessContent";
 
 interface SuccessMockPageProps {
-  searchParams?: {
+  searchParams?: Promise<{
     pending?: string;
-  };
+  }>;
 }
 
-export default function SuccessMockPage({ searchParams }: SuccessMockPageProps) {
-  const isPending = searchParams?.pending === "1";
+export default async function SuccessMockPage({ searchParams }: SuccessMockPageProps) {
+  const params = await searchParams;
+  const isPending = params?.pending === "1";
   const mockOrder: OrderDetails = {
     success: true,
     pending: isPending,
