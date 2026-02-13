@@ -37,7 +37,7 @@ export function correctLegacyProductImagePath(path: string): string {
 
 export function getProductThumbnail(input: { slug?: string; images?: unknown }): string {
   // Special-case: v3 product has canonical updated cover asset
-  if (input.slug === "v3-slides") return "/v3.4/Lumii_20251207_031125508.jpg";
+  if (input.slug === "v3-slides") return "/V3slides/InShot_20260212_194215252.jpg";
 
   const images = normalizeProductImages(input.images);
   const rawCover = images[0] ?? "/legacy/v3-front.jpg";

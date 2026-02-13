@@ -20,8 +20,7 @@ export function clearUserSessionCookie(res: NextResponse) {
 }
 
 export function isAuthStubEnabled() {
-  // Enable auth stub by default for testing/demo purposes
-  return process.env.AUTH_STUB_ENABLED === "false" ? false : true;
+  return process.env.AUTH_STUB_ENABLED !== "false";
 }
 
 

@@ -20,8 +20,11 @@ export async function POST(request: NextRequest) {
     let event: Stripe.Event;
 
     if (!stripe) {
-      console.log("⚠️  No STRIPE_SECRET_KEY provided, skipping webhook processing");
-      return NextResponse.json({ received: true });
+      console.error("Webhook failed: STRIPE_SECRET_KEY is not configured");
+      return NextResponse.json(
+        { error: "Payment processing is not configured" },
+        { status: 503 }
+      );
     }
 
     if (!endpointSecret) {

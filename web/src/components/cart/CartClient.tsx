@@ -38,16 +38,17 @@ export default function CartClient() {
 
   const isValidDiscountCode = (code: string | null) => {
     if (!code) return false;
-    return code === "fam45" || code === "superdeal35" || code === "maximus27";
+    return code === "fam45" || code === "superdeal35" || code === "maximus27" || code === "emptyaus";
   };
 
   const getBaseUnitPriceCents = (it: CartItem) => {
     return typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
   };
 
-  const getDiscountedUnitPriceCents = (baseUnitPriceCents: number, code: string | null) => {
+  const getDiscountedUnitPriceCents = (baseUnitPriceCents: number, code: string | null, productSlug?: string) => {
     const lower = normalizeDiscountCode(code);
-    if (lower === "fam45") return 5000;
+    if (lower === "emptyaus" && productSlug === "dragonfly") return 2000;
+    if (lower === "fam45") return 4500;
     if (lower === "superdeal35") return 3500;
     if (lower === "maximus27") return 3200;
     return baseUnitPriceCents;
@@ -75,7 +76,7 @@ export default function CartClient() {
             // Heuristic: older carts used to overwrite `priceCents` when a coupon was applied.
             // If we have a coupon and the stored "base" looks like one of the coupon prices,
             // restore the typical base price so clearing the coupon works as expected.
-            const looksLikeCouponPrice = base === 5000 || base === 3500 || base === 3200;
+            const looksLikeCouponPrice = base === 4500 || base === 5000 || base === 3500 || base === 3200;
             const repairedBase =
               normalizedCode && isValidDiscountCode(normalizedCode) && looksLikeCouponPrice ? 7500 : base;
 
@@ -154,7 +155,7 @@ export default function CartClient() {
 
   const subtotal = items.reduce((sum, it) => {
     const base = getBaseUnitPriceCents(it);
-    const unit = getDiscountedUnitPriceCents(base, discountCode);
+    const unit = getDiscountedUnitPriceCents(base, discountCode, it.productSlug);
     return sum + unit * it.quantity;
   }, 0);
 
@@ -246,7 +247,7 @@ export default function CartClient() {
               </div>
               <div className="flex items-center gap-2 lg:gap-4 flex-1 lg:flex-none justify-end min-w-0 lg:min-w-[5rem]">
                 <div className="text-base font-semibold text-neutral-900 text-right flex-1 lg:flex-none">
-                  {formatCentsAsCurrency(getDiscountedUnitPriceCents(getBaseUnitPriceCents(it), discountCode) * it.quantity)}
+                  {formatCentsAsCurrency(getDiscountedUnitPriceCents(getBaseUnitPriceCents(it), discountCode, it.productSlug) * it.quantity)}
                 </div>
                 <button
                   onClick={() => remove(it.id)}
@@ -261,7 +262,12 @@ export default function CartClient() {
         ))}
       </div>
       <div className="space-y-4">
-        <div className="text-xs text-neutral-600 text-center">Free shipping on all orders</div>
+        <div className="flex items-center justify-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-2.5">
+          <svg className="h-4 w-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
+          </svg>
+          <span className="text-sm font-medium text-emerald-700">Free shipping on all orders</span>
+        </div>
         {/* Combined Discount and Subtotal Section */}
         <div className="rounded-xl border border-black/10 p-4 space-y-4 bg-white">
           {/* Discount Input */}

@@ -46,11 +46,11 @@ export async function POST(request: NextRequest) {
 
   try {
     if (!stripe) {
-      console.log("⚠️  Using mock checkout - no STRIPE_SECRET_KEY provided");
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return NextResponse.json({
-        url: `${successUrl}?session_id=mock-session-${Date.now()}`,
-      });
+      console.error("Checkout failed: STRIPE_SECRET_KEY is not configured");
+      return NextResponse.json(
+        { error: "Payment processing is not configured. Please contact support." },
+        { status: 503 }
+      );
     }
 
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       console.log(`Processing ${items.length} items for checkout`);
     }
 
-    // Get variant details from database or use mock data
+    // Get variant details from database
     const lineItems = [];
     for (const [index, item] of items.entries()) {
       console.log(`Processing item ${index + 1}:`, item);
@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
             product: {
               select: {
                 name: true,
+                slug: true,
                 priceCents: true,
                 images: true,
               }
@@ -92,8 +93,11 @@ export async function POST(request: NextRequest) {
         }
 
         const lowerCode = discountCode ? discountCode.toLowerCase().trim() : '';
+        const productSlug = variant?.product?.slug || item.productSlug || '';
         let unitAmount: number;
-        if (lowerCode === 'fam45') {
+        if (lowerCode === 'emptyaus' && productSlug === 'dragonfly') {
+          unitAmount = 2000;
+        } else if (lowerCode === 'fam45') {
           unitAmount = 5000;
         } else if (lowerCode === 'superdeal35') {
           unitAmount = 3500;
@@ -141,7 +145,10 @@ export async function POST(request: NextRequest) {
         // Fallback logic...
         let unitAmount: number;
         const lowerCode = discountCode ? discountCode.toLowerCase().trim() : '';
-        if (lowerCode === 'fam45') {
+        const fallbackSlug = item.productSlug || '';
+        if (lowerCode === 'emptyaus' && fallbackSlug === 'dragonfly') {
+          unitAmount = 2000;
+        } else if (lowerCode === 'fam45') {
           unitAmount = 5000;
         } else if (lowerCode === 'superdeal35') {
           unitAmount = 3500;

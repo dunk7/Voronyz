@@ -75,19 +75,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ products: productsWithThumbnail });
   } catch (error) {
     console.error("Search API error:", error);
-    // Fallback mock data for development
-    const mockProducts = [{
-      id: "demo-product",
-      slug: "v3-slides",
-      name: "Voronyz V3 Slides",
-      description: "Custom 3D printed slides",
-      priceCents: 7500,
-      currency: "usd",
-      images: ["/v3.4/Lumii_20251207_030803361.jpg"],
-      thumbnail: "/v3.4/Lumii_20251207_031125508.jpg",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }];
-    return NextResponse.json({ products: mockProducts });
+    return NextResponse.json(
+      { error: "Failed to fetch products", products: [] },
+      { status: 500 }
+    );
   }
 }

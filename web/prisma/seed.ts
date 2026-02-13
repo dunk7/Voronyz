@@ -56,9 +56,17 @@ async function main() {
         pink: 0,
       };
 
+      const skuMap: Record<string, string> = {
+        black: "V3-BLK",
+        white: "V3-WHT",
+        grey: "V3-GRY",
+        green: "V3-GRN",
+        pink: "V3-PNK",
+      };
+
       console.log('Starting variant upserts...');
       for (const color of primaryColors) {
-        const sku = `V3-${color.toUpperCase().slice(0,3)}`;
+        const sku = skuMap[color] || `V3-${color.toUpperCase().slice(0,3)}`;
         console.log(`Upserting variant for ${color} (SKU: ${sku})`);
         await prisma.variant.upsert({
           where: { sku },
@@ -74,6 +82,94 @@ async function main() {
       console.log("All variants updated.");
       console.log("Updated product and variants for: v3-slides");
     }
+    // ── Dragonfly product ──
+    const existingDf = await prisma.product.findUnique({ where: { slug: "dragonfly" } });
+    console.log('Dragonfly product check:', existingDf ? 'Found' : 'Not found');
+    if (!existingDf) {
+      console.log('Creating Dragonfly product...');
+      const dfProduct = await prisma.product.create({
+        data: {
+          slug: "dragonfly",
+          name: "The Dragonfly's",
+          description:
+            "Lightweight, breathable 3D-printed sneakers with a custom lattice sole and interchangeable laces. Engineered for all-day comfort.",
+          priceCents: 9500,
+          currency: "usd",
+          images: [
+            "/Dragonfly/InShot_20260212_153516456.jpg",
+            "/Dragonfly/InShot_20260212_153903491.jpg",
+            "/Dragonfly/InShot_20260212_154319265.jpg",
+            "/Dragonfly/InShot_20260212_154545771.jpg",
+            "/Dragonfly/InShot_20260212_154719489.jpg",
+            "/Dragonfly/InShot_20260212_154956597.jpg",
+            "/Dragonfly/InShot_20260212_155434004.jpg",
+            "/Dragonfly/InShot_20260212_155809942.jpg",
+            "/Dragonfly/InShot_20260212_160512335.jpg",
+          ],
+          primaryColors: ["black", "white", "red", "#007FFF"],
+          secondaryColors: ["black", "white", "grey", "red", "#007FFF", "green", "blue", "maroon", "pink", "purple", "orange", "yellow", "navy", "teal"],
+          sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
+          variants: {
+            create: [
+              { color: "black", sku: "DF-BLK", stock: 999, priceCents: 9000 },
+              { color: "white", sku: "DF-WHT", stock: 999, priceCents: 9500 },
+              { color: "red", sku: "DF-RED", stock: 999, priceCents: 9500 },
+              { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 9500 },
+            ],
+          },
+        },
+        include: { variants: true },
+      });
+      console.log("Seeded product:", dfProduct.slug);
+    } else {
+      console.log('Updating existing Dragonfly product...');
+      await prisma.product.update({
+        where: { id: existingDf.id },
+        data: {
+          name: "The Dragonfly's",
+          description:
+            "Lightweight, breathable 3D-printed sneakers with a custom lattice sole and interchangeable laces. Engineered for all-day comfort.",
+          priceCents: 9500,
+          images: [
+            "/Dragonfly/InShot_20260212_153516456.jpg",
+            "/Dragonfly/InShot_20260212_153903491.jpg",
+            "/Dragonfly/InShot_20260212_154319265.jpg",
+            "/Dragonfly/InShot_20260212_154545771.jpg",
+            "/Dragonfly/InShot_20260212_154719489.jpg",
+            "/Dragonfly/InShot_20260212_154956597.jpg",
+            "/Dragonfly/InShot_20260212_155434004.jpg",
+            "/Dragonfly/InShot_20260212_155809942.jpg",
+            "/Dragonfly/InShot_20260212_160512335.jpg",
+          ],
+          primaryColors: ["black", "white", "red", "#007FFF"],
+          secondaryColors: ["black", "white", "grey", "red", "#007FFF", "green", "blue", "maroon", "pink", "purple", "orange", "yellow", "navy", "teal"],
+          sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
+        },
+      });
+
+      // Upsert Dragonfly variants
+      const dfVariants = [
+        { color: "black", sku: "DF-BLK", stock: 999, priceCents: 9000 },
+        { color: "white", sku: "DF-WHT", stock: 999, priceCents: 9500 },
+        { color: "red", sku: "DF-RED", stock: 999, priceCents: 9500 },
+        { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 9500 },
+      ];
+      for (const v of dfVariants) {
+        await prisma.variant.upsert({
+          where: { sku: v.sku },
+          update: { stock: v.stock, priceCents: v.priceCents },
+          create: {
+            product: { connect: { id: existingDf.id } },
+            color: v.color,
+            sku: v.sku,
+            stock: v.stock,
+            priceCents: v.priceCents,
+          },
+        });
+      }
+      console.log("Updated Dragonfly product and variants.");
+    }
+
     console.log('Seed script completed successfully.');
   } catch (e) {
     console.error('Seed error:', e);

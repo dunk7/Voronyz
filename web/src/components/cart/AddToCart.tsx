@@ -19,6 +19,8 @@ type Props = {
   productName?: string;
   coverImage?: string;
   productSlug?: string;
+  secondaryLabel?: string;
+  promoHint?: { code: string; promoPrice: number };
 };
 
 interface CartItem {
@@ -27,12 +29,11 @@ interface CartItem {
   image?: string;
   variantId: string;
   quantity: number;
-  // Base (non-discounted) unit price. `priceCents` is kept for backward compatibility.
   priceCents: number;
-  basePriceCents?: number;
   variant: { name: string };
-  attributes?: { color?: string; size?: string; gender?: string };
+  attributes?: { color?: string; size?: string };
   productSlug?: string;
+  message?: string;
 }
 
 interface CartData {
@@ -44,10 +45,11 @@ export default function AddToCart({
   variants, 
   primaryColors, 
   secondaryColors, 
-  sizes: _sizes, 
+  sizes, 
   productName, 
   coverImage, 
-  productSlug 
+  productSlug,
+  secondaryLabel,
 }: Props) {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -61,7 +63,7 @@ export default function AddToCart({
       if (primaryParam && primaryColors.includes(primaryParam.toLowerCase())) {
         return primaryParam.toLowerCase();
       }
-      return primaryColors.includes('white') ? 'white' : primaryColors[0];
+      return primaryColors[0];
     }
   );
 
@@ -71,7 +73,7 @@ export default function AddToCart({
       if (secondaryParam && secondaryColors.includes(secondaryParam.toLowerCase())) {
         return secondaryParam.toLowerCase();
       }
-      return secondaryColors.includes('black') ? 'black' : secondaryColors[0];
+      return secondaryColors[0];
     }
   );
 
@@ -125,7 +127,7 @@ export default function AddToCart({
     if (gender === "women") return womensSizes;
     if (gender === "kids") return kidsSizes;
     return mensSizes;
-  }, [gender, kidsSizes, mensSizes, womensSizes]);
+  }, [gender]);
 
   // Get size label based on gender
   const sizeLabel = gender === "men" ? "Men's" : gender === "women" ? "Women's" : "Kids'";
@@ -142,6 +144,15 @@ export default function AddToCart({
     setAdded(false);
   }, [selectedPrimary, selectedSecondary, selectedSize, gender]);
 
+  // Human-readable color names for hex values
+  const colorDisplayName = (color: string) => {
+    const names: Record<string, string> = {
+      "#007FFF": "Azure Blue",
+      "#007fff": "Azure Blue",
+    };
+    return names[color] || color;
+  };
+
   function add() {
     if (!canAdd) return;
 
@@ -157,7 +168,8 @@ export default function AddToCart({
         if (Array.isArray(parsed)) {
           // Legacy array format, migrate
           fullCart = { items: parsed.map((item: unknown) => ({ 
-            ...(item as CartItem)
+            ...(item as CartItem), 
+            message: '' 
           })), discountCode: null };
         } else {
           fullCart = parsed as CartData;
@@ -176,38 +188,34 @@ export default function AddToCart({
       const existingItemIndex = cart.findIndex(item => 
         item.variantId === selectedVariant.id && 
         item.attributes?.color === selectedSecondary && 
-        item.attributes?.size === selectedSize &&
-        item.attributes?.gender === gender
+        item.attributes?.size === selectedSize
       );
 
       if (existingItemIndex >= 0) {
         // Update existing
         const existingItem = cart[existingItemIndex];
-        const baseUnitPriceCents = priceCents;
         cart[existingItemIndex] = { 
           ...existingItem, 
           quantity: existingItem.quantity + quantity,
-          basePriceCents: baseUnitPriceCents,
-          priceCents: baseUnitPriceCents
+          priceCents: priceCents,
+          message: existingItem.message || ''
         };
       } else {
         // Add new
-        const baseUnitPriceCents = priceCents;
         const newItem: CartItem = {
           id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           productName,
           image: coverImage,
           variantId: selectedVariant.id,
           quantity,
-          basePriceCents: baseUnitPriceCents,
-          priceCents: baseUnitPriceCents,
+          priceCents,
           variant: { name: selectedPrimary },
           attributes: { 
             color: selectedSecondary, 
-            size: selectedSize,
-            gender: gender
+            size: selectedSize
           },
-          productSlug
+          productSlug,
+          message: ''
         };
         cart.push(newItem);
       }
@@ -258,15 +266,15 @@ export default function AddToCart({
                     isSelected 
                       ? "bg-black text-white ring-black glow" 
                       : available 
-                        ? "bg-white ring-black/10 hover:bg-black/5 text-neutral-900" 
-                        : "bg-white text-red-600 ring-red-300 cursor-not-allowed opacity-50"
+                        ? "ring-black/10 hover:bg-black/5 text-neutral-900" 
+                        : "bg-red-50 text-red-600 ring-red-300 cursor-not-allowed opacity-50"
                   } ring-1`}
                 >
                   <span className={`inline-block h-4 w-4 rounded-full mr-2 border flex-shrink-0 ${
                     isSelected ? 'border-white' : 'border-black/20'
                   }`} style={{ backgroundColor: color }} />
                   <span className="capitalize">
-                    {color}
+                    {colorDisplayName(color)}
                     {!available && " (Out of Stock)"}
                   </span>
                 </button>
@@ -275,9 +283,9 @@ export default function AddToCart({
           </div>
         </div>
 
-        {/* Secondary Color */}
+        {/* Secondary / Lace Color */}
         <div className="grid gap-2">
-          <label className="text-sm text-neutral-700">Secondary Color</label>
+          <label className="text-sm text-neutral-700">{secondaryLabel || "Secondary Color"}</label>
           <div className="flex flex-wrap gap-2">
             {secondaryColors.map((color) => {
               const isSelected = selectedSecondary === color;
@@ -288,7 +296,7 @@ export default function AddToCart({
                   className={`flex items-center gap-0 rounded-full px-2 py-2 text-sm text-neutral-900 ring-1 transition leading-none ${
                     isSelected 
                       ? "bg-black text-white ring-black glow" 
-                      : "bg-white ring-black/10 hover:bg-black/5"
+                      : "ring-black/10 hover:bg-black/5"
                   }`}
                 >
                   <span className={`inline-block h-4 w-4 rounded-full mr-2 border flex-shrink-0 ${
@@ -313,7 +321,7 @@ export default function AddToCart({
                 className={`text-xs px-2 py-1 rounded-full transition ${
                   gender === "men"
                     ? "bg-black text-white"
-                    : "bg-white text-neutral-600 hover:bg-neutral-200"
+                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                 }`}
               >
                 Men&apos;s
@@ -323,7 +331,7 @@ export default function AddToCart({
                 className={`text-xs px-2 py-1 rounded-full transition ${
                   gender === "women"
                     ? "bg-black text-white"
-                    : "bg-white text-neutral-600 hover:bg-neutral-200"
+                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                 }`}
               >
                 Women&apos;s
@@ -333,7 +341,7 @@ export default function AddToCart({
                 className={`text-xs px-2 py-1 rounded-full transition ${
                   gender === "kids"
                     ? "bg-black text-white"
-                    : "bg-white text-neutral-600 hover:bg-neutral-200"
+                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                 }`}
               >
                 Kids&apos;
@@ -352,7 +360,7 @@ export default function AddToCart({
                   className={`rounded-full h-10 w-10 text-sm text-neutral-900 ring-1 transition flex items-center justify-center ${
                     isSelected 
                       ? "bg-black text-white ring-black glow" 
-                      : "bg-white ring-black/10 hover:bg-black/5"
+                      : "ring-black/10 hover:bg-black/5"
                   }`}
                 >
                   {displaySize}
@@ -368,7 +376,7 @@ export default function AddToCart({
             min={1}
             value={quantity}
             onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-            className="w-20 h-[48px] rounded-md border border-black/10 px-3 py-2 text-sm text-neutral-900 bg-white"
+            className="w-20 h-[48px] rounded-md border border-black/10 px-3 py-2 text-sm text-neutral-900"
           />
           <div className="flex items-baseline gap-2 pt-1">
             <span className="text-2xl font-bold text-neutral-900">{formattedTotal}</span>

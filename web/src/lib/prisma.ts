@@ -67,9 +67,9 @@ function initPrismaClient(): PrismaClient {
 }
 
 /**
- * A lazy Prisma client:
- * - Does NOT throw at import time (so demo builds can work without DATABASE_URL)
- * - Throws only when actually used, with a clear error message
+ * Lazy-initialized Prisma client.
+ * Does not throw at import time — only when a query is actually executed,
+ * providing a clear error if DATABASE_URL is missing.
  */
 export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
   get(_target, prop) {

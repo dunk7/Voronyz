@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import HeroParallax from "@/components/HeroParallax";
-import { Scan, Box, Recycle } from "lucide-react";
+import { Scan, Box, Recycle, ArrowRight } from "lucide-react";
 
 export default function Home() {
   return (
@@ -18,44 +18,59 @@ export default function Home() {
             filter: "brightness(0.4)"
           }}
         />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(800px_400px_at_50%_30%,rgba(255,255,255,0.08),transparent)]" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(900px_500px_at_50%_25%,rgba(255,255,255,0.06),transparent)]" />
 
-        {/* Mobile-first responsive padding */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-16 sm:py-20 md:py-24 lg:py-8 xl:py-10 2xl:py-12 lg:px-8 fade-in-up">
-          <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-8 sm:gap-10 lg:gap-12">
-            {/* Content Section - Improved mobile spacing */}
-            <div className="lg:col-span-4 space-y-4 sm:space-y-5 md:space-y-6 order-2 lg:order-1">
-              <p className="uppercase tracking-[0.25em] text-xs sm:text-sm text-neutral-400">Voronyz Engineering</p>
+        {/* Hero content */}
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-20 sm:py-24 md:py-28 lg:py-12 xl:py-14 2xl:py-16 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-10 sm:gap-12 lg:gap-16">
 
-              {/* Improved responsive typography */}
-              <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-semibold leading-[1.1] sm:leading-tight tracking-[0.15em] text-white uppercase">
-                Step into the Future
+            {/* Text / CTA Column */}
+            <div className="lg:col-span-4 space-y-5 sm:space-y-6 md:space-y-7 order-2 lg:order-1">
+
+              {/* Eyebrow badge */}
+              <div className="hero-stagger-1 flex items-center gap-2.5">
+                <span className="inline-block h-px w-6 bg-white/30" />
+                <p className="uppercase tracking-[0.3em] text-[10px] sm:text-xs font-medium text-neutral-400">
+                  Voronyz Engineering
+                </p>
+              </div>
+
+              {/* Main headline */}
+              <h1 className="hero-stagger-2 text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-semibold leading-[1.08] sm:leading-[1.1] tracking-tight text-white">
+                Step Into<br className="hidden sm:block" /> the Future
               </h1>
 
-              {/* Better mobile text sizing and spacing */}
-              <p className="text-neutral-300 text-base sm:text-lg md:text-xl max-w-xl leading-relaxed">
-                Step into otherworldly comfort, performance, and style. Start by checking out our latest models or watching the short introduction video.
+              {/* Subheadline */}
+              <p className="hero-stagger-3 text-neutral-400 text-sm sm:text-base md:text-lg max-w-md leading-relaxed">
+                Otherworldly comfort, precision-engineered performance, and bold style — all 3D-printed to your exact fit. Explore our latest models below.
               </p>
 
-              {/* Improved mobile button layout */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2">
+              {/* CTA buttons */}
+              <div className="hero-stagger-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-3 pt-1">
+                <Link
+                  href="/products/dragonfly"
+                  className="group btn-shimmer inline-flex items-center justify-center gap-2 rounded-full bg-white text-black px-6 py-3 text-sm font-semibold shadow-lg shadow-white/10 hover:shadow-white/20 transition-all duration-200 text-center"
+                >
+                  Shop the Dragonfly&apos;s
+                  <ArrowRight className="h-3.5 w-3.5 opacity-60 transition-transform duration-200 group-hover:translate-x-0.5" />
+                </Link>
                 <Link
                   href="/products/v3-slides"
-                  className="rounded-full bg-white text-black px-6 py-3 sm:px-5 sm:py-3 text-sm font-medium hover:bg-neutral-200 transition text-center sm:text-left"
+                  className="inline-flex items-center justify-center rounded-full ring-1 ring-white/15 text-white px-6 py-3 text-sm font-medium hover:bg-white/[0.06] hover:ring-white/25 transition-all duration-200 text-center backdrop-blur-sm"
                 >
-                  Shop the new Slides
+                  V3 Slides
                 </Link>
                 <Link
                   href="/products"
-                  className="rounded-full ring-1 ring-white/20 text-white px-6 py-3 sm:px-5 sm:py-3 text-sm font-medium hover:bg-white/5 transition text-center sm:text-left"
+                  className="inline-flex items-center justify-center rounded-full text-neutral-400 hover:text-white px-4 py-3 text-sm font-medium transition-colors duration-200 text-center"
                 >
-                  View All
+                  View All →
                 </Link>
               </div>
             </div>
 
-            {/* Image Section - Video Animation */}
-            <div className="lg:col-span-8 order-1 lg:order-2">
+            {/* Image / Parallax Column */}
+            <div className="lg:col-span-8 order-1 lg:order-2 hero-stagger-image">
               <HeroParallax>
                 <div className="relative w-full rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-[4/3] lg:h-full xl:h-full 2xl:h-full">
                   <Image src="/side-render-of-both.png" alt="Voronyz V3 Slides" fill priority className="object-contain" />
@@ -102,7 +117,7 @@ export default function Home() {
         <div className="container py-16 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-6">
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl" style={{ clipPath: 'inset(0 20px 0 0)' }}>
-              <Image src="/v3.4/1765680306879.jpg" alt="Voronyz V3 Slides" fill className="object-cover" />
+              <Image src="/V3slides/InShot_20260212_194215252.jpg" alt="Voronyz V3 Slides" fill className="object-cover" />
             </div>
           </div>
           <div className="lg:col-span-6 space-y-4">
@@ -123,7 +138,7 @@ export default function Home() {
           <div className="lg:col-span-7">
             <div className="lg:col-span-7">
               <div className="relative aspect-video w-full overflow-hidden rounded-2xl ring-1 ring-neutral-200 shadow-lg">
-                <Image src="/v3.4/Lumii_20251207_031125508.jpg" alt="Voronyz slides video" fill className="object-cover" />
+                <Image src="/V3slides/InShot_20260212_193956953.jpg" alt="Voronyz slides video" fill className="object-cover" />
                 <a href="/v3.4/lv_0_20251207032243.mp4" target="_blank" rel="noopener noreferrer" className="absolute inset-0 grid place-items-center transition-opacity hover:opacity-90">
                   <span className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-black/70 backdrop-blur text-white">▶</span>
                 </a>

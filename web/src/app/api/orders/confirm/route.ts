@@ -65,29 +65,11 @@ export async function POST(request: NextRequest) {
     sessionId = body.sessionId;
 
     if (!stripe) {
-      // Demo mode: allow the success page to work end-to-end without Stripe configured.
-      if (!sessionId) {
-        return NextResponse.json({ error: "Session ID required" }, { status: 400 });
-      }
-
-      return NextResponse.json({
-        success: true,
-        order: {
-          id: `demo-${sessionId}`,
-          stripeId: sessionId,
-          total: 7500,
-          subtotal: 7500,
-          currency: "usd",
-          lineItems: [
-            {
-              name: "Voronyz V3 Slides",
-              amount: 7500,
-              quantity: 1,
-            },
-          ],
-        },
-        warning: "Stripe is not configured; returning a demo order confirmation.",
-      });
+      console.error("Order confirmation failed: STRIPE_SECRET_KEY is not configured");
+      return NextResponse.json(
+        { success: false, error: "Payment processing is not configured. Please contact support." },
+        { status: 503 }
+      );
     }
 
     if (!sessionId) {
