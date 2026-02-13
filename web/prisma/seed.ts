@@ -30,7 +30,7 @@ async function main() {
             "/products/v3-slides/InShot_20260212_195649672.jpg",
           ],
           primaryColors: ["black", "white", "grey", "green", "pink"],
-          secondaryColors: ["black", "white", "grey", "green", "blue", "red", "maroon", "pink", "purple"],
+          secondaryColors: [],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
           variants: {
             create: [
@@ -63,7 +63,7 @@ async function main() {
             "/products/v3-slides/InShot_20260212_195649672.jpg",
           ],
           primaryColors: ["black", "white", "grey", "green", "pink"],
-          secondaryColors: ["black", "white", "grey", "green", "blue", "red", "maroon", "pink", "purple"],
+          secondaryColors: [],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
         },
       });

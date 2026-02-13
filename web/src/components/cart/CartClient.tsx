@@ -30,6 +30,7 @@ export default function CartClient() {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [isNanoCheckingOut, setIsNanoCheckingOut] = useState(false);
 
   const normalizeDiscountCode = (code: string | null | undefined) => {
     const trimmed = (code ?? "").trim();
@@ -364,13 +365,73 @@ export default function CartClient() {
         >
           <button
             type="submit"
-            disabled={isCheckingOut}
+            disabled={isCheckingOut || isNanoCheckingOut}
             className="w-full rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Proceed to checkout"
           >
             {isCheckingOut ? "Processing..." : "Checkout"}
           </button>
         </form>
+
+        {/* Nano (XNO) payment option */}
+        <div className="relative flex items-center gap-2">
+          <div className="flex-1 border-t border-black/10" />
+          <span className="text-xs text-neutral-400 uppercase tracking-wide">or</span>
+          <div className="flex-1 border-t border-black/10" />
+        </div>
+        <button
+          type="button"
+          disabled={isCheckingOut || isNanoCheckingOut}
+          className="w-full rounded-full bg-[#209CE9] text-white px-6 py-3 text-sm font-medium hover:bg-[#1a88cc] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          aria-label="Pay with Nano cryptocurrency"
+          onClick={async () => {
+            if (isNanoCheckingOut) return;
+            setIsNanoCheckingOut(true);
+            try {
+              const checkoutItems = items.map(item => ({
+                variantId: item.variantId,
+                productName: item.productName,
+                variantName: item.variant?.name,
+                secondaryColor: item.attributes?.color,
+                size: item.attributes?.size,
+                gender: item.attributes?.gender,
+                quantity: item.quantity,
+                image: item.image,
+                productSlug: item.productSlug,
+              }));
+
+              const response = await fetch('/api/checkout/nano', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  items: checkoutItems,
+                  discountCode: discountCode || '',
+                }),
+              });
+
+              if (!response.ok) {
+                const rawText = await response.text();
+                let errorData: { error?: string } = {};
+                try { errorData = JSON.parse(rawText); } catch { /* ignore */ }
+                throw new Error(errorData.error || rawText || 'Unknown error');
+              }
+
+              const { orderId } = await response.json();
+              window.location.href = `/checkout/nano?orderId=${orderId}`;
+            } catch (error) {
+              console.error('Nano checkout failed:', error);
+              setIsNanoCheckingOut(false);
+              alert('Nano checkout failed. Please try again.');
+            }
+          }}
+        >
+          <svg viewBox="0 0 1080 1080" className="h-5 w-5 flex-shrink-0" aria-hidden="true">
+            <circle cx="540" cy="540" r="540" fill="#209CE9"/>
+            <path d="M792.9,881h-52.5L541.1,570.6L338.8,881h-52.1l226.8-351.7L306.9,206.2h53.5L542,490.4l185.4-284.2h50.2L568.8,528.4L792.9,881z" fill="white"/>
+            <path d="M336.5,508.7h408.3v38.4H336.5V508.7zM336.5,623.9h408.3v38.4H336.5V623.9z" fill="white"/>
+          </svg>
+          {isNanoCheckingOut ? "Processing…" : "Pay with Nano"}
+        </button>
       </div>
     </div>
   );

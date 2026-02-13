@@ -138,7 +138,7 @@ export function OrderSuccessContent({
 
         <div className="text-sm text-black space-y-2">
           <p>
-            We&apos;re getting your order ready. For custom slides, allow up to 7 business
+            We&apos;re getting your order ready. For custom orders, allow up to 7 business
             days before shipping.
           </p>
           <p>

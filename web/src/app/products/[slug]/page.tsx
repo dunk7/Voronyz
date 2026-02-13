@@ -26,7 +26,7 @@ type ProductWithVariants = {
   currency: string;
   images: string[];
   primaryColors: string[];
-  secondaryColors: string[];
+  secondaryColors?: string[];
   sizes: string[];
   variants: {
     id: string;
@@ -71,7 +71,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       </div>
     );
   }
-  if (!product) return <div className="container py-12">Not found.</div>;
+  if (!product) return <div className="container py-12 text-neutral-900">Not found.</div>;
 
   const defaultImages = [
     "/products/v3-slides/InShot_20260212_194215252.jpg",
@@ -101,7 +101,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   // Product-specific descriptions
   const displayDescription = slug === "v3-slides" 
-    ? "World-class FDM printed slides with TPU 95A lattice lowers and breathable uppers. Engineered from precision 3D scans."
+    ? "World-class FDM printed slides with TPU 90A lattice lowers and breathable uppers. Engineered from precision 3D scans."
     : slug === "dragonfly"
     ? "Lightweight, breathable 3D-printed sneakers featuring a custom lattice sole for unmatched cushioning and style. Available in four stunning colorways with fully customizable lace colors."
     : product.description;
@@ -148,16 +148,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 <AddToCart
                   variants={product.variants}
                   primaryColors={product.primaryColors as string[]}
-                  secondaryColors={
-                    isDragonfly
-                      ? (product.secondaryColors as string[]).filter(c => c.toLowerCase() !== "#007fff")
-                      : (product.secondaryColors as string[])
-                  }
+                  {...(isDragonfly && {
+                    secondaryColors: (product.secondaryColors as string[]).filter(c => c.toLowerCase() !== "#007fff"),
+                    secondaryLabel: "Lace Color",
+                  })}
                   sizes={product.sizes as string[]}
                   productName={product.name}
                   coverImage={(images[0] as string) || defaultImages[0]}
                   productSlug={slug}
-                  secondaryLabel={isDragonfly ? "Lace Color" : undefined}
                   promoHint={undefined}
                 />
               </Suspense>
@@ -198,7 +196,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Is shipping really free?", a: "Yes! We offer free shipping on all domestic US orders. No minimum purchase required. We currently only ship within the US." },
               { q: "Can I wash them?", a: "Absolutely. The lattice sole and upper are fully washable — toss them in the washer on a gentle cycle." },
             ] : [
-              { q: "What if my size doesn't fit?", a: "Bruh they're slides. They're going to fit and also be extremely comfortable" },
+              { q: "What if my size doesn't fit?", a: "They're going to fit and also be extremely comfortable. Trust the process" },
               { q: "Are they waterproof?", a: "Yes. 100% waterproof. Throw them in your washer to clean!" },
               { q: "How long does production take?", a: "After 24 hours of printing, orders are shipped out next day" },
             ]}

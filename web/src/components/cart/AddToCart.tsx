@@ -14,7 +14,7 @@ interface VariantProps {
 type Props = {
   variants: VariantProps[];
   primaryColors: string[];
-  secondaryColors: string[];
+  secondaryColors?: string[];
   sizes: string[];
   productName?: string;
   coverImage?: string;
@@ -44,13 +44,14 @@ interface CartData {
 export default function AddToCart({ 
   variants, 
   primaryColors, 
-  secondaryColors, 
+  secondaryColors = [], 
   sizes, 
   productName, 
   coverImage, 
   productSlug,
   secondaryLabel,
 }: Props) {
+  const hasSecondaryColors = secondaryColors.length > 0;
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState(false);
@@ -69,6 +70,7 @@ export default function AddToCart({
 
   const [selectedSecondary, setSelectedSecondary] = useState<string | undefined>(
     () => {
+      if (!hasSecondaryColors) return undefined;
       const secondaryParam = searchParams.get('secondary');
       if (secondaryParam && secondaryColors.includes(secondaryParam.toLowerCase())) {
         return secondaryParam.toLowerCase();
@@ -120,7 +122,7 @@ export default function AddToCart({
   const formattedTotal = formatCentsAsCurrency(totalCents);
 
   // Disable add if no selections or primary out of stock
-  const canAdd = selectedPrimary && selectedSecondary && selectedSize && isPrimaryAvailable(selectedPrimary);
+  const canAdd = selectedPrimary && (selectedSecondary || !hasSecondaryColors) && selectedSize && isPrimaryAvailable(selectedPrimary);
 
   // Get display sizes based on gender
   const displaySizes = useMemo(() => {
@@ -187,7 +189,7 @@ export default function AddToCart({
       // Check if item already exists (match variantId + attributes)
       const existingItemIndex = cart.findIndex(item => 
         item.variantId === selectedVariant.id && 
-        item.attributes?.color === selectedSecondary && 
+        (hasSecondaryColors ? item.attributes?.color === selectedSecondary : !item.attributes?.color) && 
         item.attributes?.size === selectedSize
       );
 
@@ -211,7 +213,7 @@ export default function AddToCart({
           priceCents,
           variant: { name: selectedPrimary },
           attributes: { 
-            color: selectedSecondary, 
+            ...(selectedSecondary && { color: selectedSecondary }), 
             size: selectedSize
           },
           productSlug,
@@ -283,31 +285,33 @@ export default function AddToCart({
           </div>
         </div>
 
-        {/* Secondary / Lace Color */}
-        <div className="grid gap-2">
-          <label className="text-sm text-neutral-700">{secondaryLabel || "Secondary Color"}</label>
-          <div className="flex flex-wrap gap-2">
-            {secondaryColors.map((color) => {
-              const isSelected = selectedSecondary === color;
-              return (
-                <button
-                  key={`secondary-${color}`}
-                  onClick={() => setSelectedSecondary(color)}
-                  className={`flex items-center gap-0 rounded-full px-2 py-2 text-sm text-neutral-900 ring-1 transition leading-none ${
-                    isSelected 
-                      ? "bg-black text-white ring-black glow" 
-                      : "ring-black/10 hover:bg-black/5"
-                  }`}
-                >
-                  <span className={`inline-block h-4 w-4 rounded-full mr-2 border flex-shrink-0 ${
-                    isSelected ? 'border-white' : 'border-black/20'
-                  }`} style={{ backgroundColor: color }} />
-                  <span className="capitalize">{color}</span>
-                </button>
-              );
-            })}
+        {/* Secondary / Lace Color — only shown when product has secondary colors */}
+        {hasSecondaryColors && (
+          <div className="grid gap-2">
+            <label className="text-sm text-neutral-700">{secondaryLabel || "Secondary Color"}</label>
+            <div className="flex flex-wrap gap-2">
+              {secondaryColors.map((color) => {
+                const isSelected = selectedSecondary === color;
+                return (
+                  <button
+                    key={`secondary-${color}`}
+                    onClick={() => setSelectedSecondary(color)}
+                    className={`flex items-center gap-0 rounded-full px-2 py-2 text-sm text-neutral-900 ring-1 transition leading-none ${
+                      isSelected 
+                        ? "bg-black text-white ring-black glow" 
+                        : "ring-black/10 hover:bg-black/5"
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 rounded-full mr-2 border flex-shrink-0 ${
+                      isSelected ? 'border-white' : 'border-black/20'
+                    }`} style={{ backgroundColor: color }} />
+                    <span className="capitalize">{color}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Size */}
         <div className="grid gap-2">

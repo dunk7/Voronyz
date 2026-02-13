@@ -162,8 +162,8 @@ export async function POST(request: NextRequest) {
 
         const genderLabel = item.gender === "men" ? "Men's" : item.gender === "women" ? "Women's" : item.gender === "kids" ? "Kids'" : "";
         const sizeLabel = item.size ? `${item.size}${genderLabel ? ` (${genderLabel})` : ''}` : 'N/A';
-        const productName = item.productName && item.variantName && item.secondaryColor && item.size
-          ? `${item.productName} - ${capitalize(item.variantName)} with ${capitalize(item.secondaryColor)} size ${sizeLabel}`
+        const productName = item.productName && item.variantName
+          ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}`
           : `Product Variant ${item.variantId || 'unknown'}`;
 
         console.log(`Fallback line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);
@@ -187,8 +187,9 @@ export async function POST(request: NextRequest) {
 
     console.log('Creating Stripe session with line items:', lineItems);
     const session = await stripe.checkout.sessions.create({
-      // Avoid unsupported/invalid methods; Stripe will handle available methods for the account.
-      payment_method_types: ["card"],
+      // Use Dynamic Payment Methods — Stripe automatically shows all payment methods
+      // enabled in your Stripe Dashboard (cards, crypto/USDC, Apple Pay, Google Pay, etc.).
+      // To accept crypto: enable "Crypto" in Stripe Dashboard → Settings → Payment methods.
       line_items: lineItems,
       mode: 'payment',
       shipping_address_collection: {

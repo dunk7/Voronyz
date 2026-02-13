@@ -20,12 +20,12 @@ export default function AccountPage() {
     if (res.ok) setMessage("Saved");
   }
 
-  if (isLoading) return <div className="container py-12">Loading…</div>;
+  if (isLoading) return <div className="container py-12 text-neutral-900">Loading…</div>;
 
   return (
     <div className="bg-texture-white">
       <div className="container py-12 max-w-2xl space-y-6">
-        <h1 className="text-2xl font-semibold">Account</h1>
+        <h1 className="text-2xl font-semibold text-neutral-900">Account</h1>
         <div className="grid gap-4">
           <div className="grid gap-2">
             <label className="text-sm text-neutral-700">Preferences (JSON)</label>
@@ -35,7 +35,7 @@ export default function AccountPage() {
                 try { setPreferences(JSON.parse(e.target.value)); } catch {}
               }}
               rows={6}
-              className="rounded-md border border-black/10 px-3 py-2 text-sm font-mono"
+              className="rounded-md border border-black/10 px-3 py-2 text-sm font-mono text-neutral-900 bg-white"
             />
           </div>
           <div className="grid gap-2">
@@ -46,7 +46,7 @@ export default function AccountPage() {
                 try { setFootScanMetadata(JSON.parse(e.target.value)); } catch {}
               }}
               rows={6}
-              className="rounded-md border border-black/10 px-3 py-2 text-sm font-mono"
+              className="rounded-md border border-black/10 px-3 py-2 text-sm font-mono text-neutral-900 bg-white"
             />
           </div>
           <button onClick={save} className="w-fit rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800">Save</button>

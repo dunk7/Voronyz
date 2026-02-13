@@ -35,7 +35,7 @@ model Product {
   currency        String    @default("usd")
   images          Json?
   primaryColors   String[]  @default(["black", "white", "grey", "green", "pink"]) // Available primary colors
-  secondaryColors String[]  @default(["black", "white", "grey", "green", "blue", "red", "maroon", "pink", "purple"]) // Secondary color options, all in stock
+  secondaryColors String[]  @default([]) // Secondary color options (e.g. lace colors for Dragonfly)
   sizes           String[]  @default(["5", "6", "7", "8", "9", "10", "11", "12"]) // Available sizes
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

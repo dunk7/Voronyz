@@ -1,6 +1,13 @@
 "use client";
 import Image from "next/image";
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+  useLayoutEffect,
+} from "react";
 
 type Media = {
   type: "image" | "video";
@@ -17,25 +24,62 @@ export default function V3Gallery({
   className?: string;
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [fadeKey, setFadeKey] = useState(0); // bump to re-trigger fade animation
+  const [fadeKey, setFadeKey] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const active = useMemo(() => media[activeIndex] ?? media[0], [media, activeIndex]);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const active = useMemo(
+    () => media[activeIndex] ?? media[0],
+    [media, activeIndex]
+  );
 
-  // Touch / swipe state
+  // Touch state — all refs, zero re-renders during drag
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
   const touchDeltaX = useRef(0);
   const isDragging = useRef(false);
   const isHorizontalSwipe = useRef<boolean | null>(null);
-  const [dragOffset, setDragOffset] = useState(0);
-
-  // Animated slide transition state
-  const [isAnimating, setIsAnimating] = useState(false);
-  const pendingIndex = useRef<number | null>(null);
   const cachedWidth = useRef(0);
+  const animatingRef = useRef(false);
+  const pendingIndex = useRef<number | null>(null);
+  const safetyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dotRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  // Navigate to specific index with fade animation (for non-swipe navigation)
+  const prevIndex = activeIndex > 0 ? activeIndex - 1 : null;
+  const nextIndex = activeIndex < media.length - 1 ? activeIndex + 1 : null;
+
+  // Reset track + dot inline styles after activeIndex commits (runs before paint)
+  useLayoutEffect(() => {
+    const track = trackRef.current;
+    if (track) {
+      track.style.transition = "none";
+      track.style.transform = "translate3d(-33.3333%, 0, 0)";
+    }
+    // Clear inline overrides so React classes take over
+    dotRefs.current.forEach((dot) => {
+      if (dot) {
+        dot.style.width = "";
+        dot.style.backgroundColor = "";
+        dot.style.boxShadow = "";
+        dot.style.transition = "";
+      }
+    });
+  }, [activeIndex]);
+
+  // Commit a pending swipe transition
+  const commitTransition = useCallback(() => {
+    animatingRef.current = false;
+    if (safetyTimer.current) {
+      clearTimeout(safetyTimer.current);
+      safetyTimer.current = null;
+    }
+    if (pendingIndex.current !== null) {
+      setActiveIndex(pendingIndex.current);
+      pendingIndex.current = null;
+    }
+  }, []);
+
+  // Navigate (arrows, thumbnails, dots — non-swipe)
   const goTo = useCallback(
     (index: number) => {
       const clamped = Math.max(0, Math.min(media.length - 1, index));
@@ -43,9 +87,9 @@ export default function V3Gallery({
         setActiveIndex(clamped);
         setFadeKey((k) => k + 1);
       }
-      setDragOffset(0);
-      setIsAnimating(false);
+      animatingRef.current = false;
       pendingIndex.current = null;
+      if (safetyTimer.current) clearTimeout(safetyTimer.current);
     },
     [media.length, activeIndex]
   );
@@ -53,14 +97,12 @@ export default function V3Gallery({
   const goNext = useCallback(() => goTo(activeIndex + 1), [activeIndex, goTo]);
   const goPrev = useCallback(() => goTo(activeIndex - 1), [activeIndex, goTo]);
 
-  // Autoplay video when it becomes active
+  // Video autoplay
   useEffect(() => {
     if (active?.type === "video" && videoRef.current) {
       const video = videoRef.current;
       const handleLoadedData = () => {
-        if (video.paused) {
-          video.play().catch(() => {});
-        }
+        if (video.paused) video.play().catch(() => {});
       };
       if (video.readyState >= 2) {
         if (video.paused) video.play().catch(() => {});
@@ -73,32 +115,19 @@ export default function V3Gallery({
     }
   }, [activeIndex, active]);
 
-  // Safety timeout: finalize animation if transitionend doesn't fire
-  useEffect(() => {
-    if (!isAnimating) return;
-    const timeout = setTimeout(() => {
-      if (pendingIndex.current !== null) {
-        setActiveIndex(pendingIndex.current);
-      }
-      pendingIndex.current = null;
-      setIsAnimating(false);
-      setDragOffset(0);
-    }, 400); // 320ms transition + buffer
-    return () => clearTimeout(timeout);
-  }, [isAnimating]);
+  /* ── Touch handlers ─────────────────────────────────────── */
 
-  // Touch handlers for swipe
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
-      // If an animation is in progress, finalize it immediately
-      if (isAnimating) {
-        if (pendingIndex.current !== null) {
-          setActiveIndex(pendingIndex.current);
-        }
-        pendingIndex.current = null;
-        setIsAnimating(false);
-        setDragOffset(0);
-      }
+      if (animatingRef.current) commitTransition();
+
+      const track = trackRef.current;
+      if (track) track.style.transition = "none";
+
+      // Disable dot transitions so they follow the finger
+      dotRefs.current.forEach((dot) => {
+        if (dot) dot.style.transition = "none";
+      });
 
       cachedWidth.current = containerRef.current?.offsetWidth || 0;
       touchStartX.current = e.touches[0].clientX;
@@ -107,7 +136,7 @@ export default function V3Gallery({
       isDragging.current = true;
       isHorizontalSwipe.current = null;
     },
-    [isAnimating]
+    [commitTransition]
   );
 
   const handleTouchMove = useCallback(
@@ -119,96 +148,160 @@ export default function V3Gallery({
       const deltaX = currentX - touchStartX.current;
       const deltaY = currentY - touchStartY.current;
 
-      // Determine swipe direction on first significant move
+      // Lock direction on first significant movement
       if (isHorizontalSwipe.current === null) {
         if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
           isHorizontalSwipe.current = Math.abs(deltaX) > Math.abs(deltaY);
         }
       }
 
-      // If vertical scroll, bail out
       if (isHorizontalSwipe.current === false) {
         isDragging.current = false;
         return;
       }
 
-      // Prevent vertical scroll while swiping horizontally
-      if (isHorizontalSwipe.current) {
-        e.preventDefault();
-      }
+      if (isHorizontalSwipe.current) e.preventDefault();
 
       touchDeltaX.current = deltaX;
 
-      // Apply resistance at edges
-      let adjustedDelta = deltaX;
+      // Rubber-band at edges
+      let dx = deltaX;
       if (
         (activeIndex === 0 && deltaX > 0) ||
         (activeIndex === media.length - 1 && deltaX < 0)
       ) {
-        adjustedDelta = deltaX * 0.2;
+        dx = deltaX * 0.2;
       }
 
-      setDragOffset(adjustedDelta);
+      // Direct DOM update — no React re-render
+      const track = trackRef.current;
+      const w = cachedWidth.current;
+      if (track) {
+        track.style.transform = `translate3d(${-w + dx}px, 0, 0)`;
+      }
+
+      // Interpolate dot indicators in real-time
+      const progress = Math.min(Math.abs(dx) / w, 1);
+      const direction = dx < 0 ? 1 : dx > 0 ? -1 : 0;
+      const targetIdx = activeIndex + direction;
+      const dots = dotRefs.current;
+
+      const shadowOn = `0 1px 2px 0 rgba(0,0,0,${0.05 * (1 - progress)})`;
+      const shadowIn = `0 1px 2px 0 rgba(0,0,0,${0.05 * progress})`;
+
+      const curDot = dots[activeIndex];
+      if (curDot) {
+        curDot.style.width = `${24 - 16 * progress}px`;
+        curDot.style.backgroundColor = `rgba(255,255,255,${1 - 0.5 * progress})`;
+        curDot.style.boxShadow = shadowOn;
+      }
+      if (
+        direction !== 0 &&
+        targetIdx >= 0 &&
+        targetIdx < media.length &&
+        dots[targetIdx]
+      ) {
+        dots[targetIdx]!.style.width = `${8 + 16 * progress}px`;
+        dots[targetIdx]!.style.backgroundColor = `rgba(255,255,255,${0.5 + 0.5 * progress})`;
+        dots[targetIdx]!.style.boxShadow = shadowIn;
+      }
     },
     [activeIndex, media.length]
   );
 
   const handleTouchEnd = useCallback(() => {
-    if (!isDragging.current && isHorizontalSwipe.current !== true) {
-      setDragOffset(0);
-      return;
-    }
+    if (!isDragging.current && isHorizontalSwipe.current !== true) return;
     isDragging.current = false;
 
-    const threshold = 50;
+    const track = trackRef.current;
+    if (!track) return;
+
     const delta = touchDeltaX.current;
-    const width = cachedWidth.current || containerRef.current?.offsetWidth || 0;
-
-    if (delta < -threshold && activeIndex < media.length - 1) {
-      // Swipe left → slide to next
-      setIsAnimating(true);
-      setDragOffset(-width);
-      pendingIndex.current = activeIndex + 1;
-    } else if (delta > threshold && activeIndex > 0) {
-      // Swipe right → slide to prev
-      setIsAnimating(true);
-      setDragOffset(width);
-      pendingIndex.current = activeIndex - 1;
-    } else if (delta !== 0) {
-      // Bounce back with animation
-      setIsAnimating(true);
-      setDragOffset(0);
-      pendingIndex.current = null;
-    } else {
-      // No movement at all, just clean up
-      setDragOffset(0);
-    }
-
+    const w = cachedWidth.current;
     touchDeltaX.current = 0;
     isHorizontalSwipe.current = null;
-  }, [activeIndex, media.length]);
 
-  // When the slide transition finishes, commit the index change
-  const handleTransitionEnd = useCallback((e: React.TransitionEvent) => {
-    if (e.propertyName !== "transform") return;
-    if (pendingIndex.current !== null) {
-      setActiveIndex(pendingIndex.current);
+    // No movement — skip animation
+    if (delta === 0) {
+      track.style.transition = "none";
+      track.style.transform = `translate3d(${-w}px, 0, 0)`;
+      return;
     }
-    pendingIndex.current = null;
-    setIsAnimating(false);
-    setDragOffset(0);
-  }, []);
 
-  // Which adjacent images to show during drag
-  const prevIndex = activeIndex > 0 ? activeIndex - 1 : null;
-  const nextIndex = activeIndex < media.length - 1 ? activeIndex + 1 : null;
+    // Animate to target position
+    const easing = "cubic-bezier(0.25, 1, 0.5, 1)";
+    track.style.transition = `transform 320ms ${easing}`;
+    animatingRef.current = true;
 
-  const showAdjacentSlides = dragOffset !== 0 || isAnimating;
-  const transitionStyle = isAnimating
-    ? "transform 320ms cubic-bezier(0.25, 1, 0.5, 1)"
-    : "none";
+    // Enable dot transitions to match the slide animation
+    const dots = dotRefs.current;
+    dots.forEach((dot) => {
+      if (dot) dot.style.transition = `all 320ms ${easing}`;
+    });
 
-  const getWidth = () => cachedWidth.current || containerRef.current?.offsetWidth || 0;
+    const threshold = 50;
+
+    const shadowActive = "0 1px 2px 0 rgba(0,0,0,0.05)";
+    const shadowNone = "0 1px 2px 0 rgba(0,0,0,0)";
+
+    if (delta < -threshold && activeIndex < media.length - 1) {
+      track.style.transform = `translate3d(${-2 * w}px, 0, 0)`;
+      pendingIndex.current = activeIndex + 1;
+      // Animate dots: current → inactive, next → active
+      if (dots[activeIndex]) {
+        dots[activeIndex]!.style.width = "8px";
+        dots[activeIndex]!.style.backgroundColor = "rgba(255,255,255,0.5)";
+        dots[activeIndex]!.style.boxShadow = shadowNone;
+      }
+      if (dots[activeIndex + 1]) {
+        dots[activeIndex + 1]!.style.width = "24px";
+        dots[activeIndex + 1]!.style.backgroundColor = "rgba(255,255,255,1)";
+        dots[activeIndex + 1]!.style.boxShadow = shadowActive;
+      }
+    } else if (delta > threshold && activeIndex > 0) {
+      track.style.transform = `translate3d(0px, 0, 0)`;
+      pendingIndex.current = activeIndex - 1;
+      // Animate dots: current → inactive, prev → active
+      if (dots[activeIndex]) {
+        dots[activeIndex]!.style.width = "8px";
+        dots[activeIndex]!.style.backgroundColor = "rgba(255,255,255,0.5)";
+        dots[activeIndex]!.style.boxShadow = shadowNone;
+      }
+      if (dots[activeIndex - 1]) {
+        dots[activeIndex - 1]!.style.width = "24px";
+        dots[activeIndex - 1]!.style.backgroundColor = "rgba(255,255,255,1)";
+        dots[activeIndex - 1]!.style.boxShadow = shadowActive;
+      }
+    } else {
+      track.style.transform = `translate3d(${-w}px, 0, 0)`;
+      pendingIndex.current = null;
+      // Bounce back: reset dots to current state
+      if (dots[activeIndex]) {
+        dots[activeIndex]!.style.width = "24px";
+        dots[activeIndex]!.style.backgroundColor = "rgba(255,255,255,1)";
+        dots[activeIndex]!.style.boxShadow = shadowActive;
+      }
+      const bounceTarget = delta < 0 ? activeIndex + 1 : activeIndex - 1;
+      if (bounceTarget >= 0 && bounceTarget < media.length && dots[bounceTarget]) {
+        dots[bounceTarget]!.style.width = "8px";
+        dots[bounceTarget]!.style.backgroundColor = "rgba(255,255,255,0.5)";
+        dots[bounceTarget]!.style.boxShadow = shadowNone;
+      }
+    }
+
+    // Safety fallback if transitionend doesn't fire
+    safetyTimer.current = setTimeout(commitTransition, 400);
+  }, [activeIndex, media.length, commitTransition]);
+
+  const handleTransitionEnd = useCallback(
+    (e: React.TransitionEvent) => {
+      if (e.propertyName !== "transform") return;
+      commitTransition();
+    },
+    [commitTransition]
+  );
+
+  /* ── Render helpers ─────────────────────────────────────── */
 
   const renderMedia = (m: Media, index: number, isActive: boolean) => {
     if (m.type === "image") {
@@ -242,7 +335,7 @@ export default function V3Gallery({
 
   return (
     <div className={`w-full ${className}`}>
-      {/* Fade-in keyframes (for non-swipe navigation like arrows / thumbnails) */}
+      {/* Fade-in for non-swipe navigation (arrows / thumbnails) */}
       <style jsx>{`
         @keyframes gallery-fade-in {
           from {
@@ -257,59 +350,45 @@ export default function V3Gallery({
         }
       `}</style>
 
-      {/* Main image display */}
+      {/* Viewport */}
       <div
         ref={containerRef}
         className="relative aspect-square w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-neutral-100 ring-1 ring-black/5 group select-none"
+        style={{ touchAction: "pan-y pinch-zoom" }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Previous image (visible during drag / slide animation) */}
-        {prevIndex !== null && showAdjacentSlides && (
-          <div
-            className="absolute inset-0 z-10"
-            style={{
-              transform: `translate3d(${-getWidth() + dragOffset}px, 0, 0)`,
-              transition: transitionStyle,
-              willChange: "transform",
-            }}
-          >
-            {renderMedia(media[prevIndex], prevIndex, false)}
-          </div>
-        )}
-
-        {/* Active image */}
+        {/* Slide track — single GPU-composited layer */}
         <div
-          key={fadeKey}
-          className="absolute inset-0 z-20 gallery-enter"
+          ref={trackRef}
+          className="absolute top-0 left-0 flex h-full"
           style={{
-            transform:
-              dragOffset !== 0 || isAnimating
-                ? `translate3d(${dragOffset}px, 0, 0)`
-                : undefined,
-            transition: transitionStyle,
-            willChange:
-              isAnimating || dragOffset !== 0 ? "transform" : undefined,
+            width: "300%",
+            transform: "translate3d(-33.3333%, 0, 0)",
+            willChange: "transform",
           }}
           onTransitionEnd={handleTransitionEnd}
         >
-          {renderMedia(active, activeIndex, true)}
-        </div>
-
-        {/* Next image (visible during drag / slide animation) */}
-        {nextIndex !== null && showAdjacentSlides && (
-          <div
-            className="absolute inset-0 z-10"
-            style={{
-              transform: `translate3d(${getWidth() + dragOffset}px, 0, 0)`,
-              transition: transitionStyle,
-              willChange: "transform",
-            }}
-          >
-            {renderMedia(media[nextIndex], nextIndex, false)}
+          {/* Previous slide */}
+          <div className="relative h-full flex-shrink-0" style={{ width: "33.3333%" }}>
+            {prevIndex !== null && renderMedia(media[prevIndex], prevIndex, false)}
           </div>
-        )}
+
+          {/* Active slide */}
+          <div
+            key={fadeKey}
+            className="relative h-full flex-shrink-0 gallery-enter"
+            style={{ width: "33.3333%" }}
+          >
+            {renderMedia(active, activeIndex, true)}
+          </div>
+
+          {/* Next slide */}
+          <div className="relative h-full flex-shrink-0" style={{ width: "33.3333%" }}>
+            {nextIndex !== null && renderMedia(media[nextIndex], nextIndex, false)}
+          </div>
+        </div>
 
         {/* Desktop arrow buttons */}
         {media.length > 1 && (
@@ -323,8 +402,18 @@ export default function V3Gallery({
               }`}
               aria-label="Previous image"
             >
-              <svg className="h-4 w-4 text-neutral-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+              <svg
+                className="h-4 w-4 text-neutral-800"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             </button>
             <button
@@ -336,8 +425,18 @@ export default function V3Gallery({
               }`}
               aria-label="Next image"
             >
-              <svg className="h-4 w-4 text-neutral-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+              <svg
+                className="h-4 w-4 text-neutral-800"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </button>
           </>
@@ -356,6 +455,7 @@ export default function V3Gallery({
             {media.map((_, i) => (
               <button
                 key={i}
+                ref={(el) => { dotRefs.current[i] = el; }}
                 onClick={() => goTo(i)}
                 className={`rounded-full transition-all duration-300 ${
                   i === activeIndex
@@ -411,7 +511,11 @@ export default function V3Gallery({
                   )}
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                     <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-black/70 backdrop-blur-sm">
-                      <svg className="h-3.5 w-3.5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        className="h-3.5 w-3.5 text-white ml-0.5"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         <path d="M8 5v14l11-7z" />
                       </svg>
                     </div>
