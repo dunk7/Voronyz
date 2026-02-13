@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     url: "/",
     siteName: "Voronyz",
     images: [
-      { url: "/v3-front.jpg", width: 1200, height: 630, alt: "Voronyz V3 Slides" },
+      { url: "/products/v3-slides/InShot_20260212_194215252.jpg", width: 1200, height: 630, alt: "Voronyz V3 Slides" },
     ],
     locale: "en_US",
     type: "website",
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     title: "Voronyz — Advanced 3D Printed Footwear",
     description:
       "Futuristic footwear engineered with 3D scanning, TPU lattices, and performance uppers.",
-    images: ["/v3-front.jpg"],
+    images: ["/products/v3-slides/InShot_20260212_194215252.jpg"],
   },
 };
 

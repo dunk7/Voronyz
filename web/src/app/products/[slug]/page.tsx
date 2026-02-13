@@ -74,27 +74,27 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   if (!product) return <div className="container py-12">Not found.</div>;
 
   const defaultImages = [
-    "/V3slides/InShot_20260212_194215252.jpg",
-    "/V3slides/InShot_20260212_193956953.jpg",
-    "/V3slides/InShot_20260212_194352014.jpg",
-    "/V3slides/InShot_20260212_194654595.jpg",
-    "/V3slides/InShot_20260212_194922422.jpg",
-    "/V3slides/InShot_20260212_195048118.jpg",
-    "/V3slides/InShot_20260212_195217163.jpg",
-    "/V3slides/InShot_20260212_195358936.jpg",
-    "/V3slides/InShot_20260212_195535113.jpg",
-    "/V3slides/InShot_20260212_195649672.jpg",
+    "/products/v3-slides/InShot_20260212_194215252.jpg",
+    "/products/v3-slides/InShot_20260212_193956953.jpg",
+    "/products/v3-slides/InShot_20260212_194352014.jpg",
+    "/products/v3-slides/InShot_20260212_194654595.jpg",
+    "/products/v3-slides/InShot_20260212_194922422.jpg",
+    "/products/v3-slides/InShot_20260212_195048118.jpg",
+    "/products/v3-slides/InShot_20260212_195217163.jpg",
+    "/products/v3-slides/InShot_20260212_195358936.jpg",
+    "/products/v3-slides/InShot_20260212_195535113.jpg",
+    "/products/v3-slides/InShot_20260212_195649672.jpg",
   ];
   const dragonflyImages = [
-    "/Dragonfly/InShot_20260212_153516456.jpg",
-    "/Dragonfly/InShot_20260212_153903491.jpg",
-    "/Dragonfly/InShot_20260212_154319265.jpg",
-    "/Dragonfly/InShot_20260212_154545771.jpg",
-    "/Dragonfly/InShot_20260212_154719489.jpg",
-    "/Dragonfly/InShot_20260212_154956597.jpg",
-    "/Dragonfly/InShot_20260212_155434004.jpg",
-    "/Dragonfly/InShot_20260212_155809942.jpg",
-    "/Dragonfly/InShot_20260212_160512335.jpg",
+    "/products/dragonfly/InShot_20260212_153516456.jpg",
+    "/products/dragonfly/InShot_20260212_153903491.jpg",
+    "/products/dragonfly/InShot_20260212_154319265.jpg",
+    "/products/dragonfly/InShot_20260212_154545771.jpg",
+    "/products/dragonfly/InShot_20260212_154719489.jpg",
+    "/products/dragonfly/InShot_20260212_154956597.jpg",
+    "/products/dragonfly/InShot_20260212_155434004.jpg",
+    "/products/dragonfly/InShot_20260212_155809942.jpg",
+    "/products/dragonfly/InShot_20260212_160512335.jpg",
   ];
   const images = slug === "v3-slides" ? defaultImages : slug === "dragonfly" ? dragonflyImages : ((product.images as string[] | null) ?? defaultImages);
   const galleryMedia = images.map((src) => ({ type: "image" as const, src, alt: product.name }));
@@ -128,7 +128,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
               </svg>
-              Free shipping
+              Free US shipping
             </span>
             <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Made to order in &lt;2 days</span>
             <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Lasts 2-5 years</span>
@@ -168,7 +168,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  Free worldwide shipping
+                  Free US shipping
                 </span>
               </div>
             </div>
@@ -195,7 +195,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "What colors are available?", a: "The Dragonfly's come in Black, White, Red, and Azure Blue. Black is $5 less at $90. Laces can be any color you want!" },
               { q: "Are they true to size?", a: "Yes — we offer Men's, Women's, and Kids' sizing. They're designed for a comfortable, snug fit right out of the box." },
               { q: "How long does production take?", a: "Each pair is 3D-printed to order. Production takes about 1-2 days, then ships out next business day." },
-              { q: "Is shipping really free?", a: "Yes! Every order ships free worldwide. No minimum purchase required." },
+              { q: "Is shipping really free?", a: "Yes! We offer free shipping on all domestic US orders. No minimum purchase required. We currently only ship within the US." },
               { q: "Can I wash them?", a: "Absolutely. The lattice sole and upper are fully washable — toss them in the washer on a gentle cycle." },
             ] : [
               { q: "What if my size doesn't fit?", a: "Bruh they're slides. They're going to fit and also be extremely comfortable" },
@@ -216,7 +216,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug === "dragonfly") {
     const title = "The Dragonfly's – Voronyz";
     const description = "Lightweight 3D-printed sneakers with custom lattice sole and interchangeable laces. Starting at $90.";
-    const images = ["/Dragonfly/InShot_20260212_153516456.jpg"];
+    const images = ["/products/dragonfly/InShot_20260212_153516456.jpg"];
     return {
       title,
       description,
@@ -230,7 +230,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     if (product) {
       const title = `${product.name} – Voronyz`;
       const description = product.description;
-      const images = (product.images as string[] | null) ?? ["/v3-front.jpg"]; 
+      const images = (product.images as string[] | null) ?? ["/products/v3-slides/InShot_20260212_194215252.jpg"]; 
       return {
         title,
         description,
@@ -244,8 +244,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: fallbackTitle,
     description: fallbackDescription,
-    openGraph: { title: fallbackTitle, description: fallbackDescription, images: ["/V3slides/InShot_20260212_194215252.jpg"] },
-    twitter: { card: "summary_large_image", title: fallbackTitle, description: fallbackDescription, images: ["/V3slides/InShot_20260212_194215252.jpg"] },
+    openGraph: { title: fallbackTitle, description: fallbackDescription, images: ["/products/v3-slides/InShot_20260212_194215252.jpg"] },
+    twitter: { card: "summary_large_image", title: fallbackTitle, description: fallbackDescription, images: ["/products/v3-slides/InShot_20260212_194215252.jpg"] },
   };
 }
 

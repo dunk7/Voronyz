@@ -157,7 +157,7 @@ export default function V3() {
 
     // Load STL model (black)
     const loader = new STLLoader();
-    loader.load('/v29.stl', (geometry: BufferGeometryLike) => {
+    loader.load('/products/v3-slides/v29.stl', (geometry: BufferGeometryLike) => {
       geometry.computeVertexNormals(); // For better lighting
 
       const material = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.6, metalness: 0.02, envMapIntensity: 0.6 });
@@ -200,7 +200,7 @@ export default function V3() {
     });
 
     // Load second STL model (white) with same transforms
-    loader.load('/v29g.stl', (geometry: BufferGeometryLike) => {
+    loader.load('/products/v3-slides/v29g.stl', (geometry: BufferGeometryLike) => {
       geometry.computeVertexNormals();
 
       const material = new THREE.MeshPhongMaterial({ color: 0xffffff, specular: 0x666666, shininess: 40 });

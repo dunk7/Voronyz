@@ -73,7 +73,7 @@ export default function Home() {
             <div className="lg:col-span-8 order-1 lg:order-2 hero-stagger-image">
               <HeroParallax>
                 <div className="relative w-full rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-[4/3] lg:h-full xl:h-full 2xl:h-full">
-                  <Image src="/side-render-of-both.png" alt="Voronyz V3 Slides" fill priority className="object-contain" />
+                  <Image src="/products/v3-slides/side-render-of-both.png" alt="Voronyz V3 Slides" fill priority className="object-contain" />
                 </div>
               </HeroParallax>
             </div>
@@ -117,7 +117,7 @@ export default function Home() {
         <div className="container py-16 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-6">
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl" style={{ clipPath: 'inset(0 20px 0 0)' }}>
-              <Image src="/V3slides/InShot_20260212_194215252.jpg" alt="Voronyz V3 Slides" fill className="object-cover" />
+              <Image src="/products/v3-slides/InShot_20260212_194215252.jpg" alt="Voronyz V3 Slides" fill className="object-cover" />
             </div>
           </div>
           <div className="lg:col-span-6 space-y-4">
@@ -138,8 +138,8 @@ export default function Home() {
           <div className="lg:col-span-7">
             <div className="lg:col-span-7">
               <div className="relative aspect-video w-full overflow-hidden rounded-2xl ring-1 ring-neutral-200 shadow-lg">
-                <Image src="/V3slides/InShot_20260212_193956953.jpg" alt="Voronyz slides video" fill className="object-cover" />
-                <a href="/v3.4/lv_0_20251207032243.mp4" target="_blank" rel="noopener noreferrer" className="absolute inset-0 grid place-items-center transition-opacity hover:opacity-90">
+                <Image src="/products/v3-slides/InShot_20260212_193956953.jpg" alt="Voronyz slides video" fill className="object-cover" />
+                <a href="/products/v3-slides/lv_0_20251207032243.mp4" target="_blank" rel="noopener noreferrer" className="absolute inset-0 grid place-items-center transition-opacity hover:opacity-90">
                   <span className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-black/70 backdrop-blur text-white">▶</span>
                 </a>
               </div>

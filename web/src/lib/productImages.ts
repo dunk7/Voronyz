@@ -26,22 +26,13 @@ export function normalizeProductImages(images: unknown): string[] {
   return [];
 }
 
-export function correctLegacyProductImagePath(path: string): string {
-  // Fix incorrect image paths from database - only for old format paths
-  return path === "/v3-front.jpg" ? "/legacy/v3-front.jpg"
-    : path === "/v3-side.jpg" ? "/legacy/v3-side.jpg"
-    : path === "/v3-top.jpg" ? "/legacy/v3-top.jpg"
-    : path === "/v3-detail.jpg" ? "/legacy/v3-detail.jpg"
-    : path;
-}
-
 export function getProductThumbnail(input: { slug?: string; images?: unknown }): string {
-  // Special-case: v3 product has canonical updated cover asset
-  if (input.slug === "v3-slides") return "/V3slides/InShot_20260212_194215252.jpg";
+  // Special-case: canonical cover assets for known products
+  if (input.slug === "v3-slides") return "/products/v3-slides/InShot_20260212_194215252.jpg";
+  if (input.slug === "dragonfly") return "/products/dragonfly/InShot_20260212_153516456.jpg";
 
   const images = normalizeProductImages(input.images);
-  const rawCover = images[0] ?? "/legacy/v3-front.jpg";
-  return correctLegacyProductImagePath(rawCover);
+  return images[0] ?? "/products/v3-slides/InShot_20260212_194215252.jpg";
 }
 
 

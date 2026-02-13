@@ -30,7 +30,12 @@ export default function V3Gallery({
   const isHorizontalSwipe = useRef<boolean | null>(null);
   const [dragOffset, setDragOffset] = useState(0);
 
-  // Navigate to specific index with fade animation
+  // Animated slide transition state
+  const [isAnimating, setIsAnimating] = useState(false);
+  const pendingIndex = useRef<number | null>(null);
+  const cachedWidth = useRef(0);
+
+  // Navigate to specific index with fade animation (for non-swipe navigation)
   const goTo = useCallback(
     (index: number) => {
       const clamped = Math.max(0, Math.min(media.length - 1, index));
@@ -39,6 +44,8 @@ export default function V3Gallery({
         setFadeKey((k) => k + 1);
       }
       setDragOffset(0);
+      setIsAnimating(false);
+      pendingIndex.current = null;
     },
     [media.length, activeIndex]
   );
@@ -66,14 +73,42 @@ export default function V3Gallery({
     }
   }, [activeIndex, active]);
 
+  // Safety timeout: finalize animation if transitionend doesn't fire
+  useEffect(() => {
+    if (!isAnimating) return;
+    const timeout = setTimeout(() => {
+      if (pendingIndex.current !== null) {
+        setActiveIndex(pendingIndex.current);
+      }
+      pendingIndex.current = null;
+      setIsAnimating(false);
+      setDragOffset(0);
+    }, 400); // 320ms transition + buffer
+    return () => clearTimeout(timeout);
+  }, [isAnimating]);
+
   // Touch handlers for swipe
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-    touchDeltaX.current = 0;
-    isDragging.current = true;
-    isHorizontalSwipe.current = null;
-  }, []);
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      // If an animation is in progress, finalize it immediately
+      if (isAnimating) {
+        if (pendingIndex.current !== null) {
+          setActiveIndex(pendingIndex.current);
+        }
+        pendingIndex.current = null;
+        setIsAnimating(false);
+        setDragOffset(0);
+      }
+
+      cachedWidth.current = containerRef.current?.offsetWidth || 0;
+      touchStartX.current = e.touches[0].clientX;
+      touchStartY.current = e.touches[0].clientY;
+      touchDeltaX.current = 0;
+      isDragging.current = true;
+      isHorizontalSwipe.current = null;
+    },
+    [isAnimating]
+  );
 
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
@@ -127,22 +162,53 @@ export default function V3Gallery({
 
     const threshold = 50;
     const delta = touchDeltaX.current;
+    const width = cachedWidth.current || containerRef.current?.offsetWidth || 0;
 
     if (delta < -threshold && activeIndex < media.length - 1) {
-      goNext();
+      // Swipe left → slide to next
+      setIsAnimating(true);
+      setDragOffset(-width);
+      pendingIndex.current = activeIndex + 1;
     } else if (delta > threshold && activeIndex > 0) {
-      goPrev();
+      // Swipe right → slide to prev
+      setIsAnimating(true);
+      setDragOffset(width);
+      pendingIndex.current = activeIndex - 1;
+    } else if (delta !== 0) {
+      // Bounce back with animation
+      setIsAnimating(true);
+      setDragOffset(0);
+      pendingIndex.current = null;
     } else {
+      // No movement at all, just clean up
       setDragOffset(0);
     }
 
     touchDeltaX.current = 0;
     isHorizontalSwipe.current = null;
-  }, [activeIndex, media.length, goNext, goPrev]);
+  }, [activeIndex, media.length]);
+
+  // When the slide transition finishes, commit the index change
+  const handleTransitionEnd = useCallback((e: React.TransitionEvent) => {
+    if (e.propertyName !== "transform") return;
+    if (pendingIndex.current !== null) {
+      setActiveIndex(pendingIndex.current);
+    }
+    pendingIndex.current = null;
+    setIsAnimating(false);
+    setDragOffset(0);
+  }, []);
 
   // Which adjacent images to show during drag
   const prevIndex = activeIndex > 0 ? activeIndex - 1 : null;
   const nextIndex = activeIndex < media.length - 1 ? activeIndex + 1 : null;
+
+  const showAdjacentSlides = dragOffset !== 0 || isAnimating;
+  const transitionStyle = isAnimating
+    ? "transform 320ms cubic-bezier(0.25, 1, 0.5, 1)"
+    : "none";
+
+  const getWidth = () => cachedWidth.current || containerRef.current?.offsetWidth || 0;
 
   const renderMedia = (m: Media, index: number, isActive: boolean) => {
     if (m.type === "image") {
@@ -176,7 +242,7 @@ export default function V3Gallery({
 
   return (
     <div className={`w-full ${className}`}>
-      {/* Fade-in keyframes */}
+      {/* Fade-in keyframes (for non-swipe navigation like arrows / thumbnails) */}
       <style jsx>{`
         @keyframes gallery-fade-in {
           from {
@@ -199,12 +265,14 @@ export default function V3Gallery({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Previous image (visible during drag) */}
-        {prevIndex !== null && dragOffset > 0 && (
+        {/* Previous image (visible during drag / slide animation) */}
+        {prevIndex !== null && showAdjacentSlides && (
           <div
             className="absolute inset-0 z-10"
             style={{
-              transform: `translate3d(${-containerRef.current!.offsetWidth + dragOffset}px, 0, 0)`,
+              transform: `translate3d(${-getWidth() + dragOffset}px, 0, 0)`,
+              transition: transitionStyle,
+              willChange: "transform",
             }}
           >
             {renderMedia(media[prevIndex], prevIndex, false)}
@@ -214,20 +282,29 @@ export default function V3Gallery({
         {/* Active image */}
         <div
           key={fadeKey}
-          className={`absolute inset-0 z-20 ${dragOffset === 0 ? "gallery-enter" : ""}`}
+          className="absolute inset-0 z-20 gallery-enter"
           style={{
-            transform: dragOffset !== 0 ? `translate3d(${dragOffset}px, 0, 0)` : undefined,
+            transform:
+              dragOffset !== 0 || isAnimating
+                ? `translate3d(${dragOffset}px, 0, 0)`
+                : undefined,
+            transition: transitionStyle,
+            willChange:
+              isAnimating || dragOffset !== 0 ? "transform" : undefined,
           }}
+          onTransitionEnd={handleTransitionEnd}
         >
           {renderMedia(active, activeIndex, true)}
         </div>
 
-        {/* Next image (visible during drag) */}
-        {nextIndex !== null && dragOffset < 0 && (
+        {/* Next image (visible during drag / slide animation) */}
+        {nextIndex !== null && showAdjacentSlides && (
           <div
             className="absolute inset-0 z-10"
             style={{
-              transform: `translate3d(${containerRef.current!.offsetWidth + dragOffset}px, 0, 0)`,
+              transform: `translate3d(${getWidth() + dragOffset}px, 0, 0)`,
+              transition: transitionStyle,
+              willChange: "transform",
             }}
           >
             {renderMedia(media[nextIndex], nextIndex, false)}

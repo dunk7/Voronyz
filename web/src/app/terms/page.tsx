@@ -116,7 +116,7 @@ export default function TermsPage() {
               <h3 className="text-lg font-medium text-blue-900 mb-3">Production Timeline</h3>
               <p className="text-blue-800">
                 Most custom orders take under 7 business days for production before shipping. Standard shipping
-                typically takes 3-5 business days within the US, with international shipping taking 7-14 days.
+                typically takes 3-5 business days within the US. We currently only ship domestically.
               </p>
             </div>
 
@@ -124,7 +124,7 @@ export default function TermsPage() {
               <h3 className="text-lg font-medium text-neutral-900 mb-2">Shipping Policy</h3>
               <ul className="list-disc list-inside space-y-1 text-neutral-700 ml-4">
                 <li>Shipping costs are calculated at checkout</li>
-                <li>We ship worldwide with applicable customs fees</li>
+                <li>We currently ship within the United States only</li>
                 <li>Risk of loss passes to buyer upon delivery to carrier</li>
                 <li>We are not responsible for delays caused by carriers</li>
               </ul>

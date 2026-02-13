@@ -164,7 +164,7 @@ export default function ContactPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <FAQItem
               question="How long does custom production take?"
-              answer="Most orders are printed within under 7 business days before shipping worldwide."
+              answer="Most orders are printed within under 7 business days before shipping. We currently ship within the US only."
             />
             <FAQItem
               question="Do you offer size exchanges?"
@@ -176,7 +176,7 @@ export default function ContactPage() {
             />
             <FAQItem
               question="Do you ship internationally?"
-              answer="Absolutely! We ship worldwide with calculated taxes at checkout."
+              answer="We currently only ship within the United States. Domestic US shipping is free on all orders!"
             />
           </div>
         </div>

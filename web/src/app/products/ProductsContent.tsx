@@ -30,13 +30,13 @@ const productMeta: Record<string, {
     badge: "Best Seller",
     badgeColor: "bg-black text-white",
     tag: "Slides",
-    altImage: "/V3slides/InShot_20260212_193956953.jpg",
+    altImage: "/products/v3-slides/InShot_20260212_193956953.jpg",
   },
   dragonfly: {
     badge: "New",
     badgeColor: "bg-emerald-600 text-white",
     tag: "Sneakers",
-    altImage: "/Dragonfly/InShot_20260212_153903491.jpg",
+    altImage: "/products/dragonfly/InShot_20260212_153903491.jpg",
   },
 };
 
@@ -112,22 +112,14 @@ export default function ProductsContent() {
   function getImages(p: Product) {
     const meta = productMeta[p.slug];
     const images = (p.images as string[] | null) ?? [];
-    const rawCover = images[0] ?? "/legacy/v3-front.jpg";
     const isV3 = p.slug === "v3-slides";
 
-    const correctedCover =
-      rawCover === "/v3-front.jpg"  ? "/legacy/v3-front.jpg"  :
-      rawCover === "/v3-side.jpg"   ? "/legacy/v3-side.jpg"   :
-      rawCover === "/v3-top.jpg"    ? "/legacy/v3-top.jpg"    :
-      rawCover === "/v3-detail.jpg" ? "/legacy/v3-detail.jpg" :
-      rawCover;
-
     const cover = isV3
-      ? "/V3slides/InShot_20260212_194215252.jpg"
-      : (p.thumbnail || correctedCover);
+      ? "/products/v3-slides/InShot_20260212_194215252.jpg"
+      : (p.thumbnail || images[0]);
 
     const alt = meta?.altImage ?? (images[1] ? (
-      isV3 ? "/V3slides/InShot_20260212_193956953.jpg" : images[1]
+      isV3 ? "/products/v3-slides/InShot_20260212_193956953.jpg" : images[1]
     ) : undefined);
 
     return { cover, alt };
@@ -284,7 +276,7 @@ export default function ProductsContent() {
                         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
                         </svg>
-                        Free shipping
+                        Free US shipping
                       </span>
                     </div>
                   </div>
