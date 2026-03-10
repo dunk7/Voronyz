@@ -30,6 +30,10 @@ interface NanoPaymentDetails {
   nanoAddress?: string;
   xnoAmount?: number;
   xnoRaw?: string;
+  subtotalUsd?: number;
+  nanoDiscountCents?: number;
+  nanoDiscountUsd?: number;
+  nanoDiscountRate?: number;
   usdTotal?: number;
   xnoPrice?: number;
   expiresAt?: string;
@@ -264,6 +268,9 @@ export default function NanoCheckoutClient() {
     );
   }
 
+  const hasNanoDiscount = (details.nanoDiscountCents ?? 0) > 0;
+  const nanoDiscountPercent = ((details.nanoDiscountRate ?? 0.03) * 100).toFixed(0);
+
   /* --- PAID ------------------------------------------------------- */
   if (details.status === "paid") {
     return (
@@ -308,6 +315,18 @@ export default function NanoCheckoutClient() {
             ))}
 
             <div className="pt-3 border-t border-white/10 space-y-2 text-sm">
+              {hasNanoDiscount && (
+                <>
+                  <div className="flex justify-between text-neutral-300">
+                    <span>Subtotal</span>
+                    <span className="font-semibold text-white">${details.subtotalUsd?.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-emerald-300">
+                    <span>Nano discount ({nanoDiscountPercent}%)</span>
+                    <span className="font-semibold">-${details.nanoDiscountUsd?.toFixed(2)}</span>
+                  </div>
+                </>
+              )}
               <div className="flex justify-between text-neutral-300">
                 <span>XNO Paid</span>
                 <span className="font-semibold text-white">{details.xnoAmount} XNO</span>
@@ -430,9 +449,23 @@ export default function NanoCheckoutClient() {
                 </span>
               </div>
             ))}
-            <div className="pt-3 border-t border-white/10 flex justify-between text-sm">
-              <span className="text-neutral-300">Total</span>
-              <span className="font-semibold text-white">${details.usdTotal?.toFixed(2)}</span>
+            <div className="pt-3 border-t border-white/10 space-y-2 text-sm">
+              {hasNanoDiscount && (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-300">Subtotal</span>
+                    <span className="font-semibold text-white">${details.subtotalUsd?.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-emerald-300">Nano discount ({nanoDiscountPercent}%)</span>
+                    <span className="font-semibold text-emerald-300">-${details.nanoDiscountUsd?.toFixed(2)}</span>
+                  </div>
+                </>
+              )}
+              <div className="flex justify-between">
+                <span className="text-neutral-300">Total</span>
+                <span className="font-semibold text-white">${details.usdTotal?.toFixed(2)}</span>
+              </div>
             </div>
           </div>
         )}

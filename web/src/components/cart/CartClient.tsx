@@ -430,7 +430,7 @@ export default function CartClient() {
             <path d="M792.9,881h-52.5L541.1,570.6L338.8,881h-52.1l226.8-351.7L306.9,206.2h53.5L542,490.4l185.4-284.2h50.2L568.8,528.4L792.9,881z" fill="white"/>
             <path d="M336.5,508.7h408.3v38.4H336.5V508.7zM336.5,623.9h408.3v38.4H336.5V623.9z" fill="white"/>
           </svg>
-          {isNanoCheckingOut ? "Processing…" : "Pay with Nano"}
+          {isNanoCheckingOut ? "Processing…" : "Pay with Nano (3% off)"}
         </button>
       </div>
     </div>

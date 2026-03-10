@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 
 const NANO_RECEIVE_ADDRESS = process.env.NANO_RECEIVE_ADDRESS;
+const NANO_DISCOUNT_RATE = 0.03;
 
 // How long a Nano payment session is valid (30 minutes)
 const SESSION_TTL_MS = 30 * 60 * 1000;
@@ -22,8 +23,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No items provided" }, { status: 400 });
     }
 
-    // Calculate total in USD cents — same discount logic as Stripe checkout
-    let totalCents = 0;
+    // Calculate subtotal in USD cents — same discount code logic as Stripe checkout.
+    // A Nano-specific 3% discount is applied afterwards.
+    let subtotalCents = 0;
     const lineItems: Array<{
       name: string;
       variant: string;
@@ -93,12 +95,17 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      totalCents += unitAmount * item.quantity;
+      subtotalCents += unitAmount * item.quantity;
     }
 
-    if (totalCents <= 0) {
+    if (subtotalCents <= 0) {
       return NextResponse.json({ error: "Invalid order total" }, { status: 400 });
     }
+
+    const nanoDiscountCents = Math.round(subtotalCents * NANO_DISCOUNT_RATE);
+    const totalCents = subtotalCents - nanoDiscountCents;
+    const subtotalUsd = subtotalCents / 100;
+    const nanoDiscountUsd = nanoDiscountCents / 100;
 
     // Fetch current XNO/USD price from CoinGecko
     const priceRes = await fetch(
@@ -147,14 +154,18 @@ export async function POST(request: NextRequest) {
         stripeId: nanoOrderId,
         status: "pending_nano",
         currency: "xno",
-        subtotalCents: totalCents,
-        totalCents: totalCents,
+        subtotalCents,
+        totalCents,
         metadata: {
           paymentMethod: "nano",
           nanoAddress: NANO_RECEIVE_ADDRESS,
           xnoAmount,
           xnoRaw,
           xnoPrice,
+          subtotalUsd,
+          nanoDiscountCents,
+          nanoDiscountUsd,
+          nanoDiscountRate: NANO_DISCOUNT_RATE,
           usdTotal: totalUsd,
           lineItems,
           discountCode: discountCode || null,
@@ -165,13 +176,19 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log(`Nano payment session created: ${order.id} — ${xnoAmount} XNO ($${totalUsd})`);
+    console.log(
+      `Nano payment session created: ${order.id} — ${xnoAmount} XNO ($${totalUsd}, 3% off from $${subtotalUsd})`
+    );
 
     return NextResponse.json({
       orderId: order.id,
       nanoAddress: NANO_RECEIVE_ADDRESS,
       xnoAmount,
       xnoRaw,
+      subtotalUsd,
+      nanoDiscountCents,
+      nanoDiscountUsd,
+      nanoDiscountRate: NANO_DISCOUNT_RATE,
       usdTotal: totalUsd,
       xnoPrice,
       expiresAt,
