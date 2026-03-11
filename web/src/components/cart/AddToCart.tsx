@@ -2,6 +2,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { formatCentsAsCurrency } from "@/lib/money";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 interface VariantProps {
   id: string;
@@ -247,8 +248,90 @@ export default function AddToCart({
           }
         }
 
+        @keyframes slideLeftAndShrink {
+          0% {
+            width: 100%;
+            transform: translateX(0);
+            background-color: rgb(0, 0, 0);
+          }
+          50% {
+            width: calc(50% - 4px);
+            transform: translateX(0);
+            background-color: rgb(11, 102, 37);
+          }
+          100% {
+            width: calc(50% - 4px);
+            transform: translateX(0);
+            background-color: rgb(22, 163, 74);
+          }
+        }
+
+        @keyframes popInFromRight {
+          0% {
+            opacity: 0;
+            transform: translateX(40px) scale(0.6);
+          }
+          60% {
+            opacity: 1;
+            transform: translateX(-3px) scale(1.02);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        @keyframes textQuickFade {
+          0% {
+            opacity: 0;
+          }
+          90% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
+          }
+        }
+
         .glow {
           animation: glow 2s ease-in-out infinite;
+        }
+
+        .button-container {
+          position: relative;
+          min-height: 48px;
+          overflow: visible;
+        }
+
+        .button-split-wrapper {
+          display: flex;
+          gap: 8px;
+          width: 100%;
+        }
+
+        .button-slide-left {
+          animation: slideLeftAndShrink 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          flex: 0 0 auto;
+          min-width: 0;
+        }
+
+        .button-slide-left {
+          animation: slideLeftAndShrink 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          flex: 0 0 auto;
+          min-width: 0;
+        }
+
+        .button-slide-left > * {
+          animation: textQuickFade 0.55s ease-out forwards;
+          opacity: 0;
+        }
+
+        .button-pop-right {
+          animation: popInFromRight 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          animation-delay: 0.25s;
+          opacity: 0;
+          flex: 1;
+          min-width: 0;
         }
       `}</style>
       <div className="space-y-4">
@@ -385,30 +468,39 @@ export default function AddToCart({
           <div className="flex items-baseline gap-2 pt-1">
             <span className="text-2xl font-bold text-neutral-900">{formattedTotal}</span>
           </div>
-          <button 
-            onClick={add} 
-            disabled={loading || added || !canAdd} 
-            className={`rounded-full px-6 py-3 text-sm font-medium h-[48px] flex-1 transition-colors ${
-              loading || !canAdd
-                ? "bg-neutral-300 text-neutral-500 cursor-not-allowed" 
-                : added 
-                  ? "bg-green-600 text-white hover:bg-green-700" 
-                  : "bg-black text-white hover:bg-neutral-800"
-            } flex items-center justify-center gap-2`}
-          >
-            {loading ? (
-              "Adding…"
-            ) : added ? (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Added to Cart
-              </>
+          <div className="button-container flex-1">
+            {added ? (
+              <div className="button-split-wrapper">
+                <button 
+                  disabled
+                  className="button-slide-left rounded-full px-6 py-3 text-sm font-medium h-[48px] bg-green-600 text-white flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Added to Cart
+                </button>
+                <Link
+                  href="/cart"
+                  className="button-pop-right rounded-full px-6 py-3 text-sm font-medium h-[48px] flex-1 bg-black text-white hover:bg-neutral-800 flex items-center justify-center transition-colors"
+                >
+                  View Cart
+                </Link>
+              </div>
             ) : (
-              "Add to Cart"
+              <button 
+                onClick={add} 
+                disabled={loading || !canAdd} 
+                className={`rounded-full px-6 py-3 text-sm font-medium h-[48px] w-full transition-all duration-300 ease-out ${
+                  loading || !canAdd
+                    ? "bg-neutral-300 text-neutral-500 cursor-not-allowed" 
+                    : "bg-black text-white hover:bg-neutral-800"
+                } flex items-center justify-center gap-2`}
+              >
+                {loading ? "Adding…" : "Add to Cart"}
+              </button>
             )}
-          </button>
+          </div>
         </div>
       </div>
     </>
