@@ -255,12 +255,12 @@ export default function AddToCart({
             background-color: rgb(0, 0, 0);
           }
           50% {
-            width: calc(50% - 4px);
+            width: 48px;
             transform: translateX(0);
             background-color: rgb(11, 102, 37);
           }
           100% {
-            width: calc(50% - 4px);
+            width: 48px;
             transform: translateX(0);
             background-color: rgb(22, 163, 74);
           }
@@ -473,12 +473,12 @@ export default function AddToCart({
               <div className="button-split-wrapper">
                 <button 
                   disabled
-                  className="button-slide-left rounded-full px-6 py-3 text-sm font-medium h-[48px] bg-green-600 text-white flex items-center justify-center gap-2"
+                  aria-label="Added to cart"
+                  className="button-slide-left rounded-full h-[48px] w-[48px] bg-green-600 text-white flex items-center justify-center"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Added to Cart
                 </button>
                 <Link
                   href="/cart"
