@@ -44,6 +44,12 @@ export async function POST(request: NextRequest) {
     return [absoluteUrl];
   };
 
+  const isSlidesProduct = (productSlug?: string, productName?: string) => {
+    const slug = (productSlug || "").toLowerCase();
+    const name = (productName || "").toLowerCase();
+    return slug === "v3-slides" || slug.includes("slide") || name.includes("slide");
+  };
+
   try {
     if (!stripe) {
       console.error("Checkout failed: STRIPE_SECRET_KEY is not configured");
@@ -94,10 +100,11 @@ export async function POST(request: NextRequest) {
 
         const lowerCode = discountCode ? discountCode.toLowerCase().trim() : '';
         const productSlug = variant?.product?.slug || item.productSlug || '';
+        const productNameForDiscount = variant?.product?.name || item.productName || '';
         let unitAmount: number;
         if (lowerCode === 'emptyaus' && productSlug === 'dragonfly') {
           unitAmount = 2000;
-        } else if (lowerCode === 'aryan10' && productSlug === 'v3-slides') {
+        } else if (lowerCode === 'aryan10' && isSlidesProduct(productSlug, productNameForDiscount)) {
           unitAmount = 1000;
         } else if (lowerCode === 'fam45') {
           unitAmount = 5000;
@@ -148,9 +155,10 @@ export async function POST(request: NextRequest) {
         let unitAmount: number;
         const lowerCode = discountCode ? discountCode.toLowerCase().trim() : '';
         const fallbackSlug = item.productSlug || '';
+        const fallbackProductName = item.productName || '';
         if (lowerCode === 'emptyaus' && fallbackSlug === 'dragonfly') {
           unitAmount = 2000;
-        } else if (lowerCode === 'aryan10' && fallbackSlug === 'v3-slides') {
+        } else if (lowerCode === 'aryan10' && isSlidesProduct(fallbackSlug, fallbackProductName)) {
           unitAmount = 1000;
         } else if (lowerCode === 'fam45') {
           unitAmount = 5000;

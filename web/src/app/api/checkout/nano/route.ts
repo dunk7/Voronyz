@@ -19,6 +19,12 @@ export async function POST(request: NextRequest) {
 
     const { items, discountCode } = await request.json();
 
+    const isSlidesProduct = (productSlug?: string, productName?: string) => {
+      const slug = (productSlug || "").toLowerCase();
+      const name = (productName || "").toLowerCase();
+      return slug === "v3-slides" || slug.includes("slide") || name.includes("slide");
+    };
+
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "No items provided" }, { status: 400 });
     }
@@ -50,10 +56,11 @@ export async function POST(request: NextRequest) {
         });
 
         const slug = variant?.product?.slug || productSlug;
+        const productNameForDiscount = variant?.product?.name || item.productName || "";
 
         if (lowerCode === "emptyaus" && slug === "dragonfly") {
           unitAmount = 2000;
-        } else if (lowerCode === "aryan10" && slug === "v3-slides") {
+        } else if (lowerCode === "aryan10" && isSlidesProduct(slug, productNameForDiscount)) {
           unitAmount = 1000;
         } else if (lowerCode === "fam45") {
           unitAmount = 5000;
@@ -78,7 +85,7 @@ export async function POST(request: NextRequest) {
         // Fallback pricing when DB is unavailable
         if (lowerCode === "emptyaus" && productSlug === "dragonfly") {
           unitAmount = 2000;
-        } else if (lowerCode === "aryan10" && productSlug === "v3-slides") {
+        } else if (lowerCode === "aryan10" && isSlidesProduct(productSlug, item.productName || "")) {
           unitAmount = 1000;
         } else if (lowerCode === "fam45") {
           unitAmount = 5000;

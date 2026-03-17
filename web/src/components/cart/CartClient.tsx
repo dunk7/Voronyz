@@ -46,10 +46,21 @@ export default function CartClient() {
     return typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
   };
 
-  const getDiscountedUnitPriceCents = (baseUnitPriceCents: number, code: string | null, productSlug?: string) => {
+  const isSlidesProduct = (productSlug?: string, productName?: string) => {
+    const slug = (productSlug || "").toLowerCase();
+    const name = (productName || "").toLowerCase();
+    return slug === "v3-slides" || slug.includes("slide") || name.includes("slide");
+  };
+
+  const getDiscountedUnitPriceCents = (
+    baseUnitPriceCents: number,
+    code: string | null,
+    productSlug?: string,
+    productName?: string
+  ) => {
     const lower = normalizeDiscountCode(code);
     if (lower === "emptyaus" && productSlug === "dragonfly") return 2000;
-    if (lower === "aryan10" && productSlug === "v3-slides") return 1000;
+    if (lower === "aryan10" && isSlidesProduct(productSlug, productName)) return 1000;
     if (lower === "fam45") return 4500;
     if (lower === "superdeal35") return 3500;
     if (lower === "maximus27") return 3200;
@@ -157,7 +168,7 @@ export default function CartClient() {
 
   const subtotal = items.reduce((sum, it) => {
     const base = getBaseUnitPriceCents(it);
-    const unit = getDiscountedUnitPriceCents(base, discountCode, it.productSlug);
+    const unit = getDiscountedUnitPriceCents(base, discountCode, it.productSlug, it.productName);
     return sum + unit * it.quantity;
   }, 0);
 
@@ -249,7 +260,9 @@ export default function CartClient() {
               </div>
               <div className="flex items-center gap-2 lg:gap-4 flex-1 lg:flex-none justify-end min-w-0 lg:min-w-[5rem]">
                 <div className="text-base font-semibold text-neutral-900 text-right flex-1 lg:flex-none">
-                  {formatCentsAsCurrency(getDiscountedUnitPriceCents(getBaseUnitPriceCents(it), discountCode, it.productSlug) * it.quantity)}
+                  {formatCentsAsCurrency(
+                    getDiscountedUnitPriceCents(getBaseUnitPriceCents(it), discountCode, it.productSlug, it.productName) * it.quantity
+                  )}
                 </div>
                 <button
                   onClick={() => remove(it.id)}
