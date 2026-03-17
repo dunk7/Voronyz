@@ -97,6 +97,8 @@ export async function POST(request: NextRequest) {
         let unitAmount: number;
         if (lowerCode === 'emptyaus' && productSlug === 'dragonfly') {
           unitAmount = 2000;
+        } else if (lowerCode === 'aryan10' && productSlug === 'v3-slides') {
+          unitAmount = 1000;
         } else if (lowerCode === 'fam45') {
           unitAmount = 5000;
         } else if (lowerCode === 'superdeal35') {
@@ -148,6 +150,8 @@ export async function POST(request: NextRequest) {
         const fallbackSlug = item.productSlug || '';
         if (lowerCode === 'emptyaus' && fallbackSlug === 'dragonfly') {
           unitAmount = 2000;
+        } else if (lowerCode === 'aryan10' && fallbackSlug === 'v3-slides') {
+          unitAmount = 1000;
         } else if (lowerCode === 'fam45') {
           unitAmount = 5000;
         } else if (lowerCode === 'superdeal35') {

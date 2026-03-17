@@ -39,7 +39,7 @@ export default function CartClient() {
 
   const isValidDiscountCode = (code: string | null) => {
     if (!code) return false;
-    return code === "fam45" || code === "superdeal35" || code === "maximus27" || code === "emptyaus";
+    return code === "fam45" || code === "superdeal35" || code === "maximus27" || code === "emptyaus" || code === "aryan10";
   };
 
   const getBaseUnitPriceCents = (it: CartItem) => {
@@ -49,6 +49,7 @@ export default function CartClient() {
   const getDiscountedUnitPriceCents = (baseUnitPriceCents: number, code: string | null, productSlug?: string) => {
     const lower = normalizeDiscountCode(code);
     if (lower === "emptyaus" && productSlug === "dragonfly") return 2000;
+    if (lower === "aryan10" && productSlug === "v3-slides") return 1000;
     if (lower === "fam45") return 4500;
     if (lower === "superdeal35") return 3500;
     if (lower === "maximus27") return 3200;
@@ -77,7 +78,7 @@ export default function CartClient() {
             // Heuristic: older carts used to overwrite `priceCents` when a coupon was applied.
             // If we have a coupon and the stored "base" looks like one of the coupon prices,
             // restore the typical base price so clearing the coupon works as expected.
-            const looksLikeCouponPrice = base === 4500 || base === 5000 || base === 3500 || base === 3200;
+            const looksLikeCouponPrice = base === 4500 || base === 5000 || base === 3500 || base === 3200 || base === 1000;
             const repairedBase =
               normalizedCode && isValidDiscountCode(normalizedCode) && looksLikeCouponPrice ? 7500 : base;
 
