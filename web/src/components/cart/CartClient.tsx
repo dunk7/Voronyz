@@ -90,11 +90,7 @@ export default function CartClient() {
             // Heuristic: older carts used to overwrite `priceCents` when a coupon was applied.
             // If we have a coupon and the stored "base" looks like one of the coupon prices,
             // restore the typical base price so clearing the coupon works as expected.
-<<<<<<< HEAD
-            const looksLikeCouponPrice = base === 4500 || base === 5000 || base === 3500 || base === 3200 || base === 1000;
-=======
-            const looksLikeCouponPrice = base === 4500 || base === 5000 || base === 3500 || base === 3200 || base === 2000;
->>>>>>> e433ab3 (20)
+            const looksLikeCouponPrice = base === 4500 || base === 5000 || base === 3500 || base === 3200 || base === 1000 || base === 2000;
             const repairedBase =
               normalizedCode && isValidDiscountCode(normalizedCode) && looksLikeCouponPrice ? 7500 : base;
 
