@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
+import { getDiscountedUnitPriceCents, normalizeDiscountCode } from "@/lib/discountPricing";
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -44,12 +45,6 @@ export async function POST(request: NextRequest) {
     return [absoluteUrl];
   };
 
-  const isSlidesProduct = (productSlug?: string, productName?: string) => {
-    const slug = (productSlug || "").toLowerCase();
-    const name = (productName || "").toLowerCase();
-    return slug === "v3-slides" || slug.includes("slide") || name.includes("slide");
-  };
-
   try {
     if (!stripe) {
       console.error("Checkout failed: STRIPE_SECRET_KEY is not configured");
@@ -75,6 +70,7 @@ export async function POST(request: NextRequest) {
 
     // Get variant details from database
     const lineItems = [];
+    const normalizedDiscountCode = normalizeDiscountCode(discountCode);
     for (const [index, item] of items.entries()) {
       console.log(`Processing item ${index + 1}:`, item);
       try {
@@ -98,25 +94,13 @@ export async function POST(request: NextRequest) {
           console.log(`Variant ${item.variantId} not found in DB, using fallback`);
         }
 
-        const lowerCode = discountCode ? discountCode.toLowerCase().trim() : '';
         const productSlug = variant?.product?.slug || item.productSlug || '';
         const productNameForDiscount = variant?.product?.name || item.productName || '';
-        let unitAmount: number;
-        if (lowerCode === 'emptyaus' && productSlug === 'dragonfly') {
-          unitAmount = 2000;
-        } else if (lowerCode === 'aryan10' && isSlidesProduct(productSlug, productNameForDiscount)) {
-          unitAmount = 1000;
-        } else if (lowerCode === 'fam45') {
-          unitAmount = 5000;
-        } else if (lowerCode === 'superdeal35') {
-          unitAmount = 3500;
-        } else if (lowerCode === 'maximus27') {
-          unitAmount = 3200;
-        } else if (lowerCode === 'super20') {
-          unitAmount = 2000;
-        } else {
-          unitAmount = variant ? (variant.priceCents || variant.product.priceCents || 0) : 7500;
-        }
+        const baseUnitAmount = variant ? (variant.priceCents || variant.product.priceCents || 0) : 7500;
+        const unitAmount = getDiscountedUnitPriceCents(baseUnitAmount, normalizedDiscountCode, {
+          productSlug,
+          productName: productNameForDiscount,
+        });
 
         const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
@@ -154,25 +138,12 @@ export async function POST(request: NextRequest) {
       } catch (dbError) {
         console.error(`Database error for variant ${item.variantId}:`, dbError);
         // Fallback logic...
-        let unitAmount: number;
-        const lowerCode = discountCode ? discountCode.toLowerCase().trim() : '';
         const fallbackSlug = item.productSlug || '';
         const fallbackProductName = item.productName || '';
-        if (lowerCode === 'emptyaus' && fallbackSlug === 'dragonfly') {
-          unitAmount = 2000;
-        } else if (lowerCode === 'aryan10' && isSlidesProduct(fallbackSlug, fallbackProductName)) {
-          unitAmount = 1000;
-        } else if (lowerCode === 'fam45') {
-          unitAmount = 5000;
-        } else if (lowerCode === 'superdeal35') {
-          unitAmount = 3500;
-        } else if (lowerCode === 'maximus27') {
-          unitAmount = 3200;
-        } else if (lowerCode === 'super20') {
-          unitAmount = 2000;
-        } else {
-          unitAmount = 7500;
-        }
+        const unitAmount = getDiscountedUnitPriceCents(7500, normalizedDiscountCode, {
+          productSlug: fallbackSlug,
+          productName: fallbackProductName,
+        });
 
         const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
