@@ -15,7 +15,7 @@ async function main() {
           name: "V3 Slides",
           description:
             "World-class FDM printed slides with TPU lattice lowers and breathable uppers. Engineered from precision 3D scans.",
-          priceCents: 7500,
+          priceCents: 5500,
           currency: "usd",
           images: [
             "/products/v3-slides/InShot_20260212_194215252.jpg",
@@ -50,6 +50,7 @@ async function main() {
       await prisma.product.update({
         where: { id: existing.id },
         data: {
+          priceCents: 5500,
           images: [
             "/products/v3-slides/InShot_20260212_194215252.jpg",
             "/products/v3-slides/InShot_20260212_193956953.jpg",
@@ -116,7 +117,7 @@ async function main() {
           name: "The Dragonfly's",
           description:
             "Lightweight, breathable 3D-printed sneakers with a custom lattice sole and interchangeable laces. Engineered for all-day comfort.",
-          priceCents: 9500,
+          priceCents: 6500,
           currency: "usd",
           images: [
             "/products/dragonfly/InShot_20260212_153516456.jpg",
@@ -134,10 +135,10 @@ async function main() {
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
           variants: {
             create: [
-              { color: "black", sku: "DF-BLK", stock: 999, priceCents: 9000 },
-              { color: "white", sku: "DF-WHT", stock: 999, priceCents: 9500 },
-              { color: "red", sku: "DF-RED", stock: 999, priceCents: 9500 },
-              { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 9500 },
+              { color: "black", sku: "DF-BLK", stock: 999, priceCents: 6000 },
+              { color: "white", sku: "DF-WHT", stock: 999, priceCents: 6500 },
+              { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
+              { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
             ],
           },
         },
@@ -152,7 +153,7 @@ async function main() {
           name: "The Dragonfly's",
           description:
             "Lightweight, breathable 3D-printed sneakers with a custom lattice sole and interchangeable laces. Engineered for all-day comfort.",
-          priceCents: 9500,
+          priceCents: 6500,
           images: [
             "/products/dragonfly/InShot_20260212_153516456.jpg",
             "/products/dragonfly/InShot_20260212_153903491.jpg",
@@ -172,10 +173,10 @@ async function main() {
 
       // Upsert Dragonfly variants
       const dfVariants = [
-        { color: "black", sku: "DF-BLK", stock: 999, priceCents: 9000 },
-        { color: "white", sku: "DF-WHT", stock: 999, priceCents: 9500 },
-        { color: "red", sku: "DF-RED", stock: 999, priceCents: 9500 },
-        { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 9500 },
+        { color: "black", sku: "DF-BLK", stock: 999, priceCents: 6000 },
+        { color: "white", sku: "DF-WHT", stock: 999, priceCents: 6500 },
+        { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
+        { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
       ];
       for (const v of dfVariants) {
         await prisma.variant.upsert({
@@ -191,6 +192,81 @@ async function main() {
         });
       }
       console.log("Updated Dragonfly product and variants.");
+    }
+
+    // ── Slip Ons ──
+    /* Former 2nd image rotated to end; others shift forward (thumbnail unchanged). */
+    const slipOnImages = [
+      "/products/slip-ons/InShot_20260405_203151152.jpg",
+      "/products/slip-ons/InShot_20260405_203425292.jpg",
+      "/products/slip-ons/InShot_20260405_203601045.jpg",
+      "/products/slip-ons/InShot_20260405_203736918.jpg",
+      "/products/slip-ons/InShot_20260405_203930832.jpg",
+      "/products/slip-ons/InShot_20260405_204113872.jpg",
+      "/products/slip-ons/InShot_20260405_204333303.jpg",
+      "/products/slip-ons/InShot_20260405_202911983.jpg",
+    ];
+    const existingSo = await prisma.product.findUnique({ where: { slug: "slip-ons" } });
+    console.log("Slip Ons product check:", existingSo ? "Found" : "Not found");
+    if (!existingSo) {
+      const soProduct = await prisma.product.create({
+        data: {
+          slug: "slip-ons",
+          name: "Slip Ons",
+          description:
+            "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, or orange (white coming soon).",
+          priceCents: 6000,
+          currency: "usd",
+          images: slipOnImages,
+          primaryColors: ["black", "grey", "white", "orange"],
+          secondaryColors: [],
+          sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
+          variants: {
+            create: [
+              { color: "black", sku: "SO-BLK", stock: 999 },
+              { color: "grey", sku: "SO-GRY", stock: 999 },
+              { color: "white", sku: "SO-WHT", stock: 0 },
+              { color: "orange", sku: "SO-ORG", stock: 999 },
+            ],
+          },
+        },
+        include: { variants: true },
+      });
+      console.log("Seeded product:", soProduct.slug);
+    } else {
+      console.log("Updating existing Slip Ons product...");
+      await prisma.product.update({
+        where: { id: existingSo.id },
+        data: {
+          name: "Slip Ons",
+          description:
+            "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, or orange (white coming soon).",
+          priceCents: 6000,
+          images: slipOnImages,
+          primaryColors: ["black", "grey", "white", "orange"],
+          secondaryColors: [],
+          sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
+        },
+      });
+      const soVariants = [
+        { color: "black", sku: "SO-BLK", stock: 999 },
+        { color: "grey", sku: "SO-GRY", stock: 999 },
+        { color: "white", sku: "SO-WHT", stock: 0 },
+        { color: "orange", sku: "SO-ORG", stock: 999 },
+      ];
+      for (const v of soVariants) {
+        await prisma.variant.upsert({
+          where: { sku: v.sku },
+          update: { stock: v.stock },
+          create: {
+            product: { connect: { id: existingSo.id } },
+            color: v.color,
+            sku: v.sku,
+            stock: v.stock,
+          },
+        });
+      }
+      console.log("Updated Slip Ons product and variants.");
     }
 
     console.log('Seed script completed successfully.');

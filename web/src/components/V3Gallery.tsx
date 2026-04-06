@@ -310,7 +310,7 @@ export default function V3Gallery({
           src={m.src}
           alt={m.alt || "Product image"}
           fill
-          className="object-cover pointer-events-none"
+          className="object-contain object-[60%_50%] pointer-events-none"
           priority={index <= 1}
           loading={index <= 2 ? "eager" : "lazy"}
           sizes="(max-width: 1024px) 100vw, 50vw"
@@ -323,7 +323,7 @@ export default function V3Gallery({
         ref={isActive ? videoRef : undefined}
         src={m.src}
         poster={m.poster}
-        className="h-full w-full object-cover pointer-events-none"
+        className="h-full w-full object-contain object-[60%_50%] pointer-events-none"
         preload="metadata"
         playsInline
         muted
@@ -353,7 +353,7 @@ export default function V3Gallery({
       {/* Viewport */}
       <div
         ref={containerRef}
-        className="relative aspect-square w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-neutral-100 ring-1 ring-black/5 group select-none"
+        className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-neutral-100 ring-1 ring-black/5 group select-none"
         style={{ touchAction: "pan-y pinch-zoom" }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -488,7 +488,7 @@ export default function V3Gallery({
                   src={m.src}
                   alt={m.alt || "Thumb"}
                   fill
-                  className="object-cover transition-transform duration-200 group-hover/thumb:scale-105"
+                  className="object-cover object-[60%_50%] transition-transform duration-200 group-hover/thumb:scale-105"
                   loading={i < 4 ? "eager" : "lazy"}
                   sizes="72px"
                   draggable={false}
@@ -500,7 +500,7 @@ export default function V3Gallery({
                       src={m.poster}
                       alt="Video poster"
                       fill
-                      className="object-cover"
+                      className="object-cover object-[60%_50%]"
                       loading="lazy"
                       sizes="72px"
                     />

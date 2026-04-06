@@ -17,6 +17,8 @@ type Props = {
   primaryColors: string[];
   secondaryColors?: string[];
   sizes: string[];
+  /** Used when variant.priceCents is null (same price for all colors). */
+  productPriceCents?: number;
   productName?: string;
   coverImage?: string;
   productSlug?: string;
@@ -47,6 +49,7 @@ export default function AddToCart({
   primaryColors, 
   secondaryColors = [], 
   sizes, 
+  productPriceCents,
   productName, 
   coverImage, 
   productSlug,
@@ -118,7 +121,7 @@ export default function AddToCart({
     return variants.find(v => v.color === selectedPrimary);
   }, [variants, selectedPrimary]);
 
-  const priceCents = selectedVariant?.priceCents || 7500;
+  const priceCents = selectedVariant?.priceCents ?? productPriceCents ?? 7500;
   const totalCents = priceCents * quantity;
   const formattedTotal = formatCentsAsCurrency(totalCents);
 

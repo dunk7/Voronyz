@@ -39,7 +39,7 @@ export default function CartClient() {
 
   const isValidDiscountCode = (code: string | null) => {
     if (!code) return false;
-    return code === "fam45" || code === "superdeal35" || code === "maximus27" || code === "emptyaus" || code === "aryan10" || code === "super20";
+    return code === "fam45" || code === "superdeal35" || code === "maximus27" || code === "emptyaus" || code === "aryan10" || code === "super20" || code === "chud25";
   };
 
   const getBaseUnitPriceCents = (it: CartItem) => {
@@ -65,6 +65,7 @@ export default function CartClient() {
     if (lower === "superdeal35") return 3500;
     if (lower === "maximus27") return 3200;
     if (lower === "super20") return 2000;
+    if (lower === "chud25") return 5000;
     return baseUnitPriceCents;
   };
 

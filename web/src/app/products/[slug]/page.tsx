@@ -96,17 +96,37 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     "/products/dragonfly/InShot_20260212_155809942.jpg",
     "/products/dragonfly/InShot_20260212_160512335.jpg",
   ];
-  const images = slug === "v3-slides" ? defaultImages : slug === "dragonfly" ? dragonflyImages : ((product.images as string[] | null) ?? defaultImages);
-  const galleryMedia = images.map((src) => ({ type: "image" as const, src, alt: product.name }));
+  const slipOnsImages = [
+    "/products/slip-ons/InShot_20260405_202911983.jpg",
+    "/products/slip-ons/InShot_20260405_203151152.jpg",
+    "/products/slip-ons/InShot_20260405_203425292.jpg",
+    "/products/slip-ons/InShot_20260405_203601045.jpg",
+    "/products/slip-ons/InShot_20260405_203736918.jpg",
+    "/products/slip-ons/InShot_20260405_203930832.jpg",
+    "/products/slip-ons/InShot_20260405_204113872.jpg",
+    "/products/slip-ons/InShot_20260405_204333303.jpg",
+  ];
+  const images = slug === "v3-slides" ? defaultImages : slug === "dragonfly" ? dragonflyImages : slug === "slip-ons" ? slipOnsImages : ((product.images as string[] | null) ?? defaultImages);
+  const galleryMedia: Media[] = images.map((src) => ({ type: "image" as const, src, alt: product.name }));
+  if (slug === "slip-ons") {
+    galleryMedia.push({
+      type: "video",
+      src: "/products/slip-ons/C1150.mp4",
+      poster: "/products/slip-ons/InShot_20260405_203151152.jpg",
+    });
+  }
+
+  const isDragonfly = slug === "dragonfly";
+  const isSlipOns = slug === "slip-ons";
 
   // Product-specific descriptions
   const displayDescription = slug === "v3-slides" 
     ? "World-class FDM printed slides with TPU 90A lattice lowers and breathable uppers. Engineered from precision 3D scans."
     : slug === "dragonfly"
     ? "Lightweight, breathable 3D-printed sneakers featuring a custom lattice sole for unmatched cushioning and style. Available in four stunning colorways with fully customizable lace colors."
+    : isSlipOns
+    ? "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — black, grey, orange in stock; white temporarily unavailable."
     : product.description;
-
-  const isDragonfly = slug === "dragonfly";
 
   return (
     <div className="bg-texture-white">
@@ -135,6 +155,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             {isDragonfly && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Custom lace colors</span>
             )}
+            {isSlipOns && (
+              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Single-tone upper</span>
+            )}
           </div>
         </div>
 
@@ -148,6 +171,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 <AddToCart
                   variants={product.variants}
                   primaryColors={product.primaryColors as string[]}
+                  productPriceCents={product.priceCents}
                   {...(isDragonfly && {
                     secondaryColors: (product.secondaryColors as string[]).filter(c => c.toLowerCase() !== "#007fff"),
                     secondaryLabel: "Lace Color",
@@ -177,11 +201,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <div className="container pb-12">
         <div className="mt-10 overflow-hidden rounded-3xl ring-1 ring-black/5 bg-white">
           <div className="bg-black text-white px-6 py-4 text-sm font-medium">
-            {isDragonfly ? "Crafted for you" : "How it's made"}
+            {isDragonfly ? "Crafted for you" : isSlipOns ? "Print + finish" : "How it's made"}
           </div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed">
             {isDragonfly
               ? "Each pair of Dragonfly's is 3D-printed with our proprietary TPU lattice technology, delivering a springy, responsive feel with every step. The breathable upper is precision-engineered for airflow, and every pair ships with your choice of lace color — making each one uniquely yours."
+              : isSlipOns
+              ? "Slip Ons are printed in one piece per colorway for a seamless look, then finished for flex and daily wear. There is no secondary accent color — the shade you choose is the full shoe."
               : "Each pair takes a full day to print using our proprietary TPU blend. Following printing, we perform heat-treated post-processing to ensure exceptional quality, comfort, and durability."}
           </div>
         </div>
@@ -190,11 +216,16 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <h2 className="text-lg font-semibold text-neutral-900 mb-4">FAQs</h2>
           <FAQ
             items={isDragonfly ? [
-              { q: "What colors are available?", a: "The Dragonfly's come in Black, White, Red, and Azure Blue. Black is $5 less at $90. Laces can be any color you want!" },
+              { q: "What colors are available?", a: "The Dragonfly's come in Black, White, Red, and Azure Blue. Black is $5 less at $60. Laces can be any color you want!" },
               { q: "Are they true to size?", a: "Yes — we offer Men's, Women's, and Kids' sizing. They're designed for a comfortable, snug fit right out of the box." },
               { q: "How long does production take?", a: "Each pair is 3D-printed to order. Production takes about 1-2 days, then ships out next business day." },
               { q: "Is shipping really free?", a: "Yes! We offer free shipping on all domestic US orders. No minimum purchase required. We currently only ship within the US." },
               { q: "Can I wash them?", a: "Absolutely. The lattice sole and upper are fully washable — toss them in the washer on a gentle cycle." },
+            ] : isSlipOns ? [
+              { q: "What colors can I order?", a: "Black, grey, white, and orange are listed — white is currently out of stock. Each pair is one solid body color (no two-tone option)." },
+              { q: "Why is white unavailable?", a: "We're temporarily out of white material runs. Select another color or check back — inventory updates when we restock." },
+              { q: "Are they true to size?", a: "Use the Men's / Women's / Kids' toggles on the product page to pick your usual US size." },
+              { q: "How long does production take?", a: "About 1–2 days to print, then we ship the next business day." },
             ] : [
               { q: "What if my size doesn't fit?", a: "They're going to fit and also be extremely comfortable. Trust the process" },
               { q: "Are they waterproof?", a: "Yes. 100% waterproof. Throw them in your washer to clean!" },
@@ -213,8 +244,21 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   // Static metadata for known products
   if (slug === "dragonfly") {
     const title = "The Dragonfly's – Voronyz";
-    const description = "Lightweight 3D-printed sneakers with custom lattice sole and interchangeable laces. Starting at $90.";
+    const description = "Lightweight 3D-printed sneakers with custom lattice sole and interchangeable laces. Starting at $60.";
     const images = ["/products/dragonfly/InShot_20260212_153516456.jpg"];
+    return {
+      title,
+      description,
+      openGraph: { title, description, images },
+      twitter: { card: "summary_large_image", title, description, images },
+    };
+  }
+
+  if (slug === "slip-ons") {
+    const title = "Slip Ons – Voronyz";
+    const description =
+      "Minimal 3D-printed slip-ons with a flexible lattice sole. $60. Black, grey, and orange in stock; white temporarily unavailable.";
+    const images = ["/products/slip-ons/InShot_20260405_203151152.jpg"];
     return {
       title,
       description,

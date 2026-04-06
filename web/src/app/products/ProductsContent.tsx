@@ -18,27 +18,39 @@ interface Product {
   updatedAt: string | Date;
 }
 
-/* ── per-product metadata for badges / alt images ── */
+/* ── per-product metadata (tags / alt images). “New” / “Best Seller” badges are rendered by slug below so only Slip Ons can show New. ── */
 const productMeta: Record<string, {
-  badge?: string;
-  badgeColor?: string;
   tag?: string;
   promo?: string;
   altImage?: string;
 }> = {
   "v3-slides": {
-    badge: "Best Seller",
-    badgeColor: "bg-black text-white",
     tag: "Slides",
     altImage: "/products/v3-slides/InShot_20260212_193956953.jpg",
   },
   dragonfly: {
-    badge: "New",
-    badgeColor: "bg-emerald-600 text-white",
     tag: "Sneakers",
     altImage: "/products/dragonfly/InShot_20260212_153903491.jpg",
   },
+  "slip-ons": {
+    tag: "Slip-ons",
+    altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
+  },
 };
+
+function cardMetaForSlug(slug: string) {
+  const s = (slug || "").trim().toLowerCase();
+  switch (s) {
+    case "v3-slides":
+      return productMeta["v3-slides"];
+    case "dragonfly":
+      return productMeta.dragonfly;
+    case "slip-ons":
+      return productMeta["slip-ons"];
+    default:
+      return productMeta[s] as (typeof productMeta)["v3-slides"] | undefined;
+  }
+}
 
 export default function ProductsContent() {
   const searchParams = useSearchParams();
@@ -110,9 +122,10 @@ export default function ProductsContent() {
 
   /* ── helper: resolve cover + alt images ── */
   function getImages(p: Product) {
-    const meta = productMeta[p.slug];
+    const slugKey = (p.slug || "").trim().toLowerCase();
+    const meta = cardMetaForSlug(slugKey);
     const images = (p.images as string[] | null) ?? [];
-    const isV3 = p.slug === "v3-slides";
+    const isV3 = slugKey === "v3-slides";
 
     const cover = isV3
       ? "/products/v3-slides/InShot_20260212_194215252.jpg"
@@ -171,8 +184,9 @@ export default function ProductsContent() {
           /* ── Product grid ── */
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {products.map((p) => {
+              const slugKey = (p.slug || "").trim().toLowerCase();
               const { cover, alt } = getImages(p);
-              const meta = productMeta[p.slug];
+              const meta = cardMetaForSlug(slugKey);
               const isNavigating = navigatingSlug === p.slug;
 
               return (
@@ -213,15 +227,16 @@ export default function ProductsContent() {
                       />
                     )}
 
-                    {/* Top badges */}
+                    {/* Top badges — slug-explicit so “New” only appears on Slip Ons */}
                     <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
-                      {meta?.badge && (
-                        <span
-                          className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm ${
-                            meta.badgeColor ?? "bg-black text-white"
-                          }`}
-                        >
-                          {meta.badge}
+                      {slugKey === "v3-slides" && (
+                        <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-black text-white">
+                          Best Seller
+                        </span>
+                      )}
+                      {slugKey === "slip-ons" && (
+                        <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
+                          New
                         </span>
                       )}
                       {meta?.tag && (
@@ -258,7 +273,7 @@ export default function ProductsContent() {
                       </h2>
                       <span className="text-[15px] font-semibold tabular-nums text-neutral-900 whitespace-nowrap shrink-0">
                         {p.slug === "dragonfly" ? "From " : ""}
-                        {formatCentsAsCurrency(p.slug === "dragonfly" ? 9000 : p.priceCents, p.currency)}
+                        {formatCentsAsCurrency(p.slug === "dragonfly" ? 6000 : p.priceCents, p.currency)}
                       </span>
                     </div>
                     <p className="mt-1 text-[13px] leading-relaxed text-neutral-500 line-clamp-1">

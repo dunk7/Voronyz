@@ -70,6 +70,8 @@ export async function POST(request: NextRequest) {
           unitAmount = 3200;
         } else if (lowerCode === "super20") {
           unitAmount = 2000;
+        } else if (lowerCode === "chud25") {
+          unitAmount = 5000;
         } else {
           unitAmount = variant
             ? (variant.priceCents || variant.product.priceCents || 0)
@@ -97,6 +99,8 @@ export async function POST(request: NextRequest) {
           unitAmount = 3200;
         } else if (lowerCode === "super20") {
           unitAmount = 2000;
+        } else if (lowerCode === "chud25") {
+          unitAmount = 5000;
         } else {
           unitAmount = 7500;
         }

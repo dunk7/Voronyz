@@ -30,6 +30,7 @@ export function getProductThumbnail(input: { slug?: string; images?: unknown }):
   // Special-case: canonical cover assets for known products
   if (input.slug === "v3-slides") return "/products/v3-slides/InShot_20260212_194215252.jpg";
   if (input.slug === "dragonfly") return "/products/dragonfly/InShot_20260212_153516456.jpg";
+  if (input.slug === "slip-ons") return "/products/slip-ons/InShot_20260405_203151152.jpg";
 
   const images = normalizeProductImages(input.images);
   return images[0] ?? "/products/v3-slides/InShot_20260212_194215252.jpg";
