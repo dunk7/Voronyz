@@ -52,6 +52,136 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === "object" && !Array.isArray(value);
 }
 
+function pickString(
+  record: Record<string, unknown>,
+  keys: string[]
+): string | null {
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+  }
+  return null;
+}
+
+export function hasAddressContent(address: OrderAddress | null | undefined): boolean {
+  if (!address) return false;
+  return Boolean(
+    address.line1?.trim() ||
+      address.line2?.trim() ||
+      (address.city?.trim() &&
+        (address.state?.trim() || address.postal_code?.trim())) ||
+      address.postal_code?.trim()
+  );
+}
+
+export function parseAddressFromRecord(
+  record: Record<string, unknown>
+): OrderAddress | null {
+  const nested = isRecord(record.address) ? record.address : record;
+
+  const line1 = pickString(nested, [
+    "line1",
+    "line_1",
+    "addressLine1",
+    "address_line1",
+    "street",
+    "street1",
+    "address1",
+  ]);
+  const line2 = pickString(nested, [
+    "line2",
+    "line_2",
+    "addressLine2",
+    "address_line2",
+    "street2",
+    "address2",
+  ]);
+  const city = pickString(nested, ["city", "locality", "town"]);
+  const state = pickString(nested, [
+    "state",
+    "region",
+    "province",
+    "administrative_area",
+  ]);
+  const postal_code = pickString(nested, [
+    "postal_code",
+    "postalCode",
+    "zip",
+    "zipCode",
+    "postcode",
+  ]);
+  const country = pickString(nested, ["country", "countryCode"]) ?? "";
+
+  const address: OrderAddress = {
+    line1: line1 ?? "",
+    line2: line2,
+    city: city ?? "",
+    state: state ?? "",
+    postal_code: postal_code ?? "",
+    country,
+  };
+
+  return hasAddressContent(address) ? address : null;
+}
+
+export function parseShippingFromRecord(
+  record: Record<string, unknown>
+): OrderShipping | null {
+  const name = pickString(record, ["name", "recipient", "fullName", "full_name"]);
+  const address = parseAddressFromRecord(record);
+
+  if (!name && !address) return null;
+
+  return {
+    name: name ?? null,
+    address,
+  };
+}
+
+/** Best available ship-to from order metadata (shipping, billing, flat fields). */
+export function resolveOrderShipping(metadata: unknown): OrderShipping | null {
+  if (!isRecord(metadata)) return null;
+
+  const candidates: unknown[] = [
+    metadata.shipping,
+    metadata.billing,
+    metadata.shippingAddress,
+    metadata.shipTo,
+    metadata.customer,
+  ];
+
+  for (const candidate of candidates) {
+    if (!isRecord(candidate)) continue;
+    const parsed = parseShippingFromRecord(candidate);
+    if (parsed && hasAddressContent(parsed.address)) {
+      return parsed;
+    }
+  }
+
+  return null;
+}
+
+/** Keep existing DB shipping when a new write would wipe it with null/empty. */
+export function preferNonEmptyShipping(
+  incoming: OrderShipping | null,
+  existing: unknown
+): OrderShipping | null {
+  if (incoming && hasAddressContent(incoming.address)) {
+    return incoming;
+  }
+
+  if (isRecord(existing)) {
+    const parsed = parseShippingFromRecord(existing);
+    if (parsed && hasAddressContent(parsed.address)) {
+      return parsed;
+    }
+  }
+
+  return incoming;
+}
+
 export function parseOrderMetadata(metadata: unknown): {
   orderNumber: string | null;
   customer: OrderCustomer | null;
@@ -80,27 +210,7 @@ export function parseOrderMetadata(metadata: unknown): {
       }
     : null;
 
-  let shipping: OrderShipping | null = null;
-  if (isRecord(metadata.shipping)) {
-    const address = isRecord(metadata.shipping.address)
-      ? {
-          line1: String(metadata.shipping.address.line1 ?? ""),
-          line2:
-            metadata.shipping.address.line2 != null
-              ? String(metadata.shipping.address.line2)
-              : null,
-          city: String(metadata.shipping.address.city ?? ""),
-          state: String(metadata.shipping.address.state ?? ""),
-          postal_code: String(metadata.shipping.address.postal_code ?? ""),
-          country: String(metadata.shipping.address.country ?? ""),
-        }
-      : null;
-
-    shipping = {
-      name: typeof metadata.shipping.name === "string" ? metadata.shipping.name : null,
-      address,
-    };
-  }
+  const shipping = resolveOrderShipping(metadata);
 
   const lineItems: OrderLineItem[] = [];
   if (Array.isArray(metadata.lineItems)) {
@@ -139,14 +249,22 @@ export function parseOrderMetadata(metadata: unknown): {
 }
 
 export function formatShippingAddress(shipping: OrderShipping | null): string {
-  if (!shipping?.address) return "";
+  if (!shipping || !hasAddressContent(shipping.address)) return "";
+
   const { address } = shipping;
+  const cityLine = [address!.city, address!.state, address!.postal_code]
+    .filter((p) => p?.trim())
+    .join(", ")
+    .replace(/,\s*,/g, ",")
+    .trim();
+
   const lines = [
     shipping.name || "",
-    address.line1,
-    address.line2 || "",
-    `${address.city}, ${address.state} ${address.postal_code}`,
-    address.country,
-  ].filter(Boolean);
+    address!.line1,
+    address!.line2 || "",
+    cityLine,
+    address!.country,
+  ].filter((line) => line && String(line).trim());
+
   return lines.join("\n");
 }

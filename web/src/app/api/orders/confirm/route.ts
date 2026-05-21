@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { preferNonEmptyShipping } from "@/lib/orderTypes";
+import { shippingFromStripeSession } from "@/lib/stripeShipping";
 
 type CheckoutSession = {
   id: string;

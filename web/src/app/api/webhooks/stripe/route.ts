@@ -174,7 +174,7 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
     } : null;
 
     // Extract customer information
-    const customerName = shippingDetails?.name || 
+    const customerName = shipping?.name || 
                         fullSession.customer_details?.name || 
                         fullSession.customer_details?.email?.split('@')[0] || 
                         null;
