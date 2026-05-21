@@ -238,6 +238,11 @@ export default function Header() {
     setSearchFocused(false);
     searchInputRef.current?.blur();
   };
+
+  if (pathname?.startsWith("/orders")) {
+    return null;
+  }
+
   return (
     <>
       {routeLoading && (

@@ -1,6 +1,14 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/orders")) {
+    return null;
+  }
+
   return (
     <footer className="border-t border-black/5 bg-white">
       <div className="container py-10 grid gap-8 md:grid-cols-3 text-sm text-neutral-600">
