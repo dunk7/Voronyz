@@ -1,0 +1,73 @@
+# Renews the Let's Encrypt certificate for voronyz.com on Netlify.
+# Required when browsers show NET::ERR_CERT_COMMON_NAME_INVALID / HSTS errors
+# because Netlify is serving the default *.netlify.app certificate.
+#
+# Setup (one time): add a Netlify personal access token as the repository secret
+# NETLIFY_AUTH_TOKEN (https://app.netlify.com/user/applications#personal-access-tokens)
+name: Renew Netlify SSL (voronyz.com)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/reprovision-netlify-ssl.yml"
+
+env:
+  NETLIFY_SITE_ID: cd229aa6-16ce-4912-8da2-39b756823133
+  CUSTOM_DOMAIN: voronyz.com
+
+jobs:
+  renew-ssl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require Netlify token
+        if: ${{ secrets.NETLIFY_AUTH_TOKEN == '' }}
+        run: |
+          echo "::warning::NETLIFY_AUTH_TOKEN is not configured."
+          echo "Add it under GitHub → Settings → Secrets → Actions, then re-run this workflow."
+          echo "Or renew manually: https://app.netlify.com/projects/voronyz → Domain management → HTTPS → Renew certificate"
+          exit 0
+
+      - name: Renew TLS certificate
+        if: ${{ secrets.NETLIFY_AUTH_TOKEN != '' }}
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: |
+          set -euo pipefail
+          renew() {
+            curl -fsS -X POST \
+              -H "Authorization: Bearer ${NETLIFY_AUTH_TOKEN}" \
+              -H "Content-Type: application/json" \
+              "https://api.netlify.com/api/v1/sites/${NETLIFY_SITE_ID}/ssl/renew"
+          }
+          provision() {
+            curl -fsS -X POST \
+              -H "Authorization: Bearer ${NETLIFY_AUTH_TOKEN}" \
+              -H "Content-Type: application/json" \
+              "https://api.netlify.com/api/v1/sites/${NETLIFY_SITE_ID}/ssl"
+          }
+          if renew; then
+            echo "Requested certificate renewal."
+          else
+            echo "Renew failed; requesting fresh Let's Encrypt provisioning..."
+            provision
+          fi
+
+      - name: Verify certificate is served for custom domain
+        if: ${{ secrets.NETLIFY_AUTH_TOKEN != '' }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 36); do
+            subject=$(echo | openssl s_client -connect "${CUSTOM_DOMAIN}:443" -servername "${CUSTOM_DOMAIN}" 2>/dev/null \
+              | openssl x509 -noout -subject 2>/dev/null || true)
+            echo "Attempt ${attempt}: ${subject:-no certificate}"
+            if echo "${subject}" | grep -q "${CUSTOM_DOMAIN}"; then
+              echo "Certificate now includes ${CUSTOM_DOMAIN}."
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::warning::Certificate not yet visible externally. Check Netlify → Domain management → HTTPS."
+          exit 1

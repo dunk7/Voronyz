@@ -23,6 +23,10 @@ This project is configured for deployment on Netlify. The Next.js app is located
 
 See `web/README.md` for detailed setup and deployment instructions.
 
+### Custom domain (voronyz.com) and HTTPS
+
+If browsers block `https://voronyz.com` with a certificate / HSTS error, the Let’s Encrypt cert on Netlify likely expired and needs renewal. See [docs/voronyz-ssl-and-dns.md](docs/voronyz-ssl-and-dns.md) and run `./scripts/check-voronyz-ssl.sh` to confirm.
+
 ### Production database note (poolers)
 
 If you use a Postgres pooler/pgBouncer URL for `DATABASE_URL` (common on Supabase), also set `DIRECT_DATABASE_URL` to a **direct (non-pooler)** connection string so Prisma migrations can run reliably.

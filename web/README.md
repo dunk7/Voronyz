@@ -47,7 +47,7 @@ For **production deployment**, set these environment variables in your Netlify d
 - `DIRECT_DATABASE_URL`: Direct (non-pooler) PostgreSQL connection string (recommended). Prisma will use this for migrations/DDL.
 - `STRIPE_SECRET_KEY`: Your Stripe secret key for payments
 - `STRIPE_WEBHOOK_SECRET`: Stripe webhook signing secret (required for reliable order persistence)
-- `NEXT_PUBLIC_SITE_URL`: Your site's base URL (e.g., https://voronyz.netlify.app) for metadata and redirects
+- `NEXT_PUBLIC_SITE_URL`: Your site's base URL (use `https://voronyz.com` in production) for metadata and redirects
 - `AUTH_STUB_ENABLED`: Set to "false" to disable demo auth (enabled by default)
 - `ORDERS_ADMIN_PASSWORD`: Password for the private `/orders` admin page (server-only; never use `NEXT_PUBLIC_`). Required to view and manage orders at `https://voronyz.com/orders`.
 

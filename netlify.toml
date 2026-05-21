@@ -10,5 +10,18 @@
   SECRETS_SCAN_OMIT_PATHS = "README.md,web/server.log,web/*.log"
   SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SITE_URL"
 
+# Canonical host: apex only (add www CNAME → voronyz.netlify.app at your DNS provider first)
+[[redirects]]
+  from = "https://www.voronyz.com/*"
+  to = "https://voronyz.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.voronyz.com/*"
+  to = "https://voronyz.com/:splat"
+  status = 301
+  force = true
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
