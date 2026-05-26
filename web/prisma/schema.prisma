@@ -97,7 +97,7 @@ model Order {
   updatedAt     DateTime @updatedAt
 }
 
-/// Customer STL uploads from voronyz.com/uploads
+/// Customer file uploads from voronyz.com/upload
 model StlSubmission {
   id                   String   @id @default(cuid())
   name                 String
