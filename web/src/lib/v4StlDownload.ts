@@ -4,6 +4,7 @@ import path from "path";
 
 const V4_STL_DIRS = [
   process.env.V4_STL_DIR,
+  path.join(os.homedir(), "Documents"),
   path.join(os.homedir(), "Documents", "V4"),
   path.join(process.cwd(), "public", "downloads", "v4"),
 ].filter((dir): dir is string => Boolean(dir));
@@ -16,6 +17,10 @@ type V4StlEntry = {
 };
 
 function parseV4Stl(name: string, mtimeMs: number): V4StlEntry | null {
+  if (name.toLowerCase() === "v4.stl") {
+    return { name, version: 9999, isTop: true, mtimeMs };
+  }
+
   const match = /^v4\.(\d+)([a-zA-Z]*)\.stl$/i.exec(name);
   if (!match) return null;
 
