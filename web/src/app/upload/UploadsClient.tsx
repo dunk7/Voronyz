@@ -66,12 +66,12 @@ export default function UploadsClient() {
     setError(null);
     setSuccessMessage(null);
 
-    if (!name.trim()) {
-      setError("Please enter your name.");
-      return;
-    }
     if (!file) {
       setError("Please choose a file to upload.");
+      return;
+    }
+    if (!name.trim()) {
+      setError("Please enter your name.");
       return;
     }
     if (TURNSTILE_SITE_KEY && !turnstileToken) {
@@ -169,6 +169,30 @@ export default function UploadsClient() {
         </div>
 
         <div>
+          <label htmlFor="upload-file-input" className="mb-2 block text-sm font-medium text-neutral-700">
+            File <span className="text-red-600">*</span>
+          </label>
+          <div className="rounded-xl border-2 border-dashed border-black/15 bg-white p-6">
+            <input
+              id="upload-file-input"
+              name="file"
+              type="file"
+              required
+              className="block w-full text-sm text-neutral-700 file:mr-4 file:rounded-full file:border-0 file:bg-black file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-neutral-800"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
+            {file ? (
+              <p className="mt-3 text-sm text-neutral-600">
+                Selected: <span className="font-medium text-neutral-900">{file.name}</span>{" "}
+                ({(file.size / (1024 * 1024)).toFixed(2)} MB)
+              </p>
+            ) : (
+              <p className="mt-3 text-sm text-neutral-500">Maximum file size: 50 MB</p>
+            )}
+          </div>
+        </div>
+
+        <div>
           <label htmlFor="upload-name" className="mb-2 block text-sm font-medium text-neutral-700">
             Your name <span className="text-red-600">*</span>
           </label>
@@ -223,30 +247,6 @@ export default function UploadsClient() {
             className="w-full resize-none rounded-xl border border-black/10 px-4 py-3 text-neutral-900 focus:border-transparent focus:ring-2 focus:ring-black"
             placeholder="Size, color preferences, fit notes, or other requests…"
           />
-        </div>
-
-        <div>
-          <label htmlFor="upload-file-input" className="mb-2 block text-sm font-medium text-neutral-700">
-            File <span className="text-red-600">*</span>
-          </label>
-          <div className="rounded-xl border-2 border-dashed border-black/15 bg-white p-6">
-            <input
-              id="upload-file-input"
-              name="file"
-              type="file"
-              required
-              className="block w-full text-sm text-neutral-700 file:mr-4 file:rounded-full file:border-0 file:bg-black file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-neutral-800"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            />
-            {file ? (
-              <p className="mt-3 text-sm text-neutral-600">
-                Selected: <span className="font-medium text-neutral-900">{file.name}</span>{" "}
-                ({(file.size / (1024 * 1024)).toFixed(2)} MB)
-              </p>
-            ) : (
-              <p className="mt-3 text-sm text-neutral-500">Maximum file size: 50 MB</p>
-            )}
-          </div>
         </div>
 
         {TURNSTILE_SITE_KEY ? (

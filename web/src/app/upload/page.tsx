@@ -16,9 +16,7 @@ export default function UploadsPage() {
             Upload a file
           </h1>
           <p className="mx-auto max-w-2xl text-lg leading-relaxed text-neutral-600">
-            Share a scan or model (STL, OBJ, or any format) for custom Voronyz footwear. Add your
-            name, optional email, and any customization notes—we&apos;ll review your file and follow
-            up if needed.
+            Share a scan or model (STL, OBJ, or any format) for custom Voronyz footwear
           </p>
         </div>
       </div>
