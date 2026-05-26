@@ -23,11 +23,12 @@
   status = 301
   force = true
 
-# Serve the STL as a static file (Tinkercad requires a .stl URL)
-[[redirects]]
-  from = "/v4stl"
-  to = "/v4.stl"
-  status = 302
+[[headers]]
+  for = "/v4stl"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, HEAD, OPTIONS"
+    Access-Control-Allow-Headers = "*"
 
 [[headers]]
   for = "/v4.stl"

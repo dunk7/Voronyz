@@ -1,8 +1,12 @@
-import { NextResponse } from "next/server";
+import { serveNewestV4Stl, stlOptionsResponse } from "@/lib/stlResponse";
 
 export const runtime = "nodejs";
 
-// Tinkercad and other importers require a URL ending in .stl
-export async function GET(request: Request) {
-  return NextResponse.redirect(new URL("/v4.stl", request.url), 302);
+// Tinkercad rejects URLs with a dot in the path (e.g. /v4.stl) as "Not a valid URL".
+export async function GET() {
+  return serveNewestV4Stl();
+}
+
+export async function OPTIONS() {
+  return stlOptionsResponse();
 }
