@@ -7,6 +7,12 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  async redirects() {
+    return [
+      { source: "/uploads", destination: "/upload", permanent: true },
+      { source: "/uploads/:path*", destination: "/upload", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;
