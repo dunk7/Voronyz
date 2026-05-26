@@ -35,6 +35,7 @@ yarn-error.log*
 
 # local databases / runtime artifacts
 /prisma/dev.db
+/.data/
 *.pid
 
 # vercel

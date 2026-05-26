@@ -96,3 +96,19 @@ model Order {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
+
+/// Customer STL uploads from voronyz.com/uploads
+model StlSubmission {
+  id                   String   @id @default(cuid())
+  name                 String
+  email                String?
+  customizationRequest String?
+  originalFileName     String
+  storageKey           String   @unique
+  sizeBytes            Int
+  ipHash               String?
+  createdAt            DateTime @default(now())
+
+  @@index([ipHash, createdAt])
+  @@index([createdAt])
+}
