@@ -33,12 +33,22 @@
   to = "/tinkercad/v4.stl"
   status = 302
 
+# Serve STL from static CDN (avoid Next.js serverless cold starts on import)
+[[redirects]]
+  from = "/tinkercad/v4.stl"
+  to = "/downloads/v4/v4.04t.stl"
+  status = 200
+  force = true
+
 [[headers]]
   for = "/tinkercad/v4.stl"
   [headers.values]
     Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Methods = "GET, HEAD, OPTIONS"
     Access-Control-Allow-Headers = "*"
+    Cache-Control = "public, max-age=86400, immutable"
+    Content-Type = "model/stl"
+    Content-Disposition = "attachment; filename=\"v4.stl\""
 
 [[headers]]
   for = "/v4stl"
