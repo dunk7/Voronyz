@@ -2,12 +2,9 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 
-const V4_STL_DIRS = [
-  process.env.V4_STL_DIR,
-  path.join(os.homedir(), "Documents"),
-  path.join(os.homedir(), "Documents", "V4"),
-  path.join(process.cwd(), "public", "downloads", "v4"),
-].filter((dir): dir is string => Boolean(dir));
+const DOCUMENTS_V4_STL = path.join(os.homedir(), "Documents", "v4.stl");
+const DOCUMENTS_V4_DIR = path.join(os.homedir(), "Documents", "V4");
+const PUBLIC_V4_DIR = path.join(process.cwd(), "public", "downloads", "v4");
 
 type V4StlEntry = {
   name: string;
@@ -62,13 +59,56 @@ function listV4StlsInDir(dir: string): V4StlCandidate[] {
   });
 }
 
-export function getNewestV4StlPath(): { filePath: string; fileName: string } | null {
-  for (const dir of V4_STL_DIRS) {
-    const candidates = listV4StlsInDir(dir).sort(compareV4Stl);
-    const newest = candidates[0];
-    if (newest) {
+function tryExplicitFile(filePath: string): { filePath: string; fileName: string } | null {
+  try {
+    const stat = fs.statSync(filePath);
+    if (!stat.isFile()) return null;
+    const name = path.basename(filePath);
+    const parsed = parseV4Stl(name, stat.mtimeMs);
+    if (!parsed) return null;
+    return { filePath, fileName: name };
+  } catch {
+    return null;
+  }
+}
+
+function tryEnvOverride(): { filePath: string; fileName: string } | null {
+  const raw = process.env.V4_STL_DIR;
+  if (!raw) return null;
+  try {
+    const stat = fs.statSync(raw);
+    if (stat.isFile()) {
+      return tryExplicitFile(raw);
+    }
+    if (stat.isDirectory()) {
+      const candidates = listV4StlsInDir(raw).sort(compareV4Stl);
+      const newest = candidates[0];
+      if (!newest) return null;
       return { filePath: newest.filePath, fileName: newest.name };
     }
+  } catch {
+    return null;
   }
+  return null;
+}
+
+/** Prefer env, then ~/Documents/v4.stl (never readdir of all Documents), then Documents/V4, then public. */
+export function getNewestV4StlPath(): { filePath: string; fileName: string } | null {
+  const fromEnv = tryEnvOverride();
+  if (fromEnv) return fromEnv;
+
+  const fromDocumentsRoot = tryExplicitFile(DOCUMENTS_V4_STL);
+  if (fromDocumentsRoot) return fromDocumentsRoot;
+
+  const fromV4Folder = listV4StlsInDir(DOCUMENTS_V4_DIR).sort(compareV4Stl)[0];
+  if (fromV4Folder) {
+    return { filePath: fromV4Folder.filePath, fileName: fromV4Folder.name };
+  }
+
+  const fromPublic = listV4StlsInDir(PUBLIC_V4_DIR).sort(compareV4Stl)[0];
+  if (fromPublic) {
+    return { filePath: fromPublic.filePath, fileName: fromPublic.name };
+  }
+
   return null;
 }
