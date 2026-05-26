@@ -24,6 +24,16 @@
   force = true
 
 [[redirects]]
+  from = "/uploads"
+  to = "/upload"
+  status = 301
+
+[[redirects]]
+  from = "/uploads/*"
+  to = "/upload"
+  status = 301
+
+[[redirects]]
   from = "/tinkercad/v4"
   to = "/tinkercad/v4.stl"
   status = 302
