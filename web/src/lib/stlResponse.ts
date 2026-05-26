@@ -34,3 +34,25 @@ export function serveNewestV4Stl(): NextResponse {
     },
   });
 }
+
+export function headNewestV4Stl(): NextResponse {
+  const newest = getNewestV4StlPath();
+  if (!newest) {
+    return NextResponse.json(
+      { error: "V4 STL not found" },
+      { status: 404, headers: STL_CORS_HEADERS },
+    );
+  }
+
+  const stat = fs.statSync(newest.filePath);
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      ...STL_CORS_HEADERS,
+      "Content-Type": "model/stl",
+      "Content-Length": String(stat.size),
+      "Content-Disposition": `attachment; filename="${newest.fileName}"`,
+      "Cache-Control": "public, max-age=3600",
+    },
+  });
+}

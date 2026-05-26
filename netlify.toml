@@ -34,6 +34,13 @@
   status = 302
 
 [[headers]]
+  for = "/tinkercad/v4.stl"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, HEAD, OPTIONS"
+    Access-Control-Allow-Headers = "*"
+
+[[headers]]
   for = "/v4stl"
   [headers.values]
     Access-Control-Allow-Origin = "*"
