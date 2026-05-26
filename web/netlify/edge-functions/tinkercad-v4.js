@@ -46,6 +46,5 @@ export default async (request) => {
   return new Response(upstream.body, { status: 200, headers });
 };
 
-// Path must end in .stl — Tinkercad treats the last URL segment as the file
-// extension (e.g. .../v4 → "v4 is not a supported file type").
-export const config = { path: "/tinkercad/voronyz-v4-top.stl" };
+// Path must end in .stl for Tinkercad's URL file-type check.
+export const config = { path: "/tinkercad/v4.stl" };

@@ -25,7 +25,12 @@
 
 [[redirects]]
   from = "/tinkercad/v4"
-  to = "/tinkercad/voronyz-v4-top.stl"
+  to = "/tinkercad/v4.stl"
+  status = 302
+
+[[redirects]]
+  from = "/tinkercad/voronyz-v4-top.stl"
+  to = "/tinkercad/v4.stl"
   status = 302
 
 [[headers]]

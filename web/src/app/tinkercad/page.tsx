@@ -1,4 +1,4 @@
-const TINKERCAD_URL = "https://voronyz.com/tinkercad/voronyz-v4-top.stl";
+const TINKERCAD_URL = "https://voronyz.com/tinkercad/v4.stl";
 const CDN_URL =
   "https://cdn.jsdelivr.net/gh/dunk7/Voronyz@main/web/public/downloads/v4/v4.04t.stl";
 
