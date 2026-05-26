@@ -12,7 +12,9 @@ import {
   LogOut,
   Package,
   Search,
+  Upload,
 } from "lucide-react";
+import UploadsAdminPanel from "./UploadsAdminPanel";
 import { formatCentsAsCurrency } from "@/lib/money";
 import {
   formatShippingAddress,
@@ -22,6 +24,7 @@ import {
 
 type SortKey = "date" | "price" | "name" | "status";
 type SortDir = "asc" | "desc";
+type AdminTab = "orders" | "uploads";
 
 const STATUS_STYLES: Record<string, string> = {
   paid: "bg-emerald-100 text-emerald-800",
@@ -124,6 +127,8 @@ export default function OrdersAdminClient() {
   const [sortKey, setSortKey] = useState<SortKey>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [tab, setTab] = useState<AdminTab>("orders");
+  const [uploadsRefresh, setUploadsRefresh] = useState(0);
 
   const checkAuth = useCallback(async () => {
     const res = await fetch("/api/orders/auth");
@@ -191,6 +196,12 @@ export default function OrdersAdminClient() {
     setAuthenticated(false);
     setOrders([]);
     setExpandedId(null);
+    setTab("orders");
+  }
+
+  function handleRefresh() {
+    if (tab === "orders") loadOrders();
+    else setUploadsRefresh((n) => n + 1);
   }
 
   function toggleSort(key: SortKey) {
@@ -320,20 +331,46 @@ export default function OrdersAdminClient() {
     <div className="min-h-screen bg-neutral-50 print:bg-white">
       <header className="sticky top-0 z-20 border-b border-black/5 bg-white/90 backdrop-blur print:hidden">
         <div className="container py-4 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight">Orders</h1>
-            <p className="text-sm text-neutral-500">
-              {filteredOrders.length} of {orders.length} orders
-            </p>
+          <div className="space-y-3">
+            <div>
+              <h1 className="text-xl font-semibold tracking-tight">Admin</h1>
+              <p className="text-sm text-neutral-500">
+                {tab === "orders"
+                  ? `${filteredOrders.length} of ${orders.length} orders`
+                  : "Customer file uploads"}
+              </p>
+            </div>
+            <div className="flex gap-1 rounded-full bg-neutral-100 p-1">
+              <button
+                type="button"
+                onClick={() => setTab("orders")}
+                className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                  tab === "orders" ? "bg-white text-neutral-900 shadow-sm" : "text-neutral-600 hover:text-neutral-900"
+                }`}
+              >
+                <Package className="h-4 w-4" />
+                Orders
+              </button>
+              <button
+                type="button"
+                onClick={() => setTab("uploads")}
+                className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                  tab === "uploads" ? "bg-white text-neutral-900 shadow-sm" : "text-neutral-600 hover:text-neutral-900"
+                }`}
+              >
+                <Upload className="h-4 w-4" />
+                Uploads
+              </button>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={loadOrders}
-              disabled={loadingOrders}
+              onClick={handleRefresh}
+              disabled={tab === "orders" && loadingOrders}
               className="rounded-full border border-black/10 px-4 py-2 text-sm hover:bg-neutral-50 disabled:opacity-50"
             >
-              {loadingOrders ? "Refreshing…" : "Refresh"}
+              {tab === "orders" && loadingOrders ? "Refreshing…" : "Refresh"}
             </button>
             <button
               type="button"
@@ -348,6 +385,15 @@ export default function OrdersAdminClient() {
       </header>
 
       <div className="container py-6 space-y-4 print:py-2">
+        {tab === "uploads" ? (
+          <UploadsAdminPanel
+            refreshToken={uploadsRefresh}
+            onAuthLost={() => setAuthenticated(false)}
+          />
+        ) : null}
+
+        {tab === "orders" ? (
+        <>
         <div className="flex flex-wrap items-center gap-3 print:hidden">
           <div className="relative flex-1 min-w-[200px] max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
@@ -538,6 +584,8 @@ export default function OrdersAdminClient() {
             })}
           </div>
         )}
+        </>
+        ) : null}
       </div>
     </div>
   );
