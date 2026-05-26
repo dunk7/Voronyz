@@ -2,7 +2,6 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 
-const DOCUMENTS_V4_STL = path.join(os.homedir(), "Documents", "v4.stl");
 const DOCUMENTS_V4_DIR = path.join(os.homedir(), "Documents", "V4");
 const PUBLIC_V4_DIR = path.join(process.cwd(), "public", "downloads", "v4");
 
@@ -14,10 +13,6 @@ type V4StlEntry = {
 };
 
 function parseV4Stl(name: string, mtimeMs: number): V4StlEntry | null {
-  if (name.toLowerCase() === "v4.stl") {
-    return { name, version: 9999, isTop: true, mtimeMs };
-  }
-
   const match = /^v4\.(\d+)([a-zA-Z]*)\.stl$/i.exec(name);
   if (!match) return null;
 
@@ -92,13 +87,10 @@ function tryEnvOverride(): { filePath: string; fileName: string } | null {
   return null;
 }
 
-/** Prefer env, then ~/Documents/v4.stl (never readdir of all Documents), then Documents/V4, then public. */
+/** Prefer env, then Documents/V4, then bundled public/downloads/v4 (production). */
 export function getNewestV4StlPath(): { filePath: string; fileName: string } | null {
   const fromEnv = tryEnvOverride();
   if (fromEnv) return fromEnv;
-
-  const fromDocumentsRoot = tryExplicitFile(DOCUMENTS_V4_STL);
-  if (fromDocumentsRoot) return fromDocumentsRoot;
 
   const fromV4Folder = listV4StlsInDir(DOCUMENTS_V4_DIR).sort(compareV4Stl)[0];
   if (fromV4Folder) {
