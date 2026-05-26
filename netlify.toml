@@ -23,5 +23,11 @@
   status = 301
   force = true
 
+# Serve the STL as a static file (Tinkercad requires a .stl URL)
+[[redirects]]
+  from = "/v4stl"
+  to = "/v4stl.stl"
+  status = 302
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
