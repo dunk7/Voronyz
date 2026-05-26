@@ -26,7 +26,7 @@
 # Serve the STL as a static file (Tinkercad requires a .stl URL)
 [[redirects]]
   from = "/v4stl"
-  to = "/v4stl.stl"
+  to = "/v4.stl"
   status = 302
 
 [[plugins]]
