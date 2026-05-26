@@ -22,12 +22,14 @@ export function serveNewestV4Stl(): NextResponse {
   }
 
   const file = fs.readFileSync(newest.filePath);
+  const body = new Uint8Array(file);
 
-  return new NextResponse(file, {
+  return new NextResponse(body, {
     headers: {
       ...STL_CORS_HEADERS,
-      "Content-Type": "application/sla",
-      "Content-Length": String(file.byteLength),
+      "Content-Type": "model/stl",
+      "Content-Length": String(body.byteLength),
+      "Content-Disposition": `attachment; filename="${newest.fileName}"`,
       "Cache-Control": "public, max-age=3600",
     },
   });
