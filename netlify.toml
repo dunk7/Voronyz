@@ -29,5 +29,12 @@
   to = "/v4.stl"
   status = 302
 
+[[headers]]
+  for = "/v4.stl"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, HEAD, OPTIONS"
+    Access-Control-Allow-Headers = "*"
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
