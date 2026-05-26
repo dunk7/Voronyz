@@ -2,7 +2,8 @@
   base = "web"
   # Run migrations in CI/CD only when DATABASE_URL is provided (production).
   # This ensures the Order table exists so paid checkouts can be persisted.
-  command = "npx prisma generate && (test -z \"$DATABASE_URL\" || DATABASE_URL=\"$(node scripts/derive-direct-database-url.mjs)\" npx prisma migrate deploy) && npm run build"
+  # Migrations: run locally with direct DB URL, or `DATABASE_URL="$(node scripts/derive-direct-database-url.mjs)" npx prisma migrate deploy`
+  command = "npx prisma generate && npm run build"
   publish = ".next"
 
 [build.environment]
