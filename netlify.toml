@@ -23,6 +23,11 @@
   status = 301
   force = true
 
+[[redirects]]
+  from = "/tinkercad/v4"
+  to = "/tinkercad/voronyz-v4-top.stl"
+  status = 302
+
 [[headers]]
   for = "/v4stl"
   [headers.values]

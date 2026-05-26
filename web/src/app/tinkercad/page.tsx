@@ -1,4 +1,4 @@
-const TINKERCAD_URL = "https://voronyz.com/tinkercad/v4";
+const TINKERCAD_URL = "https://voronyz.com/tinkercad/voronyz-v4-top.stl";
 const CDN_URL =
   "https://cdn.jsdelivr.net/gh/dunk7/Voronyz@main/web/public/downloads/v4/v4.04t.stl";
 
@@ -12,12 +12,13 @@ export default function TinkercadDownloadPage() {
     <main className="mx-auto max-w-xl px-4 py-16">
       <h1 className="text-2xl font-semibold tracking-tight">Tinkercad import</h1>
       <p className="mt-3 text-neutral-600">
-        In Tinkercad choose <strong>Import</strong> → <strong>URL</strong>, then paste one of
-        these links (try the first one; if it fails, use the CDN link).
+        In Tinkercad choose <strong>Import</strong> → <strong>URL</strong>, then paste the
+        link below. The path must end in <code className="rounded bg-neutral-100 px-1">.stl</code>{" "}
+        or Tinkercad shows &quot;not a supported file type&quot;.
       </p>
       <ul className="mt-8 space-y-6 text-sm">
         <li>
-          <p className="font-medium text-neutral-800">Voronyz (recommended)</p>
+          <p className="font-medium text-neutral-800">Voronyz (for Tinkercad URL import)</p>
           <code className="mt-1 block break-all rounded bg-neutral-100 px-2 py-2 text-neutral-900">
             {TINKERCAD_URL}
           </code>
