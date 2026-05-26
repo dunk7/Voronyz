@@ -329,39 +329,15 @@ export default function OrdersAdminClient() {
 
   return (
     <div className="min-h-screen bg-neutral-50 print:bg-white">
-      <header className="sticky top-0 z-20 border-b border-black/5 bg-white/90 backdrop-blur print:hidden">
+      <header className="sticky top-0 z-20 border-b border-black/5 bg-white print:hidden">
         <div className="container py-4 flex flex-wrap items-center justify-between gap-4">
-          <div className="space-y-3">
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight">Admin</h1>
-              <p className="text-sm text-neutral-500">
-                {tab === "orders"
-                  ? `${filteredOrders.length} of ${orders.length} orders`
-                  : "Customer file uploads"}
-              </p>
-            </div>
-            <div className="flex gap-1 rounded-full bg-neutral-100 p-1">
-              <button
-                type="button"
-                onClick={() => setTab("orders")}
-                className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                  tab === "orders" ? "bg-white text-neutral-900 shadow-sm" : "text-neutral-600 hover:text-neutral-900"
-                }`}
-              >
-                <Package className="h-4 w-4" />
-                Orders
-              </button>
-              <button
-                type="button"
-                onClick={() => setTab("uploads")}
-                className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                  tab === "uploads" ? "bg-white text-neutral-900 shadow-sm" : "text-neutral-600 hover:text-neutral-900"
-                }`}
-              >
-                <Upload className="h-4 w-4" />
-                Uploads
-              </button>
-            </div>
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight">Admin</h1>
+            <p className="text-sm text-neutral-500">
+              {tab === "orders"
+                ? `${filteredOrders.length} of ${orders.length} orders`
+                : "Customer file uploads"}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -382,6 +358,37 @@ export default function OrdersAdminClient() {
             </button>
           </div>
         </div>
+        <nav
+          className="border-t border-black/5 bg-neutral-50"
+          aria-label="Admin sections"
+        >
+          <div className="container flex gap-2 py-3">
+            <button
+              type="button"
+              onClick={() => setTab("orders")}
+              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
+                tab === "orders"
+                  ? "bg-black text-white"
+                  : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
+              }`}
+            >
+              <Package className="h-4 w-4" />
+              Orders
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("uploads")}
+              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
+                tab === "uploads"
+                  ? "bg-black text-white"
+                  : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
+              }`}
+            >
+              <Upload className="h-4 w-4" />
+              Uploads
+            </button>
+          </div>
+        </nav>
       </header>
 
       <div className="container py-6 space-y-4 print:py-2">

@@ -3,7 +3,7 @@
  * Used during Netlify builds for `prisma migrate deploy` (needs directUrl).
  */
 const pooler = process.env.DATABASE_URL?.trim();
-if (!pooler) process.exit(1);
+if (!pooler) process.exit(0);
 
 try {
   const u = new URL(pooler);
