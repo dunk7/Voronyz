@@ -15,8 +15,32 @@ export type MediaViewerItem = {
   fileName?: string;
 };
 
+type Point = { x: number; y: number };
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
+}
+
+/** Focal point in container-centered coordinates (0,0 = viewport center). */
+function focalFromClient(
+  clientX: number,
+  clientY: number,
+  container: HTMLDivElement
+): Point {
+  const rect = container.getBoundingClientRect();
+  return {
+    x: clientX - rect.left - rect.width / 2,
+    y: clientY - rect.top - rect.height / 2,
+  };
+}
+
+function midpointFocal(
+  points: Point[],
+  container: HTMLDivElement
+): Point {
+  const cx = (points[0].x + points[1].x) / 2;
+  const cy = (points[0].y + points[1].y) / 2;
+  return focalFromClient(cx, cy, container);
 }
 
 export function MediaViewer({
@@ -28,14 +52,42 @@ export function MediaViewer({
 }) {
   const isVideo = item.mimeType.startsWith("video/");
   const [scale, setScale] = useState(1);
-  const [translate, setTranslate] = useState({ x: 0, y: 0 });
+  const [translate, setTranslate] = useState<Point>({ x: 0, y: 0 });
+  const [isGesturing, setIsGesturing] = useState(false);
+
   const containerRef = useRef<HTMLDivElement>(null);
-  const pointers = useRef(new Map<number, { x: number; y: number }>());
-  const pinchStart = useRef<{ distance: number; scale: number } | null>(null);
+  const transformRef = useRef({ scale: 1, translate: { x: 0, y: 0 } });
+  const pointers = useRef(new Map<number, Point>());
+  const pinchRef = useRef<{ distance: number } | null>(null);
   const panStart = useRef<{ x: number; y: number; tx: number; ty: number } | null>(
     null
   );
-  const lastTap = useRef(0);
+  const lastTap = useRef<{ time: number; x: number; y: number } | null>(null);
+
+  const syncTransform = useCallback((nextScale: number, nextTranslate: Point) => {
+    transformRef.current = { scale: nextScale, translate: nextTranslate };
+    setScale(nextScale);
+    setTranslate(nextTranslate);
+  }, []);
+
+  const applyZoomAtFocal = useCallback(
+    (newScale: number, focal: Point) => {
+      const clamped = clamp(newScale, 1, 4);
+      const { scale: prevScale, translate: prevTranslate } = transformRef.current;
+
+      if (clamped <= 1) {
+        syncTransform(1, { x: 0, y: 0 });
+        return;
+      }
+
+      const ratio = clamped / prevScale;
+      syncTransform(clamped, {
+        x: focal.x - (focal.x - prevTranslate.x) * ratio,
+        y: focal.y - (focal.y - prevTranslate.y) * ratio,
+      });
+    },
+    [syncTransform]
+  );
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -54,26 +106,31 @@ export function MediaViewer({
   }, [onClose]);
 
   const resetTransform = useCallback(() => {
-    setScale(1);
-    setTranslate({ x: 0, y: 0 });
-  }, []);
+    syncTransform(1, { x: 0, y: 0 });
+  }, [syncTransform]);
 
-  const zoomBy = useCallback((delta: number) => {
-    setScale((s) => clamp(Number((s + delta).toFixed(2)), 1, 4));
-    if (scale + delta <= 1) setTranslate({ x: 0, y: 0 });
-  }, [scale]);
+  const zoomBy = useCallback(
+    (delta: number) => {
+      const { scale: currentScale } = transformRef.current;
+      applyZoomAtFocal(currentScale + delta, { x: 0, y: 0 });
+    },
+    [applyZoomAtFocal]
+  );
 
   const handlePointerDown = (e: ReactPointerEvent) => {
-    if (isVideo) return;
+    if (isVideo || !containerRef.current) return;
+    setIsGesturing(true);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    const { scale: currentScale, translate: currentTranslate } = transformRef.current;
 
     if (pointers.current.size === 1) {
       panStart.current = {
         x: e.clientX,
         y: e.clientY,
-        tx: translate.x,
-        ty: translate.y,
+        tx: currentTranslate.x,
+        ty: currentTranslate.y,
       };
     }
 
@@ -81,30 +138,35 @@ export function MediaViewer({
       const pts = [...pointers.current.values()];
       const dx = pts[1].x - pts[0].x;
       const dy = pts[1].y - pts[0].y;
-      pinchStart.current = {
-        distance: Math.hypot(dx, dy),
-        scale,
-      };
+      pinchRef.current = { distance: Math.hypot(dx, dy) };
       panStart.current = null;
     }
   };
 
   const handlePointerMove = (e: ReactPointerEvent) => {
-    if (isVideo || !pointers.current.has(e.pointerId)) return;
+    if (isVideo || !pointers.current.has(e.pointerId) || !containerRef.current) {
+      return;
+    }
+
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
-    if (pointers.current.size === 2 && pinchStart.current) {
+    if (pointers.current.size === 2 && pinchRef.current) {
       const pts = [...pointers.current.values()];
       const dx = pts[1].x - pts[0].x;
       const dy = pts[1].y - pts[0].y;
       const distance = Math.hypot(dx, dy);
-      const ratio = distance / pinchStart.current.distance;
-      setScale(clamp(pinchStart.current.scale * ratio, 1, 4));
+      const ratio = distance / pinchRef.current.distance;
+      pinchRef.current.distance = distance;
+
+      const focal = midpointFocal(pts, containerRef.current);
+      const { scale: currentScale } = transformRef.current;
+      applyZoomAtFocal(currentScale * ratio, focal);
       return;
     }
 
-    if (pointers.current.size === 1 && panStart.current && scale > 1) {
-      setTranslate({
+    const { scale: currentScale, translate: currentTranslate } = transformRef.current;
+    if (pointers.current.size === 1 && panStart.current && currentScale > 1) {
+      syncTransform(currentScale, {
         x: panStart.current.tx + (e.clientX - panStart.current.x),
         y: panStart.current.ty + (e.clientY - panStart.current.y),
       });
@@ -112,17 +174,50 @@ export function MediaViewer({
   };
 
   const handlePointerUp = (e: ReactPointerEvent) => {
-    pointers.current.delete(e.pointerId);
-    if (pointers.current.size < 2) pinchStart.current = null;
-    if (pointers.current.size === 0) panStart.current = null;
+    if (isVideo || !containerRef.current) return;
 
-    if (!isVideo && pointers.current.size === 0) {
-      const now = Date.now();
-      if (now - lastTap.current < 300) {
-        if (scale > 1) resetTransform();
-        else setScale(2);
+    const wasDoubleTapCandidate = pointers.current.size === 1;
+    const tapX = e.clientX;
+    const tapY = e.clientY;
+
+    pointers.current.delete(e.pointerId);
+    if (pointers.current.size < 2) pinchRef.current = null;
+
+    if (pointers.current.size === 1) {
+      const remaining = [...pointers.current.values()][0];
+      const { translate: currentTranslate } = transformRef.current;
+      panStart.current = {
+        x: remaining.x,
+        y: remaining.y,
+        tx: currentTranslate.x,
+        ty: currentTranslate.y,
+      };
+    } else {
+      panStart.current = null;
+    }
+
+    if (pointers.current.size === 0) {
+      setIsGesturing(false);
+
+      if (wasDoubleTapCandidate) {
+        const now = Date.now();
+        const prev = lastTap.current;
+        const focal = focalFromClient(tapX, tapY, containerRef.current);
+        const isDoubleTap =
+          prev &&
+          now - prev.time < 300 &&
+          Math.hypot(tapX - prev.x, tapY - prev.y) < 28;
+
+        if (isDoubleTap) {
+          const { scale: currentScale } = transformRef.current;
+          if (currentScale > 1.05) resetTransform();
+          else applyZoomAtFocal(2.5, focal);
+          lastTap.current = null;
+          return;
+        }
+
+        lastTap.current = { time: now, x: tapX, y: tapY };
       }
-      lastTap.current = now;
     }
   };
 
@@ -196,8 +291,7 @@ export function MediaViewer({
             style={{
               maxHeight: "calc(100dvh - 5rem)",
               transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
-              transition:
-                pointers.current.size > 0 ? "none" : "transform 0.15s ease-out",
+              transition: isGesturing ? "none" : "transform 0.15s ease-out",
             }}
           />
         )}
