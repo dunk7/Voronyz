@@ -151,7 +151,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               Free US shipping
             </span>
             <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Made to order in &lt;2 days</span>
-            <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Lasts 2-5 years</span>
+            <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
             {isDragonfly && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Custom lace colors</span>
             )}

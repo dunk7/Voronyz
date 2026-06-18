@@ -230,14 +230,25 @@ export default function CartClient() {
               </div>
             </Link>
             <div className="flex items-center justify-between lg:justify-start gap-2 lg:gap-4 w-full lg:w-auto mt-2 lg:mt-0">
-              <div className="flex items-center gap-1 lg:gap-2 flex-1 lg:flex-none">
+              <div className="flex items-center gap-0 flex-1 lg:flex-none">
                 <button
-                  onClick={() => updateQuantity(it.id, it.quantity - 1)}
-                  disabled={it.quantity <= 1}
-                  className="h-7 w-7 lg:h-8 lg:w-8 rounded-full ring-1 ring-black/10 hover:bg-black/5 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed text-sm lg:text-base bg-white"
-                  aria-label="Decrease quantity"
+                  onClick={() => it.quantity === 1 ? remove(it.id) : updateQuantity(it.id, it.quantity - 1)}
+                  className={`h-8 w-8 rounded-l-md border border-black/10 border-r-0 bg-white transition-colors flex items-center justify-center ${
+                    it.quantity === 1
+                      ? "text-red-600 hover:text-red-700 hover:bg-red-50 active:bg-red-100"
+                      : "text-neutral-600 hover:bg-neutral-50 active:bg-neutral-100"
+                  }`}
+                  aria-label={it.quantity === 1 ? `Remove ${it.productName || it.variant?.name || "item"} from cart` : "Decrease quantity"}
                 >
-                  -
+                  {it.quantity === 1 ? (
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                    </svg>
+                  ) : (
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
+                    </svg>
+                  )}
                 </button>
                 <input
                   type="number"
@@ -249,16 +260,18 @@ export default function CartClient() {
                     if (value === '' || isNaN(Number(value))) return;
                     updateQuantity(it.id, Number(value));
                   }}
-                  className="w-10 lg:w-14 rounded-md border border-black/10 px-1 lg:px-2 py-1 text-sm text-neutral-900 bg-white"
+                  className="h-8 w-10 border-y border-black/10 px-1 py-0 text-sm font-medium text-neutral-900 bg-white text-center focus:outline-none focus:ring-1 focus:ring-black/20 focus:z-10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   aria-label={`Quantity for ${it.productName || it.variant?.name || "item"}`}
                 />
                 <button
                   onClick={() => updateQuantity(it.id, it.quantity + 1)}
                   disabled={it.quantity >= 99}
-                  className="h-7 w-7 lg:h-8 lg:w-8 rounded-full ring-1 ring-black/10 hover:bg-black/5 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed text-sm lg:text-base bg-white"
+                  className="h-8 w-8 rounded-r-md border border-black/10 border-l-0 bg-white hover:bg-neutral-50 active:bg-neutral-100 text-neutral-600 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors flex items-center justify-center"
                   aria-label="Increase quantity"
                 >
-                  +
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  </svg>
                 </button>
               </div>
               <div className="flex items-center gap-2 lg:gap-4 flex-1 lg:flex-none justify-end min-w-0 lg:min-w-[5rem]">
@@ -267,13 +280,6 @@ export default function CartClient() {
                     getDiscountedUnitPriceCents(getBaseUnitPriceCents(it), discountCode, it.productSlug, it.productName) * it.quantity
                   )}
                 </div>
-                <button
-                  onClick={() => remove(it.id)}
-                  className="text-xs lg:text-sm text-red-700 hover:text-red-800 hover:underline whitespace-nowrap"
-                  aria-label={`Remove ${it.productName || it.variant?.name || "item"} from cart`}
-                >
-                  Remove
-                </button>
               </div>
             </div>
           </div>

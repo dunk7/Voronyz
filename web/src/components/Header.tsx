@@ -33,6 +33,7 @@ export default function Header() {
   const [selectedResultIndex, setSelectedResultIndex] = useState(-1);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
   const [routeLoading, setRouteLoading] = useState(false);
   const routeKeyRef = useRef<string | null>(null);
@@ -129,6 +130,15 @@ export default function Header() {
     };
   }, [open]);
 
+  // Cleanup blur timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (blurTimeoutRef.current) {
+        clearTimeout(blurTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Search functionality
   const performSearch = async (query: string) => {
     if (!query.trim()) {
@@ -224,14 +234,27 @@ export default function Header() {
   };
 
   const handleSearchBlur = () => {
+    // Clear any existing blur timeout
+    if (blurTimeoutRef.current) {
+      clearTimeout(blurTimeoutRef.current);
+    }
     // Delay hiding to allow clicks on results
-    setTimeout(() => {
+    blurTimeoutRef.current = setTimeout(() => {
       setSearchFocused(false);
       setSelectedResultIndex(-1);
     }, 150);
   };
 
-  const handleResultClick = (productSlug: string) => {
+  const handleResultClick = (productSlug: string, e?: React.MouseEvent) => {
+    // Prevent blur from hiding the dropdown before navigation
+    if (blurTimeoutRef.current) {
+      clearTimeout(blurTimeoutRef.current);
+      blurTimeoutRef.current = null;
+    }
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     navigateWithLoading(`/products/${productSlug}`);
     setSearchQuery("");
     setSearchResults([]);
@@ -328,7 +351,10 @@ export default function Header() {
                         return (
                           <button
                             key={product.id}
-                            onClick={() => handleResultClick(product.slug)}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              handleResultClick(product.slug, e);
+                            }}
                             className={`w-full px-4 py-3 text-left hover:bg-white/5 transition-all duration-150 flex items-center gap-3 group ${
                               index === selectedResultIndex ? "bg-white/10" : ""
                             }`}
