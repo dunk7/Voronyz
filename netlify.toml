@@ -3,7 +3,8 @@
   # Run migrations in CI/CD only when DATABASE_URL is provided (production).
   # This ensures the Order table exists so paid checkouts can be persisted.
   # Migrations: run locally with direct DB URL, or `DATABASE_URL="$(node scripts/derive-direct-database-url.mjs)" npx prisma migrate deploy`
-  command = "npx prisma generate && npm run build"
+  # Apply migrations when DATABASE_URL is set (uses direct URL for Supabase pooler).
+  command = "npx prisma generate && if [ -n \"$DATABASE_URL\" ]; then DATABASE_URL=\"$(node scripts/derive-direct-database-url.mjs)\" npx prisma migrate deploy; fi && npm run build"
   publish = ".next"
 
 [build.environment]
