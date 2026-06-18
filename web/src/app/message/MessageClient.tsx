@@ -8,16 +8,23 @@ import {
   ImageIcon,
   Loader2,
   LogOut,
+  Mic,
   Paperclip,
   PenSquare,
   Send,
   Settings,
+  Square,
   User,
   Users,
   Video,
   X,
   ZoomIn,
 } from "lucide-react";
+import { AudioMessagePlayer } from "@/components/message/AudioMessagePlayer";
+import {
+  formatVoiceDuration,
+  useVoiceRecorder,
+} from "@/components/message/useVoiceRecorder";
 import {
   GroupAvatarStack,
   MessengerAvatar,
@@ -68,6 +75,7 @@ type LastMessagePreview = {
   hasAttachment?: boolean;
   isImage?: boolean;
   isVideo?: boolean;
+  isAudio?: boolean;
 };
 
 type MessageAttachment = {
@@ -88,7 +96,7 @@ type ChatMessage = {
 };
 
 const ACCEPTED_FILE_TYPES =
-  "image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime,.pdf,.txt,.zip,.doc,.docx,.xls,.xlsx,.ppt,.pptx";
+  "image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime,audio/webm,audio/ogg,audio/mp4,audio/mpeg,.pdf,.txt,.zip,.doc,.docx,.xls,.xlsx,.ppt,.pptx";
 
 function formatFileSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -98,6 +106,10 @@ function formatFileSize(bytes: number) {
 
 function isVideoAttachment(attachment: MessageAttachment | null | undefined) {
   return Boolean(attachment?.mimeType.startsWith("video/"));
+}
+
+function isAudioAttachment(attachment: MessageAttachment | null | undefined) {
+  return Boolean(attachment?.mimeType.startsWith("audio/"));
 }
 
 function isMediaAttachment(attachment: MessageAttachment | null | undefined) {
@@ -216,6 +228,7 @@ function MessageBubble({
   const attachment = message.attachment;
   const isImage = isImageAttachment(attachment);
   const isVideo = isVideoAttachment(attachment);
+  const isAudio = isAudioAttachment(attachment);
 
   return (
     <div className={`max-w-[min(92%,28rem)] ${showSender ? "space-y-1" : ""}`}>
@@ -284,7 +297,11 @@ function MessageBubble({
           </button>
         )}
 
-        {attachment && !isMediaAttachment(attachment) && (
+        {attachment && isAudio && (
+          <AudioMessagePlayer url={attachment.url} isMine={message.isMine} />
+        )}
+
+        {attachment && !isMediaAttachment(attachment) && !isAudio && (
         <a
           href={attachment.url}
           download={attachment.fileName}
@@ -339,6 +356,7 @@ function PendingAttachmentPreview({
 }) {
   const isImage = file.type.startsWith("image/");
   const isVideo = file.type.startsWith("video/");
+  const isAudio = file.type.startsWith("audio/");
 
   return (
     <div className="mx-auto mb-3 flex max-w-2xl items-center gap-3 rounded-2xl bg-white/[0.04] p-2 ring-1 ring-white/10">
@@ -358,6 +376,10 @@ function PendingAttachmentPreview({
             muted
             playsInline
           />
+        ) : isAudio && previewUrl ? (
+          <div className="flex h-full w-full items-center justify-center bg-indigo-500/20">
+            <Mic className="h-6 w-6 text-indigo-300" />
+          </div>
         ) : (
           <div className="flex h-full w-full items-center justify-center">
             <FileText className="h-6 w-6 text-white/50" />
@@ -365,9 +387,16 @@ function PendingAttachmentPreview({
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-white/90">{file.name}</p>
-        <p className="text-xs text-white/45">{formatFileSize(file.size)}</p>
+        <p className="truncate text-sm font-medium text-white/90">
+          {isAudio ? "Voice message" : file.name}
+        </p>
+        <p className="text-xs text-white/45">
+          {isAudio && previewUrl ? "Ready to send" : formatFileSize(file.size)}
+        </p>
       </div>
+      {isAudio && previewUrl && (
+        <audio src={previewUrl} controls className="h-8 max-w-[9rem] shrink-0" />
+      )}
       <button
         type="button"
         onClick={onRemove}
@@ -428,6 +457,15 @@ export default function MessageClient() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingPingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const typingRefreshRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const voice = useVoiceRecorder();
+  const {
+    isRecording: isVoiceRecording,
+    seconds: voiceSeconds,
+    error: voiceError,
+    start: startVoice,
+    stop: stopVoice,
+    cancel: cancelVoice,
+  } = voice;
 
   const activeConversation = useMemo(
     () => conversations.find((c) => c.id === activeConversationId) ?? null,
@@ -642,7 +680,11 @@ export default function MessageClient() {
       return;
     }
     setPendingFile(file);
-    if (file.type.startsWith("image/") || file.type.startsWith("video/")) {
+    if (
+      file.type.startsWith("image/") ||
+      file.type.startsWith("video/") ||
+      file.type.startsWith("audio/")
+    ) {
       setPendingPreviewUrl(URL.createObjectURL(file));
     }
   }, []);
@@ -696,7 +738,79 @@ export default function MessageClient() {
     }
   }
 
+  useEffect(() => {
+    return () => {
+      cancelVoice();
+    };
+  }, [cancelVoice]);
+
+  const sendMessageWithFile = useCallback(
+    async (file: File, body: string) => {
+      if (!activeConversationId) return false;
+
+      const formData = new FormData();
+      if (body) formData.append("body", body);
+      formData.append("file", file);
+
+      const res = await fetch(
+        `/api/message/conversations/${activeConversationId}/messages`,
+        { method: "POST", body: formData }
+      );
+      const data = await res.json();
+      if (res.ok && data.message) {
+        setMessages((prev) => [...prev, data.message]);
+        loadConversations();
+        scrollToBottom();
+        return true;
+      }
+      setSendError(data.error ?? "Could not send message. Try again.");
+      return false;
+    },
+    [activeConversationId, loadConversations, scrollToBottom]
+  );
+
+  async function finishVoiceRecording(sendImmediately: boolean) {
+    const elapsed = voiceSeconds;
+    const file = await stopVoice();
+    if (!file) {
+      if (elapsed >= 1) {
+        setSendError("Recording was too short. Hold for at least a moment.");
+      }
+      return;
+    }
+
+    if (sendImmediately && !draft.trim()) {
+      setSending(true);
+      setSendError("");
+      stopTypingPing();
+      void sendPresence({ typing: false });
+      const ok = await sendMessageWithFile(file, "");
+      setSending(false);
+      if (!ok) setPendingAttachment(file);
+      return;
+    }
+
+    setPendingAttachment(file);
+  }
+
+  async function handleMicClick() {
+    if (isVoiceRecording) {
+      await finishVoiceRecording(true);
+      return;
+    }
+    if (pendingFile) {
+      setSendError("Remove the current attachment before recording.");
+      return;
+    }
+    setSendError("");
+    const result = await startVoice();
+    if (!result.ok) {
+      setSendError(result.error);
+    }
+  }
+
   async function handleLogout() {
+    cancelVoice();
     stopTypingPing();
     await sendPresence({ typing: false });
     await fetch("/api/message/auth", { method: "DELETE" });
@@ -870,6 +984,7 @@ export default function MessageClient() {
   }
 
   function selectConversation(id: string) {
+    cancelVoice();
     setActiveConversationId(id);
     setMobileShowChat(true);
     setSendError("");
@@ -1158,7 +1273,9 @@ export default function MessageClient() {
                             ) : null}
                             {preview.hasAttachment && (
                               <span className="inline-flex shrink-0 items-center">
-                                {preview.isVideo ? (
+                                {preview.isAudio ? (
+                                  <Mic className="h-3.5 w-3.5" />
+                                ) : preview.isVideo ? (
                                   <Video className="h-3.5 w-3.5" />
                                 ) : preview.isImage ? (
                                   <ImageIcon className="h-3.5 w-3.5" />
@@ -1304,7 +1421,42 @@ export default function MessageClient() {
                 composeDragOver ? "bg-indigo-500/5 ring-1 ring-inset ring-indigo-400/30" : ""
               }`}
             >
-              {sendError && (
+              {(voiceError || sendError) && !isVoiceRecording && (
+                <p className="mx-auto mb-2 max-w-2xl rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-300 ring-1 ring-red-500/20">
+                  {voiceError ?? sendError}
+                </p>
+              )}
+              {isVoiceRecording ? (
+                <div className="mx-auto flex max-w-2xl items-center gap-3 rounded-2xl bg-red-500/10 px-4 py-3 ring-1 ring-red-500/25">
+                  <span className="relative flex h-3 w-3 shrink-0">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                    <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-white">Recording…</p>
+                    <p className="text-xs tabular-nums text-white/50">
+                      {formatVoiceDuration(voiceSeconds)}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => cancelVoice()}
+                    className="rounded-xl px-3 py-2 text-sm font-medium text-white/70 transition hover:bg-white/8"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => finishVoiceRecording(true)}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-white px-3 py-2 text-sm font-semibold text-black transition hover:bg-white/90"
+                  >
+                    <Square className="h-3.5 w-3.5 fill-current" />
+                    Send
+                  </button>
+                </div>
+              ) : (
+                <>
+              {sendError && !voiceError && (
                 <p className="mx-auto mb-2 max-w-2xl rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-300 ring-1 ring-red-500/20">
                   {sendError}
                 </p>
@@ -1328,12 +1480,22 @@ export default function MessageClient() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={sending}
+                  disabled={sending || isVoiceRecording}
                   className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white/50 transition hover:bg-white/8 hover:text-white disabled:opacity-40"
                   aria-label="Attach file"
                   title="Attach image or file"
                 >
                   <Paperclip className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleMicClick}
+                  disabled={sending}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white/50 transition hover:bg-white/8 hover:text-white disabled:opacity-40"
+                  aria-label="Record voice message"
+                  title="Record voice message"
+                >
+                  <Mic className="h-5 w-5" />
                 </button>
                 <textarea
                   ref={textareaRef}
@@ -1365,6 +1527,8 @@ export default function MessageClient() {
                   )}
                 </button>
               </div>
+                </>
+              )}
             </form>
           </>
         )}

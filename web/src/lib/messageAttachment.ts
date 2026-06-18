@@ -9,6 +9,12 @@ const ALLOWED_MIME_TYPES = new Set([
   "video/mp4",
   "video/webm",
   "video/quicktime",
+  "audio/webm",
+  "audio/ogg",
+  "audio/mp4",
+  "audio/mpeg",
+  "audio/aac",
+  "audio/x-m4a",
   "application/pdf",
   "text/plain",
   "application/zip",
@@ -34,8 +40,20 @@ export function isVideoMimeType(mimeType: string | null | undefined): boolean {
   return Boolean(mimeType?.startsWith("video/"));
 }
 
+export function isAudioMimeType(mimeType: string | null | undefined): boolean {
+  return Boolean(mimeType?.startsWith("audio/"));
+}
+
 export function isMediaMimeType(mimeType: string | null | undefined): boolean {
   return isImageMimeType(mimeType) || isVideoMimeType(mimeType);
+}
+
+export function shouldServeAttachmentInline(mimeType: string | null | undefined): boolean {
+  return (
+    isImageMimeType(mimeType) ||
+    isVideoMimeType(mimeType) ||
+    isAudioMimeType(mimeType)
+  );
 }
 
 export function sanitizeAttachmentFileName(fileName: string): string {
@@ -53,9 +71,15 @@ export function inferMimeType(file: File): string {
   if (lower.endsWith(".png")) return "image/png";
   if (lower.endsWith(".gif")) return "image/gif";
   if (lower.endsWith(".webp")) return "image/webp";
+  if (lower.endsWith(".mp4") && lower.includes("voice")) return "audio/mp4";
   if (lower.endsWith(".mp4")) return "video/mp4";
+  if (lower.endsWith(".webm") && lower.includes("voice")) return "audio/webm";
   if (lower.endsWith(".webm")) return "video/webm";
   if (lower.endsWith(".mov")) return "video/quicktime";
+  if (lower.endsWith(".m4a")) return "audio/mp4";
+  if (lower.endsWith(".mp3")) return "audio/mpeg";
+  if (lower.endsWith(".ogg")) return "audio/ogg";
+  if (lower.endsWith(".wav")) return "audio/wav";
   if (lower.endsWith(".pdf")) return "application/pdf";
   if (lower.endsWith(".txt")) return "text/plain";
   if (lower.endsWith(".zip")) return "application/zip";
@@ -73,8 +97,14 @@ export function validateMessageAttachment(file: File): string | null {
   }
 
   const mimeType = inferMimeType(file);
+  if (mimeType.startsWith("audio/")) {
+    if (!ALLOWED_MIME_TYPES.has(mimeType)) {
+      return "That audio format is not supported.";
+    }
+    return null;
+  }
   if (!ALLOWED_MIME_TYPES.has(mimeType)) {
-    return "That file type is not supported. Try an image, video, PDF, or common document.";
+    return "That file type is not supported. Try an image, video, audio, PDF, or common document.";
   }
 
   return null;
@@ -111,6 +141,7 @@ export function validateAvatarFile(file: File): string | null {
 export function formatMessagePreview(body: string, mimeType: string | null, fileName: string | null): string {
   const trimmedBody = body.trim();
   if (trimmedBody) return trimmedBody;
+  if (isAudioMimeType(mimeType)) return "Voice message";
   if (isVideoMimeType(mimeType)) return "Video";
   if (isImageMimeType(mimeType)) return "Photo";
   if (fileName) return fileName;

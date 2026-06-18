@@ -4,6 +4,7 @@ import {
 } from "@/lib/messageAccess";
 import {
   formatMessagePreview,
+  isAudioMimeType,
   isImageMimeType,
   isVideoMimeType,
 } from "@/lib/messageAttachment";
@@ -35,6 +36,8 @@ export function serializeLastMessagePreview(
     hasAttachment && isImageMimeType(message.attachmentMimeType);
   const isVideo =
     hasAttachment && isVideoMimeType(message.attachmentMimeType);
+  const isAudio =
+    hasAttachment && isAudioMimeType(message.attachmentMimeType);
 
   return {
     body: formatMessagePreview(
@@ -47,6 +50,7 @@ export function serializeLastMessagePreview(
     hasAttachment,
     isImage: Boolean(isImage),
     isVideo: Boolean(isVideo),
+    isAudio: Boolean(isAudio),
   };
 }
 
