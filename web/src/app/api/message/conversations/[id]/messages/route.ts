@@ -4,15 +4,15 @@ import {
   sanitizeAttachmentFileName,
   validateMessageAttachment,
 } from "@/lib/messageAttachment";
+import { getConversationForMember } from "@/lib/messageAccess";
 import {
   getMessageUserId,
   unauthorizedMessageResponse,
 } from "@/lib/messageAuth";
 import {
-  isUserOnline,
-  isUserTypingInConversation,
-} from "@/lib/messagePresence";
-import { serializeChatMessage } from "@/lib/messageSerialize";
+  serializeChatMessage,
+  serializeConversationDetail,
+} from "@/lib/messageSerialize";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -27,44 +27,15 @@ const MESSAGE_SELECT = {
   attachmentFileName: true,
   attachmentMimeType: true,
   attachmentSizeBytes: true,
-  sender: { select: { username: true } },
+  sender: { select: { id: true, username: true, avatarMimeType: true } },
 } as const;
-
-async function getConversationForUser(conversationId: string, userId: string) {
-  return prisma.conversation.findFirst({
-    where: {
-      id: conversationId,
-      OR: [{ participantAId: userId }, { participantBId: userId }],
-    },
-    include: {
-      participantA: {
-        select: {
-          id: true,
-          username: true,
-          lastSeenAt: true,
-          typingConversationId: true,
-          typingExpiresAt: true,
-        },
-      },
-      participantB: {
-        select: {
-          id: true,
-          username: true,
-          lastSeenAt: true,
-          typingConversationId: true,
-          typingExpiresAt: true,
-        },
-      },
-    },
-  });
-}
 
 export async function GET(request: NextRequest, context: RouteContext) {
   const userId = getMessageUserId(request);
   if (!userId) return unauthorizedMessageResponse();
 
   const { id } = await context.params;
-  const conversation = await getConversationForUser(id, userId);
+  const conversation = await getConversationForMember(id, userId);
   if (!conversation) {
     return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
   }
@@ -75,30 +46,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
     select: MESSAGE_SELECT,
   });
 
-  const other =
-    conversation.participantA.id === userId
-      ? conversation.participantB
-      : conversation.participantA;
-
   await prisma.messengerUser.update({
     where: { id: userId },
     data: { lastSeenAt: new Date() },
   });
 
   return NextResponse.json({
-    conversation: {
-      id: conversation.id,
-      otherUser: {
-        id: other.id,
-        username: other.username,
-        isOnline: isUserOnline(other.lastSeenAt),
-        isTyping: isUserTypingInConversation(
-          other.typingConversationId,
-          other.typingExpiresAt,
-          id
-        ),
-      },
-    },
+    conversation: serializeConversationDetail(conversation, userId, id),
     messages: messages.map((m) => serializeChatMessage(m, id, userId)),
   });
 }
@@ -108,7 +62,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   if (!userId) return unauthorizedMessageResponse();
 
   const { id } = await context.params;
-  const conversation = await getConversationForUser(id, userId);
+  const conversation = await getConversationForMember(id, userId);
   if (!conversation) {
     return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
   }

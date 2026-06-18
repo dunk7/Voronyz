@@ -119,26 +119,48 @@ model MessengerUser {
   lastSeenAt           DateTime?
   typingConversationId String?
   typingExpiresAt      DateTime?
+  avatarMimeType       String?
+  avatarData           Bytes?
 
-  sentMessages     Message[]
-  conversationsAsA Conversation[] @relation("MessengerParticipantA")
-  conversationsAsB Conversation[] @relation("MessengerParticipantB")
+  sentMessages        Message[]
+  conversationMembers ConversationMember[]
+  conversationsAsA    Conversation[] @relation("MessengerParticipantA")
+  conversationsAsB    Conversation[] @relation("MessengerParticipantB")
+  createdConversations Conversation[] @relation("ConversationCreator")
 }
 
 model Conversation {
-  id             String   @id @default(cuid())
-  participantAId String
-  participantBId String
-  participantA   MessengerUser @relation("MessengerParticipantA", fields: [participantAId], references: [id], onDelete: Cascade)
-  participantB   MessengerUser @relation("MessengerParticipantB", fields: [participantBId], references: [id], onDelete: Cascade)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id             String    @id @default(cuid())
+  isGroup        Boolean   @default(false)
+  name           String?
+  createdById    String?
+  createdBy      MessengerUser? @relation("ConversationCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  participantAId String?
+  participantBId String?
+  participantA   MessengerUser? @relation("MessengerParticipantA", fields: [participantAId], references: [id], onDelete: Cascade)
+  participantB   MessengerUser? @relation("MessengerParticipantB", fields: [participantBId], references: [id], onDelete: Cascade)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  members        ConversationMember[]
   messages       Message[]
 
   @@unique([participantAId, participantBId])
   @@index([participantAId])
   @@index([participantBId])
   @@index([updatedAt])
+}
+
+model ConversationMember {
+  id             String        @id @default(cuid())
+  conversationId String
+  userId         String
+  conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           MessengerUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt       DateTime      @default(now())
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+  @@index([conversationId])
 }
 
 model Message {

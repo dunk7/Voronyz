@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getConversationForMember } from "@/lib/messageAccess";
 import {
   getMessageUserId,
   unauthorizedMessageResponse,
@@ -33,13 +34,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (typing) {
-    const conversation = await prisma.conversation.findFirst({
-      where: {
-        id: conversationId,
-        OR: [{ participantAId: userId }, { participantBId: userId }],
-      },
-      select: { id: true },
-    });
+    const conversation = await getConversationForMember(conversationId, userId);
     if (!conversation) {
       return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
     }
@@ -70,48 +65,32 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const conversation = await prisma.conversation.findFirst({
-    where: {
-      id: conversationId,
-      OR: [{ participantAId: userId }, { participantBId: userId }],
-    },
-    select: {
-      participantAId: true,
-      participantBId: true,
-      participantA: {
-        select: {
-          id: true,
-          lastSeenAt: true,
-          typingConversationId: true,
-          typingExpiresAt: true,
-        },
-      },
-      participantB: {
-        select: {
-          id: true,
-          lastSeenAt: true,
-          typingConversationId: true,
-          typingExpiresAt: true,
-        },
-      },
-    },
-  });
-
+  const conversation = await getConversationForMember(conversationId, userId);
   if (!conversation) {
     return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
   }
 
-  const other =
-    conversation.participantAId === userId
-      ? conversation.participantB
-      : conversation.participantA;
+  const others = conversation.members
+    .map((m) => m.user)
+    .filter((u) => u.id !== userId);
+
+  const typingUsers = others
+    .filter((u) =>
+      isUserTypingInConversation(
+        u.typingConversationId,
+        u.typingExpiresAt,
+        conversationId
+      )
+    )
+    .map((u) => u.username);
+
+  const isOnline = conversation.isGroup
+    ? others.some((u) => isUserOnline(u.lastSeenAt))
+    : isUserOnline(others[0]?.lastSeenAt);
 
   return NextResponse.json({
-    isOnline: isUserOnline(other.lastSeenAt),
-    isTyping: isUserTypingInConversation(
-      other.typingConversationId,
-      other.typingExpiresAt,
-      conversationId
-    ),
+    isOnline,
+    isTyping: typingUsers.length > 0,
+    typingUsers,
   });
 }

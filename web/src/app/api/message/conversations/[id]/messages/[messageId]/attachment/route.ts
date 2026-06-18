@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   contentDispositionForAttachment,
-  isImageMimeType,
+  isMediaMimeType,
 } from "@/lib/messageAttachment";
 import {
   getMessageUserId,
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       id: messageId,
       conversationId,
       conversation: {
-        OR: [{ participantAId: userId }, { participantBId: userId }],
+        members: { some: { userId } },
       },
     },
     select: {
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const buffer = Buffer.isBuffer(message.attachmentData)
     ? message.attachmentData
     : Buffer.from(message.attachmentData);
-  const inline = isImageMimeType(mimeType);
+  const inline = isMediaMimeType(mimeType);
 
   return new NextResponse(new Uint8Array(buffer), {
     status: 200,

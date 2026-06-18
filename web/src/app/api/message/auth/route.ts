@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
   const user = await prisma.messengerUser.findUnique({
     where: { id: userId },
-    select: { id: true, username: true },
+    select: { id: true, username: true, avatarMimeType: true },
   });
 
   if (!user) {
@@ -25,7 +25,13 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     authenticated: true,
-    user: { id: user.id, username: user.username },
+    user: {
+      id: user.id,
+      username: user.username,
+      avatarUrl: user.avatarMimeType
+        ? `/api/message/users/${user.id}/avatar`
+        : null,
+    },
   });
 }
 

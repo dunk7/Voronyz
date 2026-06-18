@@ -3,6 +3,7 @@
 import Image from "next/image";
 import {
   ArrowLeft,
+  Camera,
   FileText,
   ImageIcon,
   Loader2,
@@ -10,10 +11,21 @@ import {
   Paperclip,
   PenSquare,
   Send,
+  Settings,
   User,
+  Users,
+  Video,
   X,
   ZoomIn,
 } from "lucide-react";
+import {
+  GroupAvatarStack,
+  MessengerAvatar,
+} from "@/components/message/MessengerAvatar";
+import {
+  MediaViewer,
+  type MediaViewerItem,
+} from "@/components/message/MediaViewer";
 import {
   useCallback,
   useEffect,
@@ -22,19 +34,40 @@ import {
   useState,
 } from "react";
 
-type AuthUser = { id: string; username: string };
+type AuthUser = { id: string; username: string; avatarUrl?: string | null };
 
-type ConversationPreview = {
+type ConversationMemberPreview = {
   id: string;
-  otherUser: { id: string; username: string; isOnline?: boolean };
-  lastMessage: {
-    body: string;
-    createdAt: string;
-    isMine: boolean;
-    hasAttachment?: boolean;
-    isImage?: boolean;
-  } | null;
-  updatedAt: string;
+  username: string;
+  avatarUrl?: string | null;
+  isOnline?: boolean;
+};
+
+type ConversationPreview =
+  | {
+      id: string;
+      isGroup: false;
+      otherUser: ConversationMemberPreview;
+      lastMessage: LastMessagePreview | null;
+      updatedAt: string;
+    }
+  | {
+      id: string;
+      isGroup: true;
+      name: string;
+      members: ConversationMemberPreview[];
+      memberCount: number;
+      lastMessage: LastMessagePreview | null;
+      updatedAt: string;
+    };
+
+type LastMessagePreview = {
+  body: string;
+  createdAt: string;
+  isMine: boolean;
+  hasAttachment?: boolean;
+  isImage?: boolean;
+  isVideo?: boolean;
 };
 
 type MessageAttachment = {
@@ -50,11 +83,12 @@ type ChatMessage = {
   createdAt: string;
   isMine: boolean;
   senderUsername: string;
+  senderAvatarUrl?: string | null;
   attachment: MessageAttachment | null;
 };
 
 const ACCEPTED_FILE_TYPES =
-  "image/jpeg,image/png,image/gif,image/webp,.pdf,.txt,.zip,.doc,.docx,.xls,.xlsx,.ppt,.pptx";
+  "image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime,.pdf,.txt,.zip,.doc,.docx,.xls,.xlsx,.ppt,.pptx";
 
 function formatFileSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -62,8 +96,12 @@ function formatFileSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function isImageAttachment(attachment: MessageAttachment | null | undefined) {
-  return Boolean(attachment?.mimeType.startsWith("image/"));
+function isVideoAttachment(attachment: MessageAttachment | null | undefined) {
+  return Boolean(attachment?.mimeType.startsWith("video/"));
+}
+
+function isMediaAttachment(attachment: MessageAttachment | null | undefined) {
+  return isImageAttachment(attachment) || isVideoAttachment(attachment);
 }
 
 function formatMessageTime(iso: string) {
@@ -89,6 +127,16 @@ function formatMessageTime(iso: string) {
   }).format(date);
 }
 
+function isImageAttachment(attachment: MessageAttachment | null | undefined) {
+  return Boolean(attachment?.mimeType.startsWith("image/"));
+}
+
+function conversationTitle(conversation: ConversationPreview) {
+  return conversation.isGroup
+    ? conversation.name
+    : `@${conversation.otherUser.username}`;
+}
+
 function formatListTime(iso: string) {
   const date = new Date(iso);
   const now = new Date();
@@ -108,58 +156,27 @@ function formatListTime(iso: string) {
   }).format(date);
 }
 
-function Avatar({
-  username,
-  online,
-  size = "md",
-}: {
-  username: string;
-  online?: boolean;
-  size?: "md" | "sm";
-}) {
-  const letter = username.charAt(0).toUpperCase();
-  const hue =
-    username.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % 360;
-  const dimensions = size === "sm" ? "h-9 w-9 text-xs" : "h-11 w-11 text-sm";
-  const dotSize = size === "sm" ? "h-2.5 w-2.5" : "h-3 w-3";
-
-  return (
-    <div className="relative shrink-0">
-      <div
-        className={`flex ${dimensions} items-center justify-center rounded-full font-semibold text-white shadow-inner`}
-        style={{
-          background: `linear-gradient(135deg, hsl(${hue} 45% 42%), hsl(${(hue + 40) % 360} 50% 32%))`,
-        }}
-        aria-hidden
-      >
-        {letter}
-      </div>
-      {online && (
-        <span
-          className={`absolute bottom-0 right-0 ${dotSize} rounded-full border-2 border-[#0e0e10] bg-emerald-400`}
-          title="Online"
-        />
-      )}
-    </div>
-  );
-}
-
-function TypingIndicator() {
+function TypingIndicator({ label }: { label?: string }) {
   return (
     <div className="flex justify-start">
-      <div className="flex items-center gap-1 rounded-2xl rounded-bl-md bg-white/[0.08] px-4 py-3.5 ring-1 ring-white/8">
-        <span
-          className="h-2 w-2 animate-bounce rounded-full bg-white/55"
-          style={{ animationDelay: "0ms", animationDuration: "1s" }}
-        />
-        <span
-          className="h-2 w-2 animate-bounce rounded-full bg-white/55"
-          style={{ animationDelay: "150ms", animationDuration: "1s" }}
-        />
-        <span
-          className="h-2 w-2 animate-bounce rounded-full bg-white/55"
-          style={{ animationDelay: "300ms", animationDuration: "1s" }}
-        />
+      <div className="rounded-2xl rounded-bl-md bg-white/[0.08] px-4 py-3 ring-1 ring-white/8">
+        {label && (
+          <p className="mb-1.5 text-[11px] text-white/45">{label}</p>
+        )}
+        <div className="flex items-center gap-1">
+          <span
+            className="h-2 w-2 animate-bounce rounded-full bg-white/55"
+            style={{ animationDelay: "0ms", animationDuration: "1s" }}
+          />
+          <span
+            className="h-2 w-2 animate-bounce rounded-full bg-white/55"
+            style={{ animationDelay: "150ms", animationDuration: "1s" }}
+          />
+          <span
+            className="h-2 w-2 animate-bounce rounded-full bg-white/55"
+            style={{ animationDelay: "300ms", animationDuration: "1s" }}
+          />
+        </div>
       </div>
     </div>
   );
@@ -188,43 +205,86 @@ function VoronyzLogoMark({
 
 function MessageBubble({
   message,
-  onImageClick,
+  onMediaClick,
+  showSender,
 }: {
   message: ChatMessage;
-  onImageClick: (url: string) => void;
+  onMediaClick: (item: MediaViewerItem) => void;
+  showSender?: boolean;
 }) {
   const hasText = Boolean(message.body.trim());
   const attachment = message.attachment;
   const isImage = isImageAttachment(attachment);
+  const isVideo = isVideoAttachment(attachment);
 
   return (
-    <div
-      className={`max-w-[min(85%,28rem)] overflow-hidden rounded-2xl shadow-sm ${
-        message.isMine
-          ? "rounded-br-md bg-indigo-500 text-white"
-          : "rounded-bl-md bg-white/[0.08] text-white/90 ring-1 ring-white/8"
-      }`}
-    >
-      {attachment && isImage && (
-        <button
-          type="button"
-          onClick={() => onImageClick(attachment.url)}
-          className="group relative block w-full text-left"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={attachment.url}
-            alt={attachment.fileName}
-            className="max-h-72 w-full object-cover"
-            loading="lazy"
-          />
-          <span className="absolute inset-0 flex items-center justify-center bg-black/0 transition group-hover:bg-black/25">
-            <ZoomIn className="h-8 w-8 text-white opacity-0 drop-shadow transition group-hover:opacity-100" />
-          </span>
-        </button>
+    <div className={`max-w-[min(92%,28rem)] ${showSender ? "space-y-1" : ""}`}>
+      {showSender && !message.isMine && (
+        <p className="px-1 text-[11px] font-medium text-white/45">
+          @{message.senderUsername}
+        </p>
       )}
+      <div
+        className={`overflow-hidden rounded-2xl shadow-sm ${
+          message.isMine
+            ? "rounded-br-md bg-indigo-500 text-white"
+            : "rounded-bl-md bg-white/[0.08] text-white/90 ring-1 ring-white/8"
+        }`}
+      >
+        {attachment && isImage && (
+          <button
+            type="button"
+            onClick={() =>
+              onMediaClick({
+                url: attachment.url,
+                mimeType: attachment.mimeType,
+                fileName: attachment.fileName,
+              })
+            }
+            className="group relative block w-full touch-manipulation text-left"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={attachment.url}
+              alt={attachment.fileName}
+              className="max-h-64 w-full object-cover sm:max-h-72"
+              loading="lazy"
+            />
+            <span className="absolute inset-0 flex items-center justify-center bg-black/0 transition group-hover:bg-black/25 group-active:bg-black/25">
+              <ZoomIn className="h-8 w-8 text-white opacity-70 drop-shadow transition sm:opacity-0 sm:group-hover:opacity-100" />
+            </span>
+          </button>
+        )}
 
-      {attachment && !isImage && (
+        {attachment && isVideo && (
+          <button
+            type="button"
+            onClick={() =>
+              onMediaClick({
+                url: attachment.url,
+                mimeType: attachment.mimeType,
+                fileName: attachment.fileName,
+              })
+            }
+            className="group relative block w-full touch-manipulation text-left"
+          >
+            {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+            <video
+              src={attachment.url}
+              className="max-h-64 w-full bg-black object-contain sm:max-h-72"
+              muted
+              playsInline
+              preload="metadata"
+            />
+            <span className="absolute inset-0 flex items-center justify-center bg-black/25">
+              <div className="rounded-full bg-black/50 p-3 ring-1 ring-white/20">
+                <Video className="h-7 w-7 text-white" />
+              </div>
+            </span>
+          </button>
+        )}
+
+        {attachment && !isMediaAttachment(attachment) && (
         <a
           href={attachment.url}
           download={attachment.fileName}
@@ -263,6 +323,7 @@ function MessageBubble({
           {message.body}
         </p>
       )}
+      </div>
     </div>
   );
 }
@@ -277,6 +338,7 @@ function PendingAttachmentPreview({
   onRemove: () => void;
 }) {
   const isImage = file.type.startsWith("image/");
+  const isVideo = file.type.startsWith("video/");
 
   return (
     <div className="mx-auto mb-3 flex max-w-2xl items-center gap-3 rounded-2xl bg-white/[0.04] p-2 ring-1 ring-white/10">
@@ -287,6 +349,14 @@ function PendingAttachmentPreview({
             src={previewUrl}
             alt=""
             className="h-full w-full object-cover"
+          />
+        ) : isVideo && previewUrl ? (
+          // eslint-disable-next-line jsx-a11y/media-has-caption
+          <video
+            src={previewUrl}
+            className="h-full w-full object-cover"
+            muted
+            playsInline
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
@@ -331,18 +401,28 @@ export default function MessageClient() {
   const [sendError, setSendError] = useState("");
 
   const [showNewMessage, setShowNewMessage] = useState(false);
+  const [newMessageMode, setNewMessageMode] = useState<"direct" | "group">("direct");
   const [newRecipient, setNewRecipient] = useState("");
+  const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupMembers, setNewGroupMembers] = useState("");
   const [newMessageBody, setNewMessageBody] = useState("");
   const [newMessageError, setNewMessageError] = useState("");
   const [newMessageSubmitting, setNewMessageSubmitting] = useState(false);
+
+  const [showProfile, setShowProfile] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const [mobileShowChat, setMobileShowChat] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(null);
   const [composeDragOver, setComposeDragOver] = useState(false);
-  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
-  const [otherIsOnline, setOtherIsOnline] = useState(false);
-  const [otherIsTyping, setOtherIsTyping] = useState(false);
+  const [mediaViewer, setMediaViewer] = useState<MediaViewerItem | null>(null);
+  const [chatPresence, setChatPresence] = useState<{
+    isOnline: boolean;
+    typingUsers: string[];
+  }>({ isOnline: false, typingUsers: [] });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -402,9 +482,22 @@ export default function MessageClient() {
         if (!res.ok) return;
         const data = await res.json();
         setMessages(data.messages ?? []);
-        if (data.conversation?.otherUser) {
-          setOtherIsOnline(Boolean(data.conversation.otherUser.isOnline));
-          setOtherIsTyping(Boolean(data.conversation.otherUser.isTyping));
+        if (data.conversation) {
+          const conv = data.conversation;
+          if (conv.isGroup) {
+            setChatPresence({
+              isOnline: conv.members.some((m: ConversationMemberPreview) => m.isOnline),
+              typingUsers:
+                conv.typingUsers?.map((t: { username: string }) => t.username) ?? [],
+            });
+          } else if (conv.otherUser) {
+            setChatPresence({
+              isOnline: Boolean(conv.otherUser.isOnline),
+              typingUsers:
+                conv.typingUsers?.map((t: { username: string }) => t.username) ??
+                (conv.otherUser.isTyping ? [conv.otherUser.username] : []),
+            });
+          }
         }
       } catch {
         /* ignore */
@@ -506,8 +599,16 @@ export default function MessageClient() {
   ]);
 
   useEffect(() => {
-    if (otherIsTyping) scrollToBottom();
-  }, [otherIsTyping, scrollToBottom]);
+    if (chatPresence.typingUsers.length > 0) scrollToBottom();
+  }, [chatPresence.typingUsers, scrollToBottom]);
+
+  const typingLabel = useMemo(() => {
+    const users = chatPresence.typingUsers;
+    if (users.length === 0) return undefined;
+    if (users.length === 1) return `@${users[0]} is typing…`;
+    if (users.length === 2) return `@${users[0]} and @${users[1]} are typing…`;
+    return "Several people are typing…";
+  }, [chatPresence.typingUsers]);
 
   useEffect(() => {
     if (!messagesLoading && messages.length > 0) {
@@ -541,7 +642,7 @@ export default function MessageClient() {
       return;
     }
     setPendingFile(file);
-    if (file.type.startsWith("image/")) {
+    if (file.type.startsWith("image/") || file.type.startsWith("video/")) {
       setPendingPreviewUrl(URL.createObjectURL(file));
     }
   }, []);
@@ -669,13 +770,26 @@ export default function MessageClient() {
     setNewMessageError("");
     setNewMessageSubmitting(true);
     try {
+      const payload =
+        newMessageMode === "group"
+          ? {
+              type: "group",
+              name: newGroupName.trim(),
+              memberUsernames: newGroupMembers
+                .split(/[,\s]+/)
+                .map((s) => s.trim().replace(/^@/, ""))
+                .filter(Boolean),
+              body: newMessageBody.trim() || undefined,
+            }
+          : {
+              recipientUsername: newRecipient.trim().toLowerCase(),
+              body: newMessageBody.trim() || undefined,
+            };
+
       const res = await fetch("/api/message/conversations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          recipientUsername: newRecipient.trim().toLowerCase(),
-          body: newMessageBody.trim() || undefined,
-        }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -692,6 +806,8 @@ export default function MessageClient() {
       setMobileShowChat(true);
       setShowNewMessage(false);
       setNewRecipient("");
+      setNewGroupName("");
+      setNewGroupMembers("");
       setNewMessageBody("");
       await loadMessages(conversation.id);
       await loadConversations();
@@ -699,6 +815,57 @@ export default function MessageClient() {
       setNewMessageError("Could not connect. Please try again.");
     } finally {
       setNewMessageSubmitting(false);
+    }
+  }
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarError("");
+    setAvatarUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("avatar", file);
+      const res = await fetch("/api/message/profile", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setAvatarError(data.error ?? "Could not update profile picture.");
+        return;
+      }
+      setUser(data.user);
+      await loadConversations();
+    } catch {
+      setAvatarError("Could not upload. Try again.");
+    } finally {
+      setAvatarUploading(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
+    }
+  }
+
+  async function handleRemoveAvatar() {
+    setAvatarError("");
+    setAvatarUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("remove", "true");
+      const res = await fetch("/api/message/profile", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setAvatarError(data.error ?? "Could not remove profile picture.");
+        return;
+      }
+      setUser(data.user);
+      await loadConversations();
+    } catch {
+      setAvatarError("Could not remove avatar.");
+    } finally {
+      setAvatarUploading(false);
     }
   }
 
@@ -867,13 +1034,27 @@ export default function MessageClient() {
           mobileShowChat ? "hidden md:flex" : "flex"
         }`}
       >
-        <div className="flex items-center justify-between border-b border-white/8 px-4 py-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-white/40">
-              Signed in
-            </p>
-            <p className="font-medium text-white">@{user.username}</p>
-          </div>
+        <div className="flex items-center justify-between border-b border-white/8 px-4 py-4 pt-[max(1rem,env(safe-area-inset-top))]">
+          <button
+            type="button"
+            onClick={() => {
+              setShowProfile(true);
+              setAvatarError("");
+            }}
+            className="flex min-w-0 items-center gap-3 rounded-xl py-1 pr-2 text-left transition hover:bg-white/5"
+          >
+            <MessengerAvatar
+              username={user.username}
+              avatarUrl={user.avatarUrl}
+              size="sm"
+            />
+            <div className="min-w-0">
+              <p className="text-xs uppercase tracking-[0.2em] text-white/40">
+                Signed in
+              </p>
+              <p className="truncate font-medium text-white">@{user.username}</p>
+            </div>
+          </button>
           <div className="flex items-center gap-1">
             <button
               type="button"
@@ -885,6 +1066,17 @@ export default function MessageClient() {
               title="New message"
             >
               <PenSquare className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowProfile(true);
+                setAvatarError("");
+              }}
+              className="rounded-xl p-2.5 text-white/70 transition hover:bg-white/8 hover:text-white"
+              title="Profile"
+            >
+              <Settings className="h-5 w-5" />
             </button>
             <button
               type="button"
@@ -930,14 +1122,23 @@ export default function MessageClient() {
                           : "hover:bg-white/[0.04]"
                       }`}
                     >
-                      <Avatar
-                        username={conversation.otherUser.username}
-                        online={conversation.otherUser.isOnline}
-                      />
+                      {conversation.isGroup ? (
+                        <GroupAvatarStack
+                          members={conversation.members.filter(
+                            (m) => m.username !== user.username
+                          )}
+                        />
+                      ) : (
+                        <MessengerAvatar
+                          username={conversation.otherUser.username}
+                          avatarUrl={conversation.otherUser.avatarUrl}
+                          online={conversation.otherUser.isOnline}
+                        />
+                      )}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-2">
                           <span className="truncate font-medium">
-                            @{conversation.otherUser.username}
+                            {conversationTitle(conversation)}
                           </span>
                           {preview && (
                             <span className="shrink-0 text-[11px] text-white/40">
@@ -945,6 +1146,11 @@ export default function MessageClient() {
                             </span>
                           )}
                         </div>
+                        {conversation.isGroup && (
+                          <p className="mt-0.5 text-[11px] text-white/35">
+                            {conversation.memberCount} members
+                          </p>
+                        )}
                         {preview && (
                           <p className="mt-0.5 flex items-center gap-1 truncate text-sm text-white/45">
                             {preview.isMine ? (
@@ -952,7 +1158,9 @@ export default function MessageClient() {
                             ) : null}
                             {preview.hasAttachment && (
                               <span className="inline-flex shrink-0 items-center">
-                                {preview.isImage ? (
+                                {preview.isVideo ? (
+                                  <Video className="h-3.5 w-3.5" />
+                                ) : preview.isImage ? (
                                   <ImageIcon className="h-3.5 w-3.5" />
                                 ) : (
                                   <Paperclip className="h-3.5 w-3.5" />
@@ -997,7 +1205,7 @@ export default function MessageClient() {
           </div>
         ) : (
           <>
-            <header className="flex items-center gap-3 border-b border-white/8 px-4 py-3.5">
+            <header className="flex items-center gap-3 border-b border-white/8 px-4 py-3.5 pt-[max(0.75rem,env(safe-area-inset-top))]">
               <button
                 type="button"
                 onClick={() => setMobileShowChat(false)}
@@ -1006,18 +1214,29 @@ export default function MessageClient() {
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
-              <Avatar
-                username={activeConversation.otherUser.username}
-                online={otherIsOnline}
-              />
-              <div>
-                <h2 className="font-medium">
-                  @{activeConversation.otherUser.username}
+              {activeConversation.isGroup ? (
+                <GroupAvatarStack
+                  members={activeConversation.members.filter(
+                    (m) => m.username !== user.username
+                  )}
+                />
+              ) : (
+                <MessengerAvatar
+                  username={activeConversation.otherUser.username}
+                  avatarUrl={activeConversation.otherUser.avatarUrl}
+                  online={chatPresence.isOnline}
+                />
+              )}
+              <div className="min-w-0 flex-1">
+                <h2 className="truncate font-medium">
+                  {conversationTitle(activeConversation)}
                 </h2>
-                <p className="text-xs text-white/40">
-                  {otherIsTyping ? (
-                    <span className="text-indigo-300">typing…</span>
-                  ) : otherIsOnline ? (
+                <p className="truncate text-xs text-white/40">
+                  {chatPresence.typingUsers.length > 0 ? (
+                    <span className="text-indigo-300">{typingLabel}</span>
+                  ) : activeConversation.isGroup ? (
+                    `${activeConversation.memberCount} members`
+                  ) : chatPresence.isOnline ? (
                     <span className="text-emerald-400/90">Online</span>
                   ) : (
                     "Offline"
@@ -1026,7 +1245,7 @@ export default function MessageClient() {
               </div>
             </header>
 
-            <div className="flex-1 overflow-y-auto px-4 py-5">
+            <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4 sm:py-5">
               {messagesLoading && messages.length === 0 ? (
                 <div className="flex justify-center py-12">
                   <Loader2 className="h-6 w-6 animate-spin text-white/40" />
@@ -1054,13 +1273,16 @@ export default function MessageClient() {
                         >
                           <MessageBubble
                             message={message}
-                            onImageClick={setLightboxUrl}
+                            onMediaClick={setMediaViewer}
+                            showSender={activeConversation.isGroup}
                           />
                         </div>
                       </div>
                     );
                   })}
-                  {otherIsTyping && <TypingIndicator />}
+                  {chatPresence.typingUsers.length > 0 && (
+                    <TypingIndicator label={typingLabel} />
+                  )}
                   <div ref={messagesEndRef} />
                 </div>
               )}
@@ -1078,7 +1300,7 @@ export default function MessageClient() {
                 }
               }}
               onDrop={handleComposeDrop}
-              className={`border-t border-white/8 bg-[#0e0e10] px-4 py-4 transition ${
+              className={`border-t border-white/8 bg-[#0e0e10] px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] transition sm:px-4 sm:py-4 ${
                 composeDragOver ? "bg-indigo-500/5 ring-1 ring-inset ring-indigo-400/30" : ""
               }`}
             >
@@ -1150,40 +1372,103 @@ export default function MessageClient() {
 
       {/* New message modal */}
       {showNewMessage && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-sm sm:items-center">
           <div
             className="absolute inset-0"
             onClick={() => !newMessageSubmitting && setShowNewMessage(false)}
             aria-hidden
           />
-          <div className="relative w-full max-w-md rounded-3xl bg-[#161618] p-6 ring-1 ring-white/10 shadow-2xl">
-            <h3 className="text-lg font-semibold">New message</h3>
+          <div className="relative max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-3xl bg-[#161618] p-6 ring-1 ring-white/10 shadow-2xl">
+            <h3 className="text-lg font-semibold">New conversation</h3>
             <p className="mt-1 text-sm text-white/50">
-              Enter a username to start chatting.
+              Message someone directly or start a group.
             </p>
 
+            <div className="mt-4 grid grid-cols-2 gap-1 rounded-2xl bg-white/[0.04] p-1">
+              <button
+                type="button"
+                onClick={() => setNewMessageMode("direct")}
+                className={`rounded-xl py-2 text-sm font-medium transition ${
+                  newMessageMode === "direct"
+                    ? "bg-white text-black"
+                    : "text-white/60 hover:text-white"
+                }`}
+              >
+                Direct
+              </button>
+              <button
+                type="button"
+                onClick={() => setNewMessageMode("group")}
+                className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-medium transition ${
+                  newMessageMode === "group"
+                    ? "bg-white text-black"
+                    : "text-white/60 hover:text-white"
+                }`}
+              >
+                <Users className="h-4 w-4" />
+                Group
+              </button>
+            </div>
+
             <form onSubmit={handleNewMessage} className="mt-5 space-y-4">
-              <label className="block">
-                <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/45">
-                  To
-                </span>
-                <div className="relative">
-                  <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/35">
-                    @
+              {newMessageMode === "direct" ? (
+                <label className="block">
+                  <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/45">
+                    To
                   </span>
-                  <input
-                    type="text"
-                    value={newRecipient}
-                    onChange={(e) => setNewRecipient(e.target.value)}
-                    autoCapitalize="none"
-                    spellCheck={false}
-                    className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-3 pl-8 pr-4 text-white outline-none transition focus:border-white/25 focus:ring-2 focus:ring-white/10"
-                    placeholder="username"
-                    required
-                    autoFocus
-                  />
-                </div>
-              </label>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/35">
+                      @
+                    </span>
+                    <input
+                      type="text"
+                      value={newRecipient}
+                      onChange={(e) => setNewRecipient(e.target.value)}
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-3 pl-8 pr-4 text-white outline-none transition focus:border-white/25 focus:ring-2 focus:ring-white/10"
+                      placeholder="username"
+                      required
+                      autoFocus
+                    />
+                  </div>
+                </label>
+              ) : (
+                <>
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/45">
+                      Group name
+                    </span>
+                    <input
+                      type="text"
+                      value={newGroupName}
+                      onChange={(e) => setNewGroupName(e.target.value)}
+                      className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none transition focus:border-white/25 focus:ring-2 focus:ring-white/10"
+                      placeholder="Weekend crew"
+                      required
+                      autoFocus
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/45">
+                      Members
+                    </span>
+                    <input
+                      type="text"
+                      value={newGroupMembers}
+                      onChange={(e) => setNewGroupMembers(e.target.value)}
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none transition focus:border-white/25 focus:ring-2 focus:ring-white/10"
+                      placeholder="alice, bob, charlie"
+                      required
+                    />
+                    <p className="mt-1.5 text-xs text-white/40">
+                      Separate usernames with commas or spaces.
+                    </p>
+                  </label>
+                </>
+              )}
 
               <label className="block">
                 <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/45">
@@ -1215,13 +1500,18 @@ export default function MessageClient() {
                 </button>
                 <button
                   type="submit"
-                  disabled={newMessageSubmitting || !newRecipient.trim()}
+                  disabled={
+                    newMessageSubmitting ||
+                    (newMessageMode === "direct"
+                      ? !newRecipient.trim()
+                      : !newGroupName.trim() || !newGroupMembers.trim())
+                  }
                   className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-white py-2.5 text-sm font-semibold text-black transition hover:bg-white/90 disabled:opacity-50"
                 >
                   {newMessageSubmitting && (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   )}
-                  Send
+                  Create
                 </button>
               </div>
             </form>
@@ -1229,30 +1519,76 @@ export default function MessageClient() {
         </div>
       )}
 
-      {lightboxUrl && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
-          onClick={() => setLightboxUrl(null)}
-          role="dialog"
-          aria-modal
-          aria-label="Image preview"
-        >
-          <button
-            type="button"
-            onClick={() => setLightboxUrl(null)}
-            className="absolute right-4 top-4 rounded-full bg-white/10 p-2.5 text-white transition hover:bg-white/20"
-            aria-label="Close preview"
-          >
-            <X className="h-5 w-5" />
-          </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={lightboxUrl}
-            alt=""
-            className="max-h-[90vh] max-w-full rounded-lg object-contain shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
+      {showProfile && user && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-sm sm:items-center">
+          <div
+            className="absolute inset-0"
+            onClick={() => !avatarUploading && setShowProfile(false)}
+            aria-hidden
           />
+          <div className="relative w-full max-w-md rounded-3xl bg-[#161618] p-6 ring-1 ring-white/10 shadow-2xl">
+            <h3 className="text-lg font-semibold">Your profile</h3>
+            <p className="mt-1 text-sm text-white/50">@{user.username}</p>
+
+            <div className="mt-6 flex flex-col items-center gap-4">
+              <MessengerAvatar
+                username={user.username}
+                avatarUrl={user.avatarUrl}
+                size="lg"
+              />
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={handleAvatarChange}
+                className="sr-only"
+              />
+              <div className="flex flex-wrap justify-center gap-2">
+                <button
+                  type="button"
+                  disabled={avatarUploading}
+                  onClick={() => avatarInputRef.current?.click()}
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-white/90 disabled:opacity-50"
+                >
+                  {avatarUploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Camera className="h-4 w-4" />
+                  )}
+                  Change photo
+                </button>
+                {user.avatarUrl && (
+                  <button
+                    type="button"
+                    disabled={avatarUploading}
+                    onClick={handleRemoveAvatar}
+                    className="rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-white/70 transition hover:bg-white/5 disabled:opacity-50"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              {avatarError && (
+                <p className="rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-300 ring-1 ring-red-500/20">
+                  {avatarError}
+                </p>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowProfile(false)}
+              disabled={avatarUploading}
+              className="mt-6 w-full rounded-xl border border-white/10 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/5"
+            >
+              Done
+            </button>
+          </div>
         </div>
+      )}
+
+      {mediaViewer && (
+        <MediaViewer item={mediaViewer} onClose={() => setMediaViewer(null)} />
       )}
     </div>
   );
