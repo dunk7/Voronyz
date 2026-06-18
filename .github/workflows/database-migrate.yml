@@ -26,22 +26,18 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
 
-      - name: Require DATABASE_URL
-        if: ${{ secrets.DATABASE_URL == '' }}
-        run: |
-          echo "::warning::DATABASE_URL is not configured in GitHub Actions secrets."
-          echo "Add it under Settings → Secrets → Actions, then re-run this workflow."
-          echo "Or run locally: cd web && npx prisma migrate deploy"
-          exit 0
-
       - name: Install dependencies
-        if: ${{ secrets.DATABASE_URL != '' }}
         run: npm ci
 
       - name: Apply migrations
-        if: ${{ secrets.DATABASE_URL != '' }}
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
+          if [ -z "${DATABASE_URL}" ]; then
+            echo "::warning::DATABASE_URL is not configured in GitHub Actions secrets."
+            echo "Add it under Settings → Secrets → Actions, then re-run this workflow."
+            echo "Or run locally: cd web && npx prisma migrate deploy"
+            exit 0
+          fi
           export DATABASE_URL="$(node scripts/derive-direct-database-url.mjs)"
           npx prisma migrate deploy
