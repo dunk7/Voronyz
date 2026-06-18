@@ -134,6 +134,7 @@ export default function MessageClient() {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
 
   const [showNewMessage, setShowNewMessage] = useState(false);
   const [newRecipient, setNewRecipient] = useState("");
@@ -187,22 +188,25 @@ export default function MessageClient() {
     }
   }, []);
 
-  const loadMessages = useCallback(async (conversationId: string) => {
-    setMessagesLoading(true);
-    try {
-      const res = await fetch(
-        `/api/message/conversations/${conversationId}/messages`,
-        { cache: "no-store" }
-      );
-      if (!res.ok) return;
-      const data = await res.json();
-      setMessages(data.messages ?? []);
-    } catch {
-      /* ignore */
-    } finally {
-      setMessagesLoading(false);
-    }
-  }, []);
+  const loadMessages = useCallback(
+    async (conversationId: string, { silent = false }: { silent?: boolean } = {}) => {
+      if (!silent) setMessagesLoading(true);
+      try {
+        const res = await fetch(
+          `/api/message/conversations/${conversationId}/messages`,
+          { cache: "no-store" }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        setMessages(data.messages ?? []);
+      } catch {
+        /* ignore */
+      } finally {
+        if (!silent) setMessagesLoading(false);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     loadAuth();
@@ -219,7 +223,7 @@ export default function MessageClient() {
     if (!user || !activeConversationId) return;
     loadMessages(activeConversationId);
     const interval = window.setInterval(
-      () => loadMessages(activeConversationId),
+      () => loadMessages(activeConversationId, { silent: true }),
       3000
     );
     return () => window.clearInterval(interval);
@@ -278,6 +282,7 @@ export default function MessageClient() {
 
     const body = draft.trim();
     setSending(true);
+    setSendError("");
     setDraft("");
     try {
       const res = await fetch(
@@ -295,9 +300,11 @@ export default function MessageClient() {
         scrollToBottom();
       } else {
         setDraft(body);
+        setSendError(data.error ?? "Could not send message. Try again.");
       }
     } catch {
       setDraft(body);
+      setSendError("Could not connect. Try again.");
     } finally {
       setSending(false);
       textareaRef.current?.focus();
@@ -345,6 +352,7 @@ export default function MessageClient() {
   function selectConversation(id: string) {
     setActiveConversationId(id);
     setMobileShowChat(true);
+    setSendError("");
   }
 
   function handleTextareaKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -681,11 +689,19 @@ export default function MessageClient() {
               onSubmit={handleSendMessage}
               className="border-t border-white/8 bg-[#0e0e10] px-4 py-4"
             >
+              {sendError && (
+                <p className="mx-auto mb-2 max-w-2xl rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-300 ring-1 ring-red-500/20">
+                  {sendError}
+                </p>
+              )}
               <div className="mx-auto flex max-w-2xl items-end gap-2">
                 <textarea
                   ref={textareaRef}
                   value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
+                  onChange={(e) => {
+                    setDraft(e.target.value);
+                    if (sendError) setSendError("");
+                  }}
                   onKeyDown={handleTextareaKeyDown}
                   rows={1}
                   placeholder="Write a message…"

@@ -90,8 +90,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
     );
   }
 
-  const message = await prisma.$transaction(async (tx) => {
-    const created = await tx.message.create({
+  // Batch transaction — interactive $transaction(async tx => …) fails on Supabase pooler.
+  const [message] = await prisma.$transaction([
+    prisma.message.create({
       data: {
         conversationId: id,
         senderId: userId,
@@ -101,16 +102,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
         id: true,
         body: true,
         createdAt: true,
-        senderId: true,
         sender: { select: { username: true } },
       },
-    });
-    await tx.conversation.update({
+    }),
+    prisma.conversation.update({
       where: { id },
       data: { updatedAt: new Date() },
-    });
-    return created;
-  });
+    }),
+  ]);
 
   return NextResponse.json({
     message: {
