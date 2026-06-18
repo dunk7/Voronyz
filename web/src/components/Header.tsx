@@ -239,7 +239,7 @@ export default function Header() {
     searchInputRef.current?.blur();
   };
 
-  if (pathname?.startsWith("/orders")) {
+  if (pathname?.startsWith("/orders") || pathname?.startsWith("/message")) {
     return null;
   }
 
