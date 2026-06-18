@@ -101,9 +101,11 @@ function Avatar({ username }: { username: string }) {
 function VoronyzLogoMark({
   size = 40,
   className = "",
+  priority = false,
 }: {
   size?: number;
   className?: string;
+  priority?: boolean;
 }) {
   return (
     <Image
@@ -111,6 +113,7 @@ function VoronyzLogoMark({
       alt="Voronyz"
       width={size}
       height={size}
+      priority={priority}
       className={className}
     />
   );
@@ -382,8 +385,11 @@ export default function MessageClient() {
         />
         <div className="relative w-full max-w-md">
           <div className="mb-8 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/15 backdrop-blur">
-              <VoronyzLogoMark size={36} />
+            <div className="mx-auto mb-6 flex flex-col items-center gap-3">
+              <VoronyzLogoMark size={72} priority />
+              <span className="text-base font-semibold tracking-[0.25em] text-white/90">
+                VORONYZ
+              </span>
             </div>
             <h1 className="text-2xl font-semibold tracking-tight text-white">
               Messages
@@ -391,7 +397,7 @@ export default function MessageClient() {
             <p className="mt-2 text-sm text-white/55">
               {authMode === "login"
                 ? "Sign in with your username and password."
-                : "Create a username — no email required."}
+                : "Choose a username and password to get started."}
             </p>
           </div>
 
