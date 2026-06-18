@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { notifyPaidOrder } from "@/lib/adminNotifyEmail";
 import { prisma } from "@/lib/prisma";
 
 const NANO_RPC_URL = process.env.NANO_RPC_URL || "https://rpc.nano.to/";
@@ -252,6 +253,7 @@ async function markPaid(
   });
 
   console.log(`Nano payment confirmed for order ${orderId}: block ${blockHash}`);
+  notifyPaidOrder(orderId);
 
   return NextResponse.json({
     status: "paid",

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import Stripe from "stripe";
+import { notifyPaidOrder } from "@/lib/adminNotifyEmail";
 import { prisma } from "@/lib/prisma";
 
 const stripe = process.env.STRIPE_SECRET_KEY
@@ -269,6 +270,7 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
     });
 
     console.log(`✅ Order created/updated successfully: ${order.id} (Order #${orderNumber}) for session ${session.id}`);
+    notifyPaidOrder(order.id);
     return order;
   } catch (error) {
     console.error(`❌ Failed to handle checkout completion for session ${session.id}:`, error);

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { notifyPaidOrder } from "@/lib/adminNotifyEmail";
 import { preferNonEmptyShipping } from "@/lib/orderTypes";
 import { shippingFromStripeSession } from "@/lib/stripeShipping";
 
@@ -269,6 +270,7 @@ export async function POST(request: NextRequest) {
         },
       });
       console.log(`✅ Order confirm: Order ${order.id} created/updated successfully`);
+      notifyPaidOrder(order.id);
     } catch (dbError) {
       console.error(`❌ Order confirm: Database error for session ${actualSession.id}:`, dbError);
       // If database fails, try to at least return the session data

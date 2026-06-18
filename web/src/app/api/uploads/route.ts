@@ -10,6 +10,7 @@ import {
   verifyTurnstileIfConfigured,
 } from "@/lib/uploadAntiSpam";
 import { buildStlStorageKey } from "@/lib/stlUploadStorage";
+import { notifyNewUpload } from "@/lib/adminNotifyEmail";
 import {
   normalizeCustomizationRequest,
   normalizeUploadEmail,
@@ -140,6 +141,8 @@ export async function POST(request: NextRequest) {
         ipHash,
       },
     });
+
+    notifyNewUpload(row);
 
     return NextResponse.json({
       success: true,
