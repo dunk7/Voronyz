@@ -3,7 +3,9 @@
 import Image from "next/image";
 import {
   ArrowLeft,
+  ArrowUp,
   Camera,
+  Check,
   FileText,
   ImageIcon,
   Loader2,
@@ -11,9 +13,7 @@ import {
   Mic,
   Paperclip,
   PenSquare,
-  Send,
   Settings,
-  Square,
   User,
   Users,
   Video,
@@ -395,7 +395,9 @@ function PendingAttachmentPreview({
         </p>
       </div>
       {isAudio && previewUrl && (
-        <audio src={previewUrl} controls className="h-8 max-w-[9rem] shrink-0" />
+        <div className="max-w-[11rem] shrink-0 overflow-hidden rounded-xl bg-white/[0.04] ring-1 ring-white/10">
+          <AudioMessagePlayer url={previewUrl} isMine={false} />
+        </div>
       )}
       <button
         type="button"
@@ -1448,10 +1450,10 @@ export default function MessageClient() {
                   <button
                     type="button"
                     onClick={() => finishVoiceRecording(true)}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-white px-3 py-2 text-sm font-semibold text-black transition hover:bg-white/90"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-black transition hover:bg-white/90"
+                    aria-label="Send voice message"
                   >
-                    <Square className="h-3.5 w-3.5 fill-current" />
-                    Send
+                    <Check className="h-5 w-5 stroke-[2.5]" />
                   </button>
                 </div>
               ) : (
@@ -1517,13 +1519,17 @@ export default function MessageClient() {
                 <button
                   type="submit"
                   disabled={(!draft.trim() && !pendingFile) || sending}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-indigo-500 text-white transition hover:bg-indigo-400 disabled:opacity-40"
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all duration-200 ${
+                    (draft.trim() || pendingFile) && !sending
+                      ? "bg-white text-black shadow-md shadow-black/20 hover:bg-white/90"
+                      : "bg-white/[0.08] text-white/30"
+                  } disabled:cursor-not-allowed`}
                   aria-label="Send message"
                 >
                   {sending ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Send className="h-5 w-5" />
+                    <ArrowUp className="h-5 w-5 stroke-[2.5]" />
                   )}
                 </button>
               </div>
