@@ -10,5 +10,5 @@ export default function MessageLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return <div className="messenger-shell">{children}</div>;
 }
