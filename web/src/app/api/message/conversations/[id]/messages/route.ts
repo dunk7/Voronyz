@@ -27,8 +27,16 @@ const MESSAGE_SELECT = {
   attachmentFileName: true,
   attachmentMimeType: true,
   attachmentSizeBytes: true,
+  attachmentDurationSeconds: true,
   sender: { select: { id: true, username: true, avatarMimeType: true } },
 } as const;
+
+function parseAttachmentDurationSeconds(raw: FormDataEntryValue | null): number | undefined {
+  if (typeof raw !== "string" || !raw.trim()) return undefined;
+  const seconds = Math.round(Number(raw));
+  if (!Number.isFinite(seconds) || seconds <= 0 || seconds > 300) return undefined;
+  return seconds;
+}
 
 export async function GET(request: NextRequest, context: RouteContext) {
   const userId = getMessageUserId(request);
@@ -74,6 +82,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         fileName: string;
         mimeType: string;
         sizeBytes: number;
+        durationSeconds?: number;
         data: Buffer;
       }
     | undefined;
@@ -103,6 +112,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
         fileName: sanitizeAttachmentFileName(fileField.name),
         mimeType: inferMimeType(fileField),
         sizeBytes: buffer.length,
+        durationSeconds: parseAttachmentDurationSeconds(
+          formData.get("attachmentDurationSeconds")
+        ),
         data: buffer,
       };
     }
@@ -142,6 +154,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
               attachmentFileName: attachment.fileName,
               attachmentMimeType: attachment.mimeType,
               attachmentSizeBytes: attachment.sizeBytes,
+              attachmentDurationSeconds: attachment.durationSeconds,
               attachmentData: attachment.data,
             }
           : {}),

@@ -83,6 +83,7 @@ type MessageAttachment = {
   mimeType: string;
   sizeBytes: number;
   url: string;
+  durationSeconds?: number;
 };
 
 type ChatMessage = {
@@ -298,7 +299,11 @@ function MessageBubble({
         )}
 
         {attachment && isAudio && (
-          <AudioMessagePlayer url={attachment.url} isMine={message.isMine} />
+          <AudioMessagePlayer
+            url={attachment.url}
+            isMine={message.isMine}
+            durationSeconds={attachment.durationSeconds}
+          />
         )}
 
         {attachment && !isMediaAttachment(attachment) && !isAudio && (
@@ -348,10 +353,12 @@ function MessageBubble({
 function PendingAttachmentPreview({
   file,
   previewUrl,
+  durationSeconds,
   onRemove,
 }: {
   file: File;
   previewUrl: string | null;
+  durationSeconds?: number;
   onRemove: () => void;
 }) {
   const isImage = file.type.startsWith("image/");
@@ -391,12 +398,20 @@ function PendingAttachmentPreview({
           {isAudio ? "Voice message" : file.name}
         </p>
         <p className="text-xs text-white/45">
-          {isAudio && previewUrl ? "Ready to send" : formatFileSize(file.size)}
+          {isAudio
+            ? durationSeconds
+              ? formatVoiceDuration(durationSeconds)
+              : "Ready to send"
+            : formatFileSize(file.size)}
         </p>
       </div>
       {isAudio && previewUrl && (
         <div className="max-w-[11rem] shrink-0 overflow-hidden rounded-xl bg-white/[0.04] ring-1 ring-white/10">
-          <AudioMessagePlayer url={previewUrl} isMine={false} />
+          <AudioMessagePlayer
+            url={previewUrl}
+            isMine={false}
+            durationSeconds={durationSeconds}
+          />
         </div>
       )}
       <button
@@ -447,6 +462,9 @@ export default function MessageClient() {
 
   const [mobileShowChat, setMobileShowChat] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingVoiceDuration, setPendingVoiceDuration] = useState<number | undefined>(
+    undefined
+  );
   const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(null);
   const [composeDragOver, setComposeDragOver] = useState(false);
   const [mediaViewer, setMediaViewer] = useState<MediaViewerItem | null>(null);
@@ -664,6 +682,7 @@ export default function MessageClient() {
 
   const clearPendingFile = useCallback(() => {
     setPendingFile(null);
+    setPendingVoiceDuration(undefined);
     setPendingPreviewUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev);
       return null;
@@ -671,25 +690,28 @@ export default function MessageClient() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   }, []);
 
-  const setPendingAttachment = useCallback((file: File | null) => {
-    setPendingPreviewUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return null;
-    });
-    if (!file) {
-      setPendingFile(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      return;
-    }
-    setPendingFile(file);
-    if (
-      file.type.startsWith("image/") ||
-      file.type.startsWith("video/") ||
-      file.type.startsWith("audio/")
-    ) {
-      setPendingPreviewUrl(URL.createObjectURL(file));
-    }
-  }, []);
+  const setPendingAttachment = useCallback(
+    (file: File | null, voiceDuration?: number) => {
+      setPendingPreviewUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+      if (!file) {
+        setPendingFile(null);
+        setPendingVoiceDuration(undefined);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+      setPendingFile(file);
+      setPendingVoiceDuration(
+        file.type.startsWith("audio/") ? voiceDuration : undefined
+      );
+      if (file.type.startsWith("image/") || file.type.startsWith("video/") || file.type.startsWith("audio/")) {
+        setPendingPreviewUrl(URL.createObjectURL(file));
+      }
+    },
+    []
+  );
 
   const handleFileInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -747,12 +769,15 @@ export default function MessageClient() {
   }, [cancelVoice]);
 
   const sendMessageWithFile = useCallback(
-    async (file: File, body: string) => {
+    async (file: File, body: string, voiceDuration?: number) => {
       if (!activeConversationId) return false;
 
       const formData = new FormData();
       if (body) formData.append("body", body);
       formData.append("file", file);
+      if (voiceDuration && voiceDuration > 0) {
+        formData.append("attachmentDurationSeconds", String(voiceDuration));
+      }
 
       const res = await fetch(
         `/api/message/conversations/${activeConversationId}/messages`,
@@ -786,13 +811,13 @@ export default function MessageClient() {
       setSendError("");
       stopTypingPing();
       void sendPresence({ typing: false });
-      const ok = await sendMessageWithFile(file, "");
+      const ok = await sendMessageWithFile(file, "", elapsed);
       setSending(false);
-      if (!ok) setPendingAttachment(file);
+      if (!ok) setPendingAttachment(file, elapsed);
       return;
     }
 
-    setPendingAttachment(file);
+    setPendingAttachment(file, elapsed);
   }
 
   async function handleMicClick() {
@@ -834,6 +859,7 @@ export default function MessageClient() {
 
     const savedDraft = draft;
     const savedFile = pendingFile;
+    const savedVoiceDuration = pendingVoiceDuration;
     setDraft("");
     clearPendingFile();
     stopTypingPing();
@@ -846,6 +872,12 @@ export default function MessageClient() {
         const formData = new FormData();
         if (body) formData.append("body", body);
         formData.append("file", savedFile);
+        if (savedVoiceDuration && savedVoiceDuration > 0) {
+          formData.append(
+            "attachmentDurationSeconds",
+            String(savedVoiceDuration)
+          );
+        }
         res = await fetch(
           `/api/message/conversations/${activeConversationId}/messages`,
           { method: "POST", body: formData }
@@ -868,12 +900,12 @@ export default function MessageClient() {
         scrollToBottom();
       } else {
         setDraft(savedDraft);
-        if (savedFile) setPendingAttachment(savedFile);
+        if (savedFile) setPendingAttachment(savedFile, savedVoiceDuration);
         setSendError(data.error ?? "Could not send message. Try again.");
       }
     } catch {
       setDraft(savedDraft);
-      if (savedFile) setPendingAttachment(savedFile);
+      if (savedFile) setPendingAttachment(savedFile, savedVoiceDuration);
       setSendError("Could not connect. Try again.");
     } finally {
       setSending(false);
@@ -1467,6 +1499,7 @@ export default function MessageClient() {
                 <PendingAttachmentPreview
                   file={pendingFile}
                   previewUrl={pendingPreviewUrl}
+                  durationSeconds={pendingVoiceDuration}
                   onRemove={clearPendingFile}
                 />
               )}

@@ -173,6 +173,7 @@ model Message {
   attachmentFileName   String?
   attachmentMimeType   String?
   attachmentSizeBytes  Int?
+  attachmentDurationSeconds Int?
   attachmentData       Bytes?
   createdAt            DateTime     @default(now())
 

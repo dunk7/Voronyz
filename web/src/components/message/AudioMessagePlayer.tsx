@@ -10,43 +10,128 @@ function formatDuration(seconds: number) {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+function resolveDuration(audio: HTMLAudioElement): number | null {
+  const d = audio.duration;
+  if (Number.isFinite(d) && d > 0) return d;
+  return null;
+}
+
+function probeWebmDuration(audio: HTMLAudioElement): Promise<number | null> {
+  return new Promise((resolve) => {
+    const existing = resolveDuration(audio);
+    if (existing) {
+      resolve(existing);
+      return;
+    }
+
+    const cleanup = () => {
+      audio.removeEventListener("seeked", onSeeked);
+      audio.removeEventListener("loadedmetadata", onMeta);
+    };
+
+    const finish = (value: number | null) => {
+      cleanup();
+      resolve(value);
+    };
+
+    const onMeta = () => {
+      const d = resolveDuration(audio);
+      if (d) finish(d);
+    };
+
+    const onSeeked = () => {
+      const d = resolveDuration(audio);
+      audio.pause();
+      audio.currentTime = 0;
+      finish(d);
+    };
+
+    audio.addEventListener("loadedmetadata", onMeta);
+    audio.addEventListener("seeked", onSeeked, { once: true });
+
+    try {
+      audio.currentTime = Number.MAX_SAFE_INTEGER;
+    } catch {
+      finish(null);
+    }
+
+    window.setTimeout(() => finish(resolveDuration(audio)), 1500);
+  });
+}
+
 export function AudioMessagePlayer({
   url,
   isMine,
+  durationSeconds,
 }: {
   url: string;
   isMine: boolean;
+  durationSeconds?: number;
 }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
+  const [duration, setDuration] = useState(durationSeconds ?? 0);
+  const [currentTime, setCurrentTime] = useState(0);
+
+  useEffect(() => {
+    if (durationSeconds && durationSeconds > 0) {
+      setDuration(durationSeconds);
+    }
+  }, [durationSeconds]);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const onTime = () => {
-      if (audio.duration) setProgress(audio.currentTime / audio.duration);
+    let cancelled = false;
+
+    const applyDuration = (value: number | null) => {
+      if (cancelled || !value || value <= 0) return;
+      setDuration((prev) => (prev > 0 ? prev : value));
     };
-    const onMeta = () => setDuration(audio.duration);
+
+    const onTime = () => {
+      const total = resolveDuration(audio) ?? durationSeconds ?? duration;
+      if (total && total > 0) {
+        setCurrentTime(audio.currentTime);
+        setProgress(audio.currentTime / total);
+        applyDuration(total);
+      }
+    };
+
+    const onMeta = async () => {
+      applyDuration(resolveDuration(audio));
+      if (!resolveDuration(audio) && !durationSeconds) {
+        const probed = await probeWebmDuration(audio);
+        applyDuration(probed);
+      }
+    };
+
     const onEnd = () => {
       setPlaying(false);
       setProgress(0);
+      setCurrentTime(0);
     };
 
     audio.addEventListener("timeupdate", onTime);
     audio.addEventListener("loadedmetadata", onMeta);
     audio.addEventListener("durationchange", onMeta);
     audio.addEventListener("ended", onEnd);
+    audio.load();
+    void onMeta();
 
     return () => {
+      cancelled = true;
       audio.removeEventListener("timeupdate", onTime);
       audio.removeEventListener("loadedmetadata", onMeta);
       audio.removeEventListener("durationchange", onMeta);
       audio.removeEventListener("ended", onEnd);
     };
-  }, [url]);
+  }, [url, durationSeconds]);
+
+  const totalDuration =
+    duration > 0 ? duration : durationSeconds ?? 0;
 
   const toggle = useCallback(async () => {
     const audio = audioRef.current;
@@ -56,27 +141,38 @@ export function AudioMessagePlayer({
       setPlaying(false);
     } else {
       try {
+        if (!resolveDuration(audio) && !durationSeconds) {
+          const probed = await probeWebmDuration(audio);
+          if (probed) setDuration(probed);
+        }
         await audio.play();
         setPlaying(true);
       } catch {
         setPlaying(false);
       }
     }
-  }, [playing]);
+  }, [playing, durationSeconds]);
 
   const seek = (e: React.MouseEvent<HTMLDivElement>) => {
     const audio = audioRef.current;
-    if (!audio || !audio.duration) return;
+    const total = resolveDuration(audio) ?? totalDuration;
+    if (!audio || !total) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const ratio = clamp((e.clientX - rect.left) / rect.width, 0, 1);
-    audio.currentTime = ratio * audio.duration;
+    audio.currentTime = ratio * total;
     setProgress(ratio);
+    setCurrentTime(audio.currentTime);
   };
+
+  const timeLabel =
+    playing || currentTime > 0
+      ? `${formatDuration(currentTime)} / ${formatDuration(totalDuration)}`
+      : formatDuration(totalDuration);
 
   return (
     <div className="flex min-w-[min(100%,14rem)] items-center gap-3 px-3 py-2.5 sm:min-w-[14rem]">
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-      <audio ref={audioRef} src={url} preload="metadata" className="hidden" />
+      <audio ref={audioRef} src={url} preload="auto" className="hidden" />
       <button
         type="button"
         onClick={toggle}
@@ -106,9 +202,10 @@ export function AudioMessagePlayer({
           onClick={seek}
           onKeyDown={(e) => {
             const audio = audioRef.current;
-            if (!audio?.duration) return;
+            const total = resolveDuration(audio) ?? totalDuration;
+            if (!audio || !total) return;
             if (e.key === "ArrowRight") {
-              audio.currentTime = Math.min(audio.duration, audio.currentTime + 2);
+              audio.currentTime = Math.min(total, audio.currentTime + 2);
             }
             if (e.key === "ArrowLeft") {
               audio.currentTime = Math.max(0, audio.currentTime - 2);
@@ -127,11 +224,7 @@ export function AudioMessagePlayer({
             isMine ? "text-indigo-100" : "text-white/45"
           }`}
         >
-          {formatDuration(
-            playing || progress > 0
-              ? progress * (duration || 0)
-              : duration || 0
-          )}
+          {totalDuration > 0 ? timeLabel : "…"}
         </p>
       </div>
     </div>

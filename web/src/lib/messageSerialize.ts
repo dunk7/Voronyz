@@ -109,6 +109,7 @@ type MessageRow = {
   attachmentFileName: string | null;
   attachmentMimeType: string | null;
   attachmentSizeBytes: number | null;
+  attachmentDurationSeconds: number | null;
   sender: { username: string; avatarMimeType: string | null; id: string };
 };
 
@@ -131,6 +132,7 @@ export function serializeChatMessage(
           fileName: message.attachmentFileName!,
           mimeType: message.attachmentMimeType ?? "application/octet-stream",
           sizeBytes: message.attachmentSizeBytes ?? 0,
+          durationSeconds: message.attachmentDurationSeconds ?? undefined,
           url: `/api/message/conversations/${conversationId}/messages/${message.id}/attachment`,
         }
       : null,
