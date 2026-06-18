@@ -1,0 +1,47 @@
+# Applies Prisma migrations to production when schema/migrations change on main.
+# Requires repository secret DATABASE_URL (direct or pooler Supabase URL).
+name: Database migrate (production)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "web/prisma/**"
+      - ".github/workflows/database-migrate.yml"
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Require DATABASE_URL
+        if: ${{ secrets.DATABASE_URL == '' }}
+        run: |
+          echo "::warning::DATABASE_URL is not configured in GitHub Actions secrets."
+          echo "Add it under Settings → Secrets → Actions, then re-run this workflow."
+          echo "Or run locally: cd web && npx prisma migrate deploy"
+          exit 0
+
+      - name: Install dependencies
+        if: ${{ secrets.DATABASE_URL != '' }}
+        run: npm ci
+
+      - name: Apply migrations
+        if: ${{ secrets.DATABASE_URL != '' }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          export DATABASE_URL="$(node scripts/derive-direct-database-url.mjs)"
+          npx prisma migrate deploy
