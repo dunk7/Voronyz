@@ -1,11 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  inferMimeType,
+  sanitizeAttachmentFileName,
+  validateMessageAttachment,
+} from "@/lib/messageAttachment";
+import {
   getMessageUserId,
   unauthorizedMessageResponse,
 } from "@/lib/messageAuth";
+import {
+  isUserOnline,
+  isUserTypingInConversation,
+} from "@/lib/messagePresence";
+import { serializeChatMessage } from "@/lib/messageSerialize";
 import { prisma } from "@/lib/prisma";
 
+export const runtime = "nodejs";
+
 type RouteContext = { params: Promise<{ id: string }> };
+
+const MESSAGE_SELECT = {
+  id: true,
+  body: true,
+  createdAt: true,
+  senderId: true,
+  attachmentFileName: true,
+  attachmentMimeType: true,
+  attachmentSizeBytes: true,
+  sender: { select: { username: true } },
+} as const;
 
 async function getConversationForUser(conversationId: string, userId: string) {
   return prisma.conversation.findFirst({
@@ -14,8 +37,24 @@ async function getConversationForUser(conversationId: string, userId: string) {
       OR: [{ participantAId: userId }, { participantBId: userId }],
     },
     include: {
-      participantA: { select: { id: true, username: true } },
-      participantB: { select: { id: true, username: true } },
+      participantA: {
+        select: {
+          id: true,
+          username: true,
+          lastSeenAt: true,
+          typingConversationId: true,
+          typingExpiresAt: true,
+        },
+      },
+      participantB: {
+        select: {
+          id: true,
+          username: true,
+          lastSeenAt: true,
+          typingConversationId: true,
+          typingExpiresAt: true,
+        },
+      },
     },
   });
 }
@@ -33,13 +72,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const messages = await prisma.message.findMany({
     where: { conversationId: id },
     orderBy: { createdAt: "asc" },
-    select: {
-      id: true,
-      body: true,
-      createdAt: true,
-      senderId: true,
-      sender: { select: { username: true } },
-    },
+    select: MESSAGE_SELECT,
   });
 
   const other =
@@ -47,18 +80,26 @@ export async function GET(request: NextRequest, context: RouteContext) {
       ? conversation.participantB
       : conversation.participantA;
 
+  await prisma.messengerUser.update({
+    where: { id: userId },
+    data: { lastSeenAt: new Date() },
+  });
+
   return NextResponse.json({
     conversation: {
       id: conversation.id,
-      otherUser: { id: other.id, username: other.username },
+      otherUser: {
+        id: other.id,
+        username: other.username,
+        isOnline: isUserOnline(other.lastSeenAt),
+        isTyping: isUserTypingInConversation(
+          other.typingConversationId,
+          other.typingExpiresAt,
+          id
+        ),
+      },
     },
-    messages: messages.map((m) => ({
-      id: m.id,
-      body: m.body,
-      createdAt: m.createdAt.toISOString(),
-      isMine: m.senderId === userId,
-      senderUsername: m.sender.username,
-    })),
+    messages: messages.map((m) => serializeChatMessage(m, id, userId)),
   });
 }
 
@@ -72,17 +113,63 @@ export async function POST(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
   }
 
-  let body: { body?: string };
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  const contentType = request.headers.get("content-type") ?? "";
+  let messageBody = "";
+  let attachment:
+    | {
+        fileName: string;
+        mimeType: string;
+        sizeBytes: number;
+        data: Buffer;
+      }
+    | undefined;
+
+  if (contentType.includes("multipart/form-data")) {
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+    } catch {
+      return NextResponse.json({ error: "Invalid form submission." }, { status: 400 });
+    }
+
+    messageBody =
+      typeof formData.get("body") === "string"
+        ? String(formData.get("body")).trim()
+        : "";
+
+    const fileField = formData.get("file");
+    if (fileField instanceof File && fileField.size > 0) {
+      const validationError = validateMessageAttachment(fileField);
+      if (validationError) {
+        return NextResponse.json({ error: validationError }, { status: 400 });
+      }
+
+      const buffer = Buffer.from(await fileField.arrayBuffer());
+      attachment = {
+        fileName: sanitizeAttachmentFileName(fileField.name),
+        mimeType: inferMimeType(fileField),
+        sizeBytes: buffer.length,
+        data: buffer,
+      };
+    }
+  } else {
+    let body: { body?: string };
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    }
+
+    messageBody = typeof body.body === "string" ? body.body.trim() : "";
   }
 
-  const messageBody = typeof body.body === "string" ? body.body.trim() : "";
-  if (!messageBody) {
-    return NextResponse.json({ error: "Message cannot be empty." }, { status: 400 });
+  if (!messageBody && !attachment) {
+    return NextResponse.json(
+      { error: "Message cannot be empty." },
+      { status: 400 }
+    );
   }
+
   if (messageBody.length > 4000) {
     return NextResponse.json(
       { error: "Message must be at most 4000 characters." },
@@ -90,34 +177,38 @@ export async function POST(request: NextRequest, context: RouteContext) {
     );
   }
 
-  // Batch transaction — interactive $transaction(async tx => …) fails on Supabase pooler.
   const [message] = await prisma.$transaction([
     prisma.message.create({
       data: {
         conversationId: id,
         senderId: userId,
         body: messageBody,
+        ...(attachment
+          ? {
+              attachmentFileName: attachment.fileName,
+              attachmentMimeType: attachment.mimeType,
+              attachmentSizeBytes: attachment.sizeBytes,
+              attachmentData: attachment.data,
+            }
+          : {}),
       },
-      select: {
-        id: true,
-        body: true,
-        createdAt: true,
-        sender: { select: { username: true } },
-      },
+      select: MESSAGE_SELECT,
     }),
     prisma.conversation.update({
       where: { id },
       data: { updatedAt: new Date() },
     }),
+    prisma.messengerUser.update({
+      where: { id: userId },
+      data: {
+        lastSeenAt: new Date(),
+        typingConversationId: null,
+        typingExpiresAt: null,
+      },
+    }),
   ]);
 
   return NextResponse.json({
-    message: {
-      id: message.id,
-      body: message.body,
-      createdAt: message.createdAt.toISOString(),
-      isMine: true,
-      senderUsername: message.sender.username,
-    },
+    message: serializeChatMessage(message, id, userId),
   });
 }

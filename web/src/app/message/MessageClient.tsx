@@ -3,11 +3,16 @@
 import Image from "next/image";
 import {
   ArrowLeft,
+  FileText,
+  ImageIcon,
   Loader2,
   LogOut,
+  Paperclip,
   PenSquare,
   Send,
   User,
+  X,
+  ZoomIn,
 } from "lucide-react";
 import {
   useCallback,
@@ -21,13 +26,22 @@ type AuthUser = { id: string; username: string };
 
 type ConversationPreview = {
   id: string;
-  otherUser: { id: string; username: string };
+  otherUser: { id: string; username: string; isOnline?: boolean };
   lastMessage: {
     body: string;
     createdAt: string;
     isMine: boolean;
+    hasAttachment?: boolean;
+    isImage?: boolean;
   } | null;
   updatedAt: string;
+};
+
+type MessageAttachment = {
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  url: string;
 };
 
 type ChatMessage = {
@@ -36,7 +50,21 @@ type ChatMessage = {
   createdAt: string;
   isMine: boolean;
   senderUsername: string;
+  attachment: MessageAttachment | null;
 };
+
+const ACCEPTED_FILE_TYPES =
+  "image/jpeg,image/png,image/gif,image/webp,.pdf,.txt,.zip,.doc,.docx,.xls,.xlsx,.ppt,.pptx";
+
+function formatFileSize(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function isImageAttachment(attachment: MessageAttachment | null | undefined) {
+  return Boolean(attachment?.mimeType.startsWith("image/"));
+}
 
 function formatMessageTime(iso: string) {
   const date = new Date(iso);
@@ -80,20 +108,59 @@ function formatListTime(iso: string) {
   }).format(date);
 }
 
-function Avatar({ username }: { username: string }) {
+function Avatar({
+  username,
+  online,
+  size = "md",
+}: {
+  username: string;
+  online?: boolean;
+  size?: "md" | "sm";
+}) {
   const letter = username.charAt(0).toUpperCase();
   const hue =
     username.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % 360;
+  const dimensions = size === "sm" ? "h-9 w-9 text-xs" : "h-11 w-11 text-sm";
+  const dotSize = size === "sm" ? "h-2.5 w-2.5" : "h-3 w-3";
 
   return (
-    <div
-      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white shadow-inner"
-      style={{
-        background: `linear-gradient(135deg, hsl(${hue} 45% 42%), hsl(${(hue + 40) % 360} 50% 32%))`,
-      }}
-      aria-hidden
-    >
-      {letter}
+    <div className="relative shrink-0">
+      <div
+        className={`flex ${dimensions} items-center justify-center rounded-full font-semibold text-white shadow-inner`}
+        style={{
+          background: `linear-gradient(135deg, hsl(${hue} 45% 42%), hsl(${(hue + 40) % 360} 50% 32%))`,
+        }}
+        aria-hidden
+      >
+        {letter}
+      </div>
+      {online && (
+        <span
+          className={`absolute bottom-0 right-0 ${dotSize} rounded-full border-2 border-[#0e0e10] bg-emerald-400`}
+          title="Online"
+        />
+      )}
+    </div>
+  );
+}
+
+function TypingIndicator() {
+  return (
+    <div className="flex justify-start">
+      <div className="flex items-center gap-1 rounded-2xl rounded-bl-md bg-white/[0.08] px-4 py-3.5 ring-1 ring-white/8">
+        <span
+          className="h-2 w-2 animate-bounce rounded-full bg-white/55"
+          style={{ animationDelay: "0ms", animationDuration: "1s" }}
+        />
+        <span
+          className="h-2 w-2 animate-bounce rounded-full bg-white/55"
+          style={{ animationDelay: "150ms", animationDuration: "1s" }}
+        />
+        <span
+          className="h-2 w-2 animate-bounce rounded-full bg-white/55"
+          style={{ animationDelay: "300ms", animationDuration: "1s" }}
+        />
+      </div>
     </div>
   );
 }
@@ -116,6 +183,130 @@ function VoronyzLogoMark({
       priority={priority}
       className={className}
     />
+  );
+}
+
+function MessageBubble({
+  message,
+  onImageClick,
+}: {
+  message: ChatMessage;
+  onImageClick: (url: string) => void;
+}) {
+  const hasText = Boolean(message.body.trim());
+  const attachment = message.attachment;
+  const isImage = isImageAttachment(attachment);
+
+  return (
+    <div
+      className={`max-w-[min(85%,28rem)] overflow-hidden rounded-2xl shadow-sm ${
+        message.isMine
+          ? "rounded-br-md bg-indigo-500 text-white"
+          : "rounded-bl-md bg-white/[0.08] text-white/90 ring-1 ring-white/8"
+      }`}
+    >
+      {attachment && isImage && (
+        <button
+          type="button"
+          onClick={() => onImageClick(attachment.url)}
+          className="group relative block w-full text-left"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={attachment.url}
+            alt={attachment.fileName}
+            className="max-h-72 w-full object-cover"
+            loading="lazy"
+          />
+          <span className="absolute inset-0 flex items-center justify-center bg-black/0 transition group-hover:bg-black/25">
+            <ZoomIn className="h-8 w-8 text-white opacity-0 drop-shadow transition group-hover:opacity-100" />
+          </span>
+        </button>
+      )}
+
+      {attachment && !isImage && (
+        <a
+          href={attachment.url}
+          download={attachment.fileName}
+          className={`flex items-center gap-3 px-4 py-3 transition ${
+            message.isMine
+              ? "hover:bg-indigo-400/40"
+              : "hover:bg-white/[0.06]"
+          }`}
+        >
+          <div
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+              message.isMine ? "bg-white/15" : "bg-white/10"
+            }`}
+          >
+            <FileText className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">{attachment.fileName}</p>
+            <p
+              className={`text-xs ${
+                message.isMine ? "text-indigo-100" : "text-white/45"
+              }`}
+            >
+              {formatFileSize(attachment.sizeBytes)} · Tap to download
+            </p>
+          </div>
+        </a>
+      )}
+
+      {hasText && (
+        <p
+          className={`whitespace-pre-wrap break-words px-4 py-2.5 text-[15px] leading-relaxed ${
+            attachment ? "pt-2" : ""
+          }`}
+        >
+          {message.body}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function PendingAttachmentPreview({
+  file,
+  previewUrl,
+  onRemove,
+}: {
+  file: File;
+  previewUrl: string | null;
+  onRemove: () => void;
+}) {
+  const isImage = file.type.startsWith("image/");
+
+  return (
+    <div className="mx-auto mb-3 flex max-w-2xl items-center gap-3 rounded-2xl bg-white/[0.04] p-2 ring-1 ring-white/10">
+      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white/5">
+        {isImage && previewUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={previewUrl}
+            alt=""
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <FileText className="h-6 w-6 text-white/50" />
+          </div>
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium text-white/90">{file.name}</p>
+        <p className="text-xs text-white/45">{formatFileSize(file.size)}</p>
+      </div>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="rounded-xl p-2 text-white/50 transition hover:bg-white/8 hover:text-white"
+        aria-label="Remove attachment"
+      >
+        <X className="h-4 w-4" />
+      </button>
+    </div>
   );
 }
 
@@ -146,8 +337,17 @@ export default function MessageClient() {
   const [newMessageSubmitting, setNewMessageSubmitting] = useState(false);
 
   const [mobileShowChat, setMobileShowChat] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(null);
+  const [composeDragOver, setComposeDragOver] = useState(false);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [otherIsOnline, setOtherIsOnline] = useState(false);
+  const [otherIsTyping, setOtherIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingPingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const typingRefreshRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const activeConversation = useMemo(
     () => conversations.find((c) => c.id === activeConversationId) ?? null,
@@ -202,6 +402,10 @@ export default function MessageClient() {
         if (!res.ok) return;
         const data = await res.json();
         setMessages(data.messages ?? []);
+        if (data.conversation?.otherUser) {
+          setOtherIsOnline(Boolean(data.conversation.otherUser.isOnline));
+          setOtherIsTyping(Boolean(data.conversation.otherUser.isTyping));
+        }
       } catch {
         /* ignore */
       } finally {
@@ -209,6 +413,46 @@ export default function MessageClient() {
       }
     },
     []
+  );
+
+  const sendPresence = useCallback(
+    async (
+      payload: { typing?: boolean; conversationId?: string } = {}
+    ) => {
+      try {
+        await fetch("/api/message/presence", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } catch {
+        /* ignore */
+      }
+    },
+    []
+  );
+
+  const stopTypingPing = useCallback(() => {
+    if (typingPingRef.current) {
+      clearTimeout(typingPingRef.current);
+      typingPingRef.current = null;
+    }
+    if (typingRefreshRef.current) {
+      clearInterval(typingRefreshRef.current);
+      typingRefreshRef.current = null;
+    }
+  }, []);
+
+  const startTypingPing = useCallback(
+    (conversationId: string) => {
+      stopTypingPing();
+      const ping = () => {
+        void sendPresence({ typing: true, conversationId });
+      };
+      typingPingRef.current = setTimeout(ping, 350);
+      typingRefreshRef.current = setInterval(ping, 2000);
+    },
+    [sendPresence, stopTypingPing]
   );
 
   useEffect(() => {
@@ -233,10 +477,92 @@ export default function MessageClient() {
   }, [user, activeConversationId, loadMessages]);
 
   useEffect(() => {
+    if (!user) return;
+    void sendPresence();
+    const interval = window.setInterval(() => sendPresence(), 20_000);
+    return () => window.clearInterval(interval);
+  }, [user, sendPresence]);
+
+  useEffect(() => {
+    if (!activeConversationId) {
+      stopTypingPing();
+      return;
+    }
+
+    if (draft.trim()) {
+      startTypingPing(activeConversationId);
+    } else {
+      stopTypingPing();
+      void sendPresence({ typing: false });
+    }
+
+    return () => stopTypingPing();
+  }, [
+    draft,
+    activeConversationId,
+    startTypingPing,
+    stopTypingPing,
+    sendPresence,
+  ]);
+
+  useEffect(() => {
+    if (otherIsTyping) scrollToBottom();
+  }, [otherIsTyping, scrollToBottom]);
+
+  useEffect(() => {
     if (!messagesLoading && messages.length > 0) {
       scrollToBottom(messages.length <= 3 ? "auto" : "smooth");
     }
   }, [messages, messagesLoading, scrollToBottom]);
+
+  useEffect(() => {
+    return () => {
+      if (pendingPreviewUrl) URL.revokeObjectURL(pendingPreviewUrl);
+    };
+  }, [pendingPreviewUrl]);
+
+  const clearPendingFile = useCallback(() => {
+    setPendingFile(null);
+    setPendingPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }, []);
+
+  const setPendingAttachment = useCallback((file: File | null) => {
+    setPendingPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    if (!file) {
+      setPendingFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+    setPendingFile(file);
+    if (file.type.startsWith("image/")) {
+      setPendingPreviewUrl(URL.createObjectURL(file));
+    }
+  }, []);
+
+  const handleFileInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) setPendingAttachment(file);
+    },
+    [setPendingAttachment]
+  );
+
+  const handleComposeDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setComposeDragOver(false);
+      const file = e.dataTransfer.files?.[0];
+      if (file) setPendingAttachment(file);
+    },
+    [setPendingAttachment]
+  );
 
   async function handleAuthSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -270,6 +596,8 @@ export default function MessageClient() {
   }
 
   async function handleLogout() {
+    stopTypingPing();
+    await sendPresence({ typing: false });
     await fetch("/api/message/auth", { method: "DELETE" });
     setUser(null);
     setActiveConversationId(null);
@@ -281,32 +609,54 @@ export default function MessageClient() {
 
   async function handleSendMessage(e: React.FormEvent) {
     e.preventDefault();
-    if (!activeConversationId || !draft.trim() || sending) return;
-
     const body = draft.trim();
+    if (!activeConversationId || sending || (!body && !pendingFile)) return;
+
     setSending(true);
     setSendError("");
+
+    const savedDraft = draft;
+    const savedFile = pendingFile;
     setDraft("");
+    clearPendingFile();
+    stopTypingPing();
+    void sendPresence({ typing: false });
+
     try {
-      const res = await fetch(
-        `/api/message/conversations/${activeConversationId}/messages`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ body }),
-        }
-      );
+      let res: Response;
+
+      if (savedFile) {
+        const formData = new FormData();
+        if (body) formData.append("body", body);
+        formData.append("file", savedFile);
+        res = await fetch(
+          `/api/message/conversations/${activeConversationId}/messages`,
+          { method: "POST", body: formData }
+        );
+      } else {
+        res = await fetch(
+          `/api/message/conversations/${activeConversationId}/messages`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ body }),
+          }
+        );
+      }
+
       const data = await res.json();
       if (res.ok && data.message) {
         setMessages((prev) => [...prev, data.message]);
         loadConversations();
         scrollToBottom();
       } else {
-        setDraft(body);
+        setDraft(savedDraft);
+        if (savedFile) setPendingAttachment(savedFile);
         setSendError(data.error ?? "Could not send message. Try again.");
       }
     } catch {
-      setDraft(body);
+      setDraft(savedDraft);
+      if (savedFile) setPendingAttachment(savedFile);
       setSendError("Could not connect. Try again.");
     } finally {
       setSending(false);
@@ -356,12 +706,23 @@ export default function MessageClient() {
     setActiveConversationId(id);
     setMobileShowChat(true);
     setSendError("");
+    clearPendingFile();
   }
 
   function handleTextareaKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage(e);
+    }
+  }
+
+  function handleTextareaPaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const image = Array.from(e.clipboardData.files).find((file) =>
+      file.type.startsWith("image/")
+    );
+    if (image) {
+      e.preventDefault();
+      setPendingAttachment(image);
     }
   }
 
@@ -569,7 +930,10 @@ export default function MessageClient() {
                           : "hover:bg-white/[0.04]"
                       }`}
                     >
-                      <Avatar username={conversation.otherUser.username} />
+                      <Avatar
+                        username={conversation.otherUser.username}
+                        online={conversation.otherUser.isOnline}
+                      />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-baseline justify-between gap-2">
                           <span className="truncate font-medium">
@@ -582,9 +946,20 @@ export default function MessageClient() {
                           )}
                         </div>
                         {preview && (
-                          <p className="mt-0.5 truncate text-sm text-white/45">
-                            {preview.isMine ? "You: " : ""}
-                            {preview.body}
+                          <p className="mt-0.5 flex items-center gap-1 truncate text-sm text-white/45">
+                            {preview.isMine ? (
+                              <span className="shrink-0">You: </span>
+                            ) : null}
+                            {preview.hasAttachment && (
+                              <span className="inline-flex shrink-0 items-center">
+                                {preview.isImage ? (
+                                  <ImageIcon className="h-3.5 w-3.5" />
+                                ) : (
+                                  <Paperclip className="h-3.5 w-3.5" />
+                                )}
+                              </span>
+                            )}
+                            <span className="truncate">{preview.body}</span>
                           </p>
                         )}
                       </div>
@@ -631,12 +1006,23 @@ export default function MessageClient() {
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
-              <Avatar username={activeConversation.otherUser.username} />
+              <Avatar
+                username={activeConversation.otherUser.username}
+                online={otherIsOnline}
+              />
               <div>
                 <h2 className="font-medium">
                   @{activeConversation.otherUser.username}
                 </h2>
-                <p className="text-xs text-white/40">Direct message</p>
+                <p className="text-xs text-white/40">
+                  {otherIsTyping ? (
+                    <span className="text-indigo-300">typing…</span>
+                  ) : otherIsOnline ? (
+                    <span className="text-emerald-400/90">Online</span>
+                  ) : (
+                    "Offline"
+                  )}
+                </p>
               </div>
             </header>
 
@@ -666,21 +1052,15 @@ export default function MessageClient() {
                             message.isMine ? "justify-end" : "justify-start"
                           }`}
                         >
-                          <div
-                            className={`max-w-[min(85%,28rem)] rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed shadow-sm ${
-                              message.isMine
-                                ? "rounded-br-md bg-indigo-500 text-white"
-                                : "rounded-bl-md bg-white/[0.08] text-white/90 ring-1 ring-white/8"
-                            }`}
-                          >
-                            <p className="whitespace-pre-wrap break-words">
-                              {message.body}
-                            </p>
-                          </div>
+                          <MessageBubble
+                            message={message}
+                            onImageClick={setLightboxUrl}
+                          />
                         </div>
                       </div>
                     );
                   })}
+                  {otherIsTyping && <TypingIndicator />}
                   <div ref={messagesEndRef} />
                 </div>
               )}
@@ -688,14 +1068,51 @@ export default function MessageClient() {
 
             <form
               onSubmit={handleSendMessage}
-              className="border-t border-white/8 bg-[#0e0e10] px-4 py-4"
+              onDragOver={(e) => {
+                e.preventDefault();
+                setComposeDragOver(true);
+              }}
+              onDragLeave={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                  setComposeDragOver(false);
+                }
+              }}
+              onDrop={handleComposeDrop}
+              className={`border-t border-white/8 bg-[#0e0e10] px-4 py-4 transition ${
+                composeDragOver ? "bg-indigo-500/5 ring-1 ring-inset ring-indigo-400/30" : ""
+              }`}
             >
               {sendError && (
                 <p className="mx-auto mb-2 max-w-2xl rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-300 ring-1 ring-red-500/20">
                   {sendError}
                 </p>
               )}
+              {pendingFile && (
+                <PendingAttachmentPreview
+                  file={pendingFile}
+                  previewUrl={pendingPreviewUrl}
+                  onRemove={clearPendingFile}
+                />
+              )}
               <div className="mx-auto flex max-w-2xl items-end gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept={ACCEPTED_FILE_TYPES}
+                  onChange={handleFileInputChange}
+                  className="sr-only"
+                  aria-hidden
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={sending}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white/50 transition hover:bg-white/8 hover:text-white disabled:opacity-40"
+                  aria-label="Attach file"
+                  title="Attach image or file"
+                >
+                  <Paperclip className="h-5 w-5" />
+                </button>
                 <textarea
                   ref={textareaRef}
                   value={draft}
@@ -704,13 +1121,18 @@ export default function MessageClient() {
                     if (sendError) setSendError("");
                   }}
                   onKeyDown={handleTextareaKeyDown}
+                  onPaste={handleTextareaPaste}
                   rows={1}
-                  placeholder="Write a message…"
+                  placeholder={
+                    composeDragOver
+                      ? "Drop to attach…"
+                      : "Write a message…"
+                  }
                   className="max-h-32 min-h-[44px] flex-1 resize-none rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-[15px] text-white placeholder:text-white/35 outline-none transition focus:border-white/20 focus:ring-2 focus:ring-white/10"
                 />
                 <button
                   type="submit"
-                  disabled={!draft.trim() || sending}
+                  disabled={(!draft.trim() && !pendingFile) || sending}
                   className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-indigo-500 text-white transition hover:bg-indigo-400 disabled:opacity-40"
                   aria-label="Send message"
                 >
@@ -804,6 +1226,32 @@ export default function MessageClient() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+          onClick={() => setLightboxUrl(null)}
+          role="dialog"
+          aria-modal
+          aria-label="Image preview"
+        >
+          <button
+            type="button"
+            onClick={() => setLightboxUrl(null)}
+            className="absolute right-4 top-4 rounded-full bg-white/10 p-2.5 text-white transition hover:bg-white/20"
+            aria-label="Close preview"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={lightboxUrl}
+            alt=""
+            className="max-h-[90vh] max-w-full rounded-lg object-contain shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </div>

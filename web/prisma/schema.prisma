@@ -112,10 +112,13 @@ model StlSubmission {
 
 /// Private messenger users (voronyz.com/message — not linked from the public site)
 model MessengerUser {
-  id           String   @id @default(cuid())
-  username     String   @unique
-  passwordHash String
-  createdAt    DateTime @default(now())
+  id                   String    @id @default(cuid())
+  username             String    @unique
+  passwordHash         String
+  createdAt            DateTime  @default(now())
+  lastSeenAt           DateTime?
+  typingConversationId String?
+  typingExpiresAt      DateTime?
 
   sentMessages     Message[]
   conversationsAsA Conversation[] @relation("MessengerParticipantA")
@@ -139,13 +142,17 @@ model Conversation {
 }
 
 model Message {
-  id             String       @id @default(cuid())
-  conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  senderId       String
-  sender         MessengerUser @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  body           String
-  createdAt      DateTime     @default(now())
+  id                   String       @id @default(cuid())
+  conversationId       String
+  conversation         Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId             String
+  sender               MessengerUser @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  body                 String       @default("")
+  attachmentFileName   String?
+  attachmentMimeType   String?
+  attachmentSizeBytes  Int?
+  attachmentData       Bytes?
+  createdAt            DateTime     @default(now())
 
   @@index([conversationId, createdAt])
 }

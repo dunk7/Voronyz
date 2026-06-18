@@ -4,15 +4,55 @@ import {
   unauthorizedMessageResponse,
 } from "@/lib/messageAuth";
 import { canonicalParticipantIds } from "@/lib/messageConversation";
+import { isUserOnline } from "@/lib/messagePresence";
+import { serializeLastMessagePreview } from "@/lib/messageSerialize";
 import { normalizeUsername } from "@/lib/messageUsername";
 import { prisma } from "@/lib/prisma";
+
+const PARTICIPANT_SELECT = {
+  id: true,
+  username: true,
+  lastSeenAt: true,
+} as const;
+
+const LAST_MESSAGE_SELECT = {
+  body: true,
+  createdAt: true,
+  senderId: true,
+  attachmentFileName: true,
+  attachmentMimeType: true,
+} as const;
+
+const CONVERSATION_INCLUDE = {
+  participantA: { select: PARTICIPANT_SELECT },
+  participantB: { select: PARTICIPANT_SELECT },
+  messages: {
+    orderBy: { createdAt: "desc" as const },
+    take: 1,
+    select: LAST_MESSAGE_SELECT,
+  },
+} as const;
 
 type ConversationRow = {
   id: string;
   updatedAt: Date;
-  participantA: { id: string; username: string };
-  participantB: { id: string; username: string };
-  messages: Array<{ body: string; createdAt: Date; senderId: string }>;
+  participantA: {
+    id: string;
+    username: string;
+    lastSeenAt: Date | null;
+  };
+  participantB: {
+    id: string;
+    username: string;
+    lastSeenAt: Date | null;
+  };
+  messages: Array<{
+    body: string;
+    createdAt: Date;
+    senderId: string;
+    attachmentFileName: string | null;
+    attachmentMimeType: string | null;
+  }>;
 };
 
 function serializeConversation(row: ConversationRow, currentUserId: string) {
@@ -24,13 +64,13 @@ function serializeConversation(row: ConversationRow, currentUserId: string) {
 
   return {
     id: row.id,
-    otherUser: { id: other.id, username: other.username },
+    otherUser: {
+      id: other.id,
+      username: other.username,
+      isOnline: isUserOnline(other.lastSeenAt),
+    },
     lastMessage: lastMessage
-      ? {
-          body: lastMessage.body,
-          createdAt: lastMessage.createdAt.toISOString(),
-          isMine: lastMessage.senderId === currentUserId,
-        }
+      ? serializeLastMessagePreview(lastMessage, currentUserId)
       : null,
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -45,15 +85,7 @@ export async function GET(request: NextRequest) {
       OR: [{ participantAId: userId }, { participantBId: userId }],
     },
     orderBy: { updatedAt: "desc" },
-    include: {
-      participantA: { select: { id: true, username: true } },
-      participantB: { select: { id: true, username: true } },
-      messages: {
-        orderBy: { createdAt: "desc" },
-        take: 1,
-        select: { body: true, createdAt: true, senderId: true },
-      },
-    },
+    include: CONVERSATION_INCLUDE,
   });
 
   return NextResponse.json({
@@ -116,29 +148,13 @@ export async function POST(request: NextRequest) {
     where: {
       participantAId_participantBId: { participantAId, participantBId },
     },
-    include: {
-      participantA: { select: { id: true, username: true } },
-      participantB: { select: { id: true, username: true } },
-      messages: {
-        orderBy: { createdAt: "desc" },
-        take: 1,
-        select: { body: true, createdAt: true, senderId: true },
-      },
-    },
+    include: CONVERSATION_INCLUDE,
   });
 
   if (!conversation) {
     conversation = await prisma.conversation.create({
       data: { participantAId, participantBId },
-      include: {
-        participantA: { select: { id: true, username: true } },
-        participantB: { select: { id: true, username: true } },
-        messages: {
-          orderBy: { createdAt: "desc" },
-          take: 1,
-          select: { body: true, createdAt: true, senderId: true },
-        },
-      },
+      include: CONVERSATION_INCLUDE,
     });
   }
 
@@ -166,15 +182,7 @@ export async function POST(request: NextRequest) {
 
     const refreshed = await prisma.conversation.findUnique({
       where: { id: conversation.id },
-      include: {
-        participantA: { select: { id: true, username: true } },
-        participantB: { select: { id: true, username: true } },
-        messages: {
-          orderBy: { createdAt: "desc" },
-          take: 1,
-          select: { body: true, createdAt: true, senderId: true },
-        },
-      },
+      include: CONVERSATION_INCLUDE,
     });
 
     if (refreshed) conversation = refreshed;
