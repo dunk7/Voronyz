@@ -385,16 +385,14 @@ export default function MessageClient() {
         />
         <div className="relative w-full max-w-md">
           <div className="mb-8 text-center">
-            <div className="mx-auto mb-6 flex flex-col items-center gap-3">
-              <VoronyzLogoMark size={72} priority />
-              <span className="text-base font-semibold tracking-[0.25em] text-white/90">
-                VORONYZ
+            <h1 className="mx-auto mb-3 flex items-center justify-center gap-3">
+              <VoronyzLogoMark size={44} priority />
+              <span className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
+                <span className="tracking-[0.18em]">VORONYZ</span>{" "}
+                <span className="font-medium text-white/85">Messages</span>
               </span>
-            </div>
-            <h1 className="text-2xl font-semibold tracking-tight text-white">
-              Messages
             </h1>
-            <p className="mt-2 text-sm text-white/55">
+            <p className="text-sm text-white/55">
               {authMode === "login"
                 ? "Sign in with your username and password."
                 : "Choose a username and password to get started."}
@@ -607,9 +605,6 @@ export default function MessageClient() {
       >
         {!activeConversation ? (
           <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
-            <div className="mb-4 rounded-3xl bg-white/[0.04] p-5 ring-1 ring-white/10">
-              <VoronyzLogoMark size={40} className="opacity-30" />
-            </div>
             <h2 className="text-lg font-medium text-white/80">
               Select a conversation
             </h2>
