@@ -1,5 +1,6 @@
 "use client";
 
+import { normalizeMimeType } from "@/lib/messageAttachment";
 import { useCallback, useRef, useState } from "react";
 
 const MAX_VOICE_SECONDS = 300;
@@ -129,7 +130,7 @@ export function useVoiceRecorder() {
         if (blob.size > 0 && elapsed >= MIN_VOICE_SECONDS) {
           const ext = extensionForMime(mimeRef.current);
           file = new File([blob], `voice-message.${ext}`, {
-            type: mimeRef.current,
+            type: normalizeMimeType(mimeRef.current),
             lastModified: Date.now(),
           });
         }

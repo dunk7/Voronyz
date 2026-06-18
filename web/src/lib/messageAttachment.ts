@@ -15,6 +15,8 @@ const ALLOWED_MIME_TYPES = new Set([
   "audio/mpeg",
   "audio/aac",
   "audio/x-m4a",
+  "audio/wav",
+  "audio/x-wav",
   "application/pdf",
   "text/plain",
   "application/zip",
@@ -56,6 +58,15 @@ export function shouldServeAttachmentInline(mimeType: string | null | undefined)
   );
 }
 
+export function normalizeMimeType(mimeType: string): string {
+  const base = mimeType.split(";")[0]?.trim().toLowerCase();
+  return base || "application/octet-stream";
+}
+
+export function isAllowedMimeType(mimeType: string): boolean {
+  return ALLOWED_MIME_TYPES.has(normalizeMimeType(mimeType));
+}
+
 export function sanitizeAttachmentFileName(fileName: string): string {
   const base = fileName.split(/[/\\]/).pop()?.trim() ?? "attachment";
   const cleaned = base.replace(/[^\w.\-()+\s]/g, "_").slice(0, 200);
@@ -63,8 +74,8 @@ export function sanitizeAttachmentFileName(fileName: string): string {
 }
 
 export function inferMimeType(file: File): string {
-  const fromFile = file.type?.trim().toLowerCase();
-  if (fromFile) return fromFile;
+  const fromFile = file.type?.trim();
+  if (fromFile) return normalizeMimeType(fromFile);
 
   const lower = file.name.toLowerCase();
   if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
@@ -98,12 +109,12 @@ export function validateMessageAttachment(file: File): string | null {
 
   const mimeType = inferMimeType(file);
   if (mimeType.startsWith("audio/")) {
-    if (!ALLOWED_MIME_TYPES.has(mimeType)) {
+    if (!isAllowedMimeType(mimeType)) {
       return "That audio format is not supported.";
     }
     return null;
   }
-  if (!ALLOWED_MIME_TYPES.has(mimeType)) {
+  if (!isAllowedMimeType(mimeType)) {
     return "That file type is not supported. Try an image, video, audio, PDF, or common document.";
   }
 
@@ -131,7 +142,7 @@ export function validateAvatarFile(file: File): string | null {
   if (file.size > AVATAR_MAX_BYTES) {
     return `Profile picture must be at most ${AVATAR_MAX_BYTES / (1024 * 1024)} MB.`;
   }
-  const mimeType = inferMimeType(file);
+  const mimeType = normalizeMimeType(inferMimeType(file));
   if (!AVATAR_MIME_TYPES.has(mimeType)) {
     return "Use a JPEG, PNG, WebP, or GIF image.";
   }
