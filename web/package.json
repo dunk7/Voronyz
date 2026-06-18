@@ -10,6 +10,7 @@
     "lint": "eslint",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
+    "db:migrate": "node scripts/migrate-deploy.mjs",
     "prisma:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "test:orders": "tsx test-order-creation.ts",

@@ -1,23 +1,9 @@
 /**
- * Prints a Supabase direct Postgres URL when DATABASE_URL uses the pooler.
- * Used during Netlify builds for `prisma migrate deploy` (needs directUrl).
+ * Prints a direct Postgres URL for Prisma migrations.
+ * Loads web/.env when run standalone (shell $(…) does not load .env).
  */
-const pooler = process.env.DATABASE_URL?.trim();
-if (!pooler) process.exit(0);
+import { loadDotenv } from "./load-dotenv.mjs";
+import { resolveDatabaseUrlForMigrations } from "./resolve-database-url-for-migrations.mjs";
 
-try {
-  const u = new URL(pooler);
-  const ref = u.username.includes(".") ? u.username.split(".").slice(1).join(".") : null;
-  if (!ref || !u.hostname.includes("pooler.supabase.com")) {
-    process.stdout.write(pooler);
-    process.exit(0);
-  }
-  const direct = new URL(pooler);
-  direct.username = "postgres";
-  direct.hostname = `db.${ref}.supabase.co`;
-  direct.port = "5432";
-  direct.search = "";
-  process.stdout.write(direct.toString());
-} catch {
-  process.stdout.write(pooler);
-}
+loadDotenv();
+process.stdout.write(resolveDatabaseUrlForMigrations());
