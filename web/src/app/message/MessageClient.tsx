@@ -1,10 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import {
   ArrowLeft,
   Loader2,
   LogOut,
-  MessageCircle,
   PenSquare,
   Send,
   User,
@@ -95,6 +95,24 @@ function Avatar({ username }: { username: string }) {
     >
       {letter}
     </div>
+  );
+}
+
+function VoronyzLogoMark({
+  size = 40,
+  className = "",
+}: {
+  size?: number;
+  className?: string;
+}) {
+  return (
+    <Image
+      src="/logo.png"
+      alt="Voronyz"
+      width={size}
+      height={size}
+      className={className}
+    />
   );
 }
 
@@ -357,7 +375,7 @@ export default function MessageClient() {
         <div className="relative w-full max-w-md">
           <div className="mb-8 text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/15 backdrop-blur">
-              <MessageCircle className="h-7 w-7 text-white" />
+              <VoronyzLogoMark size={36} />
             </div>
             <h1 className="text-2xl font-semibold tracking-tight text-white">
               Messages
@@ -513,7 +531,7 @@ export default function MessageClient() {
             </div>
           ) : conversations.length === 0 ? (
             <div className="px-6 py-16 text-center">
-              <MessageCircle className="mx-auto mb-3 h-10 w-10 text-white/20" />
+              <VoronyzLogoMark size={40} className="mx-auto mb-3 opacity-20" />
               <p className="text-sm text-white/50">No conversations yet.</p>
               <button
                 type="button"
@@ -576,7 +594,7 @@ export default function MessageClient() {
         {!activeConversation ? (
           <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
             <div className="mb-4 rounded-3xl bg-white/[0.04] p-5 ring-1 ring-white/10">
-              <MessageCircle className="h-10 w-10 text-white/30" />
+              <VoronyzLogoMark size={40} className="opacity-30" />
             </div>
             <h2 className="text-lg font-medium text-white/80">
               Select a conversation
