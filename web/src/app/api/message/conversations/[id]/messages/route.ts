@@ -4,6 +4,13 @@ import {
   sanitizeAttachmentFileName,
   validateMessageAttachment,
 } from "@/lib/messageAttachment";
+import {
+  finalizePendingUpload,
+  messageStoragePrefix,
+  countPendingChunks,
+  pendingChunkExists,
+  readPendingUploadMeta,
+} from "@/lib/messageBlobStorage";
 import { getConversationForMember } from "@/lib/messageAccess";
 import {
   getMessageUserId,
@@ -28,6 +35,8 @@ const MESSAGE_SELECT = {
   attachmentMimeType: true,
   attachmentSizeBytes: true,
   attachmentDurationSeconds: true,
+  attachmentStorageKey: true,
+  attachmentChunkCount: true,
   sender: { select: { id: true, username: true, avatarMimeType: true } },
 } as const;
 
@@ -36,6 +45,63 @@ function parseAttachmentDurationSeconds(raw: FormDataEntryValue | null): number 
   const seconds = Math.round(Number(raw));
   if (!Number.isFinite(seconds) || seconds <= 0 || seconds > 300) return undefined;
   return seconds;
+}
+
+function parseDurationFromJson(raw: unknown): number | undefined {
+  if (typeof raw !== "number" && typeof raw !== "string") return undefined;
+  const seconds = Math.round(Number(raw));
+  if (!Number.isFinite(seconds) || seconds <= 0 || seconds > 300) return undefined;
+  return seconds;
+}
+
+type DirectAttachment = {
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  durationSeconds?: number;
+  data: Buffer;
+};
+
+type ChunkedAttachment = {
+  uploadId: string;
+  chunkCount: number;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  durationSeconds?: number;
+};
+
+async function verifyChunkedUpload(
+  upload: ChunkedAttachment,
+  userId: string,
+  conversationId: string
+): Promise<{ ok: true; meta: NonNullable<Awaited<ReturnType<typeof readPendingUploadMeta>>> } | { ok: false; error: string }> {
+  const meta = await readPendingUploadMeta(upload.uploadId);
+  if (!meta || meta.userId !== userId || meta.conversationId !== conversationId) {
+    return { ok: false, error: "Upload not found or expired." };
+  }
+  if (
+    meta.chunkCount !== upload.chunkCount ||
+    meta.sizeBytes !== upload.sizeBytes ||
+    meta.fileName !== sanitizeAttachmentFileName(upload.fileName)
+  ) {
+    return { ok: false, error: "Upload metadata mismatch." };
+  }
+
+  const checks = new Set([0, meta.chunkCount - 1]);
+  if (meta.chunkCount > 2) checks.add(Math.floor(meta.chunkCount / 2));
+  for (const index of checks) {
+    if (!(await pendingChunkExists(upload.uploadId, index))) {
+      return { ok: false, error: "Upload is incomplete. Try again." };
+    }
+  }
+
+  const uploadedChunks = await countPendingChunks(upload.uploadId);
+  if (uploadedChunks !== meta.chunkCount) {
+    return { ok: false, error: "Upload is incomplete. Try again." };
+  }
+
+  return { ok: true, meta };
 }
 
 export async function GET(request: NextRequest, context: RouteContext) {
@@ -77,15 +143,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   const contentType = request.headers.get("content-type") ?? "";
   let messageBody = "";
-  let attachment:
-    | {
-        fileName: string;
-        mimeType: string;
-        sizeBytes: number;
-        durationSeconds?: number;
-        data: Buffer;
-      }
-    | undefined;
+  let directAttachment: DirectAttachment | undefined;
+  let chunkedAttachment: ChunkedAttachment | undefined;
 
   if (contentType.includes("multipart/form-data")) {
     let formData: FormData;
@@ -108,7 +167,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
 
       const buffer = Buffer.from(await fileField.arrayBuffer());
-      attachment = {
+      directAttachment = {
         fileName: sanitizeAttachmentFileName(fileField.name),
         mimeType: inferMimeType(fileField),
         sizeBytes: buffer.length,
@@ -119,7 +178,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
       };
     }
   } else {
-    let body: { body?: string };
+    let body: {
+      body?: string;
+      upload?: {
+        uploadId?: string;
+        chunkCount?: number;
+        fileName?: string;
+        mimeType?: string;
+        sizeBytes?: number;
+        durationSeconds?: number;
+      };
+    };
     try {
       body = await request.json();
     } catch {
@@ -127,9 +196,29 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     messageBody = typeof body.body === "string" ? body.body.trim() : "";
+
+    if (body.upload?.uploadId) {
+      const upload = body.upload;
+      const chunkCount = Math.floor(Number(upload.chunkCount));
+      const sizeBytes = Math.floor(Number(upload.sizeBytes));
+      if (!upload.uploadId || !Number.isFinite(chunkCount) || chunkCount <= 0) {
+        return NextResponse.json({ error: "Invalid upload payload." }, { status: 400 });
+      }
+      chunkedAttachment = {
+        uploadId: upload.uploadId,
+        chunkCount,
+        fileName: sanitizeAttachmentFileName(String(upload.fileName ?? "")),
+        mimeType:
+          typeof upload.mimeType === "string" && upload.mimeType.trim()
+            ? upload.mimeType
+            : inferMimeType({ name: String(upload.fileName ?? ""), type: "" } as File),
+        sizeBytes,
+        durationSeconds: parseDurationFromJson(upload.durationSeconds),
+      };
+    }
   }
 
-  if (!messageBody && !attachment) {
+  if (!messageBody && !directAttachment && !chunkedAttachment) {
     return NextResponse.json(
       { error: "Message cannot be empty." },
       { status: 400 }
@@ -143,37 +232,84 @@ export async function POST(request: NextRequest, context: RouteContext) {
     );
   }
 
-  const [message] = await prisma.$transaction([
-    prisma.message.create({
-      data: {
-        conversationId: id,
-        senderId: userId,
-        body: messageBody,
-        ...(attachment
-          ? {
-              attachmentFileName: attachment.fileName,
-              attachmentMimeType: attachment.mimeType,
-              attachmentSizeBytes: attachment.sizeBytes,
-              attachmentDurationSeconds: attachment.durationSeconds,
-              attachmentData: attachment.data,
-            }
-          : {}),
-      },
-      select: MESSAGE_SELECT,
-    }),
-    prisma.conversation.update({
-      where: { id },
-      data: { updatedAt: new Date() },
-    }),
-    prisma.messengerUser.update({
-      where: { id: userId },
-      data: {
-        lastSeenAt: new Date(),
-        typingConversationId: null,
-        typingExpiresAt: null,
-      },
-    }),
-  ]);
+  if (chunkedAttachment) {
+    const verified = await verifyChunkedUpload(chunkedAttachment, userId, id);
+    if (!verified.ok) {
+      return NextResponse.json({ error: verified.error }, { status: 400 });
+    }
+  }
+
+  let message;
+  try {
+    [message] = await prisma.$transaction([
+      prisma.message.create({
+        data: {
+          conversationId: id,
+          senderId: userId,
+          body: messageBody,
+          ...(directAttachment
+            ? {
+                attachmentFileName: directAttachment.fileName,
+                attachmentMimeType: directAttachment.mimeType,
+                attachmentSizeBytes: directAttachment.sizeBytes,
+                attachmentDurationSeconds: directAttachment.durationSeconds,
+                attachmentData: directAttachment.data,
+              }
+            : chunkedAttachment
+              ? {
+                  attachmentFileName: chunkedAttachment.fileName,
+                  attachmentMimeType: chunkedAttachment.mimeType,
+                  attachmentSizeBytes: chunkedAttachment.sizeBytes,
+                  attachmentDurationSeconds: chunkedAttachment.durationSeconds,
+                  attachmentChunkCount: chunkedAttachment.chunkCount,
+                  attachmentStorageKey: "pending",
+                }
+              : {}),
+        },
+        select: MESSAGE_SELECT,
+      }),
+      prisma.conversation.update({
+        where: { id },
+        data: { updatedAt: new Date() },
+      }),
+      prisma.messengerUser.update({
+        where: { id: userId },
+        data: {
+          lastSeenAt: new Date(),
+          typingConversationId: null,
+          typingExpiresAt: null,
+        },
+      }),
+    ]);
+  } catch (err) {
+    console.error("Failed to create message:", err);
+    return NextResponse.json(
+      { error: "Could not send message. Try again." },
+      { status: 500 }
+    );
+  }
+
+  if (chunkedAttachment) {
+    try {
+      await finalizePendingUpload(
+        chunkedAttachment.uploadId,
+        message.id,
+        chunkedAttachment.chunkCount
+      );
+      message = await prisma.message.update({
+        where: { id: message.id },
+        data: { attachmentStorageKey: messageStoragePrefix(message.id) },
+        select: MESSAGE_SELECT,
+      });
+    } catch (err) {
+      console.error("Failed to finalize chunked upload:", err);
+      await prisma.message.delete({ where: { id: message.id } }).catch(() => undefined);
+      return NextResponse.json(
+        { error: "Upload failed while saving. Try again." },
+        { status: 500 }
+      );
+    }
+  }
 
   return NextResponse.json({
     message: serializeChatMessage(message, id, userId),

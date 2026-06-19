@@ -33,12 +33,13 @@ import {
   MediaViewer,
   type MediaViewerItem,
 } from "@/components/message/MediaViewer";
-import { validateMessageAttachment } from "@/lib/messageAttachment";
+import { validateMessageAttachment, shouldUseChunkedUpload } from "@/lib/messageAttachment";
 import {
   isImageUploadFile,
   prepareAvatarImage,
   prepareMessageImage,
 } from "@/lib/prepareImageUpload";
+import { uploadMessageAttachmentChunks } from "@/lib/uploadMessageAttachment.client";
 import {
   useCallback,
   useEffect,
@@ -473,6 +474,7 @@ export default function MessageClient() {
   );
   const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(null);
   const [preparingAttachment, setPreparingAttachment] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [composeDragOver, setComposeDragOver] = useState(false);
   const [mediaViewer, setMediaViewer] = useState<MediaViewerItem | null>(null);
   const [chatPresence, setChatPresence] = useState<{
@@ -810,26 +812,68 @@ export default function MessageClient() {
     async (file: File, body: string, voiceDuration?: number) => {
       if (!activeConversationId) return false;
 
-      const formData = new FormData();
-      if (body) formData.append("body", body);
-      formData.append("file", file);
-      if (voiceDuration && voiceDuration > 0) {
-        formData.append("attachmentDurationSeconds", String(voiceDuration));
-      }
+      try {
+        if (shouldUseChunkedUpload(file.size)) {
+          setUploadProgress(0);
+          const upload = await uploadMessageAttachmentChunks(
+            activeConversationId,
+            file,
+            {
+              durationSeconds: voiceDuration,
+              onProgress: setUploadProgress,
+            }
+          );
+          setUploadProgress(null);
 
-      const res = await fetch(
-        `/api/message/conversations/${activeConversationId}/messages`,
-        { method: "POST", body: formData }
-      );
-      const data = await res.json();
-      if (res.ok && data.message) {
-        setMessages((prev) => [...prev, data.message]);
-        loadConversations();
-        scrollToBottom();
-        return true;
+          const res = await fetch(
+            `/api/message/conversations/${activeConversationId}/messages`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                body,
+                upload,
+              }),
+            }
+          );
+          const data = await res.json();
+          if (res.ok && data.message) {
+            setMessages((prev) => [...prev, data.message]);
+            loadConversations();
+            scrollToBottom();
+            return true;
+          }
+          setSendError(data.error ?? "Could not send message. Try again.");
+          return false;
+        }
+
+        const formData = new FormData();
+        if (body) formData.append("body", body);
+        formData.append("file", file);
+        if (voiceDuration && voiceDuration > 0) {
+          formData.append("attachmentDurationSeconds", String(voiceDuration));
+        }
+
+        const res = await fetch(
+          `/api/message/conversations/${activeConversationId}/messages`,
+          { method: "POST", body: formData }
+        );
+        const data = await res.json();
+        if (res.ok && data.message) {
+          setMessages((prev) => [...prev, data.message]);
+          loadConversations();
+          scrollToBottom();
+          return true;
+        }
+        setSendError(data.error ?? "Could not send message. Try again.");
+        return false;
+      } catch (err) {
+        setUploadProgress(null);
+        setSendError(
+          err instanceof Error ? err.message : "Could not send message. Try again."
+        );
+        return false;
       }
-      setSendError(data.error ?? "Could not send message. Try again.");
-      return false;
     },
     [activeConversationId, loadConversations, scrollToBottom]
   );
@@ -904,24 +948,14 @@ export default function MessageClient() {
     void sendPresence({ typing: false });
 
     try {
-      let res: Response;
-
       if (savedFile) {
-        const formData = new FormData();
-        if (body) formData.append("body", body);
-        formData.append("file", savedFile);
-        if (savedVoiceDuration && savedVoiceDuration > 0) {
-          formData.append(
-            "attachmentDurationSeconds",
-            String(savedVoiceDuration)
-          );
+        const ok = await sendMessageWithFile(savedFile, body, savedVoiceDuration);
+        if (!ok) {
+          setDraft(savedDraft);
+          setPendingAttachment(savedFile, savedVoiceDuration);
         }
-        res = await fetch(
-          `/api/message/conversations/${activeConversationId}/messages`,
-          { method: "POST", body: formData }
-        );
       } else {
-        res = await fetch(
+        const res = await fetch(
           `/api/message/conversations/${activeConversationId}/messages`,
           {
             method: "POST",
@@ -929,17 +963,15 @@ export default function MessageClient() {
             body: JSON.stringify({ body }),
           }
         );
-      }
-
-      const data = await res.json();
-      if (res.ok && data.message) {
-        setMessages((prev) => [...prev, data.message]);
-        loadConversations();
-        scrollToBottom();
-      } else {
-        setDraft(savedDraft);
-        if (savedFile) setPendingAttachment(savedFile, savedVoiceDuration);
-        setSendError(data.error ?? "Could not send message. Try again.");
+        const data = await res.json();
+        if (res.ok && data.message) {
+          setMessages((prev) => [...prev, data.message]);
+          loadConversations();
+          scrollToBottom();
+        } else {
+          setDraft(savedDraft);
+          setSendError(data.error ?? "Could not send message. Try again.");
+        }
       }
     } catch {
       setDraft(savedDraft);
@@ -947,6 +979,7 @@ export default function MessageClient() {
       setSendError("Could not connect. Try again.");
     } finally {
       setSending(false);
+      setUploadProgress(null);
       textareaRef.current?.focus();
     }
   }
@@ -1544,6 +1577,20 @@ export default function MessageClient() {
                   <p className="text-sm text-white/60">Preparing photo…</p>
                 </div>
               )}
+              {uploadProgress !== null && (
+                <div className="mx-auto mb-3 max-w-2xl rounded-2xl bg-white/[0.04] p-3 ring-1 ring-white/10">
+                  <div className="mb-2 flex items-center justify-between text-sm text-white/60">
+                    <span>Uploading…</span>
+                    <span>{Math.round(uploadProgress * 100)}%</span>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+                    <div
+                      className="h-full rounded-full bg-indigo-400 transition-[width]"
+                      style={{ width: `${Math.round(uploadProgress * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
               {pendingFile && (
                 <PendingAttachmentPreview
                   file={pendingFile}
@@ -1564,7 +1611,7 @@ export default function MessageClient() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={sending || isVoiceRecording || preparingAttachment}
+                  disabled={sending || isVoiceRecording || preparingAttachment || uploadProgress !== null}
                   className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white/50 transition hover:bg-white/8 hover:text-white disabled:opacity-40"
                   aria-label="Attach file"
                   title="Attach image or file"
@@ -1600,9 +1647,9 @@ export default function MessageClient() {
                 />
                 <button
                   type="submit"
-                  disabled={(!draft.trim() && !pendingFile) || sending || preparingAttachment}
+                  disabled={(!draft.trim() && !pendingFile) || sending || preparingAttachment || uploadProgress !== null}
                   className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all duration-200 ${
-                    (draft.trim() || pendingFile) && !sending && !preparingAttachment
+                    (draft.trim() || pendingFile) && !sending && !preparingAttachment && uploadProgress === null
                       ? "bg-white text-black shadow-md shadow-black/20 hover:bg-white/90"
                       : "bg-white/[0.08] text-white/30"
                   } disabled:cursor-not-allowed`}

@@ -174,6 +174,8 @@ model Message {
   attachmentMimeType   String?
   attachmentSizeBytes  Int?
   attachmentDurationSeconds Int?
+  attachmentStorageKey String?
+  attachmentChunkCount Int?
   attachmentData       Bytes?
   createdAt            DateTime     @default(now())
 

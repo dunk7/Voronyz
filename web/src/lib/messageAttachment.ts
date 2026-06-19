@@ -1,4 +1,7 @@
-export const MESSAGE_ATTACHMENT_MAX_BYTES = 15 * 1024 * 1024;
+/** ~2 GB (fits signed 32-bit integer column). */
+export const MESSAGE_ATTACHMENT_MAX_BYTES = 2 * 1024 * 1024 * 1024 - 1;
+export const MESSAGE_ATTACHMENT_CHUNK_BYTES = 4 * 1024 * 1024;
+export const DIRECT_UPLOAD_MAX_BYTES = 3 * 1024 * 1024;
 export const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
 
 const ALLOWED_MIME_TYPES = new Set([
@@ -106,29 +109,55 @@ export function inferMimeType(file: File): string {
 }
 
 export function validateMessageAttachment(file: File): string | null {
-  if (file.size <= 0) return "File is empty.";
-  if (file.size > MESSAGE_ATTACHMENT_MAX_BYTES) {
-    return `File must be at most ${MESSAGE_ATTACHMENT_MAX_BYTES / (1024 * 1024)} MB.`;
+  return validateMessageAttachmentMeta(
+    file.name,
+    inferMimeType(file),
+    file.size
+  );
+}
+
+export function validateMessageAttachmentMeta(
+  fileName: string,
+  mimeType: string,
+  sizeBytes: number
+): string | null {
+  if (sizeBytes <= 0) return "File is empty.";
+  if (sizeBytes > MESSAGE_ATTACHMENT_MAX_BYTES) {
+    return `File must be at most ${formatMaxAttachmentSize()}.`;
   }
 
-  const mimeType = inferMimeType(file);
-  if (mimeType.startsWith("audio/")) {
-    if (!isAllowedMimeType(mimeType)) {
+  const normalized = normalizeMimeType(mimeType);
+  if (normalized.startsWith("audio/")) {
+    if (!isAllowedMimeType(normalized)) {
       return "That audio format is not supported.";
     }
     return null;
   }
-  if (!isAllowedMimeType(mimeType)) {
+  if (!isAllowedMimeType(normalized)) {
     return "That file type is not supported. Try an image, video, audio, PDF, or common document.";
   }
 
+  if (!fileName.trim()) return "File name is required.";
   return null;
+}
+
+function formatMaxAttachmentSize(): string {
+  const bytes = MESSAGE_ATTACHMENT_MAX_BYTES;
+  if (bytes >= 1024 * 1024 * 1024) {
+    return `${Math.round(bytes / (1024 * 1024 * 1024))} GB`;
+  }
+  return `${Math.round(bytes / (1024 * 1024))} MB`;
 }
 
 export function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+}
+
+export function shouldUseChunkedUpload(sizeBytes: number): boolean {
+  return sizeBytes > DIRECT_UPLOAD_MAX_BYTES;
 }
 
 export function contentDispositionForAttachment(
