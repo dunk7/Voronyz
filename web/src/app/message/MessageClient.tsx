@@ -33,6 +33,12 @@ import {
   MediaViewer,
   type MediaViewerItem,
 } from "@/components/message/MediaViewer";
+import { validateMessageAttachment } from "@/lib/messageAttachment";
+import {
+  isImageUploadFile,
+  prepareAvatarImage,
+  prepareMessageImage,
+} from "@/lib/prepareImageUpload";
 import {
   useCallback,
   useEffect,
@@ -97,7 +103,7 @@ type ChatMessage = {
 };
 
 const ACCEPTED_FILE_TYPES =
-  "image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime,audio/webm,audio/ogg,audio/mp4,audio/mpeg,.pdf,.txt,.zip,.doc,.docx,.xls,.xlsx,.ppt,.pptx";
+  "image/jpeg,image/png,image/gif,image/webp,image/heic,image/heif,.heic,.heif,video/mp4,video/webm,video/quicktime,audio/webm,audio/ogg,audio/mp4,audio/mpeg,.pdf,.txt,.zip,.doc,.docx,.xls,.xlsx,.ppt,.pptx";
 
 function formatFileSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -361,7 +367,7 @@ function PendingAttachmentPreview({
   durationSeconds?: number;
   onRemove: () => void;
 }) {
-  const isImage = file.type.startsWith("image/");
+  const isImage = isImageUploadFile(file);
   const isVideo = file.type.startsWith("video/");
   const isAudio = file.type.startsWith("audio/");
 
@@ -466,6 +472,7 @@ export default function MessageClient() {
     undefined
   );
   const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(null);
+  const [preparingAttachment, setPreparingAttachment] = useState(false);
   const [composeDragOver, setComposeDragOver] = useState(false);
   const [mediaViewer, setMediaViewer] = useState<MediaViewerItem | null>(null);
   const [chatPresence, setChatPresence] = useState<{
@@ -706,29 +713,60 @@ export default function MessageClient() {
       setPendingVoiceDuration(
         file.type.startsWith("audio/") ? voiceDuration : undefined
       );
-      if (file.type.startsWith("image/") || file.type.startsWith("video/") || file.type.startsWith("audio/")) {
+      if (
+        isImageUploadFile(file) ||
+        file.type.startsWith("video/") ||
+        file.type.startsWith("audio/")
+      ) {
         setPendingPreviewUrl(URL.createObjectURL(file));
       }
     },
     []
   );
 
-  const handleFileInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) setPendingAttachment(file);
+  const attachPendingFile = useCallback(
+    async (rawFile: File) => {
+      setSendError("");
+      setPreparingAttachment(true);
+      try {
+        let file = rawFile;
+        if (isImageUploadFile(rawFile)) {
+          file = await prepareMessageImage(rawFile);
+        }
+        const validationError = validateMessageAttachment(file);
+        if (validationError) {
+          setSendError(validationError);
+          return;
+        }
+        setPendingAttachment(file);
+      } catch {
+        setSendError(
+          "Could not prepare that photo. Try saving it as JPEG or PNG first."
+        );
+      } finally {
+        setPreparingAttachment(false);
+      }
     },
     [setPendingAttachment]
   );
 
+  const handleFileInputChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (file) await attachPendingFile(file);
+    },
+    [attachPendingFile]
+  );
+
   const handleComposeDrop = useCallback(
-    (e: React.DragEvent) => {
+    async (e: React.DragEvent) => {
       e.preventDefault();
       setComposeDragOver(false);
       const file = e.dataTransfer.files?.[0];
-      if (file) setPendingAttachment(file);
+      if (file) await attachPendingFile(file);
     },
-    [setPendingAttachment]
+    [attachPendingFile]
   );
 
   async function handleAuthSubmit(e: React.FormEvent) {
@@ -972,8 +1010,11 @@ export default function MessageClient() {
     setAvatarError("");
     setAvatarUploading(true);
     try {
+      const prepared = isImageUploadFile(file)
+        ? await prepareAvatarImage(file)
+        : file;
       const formData = new FormData();
-      formData.append("avatar", file);
+      formData.append("avatar", prepared);
       const res = await fetch("/api/message/profile", {
         method: "POST",
         body: formData,
@@ -986,7 +1027,9 @@ export default function MessageClient() {
       setUser(data.user);
       await loadConversations();
     } catch {
-      setAvatarError("Could not upload. Try again.");
+      setAvatarError(
+        "Could not upload that photo. Try saving it as JPEG or PNG first."
+      );
     } finally {
       setAvatarUploading(false);
       if (avatarInputRef.current) avatarInputRef.current.value = "";
@@ -1032,13 +1075,13 @@ export default function MessageClient() {
     }
   }
 
-  function handleTextareaPaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+  async function handleTextareaPaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
     const image = Array.from(e.clipboardData.files).find((file) =>
-      file.type.startsWith("image/")
+      isImageUploadFile(file)
     );
     if (image) {
       e.preventDefault();
-      setPendingAttachment(image);
+      await attachPendingFile(image);
     }
   }
 
@@ -1495,6 +1538,12 @@ export default function MessageClient() {
                   {sendError}
                 </p>
               )}
+              {preparingAttachment && (
+                <div className="mx-auto mb-3 flex max-w-2xl items-center gap-3 rounded-2xl bg-white/[0.04] p-3 ring-1 ring-white/10">
+                  <Loader2 className="h-5 w-5 shrink-0 animate-spin text-white/50" />
+                  <p className="text-sm text-white/60">Preparing photo…</p>
+                </div>
+              )}
               {pendingFile && (
                 <PendingAttachmentPreview
                   file={pendingFile}
@@ -1515,7 +1564,7 @@ export default function MessageClient() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={sending || isVoiceRecording}
+                  disabled={sending || isVoiceRecording || preparingAttachment}
                   className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white/50 transition hover:bg-white/8 hover:text-white disabled:opacity-40"
                   aria-label="Attach file"
                   title="Attach image or file"
@@ -1551,9 +1600,9 @@ export default function MessageClient() {
                 />
                 <button
                   type="submit"
-                  disabled={(!draft.trim() && !pendingFile) || sending}
+                  disabled={(!draft.trim() && !pendingFile) || sending || preparingAttachment}
                   className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all duration-200 ${
-                    (draft.trim() || pendingFile) && !sending
+                    (draft.trim() || pendingFile) && !sending && !preparingAttachment
                       ? "bg-white text-black shadow-md shadow-black/20 hover:bg-white/90"
                       : "bg-white/[0.08] text-white/30"
                   } disabled:cursor-not-allowed`}
@@ -1742,7 +1791,7 @@ export default function MessageClient() {
               <input
                 ref={avatarInputRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
+                accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
                 onChange={handleAvatarChange}
                 className="sr-only"
               />

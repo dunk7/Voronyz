@@ -155,8 +155,9 @@ export function AudioMessagePlayer({
 
   const seek = (e: React.MouseEvent<HTMLDivElement>) => {
     const audio = audioRef.current;
+    if (!audio) return;
     const total = resolveDuration(audio) ?? totalDuration;
-    if (!audio || !total) return;
+    if (!total) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const ratio = clamp((e.clientX - rect.left) / rect.width, 0, 1);
     audio.currentTime = ratio * total;
@@ -202,8 +203,9 @@ export function AudioMessagePlayer({
           onClick={seek}
           onKeyDown={(e) => {
             const audio = audioRef.current;
+            if (!audio) return;
             const total = resolveDuration(audio) ?? totalDuration;
-            if (!audio || !total) return;
+            if (!total) return;
             if (e.key === "ArrowRight") {
               audio.currentTime = Math.min(total, audio.currentTime + 2);
             }

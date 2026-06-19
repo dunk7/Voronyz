@@ -6,6 +6,8 @@ const ALLOWED_MIME_TYPES = new Set([
   "image/png",
   "image/gif",
   "image/webp",
+  "image/heic",
+  "image/heif",
   "video/mp4",
   "video/webm",
   "video/quicktime",
@@ -82,6 +84,8 @@ export function inferMimeType(file: File): string {
   if (lower.endsWith(".png")) return "image/png";
   if (lower.endsWith(".gif")) return "image/gif";
   if (lower.endsWith(".webp")) return "image/webp";
+  if (lower.endsWith(".heic")) return "image/heic";
+  if (lower.endsWith(".heif")) return "image/heif";
   if (lower.endsWith(".mp4") && lower.includes("voice")) return "audio/mp4";
   if (lower.endsWith(".mp4")) return "video/mp4";
   if (lower.endsWith(".webm") && lower.includes("voice")) return "audio/webm";
