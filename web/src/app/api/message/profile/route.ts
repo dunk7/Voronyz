@@ -8,6 +8,7 @@ import {
   getMessageUserId,
   unauthorizedMessageResponse,
 } from "@/lib/messageAuth";
+import { hashPassword, verifyPassword } from "@/lib/messagePassword";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -88,4 +89,79 @@ export async function POST(request: NextRequest) {
       avatarUrl: avatarUrlForUser(user),
     },
   });
+}
+
+export async function PATCH(request: NextRequest) {
+  const userId = getMessageUserId(request);
+  if (!userId) return unauthorizedMessageResponse();
+
+  let body: { currentPassword?: string; newPassword?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+  }
+
+  const currentPassword =
+    typeof body.currentPassword === "string" ? body.currentPassword : "";
+  const newPassword = typeof body.newPassword === "string" ? body.newPassword : "";
+
+  if (!currentPassword || !newPassword) {
+    return NextResponse.json(
+      { error: "Current and new password are required." },
+      { status: 400 }
+    );
+  }
+
+  if (newPassword.length < 6) {
+    return NextResponse.json(
+      { error: "New password must be at least 6 characters." },
+      { status: 400 }
+    );
+  }
+
+  if (newPassword.length > 128) {
+    return NextResponse.json(
+      { error: "New password must be at most 128 characters." },
+      { status: 400 }
+    );
+  }
+
+  if (currentPassword === newPassword) {
+    return NextResponse.json(
+      { error: "New password must be different from your current password." },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const user = await prisma.messengerUser.findUnique({
+      where: { id: userId },
+      select: { passwordHash: true },
+    });
+
+    if (!user) return unauthorizedMessageResponse();
+
+    const valid = await verifyPassword(currentPassword, user.passwordHash);
+    if (!valid) {
+      return NextResponse.json(
+        { error: "Current password is incorrect." },
+        { status: 401 }
+      );
+    }
+
+    const passwordHash = await hashPassword(newPassword);
+    await prisma.messengerUser.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("Failed to change password:", err);
+    return NextResponse.json(
+      { error: "Could not change password. Try again." },
+      { status: 500 }
+    );
+  }
 }

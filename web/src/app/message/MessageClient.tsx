@@ -14,6 +14,7 @@ import {
   Paperclip,
   PenSquare,
   Settings,
+  Trash2,
   User,
   Users,
   Video,
@@ -477,6 +478,13 @@ export default function MessageClient() {
   const [showProfile, setShowProfile] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarError, setAvatarError] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false);
+  const [deletingConversation, setDeletingConversation] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const [mobileShowChat, setMobileShowChat] = useState(false);
@@ -1117,6 +1125,89 @@ export default function MessageClient() {
     }
   }
 
+  function resetPasswordForm() {
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setPasswordError("");
+    setPasswordSuccess("");
+  }
+
+  async function handlePasswordChange(e: React.FormEvent) {
+    e.preventDefault();
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError("New passwords do not match.");
+      return;
+    }
+
+    setPasswordSubmitting(true);
+    try {
+      const res = await fetch("/api/message/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      });
+      if (!res.ok) {
+        setPasswordError(
+          await readApiError(res, "Could not change password. Try again.")
+        );
+        return;
+      }
+      resetPasswordForm();
+      setPasswordSuccess("Password updated.");
+    } catch {
+      setPasswordError("Could not connect. Try again.");
+    } finally {
+      setPasswordSubmitting(false);
+    }
+  }
+
+  async function handleDeleteConversation() {
+    if (!activeConversationId || !activeConversation) return;
+
+    const label = activeConversation.isGroup
+      ? `Delete "${activeConversation.name}" for everyone?`
+      : `Delete your conversation with @${activeConversation.otherUser.username}?`;
+    const confirmed = window.confirm(
+      `${label}\n\nAll messages will be permanently removed for every participant.`
+    );
+    if (!confirmed) return;
+
+    setSendError("");
+    setDeletingConversation(true);
+    try {
+      const res = await fetch(
+        `/api/message/conversations/${activeConversationId}`,
+        { method: "DELETE" }
+      );
+      if (!res.ok) {
+        setSendError(
+          await readApiError(res, "Could not delete conversation. Try again.")
+        );
+        return;
+      }
+
+      const deletedId = activeConversationId;
+      setConversations((prev) => prev.filter((c) => c.id !== deletedId));
+      setActiveConversationId(null);
+      setMessages([]);
+      setMobileShowChat(false);
+      setChatPresence({ isOnline: false, typingUsers: [] });
+      await loadConversations();
+    } catch {
+      setSendError("Could not connect. Try again.");
+    } finally {
+      setDeletingConversation(false);
+    }
+  }
+
   function selectConversation(id: string) {
     cancelVoice();
     setActiveConversationId(id);
@@ -1304,6 +1395,7 @@ export default function MessageClient() {
             onClick={() => {
               setShowProfile(true);
               setAvatarError("");
+              resetPasswordForm();
             }}
             className="flex min-w-0 items-center gap-3 rounded-xl py-1 pr-2 text-left transition hover:bg-white/5"
           >
@@ -1336,6 +1428,7 @@ export default function MessageClient() {
               onClick={() => {
                 setShowProfile(true);
                 setAvatarError("");
+                resetPasswordForm();
               }}
               className="rounded-xl p-2.5 text-white/70 transition hover:bg-white/8 hover:text-white"
               title="Profile"
@@ -1509,6 +1602,20 @@ export default function MessageClient() {
                   )}
                 </p>
               </div>
+              <button
+                type="button"
+                onClick={handleDeleteConversation}
+                disabled={deletingConversation || sending}
+                className="rounded-lg p-2 text-white/45 transition hover:bg-red-500/10 hover:text-red-300 disabled:opacity-40"
+                aria-label="Delete conversation"
+                title="Delete conversation"
+              >
+                {deletingConversation ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Trash2 className="h-5 w-5" />
+                )}
+              </button>
             </header>
 
             <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4 sm:py-5">
@@ -1860,7 +1967,12 @@ export default function MessageClient() {
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-sm sm:items-center">
           <div
             className="absolute inset-0"
-            onClick={() => !avatarUploading && setShowProfile(false)}
+            onClick={() => {
+              if (!avatarUploading && !passwordSubmitting) {
+                setShowProfile(false);
+                resetPasswordForm();
+              }
+            }}
             aria-hidden
           />
           <div className="relative w-full max-w-md rounded-3xl bg-[#161618] p-6 ring-1 ring-white/10 shadow-2xl">
@@ -1912,10 +2024,86 @@ export default function MessageClient() {
               )}
             </div>
 
+            <div className="mt-8 border-t border-white/8 pt-6">
+              <h4 className="text-sm font-medium text-white/80">Change password</h4>
+              <form onSubmit={handlePasswordChange} className="mt-4 space-y-3">
+                <label className="block" htmlFor="message-current-password">
+                  <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/45">
+                    Current password
+                  </span>
+                  <input
+                    id="message-current-password"
+                    name="current-password"
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    autoComplete="current-password"
+                    className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none transition focus:border-white/25 focus:ring-2 focus:ring-white/10"
+                    required
+                  />
+                </label>
+                <label className="block" htmlFor="message-new-password">
+                  <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/45">
+                    New password
+                  </span>
+                  <input
+                    id="message-new-password"
+                    name="new-password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    autoComplete="new-password"
+                    minLength={6}
+                    className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none transition focus:border-white/25 focus:ring-2 focus:ring-white/10"
+                    required
+                  />
+                </label>
+                <label className="block" htmlFor="message-confirm-password">
+                  <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/45">
+                    Confirm new password
+                  </span>
+                  <input
+                    id="message-confirm-password"
+                    name="confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    autoComplete="new-password"
+                    minLength={6}
+                    className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none transition focus:border-white/25 focus:ring-2 focus:ring-white/10"
+                    required
+                  />
+                </label>
+                {passwordError && (
+                  <p className="rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-300 ring-1 ring-red-500/20">
+                    {passwordError}
+                  </p>
+                )}
+                {passwordSuccess && (
+                  <p className="rounded-xl bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300 ring-1 ring-emerald-500/20">
+                    {passwordSuccess}
+                  </p>
+                )}
+                <button
+                  type="submit"
+                  disabled={passwordSubmitting || avatarUploading}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 py-2.5 text-sm font-medium text-white transition hover:bg-white/15 disabled:opacity-50"
+                >
+                  {passwordSubmitting && (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  )}
+                  Update password
+                </button>
+              </form>
+            </div>
+
             <button
               type="button"
-              onClick={() => setShowProfile(false)}
-              disabled={avatarUploading}
+              onClick={() => {
+                setShowProfile(false);
+                resetPasswordForm();
+              }}
+              disabled={avatarUploading || passwordSubmitting}
               className="mt-6 w-full rounded-xl border border-white/10 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/5"
             >
               Done

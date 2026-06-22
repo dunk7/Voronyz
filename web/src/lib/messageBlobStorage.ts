@@ -176,3 +176,15 @@ export function messageAttachmentStream(
     },
   });
 }
+
+export async function deleteMessageBlobAttachments(
+  messageId: string,
+  chunkCount: number
+): Promise<void> {
+  const store = getAttachmentBlobStore();
+  await Promise.all(
+    Array.from({ length: chunkCount }, (_, index) =>
+      store.delete(messageChunkKey(messageId, index)).catch(() => undefined)
+    )
+  );
+}
