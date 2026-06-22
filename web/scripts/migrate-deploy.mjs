@@ -10,13 +10,21 @@ loadDotenv();
 const databaseUrl = resolveDatabaseUrlForMigrations();
 if (!databaseUrl) {
   const msg =
-    "DATABASE_URL or DIRECT_DATABASE_URL must be set (e.g. in web/.env or GitHub Actions secrets).";
+    "DATABASE_URL or DIRECT_DATABASE_URL must be set (Netlify env vars or local web/.env).";
+  if (process.env.NETLIFY) {
+    console.warn(`Skipping migrations: ${msg}`);
+    process.exit(0);
+  }
   if (process.env.GITHUB_ACTIONS) {
     console.error(`::error::${msg}`);
     process.exit(1);
   }
   console.error(msg);
   process.exit(1);
+}
+
+if (process.env.NETLIFY) {
+  console.log("Applying database migrations during Netlify build...");
 }
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");

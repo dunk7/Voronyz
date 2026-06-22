@@ -65,8 +65,12 @@ For **testing/demo purposes**, you can deploy without any environment variables:
 This project uses PostgreSQL. For Netlify deployment:
 
 1. Use a cloud PostgreSQL service like Supabase, Neon, or Railway
-2. Set `DATABASE_URL` (runtime; can be a pooler URL) and `DIRECT_DATABASE_URL` (direct DB URL; recommended)
-3. Run `npx prisma migrate deploy` to apply migrations (this repo runs it automatically on Netlify when `DATABASE_URL` is set)
+2. In **Netlify** → Site settings → Environment variables, set:
+   - `DATABASE_URL` — pooler/runtime connection string
+   - `DIRECT_DATABASE_URL` — direct (non-pooler) connection string for migrations (recommended on Supabase)
+3. Each Netlify deploy runs `prisma migrate deploy` automatically before the build
+
+You can also run migrations manually with `cd web && npm run db:migrate`, or use the GitHub Actions workflow if you add the same URLs as repository secrets.
 
 ### Build Settings
 

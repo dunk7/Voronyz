@@ -1,5 +1,6 @@
 # Applies Prisma migrations to production when schema/migrations change on main.
-# Requires repository secrets DATABASE_URL and DIRECT_DATABASE_URL (Supabase pooler + direct).
+# Optional: applies Prisma migrations when GitHub repo secrets are configured.
+# Production deploys also run migrations during the Netlify build (Netlify env vars).
 name: Database migrate (production)
 
 on:

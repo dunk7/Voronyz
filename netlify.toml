@@ -1,8 +1,7 @@
 [build]
   base = "web"
-  # Migrations: GitHub Actions workflow database-migrate.yml (requires repo secrets), or locally:
-  # cd web && npm run db:migrate
-  command = "npx prisma generate && npm run build"
+  # Migrations use DATABASE_URL / DIRECT_DATABASE_URL from Netlify environment variables.
+  command = "npx prisma generate && npm run db:migrate && npm run build"
   publish = ".next"
 
 [build.environment]
