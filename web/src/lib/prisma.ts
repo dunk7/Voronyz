@@ -34,7 +34,13 @@ function getDatasourceUrl(): string {
   try {
     const u = new URL(raw);
     if (!u.searchParams.has("pgbouncer")) u.searchParams.set("pgbouncer", "true");
-    if (!u.searchParams.has("statement_cache_size")) u.searchParams.set("statement_cache_size", "0");
+    if (!u.searchParams.has("statement_cache_size")) {
+      u.searchParams.set("statement_cache_size", "0");
+    }
+    // One connection per serverless invocation when using a pooler.
+    if (!u.searchParams.has("connection_limit")) {
+      u.searchParams.set("connection_limit", "1");
+    }
     return u.toString();
   } catch {
     return raw;
@@ -58,10 +64,8 @@ function initPrismaClient(): PrismaClient {
       },
     });
 
-  // Prevent multiple instances in development / hot reload
-  if (process.env.NODE_ENV !== "production") {
-    globalForPrisma.prisma = client;
-  }
+  // Reuse one client per warm serverless instance (Netlify/Vercel) and in dev HMR.
+  globalForPrisma.prisma = client;
 
   return client;
 }

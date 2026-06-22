@@ -4,8 +4,9 @@ import {
   getMessageUserId,
   setMessageSession,
 } from "@/lib/messageAuth";
-import { prisma } from "@/lib/prisma";
 import { messengerDatabaseErrorMessage } from "@/lib/messageDatabaseError";
+import { verifyPassword } from "@/lib/messagePassword";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   const userId = getMessageUserId(request);
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { verifyPassword } = await import("@/lib/messagePassword");
+import { verifyPassword } from "@/lib/messagePassword";
     const valid = await verifyPassword(password, user.passwordHash);
     if (!valid) {
       return NextResponse.json(
