@@ -1,5 +1,5 @@
 # Applies Prisma migrations to production when schema/migrations change on main.
-# Requires repository secret DATABASE_URL (direct or pooler Supabase URL).
+# Requires repository secrets DATABASE_URL and DIRECT_DATABASE_URL (Supabase pooler + direct).
 name: Database migrate (production)
 
 on:

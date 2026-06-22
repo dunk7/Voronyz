@@ -12,8 +12,8 @@ if (!databaseUrl) {
   const msg =
     "DATABASE_URL or DIRECT_DATABASE_URL must be set (e.g. in web/.env or GitHub Actions secrets).";
   if (process.env.GITHUB_ACTIONS) {
-    console.warn(`::warning::${msg}`);
-    process.exit(0);
+    console.error(`::error::${msg}`);
+    process.exit(1);
   }
   console.error(msg);
   process.exit(1);

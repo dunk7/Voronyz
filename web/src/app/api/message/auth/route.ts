@@ -5,6 +5,7 @@ import {
   setMessageSession,
 } from "@/lib/messageAuth";
 import { prisma } from "@/lib/prisma";
+import { messengerDatabaseErrorMessage } from "@/lib/messageDatabaseError";
 
 export async function GET(request: NextRequest) {
   const userId = getMessageUserId(request);
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
   } catch (err) {
     console.error("Message auth session lookup failed:", err);
     return NextResponse.json(
-      { error: "Messenger is temporarily unavailable. Try again shortly." },
+      { error: messengerDatabaseErrorMessage(err) },
       { status: 503 }
     );
   }
@@ -99,7 +100,7 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     console.error("Message auth login failed:", err);
     return NextResponse.json(
-      { error: "Messenger is temporarily unavailable. Try again shortly." },
+      { error: messengerDatabaseErrorMessage(err) },
       { status: 503 }
     );
   }

@@ -7,6 +7,7 @@ import {
   usernameValidationError,
 } from "@/lib/messageUsername";
 import { prisma } from "@/lib/prisma";
+import { messengerDatabaseErrorMessage } from "@/lib/messageDatabaseError";
 
 export async function POST(request: NextRequest) {
   let body: { username?: string; password?: string };
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     console.error("Message auth registration failed:", err);
     return NextResponse.json(
-      { error: "Messenger is temporarily unavailable. Try again shortly." },
+      { error: messengerDatabaseErrorMessage(err) },
       { status: 503 }
     );
   }
