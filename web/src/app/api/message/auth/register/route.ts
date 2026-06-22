@@ -42,28 +42,36 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid username." }, { status: 400 });
   }
 
-  const existing = await prisma.messengerUser.findUnique({
-    where: { username },
-    select: { id: true },
-  });
+  try {
+    const existing = await prisma.messengerUser.findUnique({
+      where: { username },
+      select: { id: true },
+    });
 
-  if (existing) {
+    if (existing) {
+      return NextResponse.json(
+        { error: "That username is already taken." },
+        { status: 409 }
+      );
+    }
+
+    const passwordHash = await hashPassword(password);
+    const user = await prisma.messengerUser.create({
+      data: { username, passwordHash },
+      select: { id: true, username: true },
+    });
+
+    const res = NextResponse.json({
+      success: true,
+      user: { id: user.id, username: user.username },
+    });
+    setMessageSession(res, user.id);
+    return res;
+  } catch (err) {
+    console.error("Message auth registration failed:", err);
     return NextResponse.json(
-      { error: "That username is already taken." },
-      { status: 409 }
+      { error: "Messenger is temporarily unavailable. Try again shortly." },
+      { status: 503 }
     );
   }
-
-  const passwordHash = await hashPassword(password);
-  const user = await prisma.messengerUser.create({
-    data: { username, passwordHash },
-    select: { id: true, username: true },
-  });
-
-  const res = NextResponse.json({
-    success: true,
-    user: { id: user.id, username: user.username },
-  });
-  setMessageSession(res, user.id);
-  return res;
 }

@@ -109,6 +109,21 @@ function formatFileSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+async function readApiError(
+  res: Response,
+  fallback: string
+): Promise<string> {
+  try {
+    const data = await res.json();
+    if (typeof data?.error === "string" && data.error.trim()) {
+      return data.error;
+    }
+  } catch {
+    // Response body was empty or not JSON.
+  }
+  return fallback;
+}
+
 function isVideoAttachment(attachment: MessageAttachment | null | undefined) {
   return Boolean(attachment?.mimeType.startsWith("video/"));
 }
@@ -780,20 +795,32 @@ export default function MessageClient() {
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify({
           username: username.trim().toLowerCase(),
           password,
         }),
       });
-      const data = await res.json();
       if (!res.ok) {
-        setAuthError(data.error ?? "Something went wrong.");
+        setAuthError(
+          await readApiError(
+            res,
+            res.status >= 500
+              ? "Messenger is temporarily unavailable. Try again shortly."
+              : "Something went wrong."
+          )
+        );
+        return;
+      }
+      const data = await res.json();
+      if (!data.user) {
+        setAuthError("Something went wrong.");
         return;
       }
       setUser(data.user);
       setPassword("");
     } catch {
-      setAuthError("Could not connect. Please try again.");
+      setAuthError("Could not connect. Check your internet and try again.");
     } finally {
       setAuthSubmitting(false);
     }
@@ -1183,21 +1210,33 @@ export default function MessageClient() {
 
             <form
               onSubmit={handleAuthSubmit}
+              method="post"
+              action={
+                authMode === "login"
+                  ? "/api/message/auth"
+                  : "/api/message/auth/register"
+              }
+              autoComplete="on"
               className="rounded-[1.35rem] bg-[#121214] p-6 ring-1 ring-white/5"
             >
-              <label className="block">
+              <label className="block" htmlFor="message-username">
                 <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/45">
                   Username
                 </span>
                 <div className="relative">
                   <User className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
                   <input
+                    id="message-username"
+                    name="username"
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     autoComplete="username"
                     autoCapitalize="none"
+                    autoCorrect="off"
                     spellCheck={false}
+                    inputMode="text"
+                    enterKeyHint="next"
                     className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-3 pl-10 pr-4 text-white placeholder:text-white/30 outline-none transition focus:border-white/25 focus:ring-2 focus:ring-white/10"
                     placeholder="yourname"
                     required
@@ -1205,17 +1244,20 @@ export default function MessageClient() {
                 </div>
               </label>
 
-              <label className="mt-4 block">
+              <label className="mt-4 block" htmlFor="message-password">
                 <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-white/45">
                   Password
                 </span>
                 <input
+                  id="message-password"
+                  name="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete={
                     authMode === "login" ? "current-password" : "new-password"
                   }
+                  enterKeyHint="go"
                   className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white placeholder:text-white/30 outline-none transition focus:border-white/25 focus:ring-2 focus:ring-white/10"
                   placeholder={
                     authMode === "register" ? "At least 6 characters" : "••••••••"

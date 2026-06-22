@@ -12,27 +12,35 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ authenticated: false });
   }
 
-  const user = await prisma.messengerUser.findUnique({
-    where: { id: userId },
-    select: { id: true, username: true, avatarMimeType: true },
-  });
+  try {
+    const user = await prisma.messengerUser.findUnique({
+      where: { id: userId },
+      select: { id: true, username: true, avatarMimeType: true },
+    });
 
-  if (!user) {
-    const res = NextResponse.json({ authenticated: false });
-    clearMessageSession(res);
-    return res;
+    if (!user) {
+      const res = NextResponse.json({ authenticated: false });
+      clearMessageSession(res);
+      return res;
+    }
+
+    return NextResponse.json({
+      authenticated: true,
+      user: {
+        id: user.id,
+        username: user.username,
+        avatarUrl: user.avatarMimeType
+          ? `/api/message/users/${user.id}/avatar`
+          : null,
+      },
+    });
+  } catch (err) {
+    console.error("Message auth session lookup failed:", err);
+    return NextResponse.json(
+      { error: "Messenger is temporarily unavailable. Try again shortly." },
+      { status: 503 }
+    );
   }
-
-  return NextResponse.json({
-    authenticated: true,
-    user: {
-      id: user.id,
-      username: user.username,
-      avatarUrl: user.avatarMimeType
-        ? `/api/message/users/${user.id}/avatar`
-        : null,
-    },
-  });
 }
 
 export async function DELETE() {
@@ -60,31 +68,39 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const user = await prisma.messengerUser.findUnique({
-    where: { username },
-    select: { id: true, passwordHash: true },
-  });
+  try {
+    const user = await prisma.messengerUser.findUnique({
+      where: { username },
+      select: { id: true, passwordHash: true },
+    });
 
-  if (!user) {
+    if (!user) {
+      return NextResponse.json(
+        { error: "Invalid username or password." },
+        { status: 401 }
+      );
+    }
+
+    const { verifyPassword } = await import("@/lib/messagePassword");
+    const valid = await verifyPassword(password, user.passwordHash);
+    if (!valid) {
+      return NextResponse.json(
+        { error: "Invalid username or password." },
+        { status: 401 }
+      );
+    }
+
+    const res = NextResponse.json({
+      success: true,
+      user: { id: user.id, username },
+    });
+    setMessageSession(res, user.id);
+    return res;
+  } catch (err) {
+    console.error("Message auth login failed:", err);
     return NextResponse.json(
-      { error: "Invalid username or password." },
-      { status: 401 }
+      { error: "Messenger is temporarily unavailable. Try again shortly." },
+      { status: 503 }
     );
   }
-
-  const { verifyPassword } = await import("@/lib/messagePassword");
-  const valid = await verifyPassword(password, user.passwordHash);
-  if (!valid) {
-    return NextResponse.json(
-      { error: "Invalid username or password." },
-      { status: 401 }
-    );
-  }
-
-  const res = NextResponse.json({
-    success: true,
-    user: { id: user.id, username },
-  });
-  setMessageSession(res, user.id);
-  return res;
 }

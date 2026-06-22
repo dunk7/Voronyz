@@ -110,7 +110,8 @@ model StlSubmission {
   @@index([createdAt])
 }
 
-/// Private messenger users (voronyz.com/message — not linked from the public site)
+/// Private messenger users (voronyz.com/message — not linked from the public site).
+/// Production requires `web/prisma` migrations applied via the database-migrate workflow.
 model MessengerUser {
   id                   String    @id @default(cuid())
   username             String    @unique
