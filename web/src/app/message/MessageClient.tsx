@@ -103,9 +103,6 @@ type ChatMessage = {
   attachment: MessageAttachment | null;
 };
 
-const ACCEPTED_FILE_TYPES =
-  "image/jpeg,image/png,image/gif,image/webp,image/heic,image/heif,.heic,.heif,video/mp4,video/webm,video/quicktime,audio/webm,audio/ogg,audio/mp4,audio/mpeg,.pdf,.txt,.zip,.doc,.docx,.xls,.xlsx,.ppt,.pptx";
-
 function formatFileSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -1603,7 +1600,6 @@ export default function MessageClient() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept={ACCEPTED_FILE_TYPES}
                   onChange={handleFileInputChange}
                   className="sr-only"
                   aria-hidden
@@ -1614,7 +1610,7 @@ export default function MessageClient() {
                   disabled={sending || isVoiceRecording || preparingAttachment || uploadProgress !== null}
                   className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white/50 transition hover:bg-white/8 hover:text-white disabled:opacity-40"
                   aria-label="Attach file"
-                  title="Attach image or file"
+                  title="Attach file"
                 >
                   <Paperclip className="h-5 w-5" />
                 </button>

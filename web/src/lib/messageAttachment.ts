@@ -4,34 +4,6 @@ export const MESSAGE_ATTACHMENT_CHUNK_BYTES = 4 * 1024 * 1024;
 export const DIRECT_UPLOAD_MAX_BYTES = 3 * 1024 * 1024;
 export const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
 
-const ALLOWED_MIME_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/gif",
-  "image/webp",
-  "image/heic",
-  "image/heif",
-  "video/mp4",
-  "video/webm",
-  "video/quicktime",
-  "audio/webm",
-  "audio/ogg",
-  "audio/mp4",
-  "audio/mpeg",
-  "audio/aac",
-  "audio/x-m4a",
-  "audio/wav",
-  "audio/x-wav",
-  "application/pdf",
-  "text/plain",
-  "application/zip",
-  "application/x-zip-compressed",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-]);
-
 const AVATAR_MIME_TYPES = new Set([
   "image/jpeg",
   "image/png",
@@ -66,10 +38,6 @@ export function shouldServeAttachmentInline(mimeType: string | null | undefined)
 export function normalizeMimeType(mimeType: string): string {
   const base = mimeType.split(";")[0]?.trim().toLowerCase();
   return base || "application/octet-stream";
-}
-
-export function isAllowedMimeType(mimeType: string): boolean {
-  return ALLOWED_MIME_TYPES.has(normalizeMimeType(mimeType));
 }
 
 export function sanitizeAttachmentFileName(fileName: string): string {
@@ -124,17 +92,6 @@ export function validateMessageAttachmentMeta(
   if (sizeBytes <= 0) return "File is empty.";
   if (sizeBytes > MESSAGE_ATTACHMENT_MAX_BYTES) {
     return `File must be at most ${formatMaxAttachmentSize()}.`;
-  }
-
-  const normalized = normalizeMimeType(mimeType);
-  if (normalized.startsWith("audio/")) {
-    if (!isAllowedMimeType(normalized)) {
-      return "That audio format is not supported.";
-    }
-    return null;
-  }
-  if (!isAllowedMimeType(normalized)) {
-    return "That file type is not supported. Try an image, video, audio, PDF, or common document.";
   }
 
   if (!fileName.trim()) return "File name is required.";
