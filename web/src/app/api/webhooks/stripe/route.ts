@@ -201,11 +201,16 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
       console.warn(`Session ${session.id} has zero total amount`);
     }
 
+    const existingOrder = await prisma.order.findUnique({
+      where: { stripeId: session.id },
+    });
+    const preserveCompletedStatus = existingOrder?.status === "completed";
+
     // Create or update order in database with all information
     const order = await prisma.order.upsert({
       where: { stripeId: session.id },
       update: {
-        status: "paid",
+        ...(preserveCompletedStatus ? {} : { status: "paid" }),
         totalCents,
         subtotalCents,
         currency,

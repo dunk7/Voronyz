@@ -28,6 +28,7 @@ type AdminTab = "orders" | "uploads";
 
 const STATUS_STYLES: Record<string, string> = {
   paid: "bg-emerald-100 text-emerald-800",
+  completed: "bg-blue-100 text-blue-800",
   pending: "bg-amber-100 text-amber-800",
   pending_nano: "bg-sky-100 text-sky-800",
   expired: "bg-neutral-200 text-neutral-700",
@@ -127,6 +128,8 @@ export default function OrdersAdminClient() {
   const [sortKey, setSortKey] = useState<SortKey>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
+  const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null);
   const [tab, setTab] = useState<AdminTab>("orders");
   const [uploadsRefresh, setUploadsRefresh] = useState(0);
 
@@ -202,6 +205,33 @@ export default function OrdersAdminClient() {
   function handleRefresh() {
     if (tab === "orders") loadOrders();
     else setUploadsRefresh((n) => n + 1);
+  }
+
+  async function updateOrderStatus(orderId: string, status: "completed" | "paid") {
+    setStatusUpdatingId(orderId);
+    setStatusUpdateError(null);
+    try {
+      const res = await fetch(`/api/orders/admin/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (res.status === 401) {
+        setAuthenticated(false);
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update order");
+      }
+      if (data.order) {
+        setOrders((prev) => prev.map((o) => (o.id === orderId ? data.order : o)));
+      }
+    } catch (err) {
+      setStatusUpdateError(err instanceof Error ? err.message : "Failed to update order");
+    } finally {
+      setStatusUpdatingId(null);
+    }
   }
 
   function toggleSort(key: SortKey) {
@@ -457,6 +487,12 @@ export default function OrdersAdminClient() {
           </div>
         )}
 
+        {statusUpdateError && (
+          <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">
+            {statusUpdateError}
+          </div>
+        )}
+
         {loadingOrders && orders.length === 0 ? (
           <div className="flex justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
@@ -510,7 +546,39 @@ export default function OrdersAdminClient() {
                   </button>
 
                   {expanded && (
-                    <div className="border-t border-black/5 px-5 py-5 grid gap-6 lg:grid-cols-2 print:grid-cols-2">
+                    <div className="border-t border-black/5 px-5 py-5 space-y-5">
+                      {(order.status === "paid" || order.status === "completed") && (
+                        <div className="flex flex-wrap items-center gap-2 print:hidden">
+                          {order.status === "paid" ? (
+                            <button
+                              type="button"
+                              onClick={() => updateOrderStatus(order.id, "completed")}
+                              disabled={statusUpdatingId === order.id}
+                              className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                            >
+                              {statusUpdatingId === order.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Check className="h-4 w-4" />
+                              )}
+                              Mark complete
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => updateOrderStatus(order.id, "paid")}
+                              disabled={statusUpdatingId === order.id}
+                              className="inline-flex items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
+                            >
+                              {statusUpdatingId === order.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : null}
+                              Mark incomplete
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      <div className="grid gap-6 lg:grid-cols-2 print:grid-cols-2">
                       <div className="space-y-3">
                         <h3 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
                           Ship to
@@ -583,6 +651,7 @@ export default function OrdersAdminClient() {
                             <span>{formatCentsAsCurrency(order.totalCents, order.currency)}</span>
                           </div>
                         </div>
+                      </div>
                       </div>
                     </div>
                   )}

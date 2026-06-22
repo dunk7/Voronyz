@@ -254,7 +254,7 @@ export async function POST(request: NextRequest) {
       order = await prisma.order.upsert({
         where: { stripeId: actualSession.id },
         update: {
-          status: "paid",
+          ...(existingOrder?.status === "completed" ? {} : { status: "paid" }),
           currency,
           subtotalCents,
           totalCents,
