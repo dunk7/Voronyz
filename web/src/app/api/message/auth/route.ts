@@ -83,7 +83,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-import { verifyPassword } from "@/lib/messagePassword";
     const valid = await verifyPassword(password, user.passwordHash);
     if (!valid) {
       return NextResponse.json(
