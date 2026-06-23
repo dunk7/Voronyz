@@ -1,7 +1,9 @@
 [build]
   base = "web"
-  # Migrations use DATABASE_URL / DIRECT_DATABASE_URL from Netlify environment variables.
-  command = "npx prisma generate && npm run db:migrate && npm run build"
+  # Migrations: GitHub Actions workflow database-migrate.yml (requires repo secrets), or locally:
+  # cd web && npm run db:migrate
+  # Do not run migrations during Netlify builds — Netlify cannot reach Supabase direct host (P1001).
+  command = "npx prisma generate && npm run build"
   publish = ".next"
 
 [build.environment]
