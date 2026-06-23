@@ -370,6 +370,12 @@ function MessageBubble({
   );
 }
 
+type PendingAttachment = {
+  file: File;
+  previewUrl: string | null;
+  voiceDuration?: number;
+};
+
 function PendingAttachmentPreview({
   file,
   previewUrl,
@@ -488,13 +494,15 @@ export default function MessageClient() {
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const [mobileShowChat, setMobileShowChat] = useState(false);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [pendingVoiceDuration, setPendingVoiceDuration] = useState<number | undefined>(
-    undefined
+  const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>(
+    []
   );
-  const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(null);
   const [preparingAttachment, setPreparingAttachment] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<{
+    current: number;
+    total: number;
+    fraction: number;
+  } | null>(null);
   const [composeDragOver, setComposeDragOver] = useState(false);
   const [mediaViewer, setMediaViewer] = useState<MediaViewerItem | null>(null);
   const [chatPresence, setChatPresence] = useState<{
@@ -703,64 +711,88 @@ export default function MessageClient() {
     }
   }, [messages, messagesLoading, scrollToBottom]);
 
+  const pendingAttachmentsRef = useRef(pendingAttachments);
+  pendingAttachmentsRef.current = pendingAttachments;
+
   useEffect(() => {
     return () => {
-      if (pendingPreviewUrl) URL.revokeObjectURL(pendingPreviewUrl);
+      for (const attachment of pendingAttachmentsRef.current) {
+        if (attachment.previewUrl) URL.revokeObjectURL(attachment.previewUrl);
+      }
     };
-  }, [pendingPreviewUrl]);
+  }, []);
 
-  const clearPendingFile = useCallback(() => {
-    setPendingFile(null);
-    setPendingVoiceDuration(undefined);
-    setPendingPreviewUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return null;
+  const clearPendingAttachments = useCallback(() => {
+    setPendingAttachments((prev) => {
+      for (const attachment of prev) {
+        if (attachment.previewUrl) URL.revokeObjectURL(attachment.previewUrl);
+      }
+      return [];
     });
     if (fileInputRef.current) fileInputRef.current.value = "";
   }, []);
 
-  const setPendingAttachment = useCallback(
-    (file: File | null, voiceDuration?: number) => {
-      setPendingPreviewUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
-        return null;
-      });
-      if (!file) {
-        setPendingFile(null);
-        setPendingVoiceDuration(undefined);
-        if (fileInputRef.current) fileInputRef.current.value = "";
-        return;
-      }
-      setPendingFile(file);
-      setPendingVoiceDuration(
-        file.type.startsWith("audio/") ? voiceDuration : undefined
-      );
-      if (
+  const removePendingAttachment = useCallback((index: number) => {
+    setPendingAttachments((prev) => {
+      const next = [...prev];
+      const [removed] = next.splice(index, 1);
+      if (removed?.previewUrl) URL.revokeObjectURL(removed.previewUrl);
+      return next;
+    });
+  }, []);
+
+  const createPendingAttachment = useCallback(
+    (file: File, voiceDuration?: number): PendingAttachment => {
+      const previewUrl =
         isImageUploadFile(file) ||
         file.type.startsWith("video/") ||
         file.type.startsWith("audio/")
-      ) {
-        setPendingPreviewUrl(URL.createObjectURL(file));
-      }
+          ? URL.createObjectURL(file)
+          : null;
+      return {
+        file,
+        previewUrl,
+        voiceDuration: file.type.startsWith("audio/") ? voiceDuration : undefined,
+      };
     },
     []
   );
 
-  const attachPendingFile = useCallback(
-    async (rawFile: File) => {
+  const setPendingVoiceAttachment = useCallback(
+    (file: File, voiceDuration?: number) => {
+      setPendingAttachments((prev) => {
+        for (const attachment of prev) {
+          if (attachment.previewUrl) URL.revokeObjectURL(attachment.previewUrl);
+        }
+        return [createPendingAttachment(file, voiceDuration)];
+      });
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    },
+    [createPendingAttachment]
+  );
+
+  const attachPendingFiles = useCallback(
+    async (rawFiles: File[]) => {
+      if (rawFiles.length === 0) return;
       setSendError("");
       setPreparingAttachment(true);
       try {
-        let file = rawFile;
-        if (isImageUploadFile(rawFile)) {
-          file = await prepareMessageImage(rawFile);
+        const nextAttachments: PendingAttachment[] = [];
+        for (const rawFile of rawFiles) {
+          let file = rawFile;
+          if (isImageUploadFile(rawFile)) {
+            file = await prepareMessageImage(rawFile);
+          }
+          const validationError = validateMessageAttachment(file);
+          if (validationError) {
+            setSendError(validationError);
+            continue;
+          }
+          nextAttachments.push(createPendingAttachment(file));
         }
-        const validationError = validateMessageAttachment(file);
-        if (validationError) {
-          setSendError(validationError);
-          return;
+        if (nextAttachments.length > 0) {
+          setPendingAttachments((prev) => [...prev, ...nextAttachments]);
         }
-        setPendingAttachment(file);
       } catch {
         setSendError(
           "Could not prepare that photo. Try saving it as JPEG or PNG first."
@@ -769,26 +801,26 @@ export default function MessageClient() {
         setPreparingAttachment(false);
       }
     },
-    [setPendingAttachment]
+    [createPendingAttachment]
   );
 
   const handleFileInputChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
+      const files = Array.from(e.target.files ?? []);
       if (fileInputRef.current) fileInputRef.current.value = "";
-      if (file) await attachPendingFile(file);
+      await attachPendingFiles(files);
     },
-    [attachPendingFile]
+    [attachPendingFiles]
   );
 
   const handleComposeDrop = useCallback(
     async (e: React.DragEvent) => {
       e.preventDefault();
       setComposeDragOver(false);
-      const file = e.dataTransfer.files?.[0];
-      if (file) await attachPendingFile(file);
+      const files = Array.from(e.dataTransfer.files ?? []);
+      await attachPendingFiles(files);
     },
-    [attachPendingFile]
+    [attachPendingFiles]
   );
 
   async function handleAuthSubmit(e: React.FormEvent) {
@@ -841,18 +873,35 @@ export default function MessageClient() {
   }, [cancelVoice]);
 
   const sendMessageWithFile = useCallback(
-    async (file: File, body: string, voiceDuration?: number) => {
+    async (
+      file: File,
+      body: string,
+      voiceDuration?: number,
+      uploadMeta?: { current: number; total: number }
+    ) => {
       if (!activeConversationId) return false;
+
+      const reportProgress = (fraction: number) => {
+        if (uploadMeta) {
+          setUploadProgress({
+            current: uploadMeta.current,
+            total: uploadMeta.total,
+            fraction,
+          });
+        } else {
+          setUploadProgress({ current: 1, total: 1, fraction });
+        }
+      };
 
       try {
         if (shouldUseChunkedUpload(file.size)) {
-          setUploadProgress(0);
+          reportProgress(0);
           const upload = await uploadMessageAttachmentChunks(
             activeConversationId,
             file,
             {
               durationSeconds: voiceDuration,
-              onProgress: setUploadProgress,
+              onProgress: reportProgress,
             }
           );
           setUploadProgress(null);
@@ -927,11 +976,11 @@ export default function MessageClient() {
       void sendPresence({ typing: false });
       const ok = await sendMessageWithFile(file, "", elapsed);
       setSending(false);
-      if (!ok) setPendingAttachment(file, elapsed);
+      if (!ok) setPendingVoiceAttachment(file, elapsed);
       return;
     }
 
-    setPendingAttachment(file, elapsed);
+    setPendingVoiceAttachment(file, elapsed);
   }
 
   async function handleMicClick() {
@@ -939,8 +988,8 @@ export default function MessageClient() {
       await finishVoiceRecording(true);
       return;
     }
-    if (pendingFile) {
-      setSendError("Remove the current attachment before recording.");
+    if (pendingAttachments.length > 0) {
+      setSendError("Remove the current attachments before recording.");
       return;
     }
     setSendError("");
@@ -966,25 +1015,34 @@ export default function MessageClient() {
   async function handleSendMessage(e: React.FormEvent) {
     e.preventDefault();
     const body = draft.trim();
-    if (!activeConversationId || sending || (!body && !pendingFile)) return;
+    if (!activeConversationId || sending || (!body && pendingAttachments.length === 0)) return;
 
     setSending(true);
     setSendError("");
 
     const savedDraft = draft;
-    const savedFile = pendingFile;
-    const savedVoiceDuration = pendingVoiceDuration;
+    const savedAttachments = pendingAttachments;
     setDraft("");
-    clearPendingFile();
+    clearPendingAttachments();
     stopTypingPing();
     void sendPresence({ typing: false });
 
     try {
-      if (savedFile) {
-        const ok = await sendMessageWithFile(savedFile, body, savedVoiceDuration);
-        if (!ok) {
-          setDraft(savedDraft);
-          setPendingAttachment(savedFile, savedVoiceDuration);
+      if (savedAttachments.length > 0) {
+        for (let index = 0; index < savedAttachments.length; index += 1) {
+          const attachment = savedAttachments[index];
+          const messageBody = index === 0 ? body : "";
+          const ok = await sendMessageWithFile(
+            attachment.file,
+            messageBody,
+            attachment.voiceDuration,
+            { current: index + 1, total: savedAttachments.length }
+          );
+          if (!ok) {
+            setDraft(savedDraft);
+            setPendingAttachments(savedAttachments.slice(index));
+            break;
+          }
         }
       } else {
         const res = await fetch(
@@ -1007,7 +1065,7 @@ export default function MessageClient() {
       }
     } catch {
       setDraft(savedDraft);
-      if (savedFile) setPendingAttachment(savedFile, savedVoiceDuration);
+      if (savedAttachments.length > 0) setPendingAttachments(savedAttachments);
       setSendError("Could not connect. Try again.");
     } finally {
       setSending(false);
@@ -1213,7 +1271,7 @@ export default function MessageClient() {
     setActiveConversationId(id);
     setMobileShowChat(true);
     setSendError("");
-    clearPendingFile();
+    clearPendingAttachments();
   }
 
   function handleTextareaKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -1224,12 +1282,12 @@ export default function MessageClient() {
   }
 
   async function handleTextareaPaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
-    const image = Array.from(e.clipboardData.files).find((file) =>
+    const images = Array.from(e.clipboardData.files).filter((file) =>
       isImageUploadFile(file)
     );
-    if (image) {
+    if (images.length > 0) {
       e.preventDefault();
-      await attachPendingFile(image);
+      await attachPendingFiles(images);
     }
   }
 
@@ -1720,35 +1778,45 @@ export default function MessageClient() {
               {preparingAttachment && (
                 <div className="mx-auto mb-3 flex max-w-2xl items-center gap-3 rounded-2xl bg-white/[0.04] p-3 ring-1 ring-white/10">
                   <Loader2 className="h-5 w-5 shrink-0 animate-spin text-white/50" />
-                  <p className="text-sm text-white/60">Preparing photo…</p>
+                  <p className="text-sm text-white/60">Preparing files…</p>
                 </div>
               )}
               {uploadProgress !== null && (
                 <div className="mx-auto mb-3 max-w-2xl rounded-2xl bg-white/[0.04] p-3 ring-1 ring-white/10">
                   <div className="mb-2 flex items-center justify-between text-sm text-white/60">
-                    <span>Uploading…</span>
-                    <span>{Math.round(uploadProgress * 100)}%</span>
+                    <span>
+                      {uploadProgress.total > 1
+                        ? `Uploading ${uploadProgress.current} of ${uploadProgress.total}…`
+                        : "Uploading…"}
+                    </span>
+                    <span>{Math.round(uploadProgress.fraction * 100)}%</span>
                   </div>
                   <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
                     <div
                       className="h-full rounded-full bg-indigo-400 transition-[width]"
-                      style={{ width: `${Math.round(uploadProgress * 100)}%` }}
+                      style={{ width: `${Math.round(uploadProgress.fraction * 100)}%` }}
                     />
                   </div>
                 </div>
               )}
-              {pendingFile && (
-                <PendingAttachmentPreview
-                  file={pendingFile}
-                  previewUrl={pendingPreviewUrl}
-                  durationSeconds={pendingVoiceDuration}
-                  onRemove={clearPendingFile}
-                />
+              {pendingAttachments.length > 0 && (
+                <div className="mx-auto mb-3 flex max-w-2xl flex-col gap-2">
+                  {pendingAttachments.map((attachment, index) => (
+                    <PendingAttachmentPreview
+                      key={`${attachment.file.name}-${attachment.file.size}-${index}`}
+                      file={attachment.file}
+                      previewUrl={attachment.previewUrl}
+                      durationSeconds={attachment.voiceDuration}
+                      onRemove={() => removePendingAttachment(index)}
+                    />
+                  ))}
+                </div>
               )}
               <div className="mx-auto flex max-w-2xl items-end gap-2">
                 <input
                   ref={fileInputRef}
                   type="file"
+                  multiple
                   onChange={handleFileInputChange}
                   className="sr-only"
                   aria-hidden
@@ -1792,9 +1860,9 @@ export default function MessageClient() {
                 />
                 <button
                   type="submit"
-                  disabled={(!draft.trim() && !pendingFile) || sending || preparingAttachment || uploadProgress !== null}
+                  disabled={(!draft.trim() && pendingAttachments.length === 0) || sending || preparingAttachment || uploadProgress !== null}
                   className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all duration-200 ${
-                    (draft.trim() || pendingFile) && !sending && !preparingAttachment && uploadProgress === null
+                    (draft.trim() || pendingAttachments.length > 0) && !sending && !preparingAttachment && uploadProgress === null
                       ? "bg-white text-black shadow-md shadow-black/20 hover:bg-white/90"
                       : "bg-white/[0.08] text-white/30"
                   } disabled:cursor-not-allowed`}
