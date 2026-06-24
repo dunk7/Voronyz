@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { MAGIKID_SHOES_THUMBNAIL_URL, MAGIKID_SHOES_KIDS_SIZES } from "../src/lib/magikidShoesThumbnail";
+import { MAGIKID_SHOES_THUMBNAIL_URL, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT } from "../src/lib/magikidShoesThumbnail";
 
 const prisma = new PrismaClient();
 
@@ -289,8 +289,7 @@ async function main() {
         data: {
           slug: "magikid-shoes",
           name: "Magikid Shoes",
-          description:
-            "Custom 3D-printed slip-ons with a flexible lattice sole and Magikid star charm. Pick black or grey — $37 with shipping, or save with in-person pickup at Magikid Lab.",
+          description: MAGIKID_SHOES_DESCRIPTION_SHORT,
           priceCents: 3700,
           currency: "usd",
           images: magikidShoesImages,
@@ -315,8 +314,7 @@ async function main() {
         where: { id: existingMk.id },
         data: {
           name: "Magikid Shoes",
-          description:
-            "Custom 3D-printed slip-ons with a flexible lattice sole and Magikid star charm. Pick black or grey — $37 with shipping, or save with in-person pickup at Magikid Lab.",
+          description: MAGIKID_SHOES_DESCRIPTION_SHORT,
           priceCents: 3700,
           images: magikidShoesImages,
           primaryColors: ["black", "grey", "white", "orange"],
