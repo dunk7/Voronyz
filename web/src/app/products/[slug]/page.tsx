@@ -5,6 +5,7 @@ import FAQ from "@/components/FAQ";
 import { Suspense } from "react";
 import Link from "next/link";
 import { Metadata } from "next";
+import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
 // This page is rendered on-demand.
@@ -43,6 +44,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const { slug } = await params;
   let product: ProductWithVariants;
   try {
+    await ensureCatalogProducts();
     product = await prisma.product.findUnique({ 
       where: { slug }, 
       include: { 

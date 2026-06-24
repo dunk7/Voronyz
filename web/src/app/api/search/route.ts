@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getProductThumbnail } from "@/lib/productImages";
+import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
 
 // Normalize text for better matching (remove hyphens, spaces, convert to lowercase)
 function normalizeText(text: string): string {
@@ -13,6 +14,8 @@ export async function GET(request: NextRequest) {
   const limit = searchParams.get("limit");
 
   try {
+    await ensureCatalogProducts();
+
     let products;
 
     if (query && query.trim().length > 0) {
