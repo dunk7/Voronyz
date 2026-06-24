@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
+import { MAGIKID_SHOES_THUMBNAIL_URL } from "@/lib/magikidShoesThumbnail";
 
 const MAGIKID_SHOES_IMAGES = [
-  "/products/magikid-shoes/magikid-shoes-thumbnail.jpg",
+  MAGIKID_SHOES_THUMBNAIL_URL,
   "/products/slip-ons/InShot_20260405_203151152.jpg",
   "/products/slip-ons/InShot_20260405_203425292.jpg",
   "/products/slip-ons/InShot_20260405_203601045.jpg",
