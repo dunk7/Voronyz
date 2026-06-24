@@ -118,6 +118,8 @@ export async function POST(request: NextRequest) {
           unitAmount = 5000;
         } else if (lowerCode === 'pedro30') {
           unitAmount = 3000;
+        } else if (typeof item.priceCents === 'number' && item.priceCents > 0) {
+          unitAmount = item.priceCents;
         } else {
           unitAmount = variant ? (variant.priceCents || variant.product.priceCents || 0) : 7500;
         }
@@ -126,10 +128,11 @@ export async function POST(request: NextRequest) {
 
         const genderLabel = item.gender === "men" ? "Men's" : item.gender === "women" ? "Women's" : item.gender === "kids" ? "Kids'" : "";
         const sizeLabel = item.size ? `${item.size}${genderLabel ? ` (${genderLabel})` : ''}` : 'N/A';
+        const fulfillmentLabel = item.fulfillment === 'pickup' ? ' — Magikid Lab pickup' : '';
         const productName = variant 
-          ? `${variant.product.name} - ${capitalize(variant.color)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}`
+          ? `${variant.product.name} - ${capitalize(variant.color)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}${fulfillmentLabel}`
           : (item.productName && item.variantName 
-            ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}`
+            ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}${fulfillmentLabel}`
             : `Product Variant ${item.variantId || 'unknown'}`);
 
         console.log(`Generated line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);
@@ -178,6 +181,8 @@ export async function POST(request: NextRequest) {
           unitAmount = 5000;
         } else if (lowerCode === 'pedro30') {
           unitAmount = 3000;
+        } else if (typeof item.priceCents === 'number' && item.priceCents > 0) {
+          unitAmount = item.priceCents;
         } else {
           unitAmount = 7500;
         }
@@ -186,8 +191,9 @@ export async function POST(request: NextRequest) {
 
         const genderLabel = item.gender === "men" ? "Men's" : item.gender === "women" ? "Women's" : item.gender === "kids" ? "Kids'" : "";
         const sizeLabel = item.size ? `${item.size}${genderLabel ? ` (${genderLabel})` : ''}` : 'N/A';
+        const fulfillmentLabel = item.fulfillment === 'pickup' ? ' — Magikid Lab pickup' : '';
         const productName = item.productName && item.variantName
-          ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}`
+          ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}${fulfillmentLabel}`
           : `Product Variant ${item.variantId || 'unknown'}`;
 
         console.log(`Fallback line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);
@@ -210,15 +216,18 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Creating Stripe session with line items:', lineItems);
+    const hasPickupOnly = items.every((item: { fulfillment?: string }) => item.fulfillment === 'pickup');
     const session = await stripe.checkout.sessions.create({
       // Use Dynamic Payment Methods — Stripe automatically shows all payment methods
       // enabled in your Stripe Dashboard (cards, crypto/USDC, Apple Pay, Google Pay, etc.).
       // To accept crypto: enable "Crypto" in Stripe Dashboard → Settings → Payment methods.
       line_items: lineItems,
       mode: 'payment',
-      shipping_address_collection: {
-        allowed_countries: ['US', 'CA', 'GB', 'AU', 'DE', 'FR', 'IT', 'JP', 'MX'],
-      },
+      ...(!hasPickupOnly && {
+        shipping_address_collection: {
+          allowed_countries: ['US', 'CA', 'GB', 'AU', 'DE', 'FR', 'IT', 'JP', 'MX'],
+        },
+      }),
       phone_number_collection: {
         enabled: true,
       },
@@ -228,6 +237,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         itemCount: items.length.toString(),
         ...(discountCode && { discountCode }),
+        ...(hasPickupOnly && { fulfillment: 'pickup' }),
         cartItems: JSON.stringify(items)
       },
     });

@@ -36,6 +36,10 @@ const productMeta: Record<string, {
     tag: "Slip-ons",
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
+  "magikid-shoes": {
+    tag: "Slip-ons",
+    altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
+  },
 };
 
 function cardMetaForSlug(slug: string) {
@@ -47,6 +51,8 @@ function cardMetaForSlug(slug: string) {
       return productMeta.dragonfly;
     case "slip-ons":
       return productMeta["slip-ons"];
+    case "magikid-shoes":
+      return productMeta["magikid-shoes"];
     default:
       return productMeta[s] as (typeof productMeta)["v3-slides"] | undefined;
   }

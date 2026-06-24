@@ -269,6 +269,81 @@ async function main() {
       console.log("Updated Slip Ons product and variants.");
     }
 
+    // ── Magikid Shoes ──
+    const magikidShoesImages = [
+      "/products/magikid-shoes/magikid-shoes-thumbnail.jpg",
+      "/products/slip-ons/InShot_20260405_203151152.jpg",
+      "/products/slip-ons/InShot_20260405_203425292.jpg",
+      "/products/slip-ons/InShot_20260405_203601045.jpg",
+      "/products/slip-ons/InShot_20260405_203736918.jpg",
+      "/products/slip-ons/InShot_20260405_203930832.jpg",
+      "/products/slip-ons/InShot_20260405_204113872.jpg",
+      "/products/slip-ons/InShot_20260405_204333303.jpg",
+      "/products/slip-ons/InShot_20260405_202911983.jpg",
+    ];
+    const existingMk = await prisma.product.findUnique({ where: { slug: "magikid-shoes" } });
+    console.log("Magikid Shoes product check:", existingMk ? "Found" : "Not found");
+    if (!existingMk) {
+      const mkProduct = await prisma.product.create({
+        data: {
+          slug: "magikid-shoes",
+          name: "Magikid Shoes",
+          description:
+            "Custom 3D-printed slip-ons with a flexible lattice sole and Magikid star charm. Pick black or grey — free US shipping, or save with in-person pickup at Magikid Lab.",
+          priceCents: 3700,
+          currency: "usd",
+          images: magikidShoesImages,
+          primaryColors: ["black", "grey", "white", "orange"],
+          secondaryColors: [],
+          sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
+          variants: {
+            create: [
+              { color: "black", sku: "MK-BLK", stock: 999 },
+              { color: "grey", sku: "MK-GRY", stock: 999 },
+              { color: "white", sku: "MK-WHT", stock: 0 },
+              { color: "orange", sku: "MK-ORG", stock: 0 },
+            ],
+          },
+        },
+        include: { variants: true },
+      });
+      console.log("Seeded product:", mkProduct.slug);
+    } else {
+      console.log("Updating existing Magikid Shoes product...");
+      await prisma.product.update({
+        where: { id: existingMk.id },
+        data: {
+          name: "Magikid Shoes",
+          description:
+            "Custom 3D-printed slip-ons with a flexible lattice sole and Magikid star charm. Pick black or grey — free US shipping, or save with in-person pickup at Magikid Lab.",
+          priceCents: 3700,
+          images: magikidShoesImages,
+          primaryColors: ["black", "grey", "white", "orange"],
+          secondaryColors: [],
+          sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
+        },
+      });
+      const mkVariants = [
+        { color: "black", sku: "MK-BLK", stock: 999 },
+        { color: "grey", sku: "MK-GRY", stock: 999 },
+        { color: "white", sku: "MK-WHT", stock: 0 },
+        { color: "orange", sku: "MK-ORG", stock: 0 },
+      ];
+      for (const v of mkVariants) {
+        await prisma.variant.upsert({
+          where: { sku: v.sku },
+          update: { stock: v.stock },
+          create: {
+            product: { connect: { id: existingMk.id } },
+            color: v.color,
+            sku: v.sku,
+            stock: v.stock,
+          },
+        });
+      }
+      console.log("Updated Magikid Shoes product and variants.");
+    }
+
     console.log('Seed script completed successfully.');
   } catch (e) {
     console.error('Seed error:', e);
