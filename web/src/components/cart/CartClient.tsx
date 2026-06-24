@@ -228,7 +228,11 @@ export default function CartClient() {
                   )}
                   {it.attributes?.fulfillment && (
                     <span className="rounded-full bg-black/5 px-2 py-0.5 capitalize">
-                      {it.attributes.fulfillment === "pickup" ? "Magikid Lab pickup" : "Free shipping"}
+                      {it.attributes.fulfillment === "pickup"
+                        ? "Magikid Lab pickup"
+                        : it.productSlug === "magikid-shoes"
+                        ? "Shipping"
+                        : "Free shipping"}
                     </span>
                   )}
                 </div>

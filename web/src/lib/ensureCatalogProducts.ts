@@ -29,7 +29,7 @@ export async function ensureMagikidShoes(): Promise<void> {
         slug: "magikid-shoes",
         name: "Magikid Shoes",
         description:
-          "Custom 3D-printed slip-ons with a flexible lattice sole and Magikid star charm. Pick black or grey — free US shipping, or save with in-person pickup at Magikid Lab.",
+          "Custom 3D-printed slip-ons with a flexible lattice sole and Magikid star charm. Pick black or grey — $37 with shipping, or save with in-person pickup at Magikid Lab.",
         priceCents: 3700,
         currency: "usd",
         images: MAGIKID_SHOES_IMAGES,
@@ -49,7 +49,7 @@ export async function ensureMagikidShoes(): Promise<void> {
     data: {
       name: "Magikid Shoes",
       description:
-        "Custom 3D-printed slip-ons with a flexible lattice sole and Magikid star charm. Pick black or grey — free US shipping, or save with in-person pickup at Magikid Lab.",
+        "Custom 3D-printed slip-ons with a flexible lattice sole and Magikid star charm. Pick black or grey — $37 with shipping, or save with in-person pickup at Magikid Lab.",
       priceCents: 3700,
       images: MAGIKID_SHOES_IMAGES,
       primaryColors: ["black", "grey", "white", "orange"],

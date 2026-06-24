@@ -147,7 +147,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     : slug === "dragonfly"
     ? "Lightweight, breathable 3D-printed sneakers featuring a custom lattice sole for unmatched cushioning and style. Available in four stunning colorways with fully customizable lace colors."
     : isMagikidShoes
-    ? "Custom 3D-printed slip-ons with a flexible lattice sole and Magikid star charm. Black and grey in stock — free US shipping, or pick up in person at Magikid Lab for $30."
+    ? "Custom 3D-printed slip-ons with a flexible lattice sole and Magikid star charm. Black and grey in stock — $37 with shipping, or pick up in person at Magikid Lab for $30."
     : isSlipOns
     ? "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — black, grey, orange in stock; white temporarily unavailable."
     : product.description;
@@ -172,7 +172,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
               </svg>
-              Free US shipping
+              {isMagikidShoes ? "Shipping" : "Free US shipping"}
             </span>
             <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Made to order in &lt;2 days</span>
             <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
@@ -207,7 +207,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     fulfillmentOptions: [
                       {
                         id: "shipping",
-                        label: "Free shipping",
+                        label: "Shipping",
                         priceCents: 3700,
                         description: "Ships to your door — $37",
                       },
@@ -233,7 +233,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  Free US shipping
+                  {isMagikidShoes ? "Shipping" : "Free US shipping"}
                 </span>
               </div>
             </div>
@@ -250,7 +250,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             {isDragonfly
               ? "Each pair of Dragonfly's is 3D-printed with our proprietary TPU lattice technology, delivering a springy, responsive feel with every step. The breathable upper is precision-engineered for airflow, and every pair ships with your choice of lace color — making each one uniquely yours."
               : isMagikidShoes
-              ? "Magikid Shoes are printed in one piece per colorway, finished with a Magikid star charm, and ready for daily wear. Choose free shipping or save $7 with in-person pickup at Magikid Lab."
+              ? "Magikid Shoes are printed in one piece per colorway, finished with a Magikid star charm, and ready for daily wear. Choose shipping at $37 or save $7 with in-person pickup at Magikid Lab."
               : isSlipOns
               ? "Slip Ons are printed in one piece per colorway for a seamless look, then finished for flex and daily wear. There is no secondary accent color — the shade you choose is the full shoe."
               : "Each pair takes a full day to print using our proprietary TPU blend. Following printing, we perform heat-treated post-processing to ensure exceptional quality, comfort, and durability."}
@@ -269,7 +269,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             ] : isMagikidShoes ? [
               { q: "What colors can I order?", a: "Black and grey are in stock. White and orange are listed but currently out of stock." },
               { q: "How does Magikid Lab pickup work?", a: "Select pickup at checkout for $30 instead of $37. We'll email you when your pair is ready to collect in person at Magikid Lab." },
-              { q: "Is shipping free?", a: "Yes — standard shipping is free at the $37 price. Pickup at Magikid Lab is $30 with no shipping needed." },
+              { q: "How does shipping work?", a: "Shipping is $37. Pickup at Magikid Lab is $30 with no shipping needed." },
               { q: "How long does production take?", a: "About 1–2 days to print, then we ship or hold for pickup." },
             ] : isSlipOns ? [
               { q: "What colors can I order?", a: "Black, grey, white, and orange are listed — white is currently out of stock. Each pair is one solid body color (no two-tone option)." },
@@ -320,7 +320,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug === "magikid-shoes") {
     const title = "Magikid Shoes – Voronyz";
     const description =
-      "Custom 3D-printed slip-ons with a Magikid star charm. $37 with free shipping, or $30 with in-person pickup at Magikid Lab. Black and grey in stock.";
+      "Custom 3D-printed slip-ons with a Magikid star charm. $37 with shipping, or $30 with in-person pickup at Magikid Lab. Black and grey in stock.";
     const images = ["/products/magikid-shoes/magikid-shoes-thumbnail.jpg"];
     return {
       title,

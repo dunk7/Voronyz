@@ -289,7 +289,7 @@ async function main() {
           slug: "magikid-shoes",
           name: "Magikid Shoes",
           description:
-            "Custom 3D-printed slip-ons with a flexible lattice sole and Magikid star charm. Pick black or grey — free US shipping, or save with in-person pickup at Magikid Lab.",
+            "Custom 3D-printed slip-ons with a flexible lattice sole and Magikid star charm. Pick black or grey — $37 with shipping, or save with in-person pickup at Magikid Lab.",
           priceCents: 3700,
           currency: "usd",
           images: magikidShoesImages,
@@ -315,7 +315,7 @@ async function main() {
         data: {
           name: "Magikid Shoes",
           description:
-            "Custom 3D-printed slip-ons with a flexible lattice sole and Magikid star charm. Pick black or grey — free US shipping, or save with in-person pickup at Magikid Lab.",
+            "Custom 3D-printed slip-ons with a flexible lattice sole and Magikid star charm. Pick black or grey — $37 with shipping, or save with in-person pickup at Magikid Lab.",
           priceCents: 3700,
           images: magikidShoesImages,
           primaryColors: ["black", "grey", "white", "orange"],
