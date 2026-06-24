@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { Metadata } from "next";
 import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
+import { MAGIKID_SHOES_THUMBNAIL_URL } from "@/lib/magikidShoesThumbnail";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
 // This page is rendered on-demand.
@@ -109,7 +110,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     "/products/slip-ons/InShot_20260405_204333303.jpg",
   ];
   const magikidShoesImages = [
-    "/products/magikid-shoes/magikid-shoes-thumbnail.jpg",
+    MAGIKID_SHOES_THUMBNAIL_URL,
     "/products/slip-ons/InShot_20260405_203151152.jpg",
     "/products/slip-ons/InShot_20260405_203425292.jpg",
     "/products/slip-ons/InShot_20260405_203601045.jpg",
@@ -204,6 +205,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     secondaryLabel: "Lace Color",
                   })}
                   {...(isMagikidShoes && {
+                    defaultGender: "kids" as const,
                     fulfillmentOptions: [
                       {
                         id: "shipping",
@@ -321,7 +323,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const title = "Magikid Shoes – Voronyz";
     const description =
       "Custom 3D-printed slip-ons with a Magikid star charm. $37 with shipping, or $30 with in-person pickup at Magikid Lab. Black and grey in stock.";
-    const images = ["/products/magikid-shoes/magikid-shoes-thumbnail.jpg"];
+    const images = [MAGIKID_SHOES_THUMBNAIL_URL];
     return {
       title,
       description,

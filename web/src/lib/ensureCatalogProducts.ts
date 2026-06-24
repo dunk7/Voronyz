@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
+import { MAGIKID_SHOES_THUMBNAIL_URL, MAGIKID_SHOES_KIDS_SIZES } from "@/lib/magikidShoesThumbnail";
 
 const MAGIKID_SHOES_IMAGES = [
-  "/products/magikid-shoes/magikid-shoes-thumbnail.jpg",
+  MAGIKID_SHOES_THUMBNAIL_URL,
   "/products/slip-ons/InShot_20260405_203151152.jpg",
   "/products/slip-ons/InShot_20260405_203425292.jpg",
   "/products/slip-ons/InShot_20260405_203601045.jpg",
@@ -35,7 +36,7 @@ export async function ensureMagikidShoes(): Promise<void> {
         images: MAGIKID_SHOES_IMAGES,
         primaryColors: ["black", "grey", "white", "orange"],
         secondaryColors: [],
-        sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
+        sizes: MAGIKID_SHOES_KIDS_SIZES,
         variants: {
           create: MAGIKID_VARIANTS.map((v) => ({ ...v })),
         },
@@ -54,7 +55,7 @@ export async function ensureMagikidShoes(): Promise<void> {
       images: MAGIKID_SHOES_IMAGES,
       primaryColors: ["black", "grey", "white", "orange"],
       secondaryColors: [],
-      sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
+      sizes: MAGIKID_SHOES_KIDS_SIZES,
     },
   });
 

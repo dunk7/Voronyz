@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { MAGIKID_SHOES_THUMBNAIL_URL, MAGIKID_SHOES_KIDS_SIZES } from "../src/lib/magikidShoesThumbnail";
 
 const prisma = new PrismaClient();
 
@@ -271,7 +272,7 @@ async function main() {
 
     // ── Magikid Shoes ──
     const magikidShoesImages = [
-      "/products/magikid-shoes/magikid-shoes-thumbnail.jpg",
+      MAGIKID_SHOES_THUMBNAIL_URL,
       "/products/slip-ons/InShot_20260405_203151152.jpg",
       "/products/slip-ons/InShot_20260405_203425292.jpg",
       "/products/slip-ons/InShot_20260405_203601045.jpg",
@@ -295,7 +296,7 @@ async function main() {
           images: magikidShoesImages,
           primaryColors: ["black", "grey", "white", "orange"],
           secondaryColors: [],
-          sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
+          sizes: MAGIKID_SHOES_KIDS_SIZES,
           variants: {
             create: [
               { color: "black", sku: "MK-BLK", stock: 999 },
@@ -320,7 +321,7 @@ async function main() {
           images: magikidShoesImages,
           primaryColors: ["black", "grey", "white", "orange"],
           secondaryColors: [],
-          sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
+          sizes: MAGIKID_SHOES_KIDS_SIZES,
         },
       });
       const mkVariants = [

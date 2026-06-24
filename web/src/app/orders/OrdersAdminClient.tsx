@@ -15,6 +15,7 @@ import {
   Search,
   Upload,
 } from "lucide-react";
+import MagikidThumbnailPanel from "./MagikidThumbnailPanel";
 import UploadsAdminPanel from "./UploadsAdminPanel";
 import { formatCentsAsCurrency } from "@/lib/money";
 import {
@@ -515,10 +516,13 @@ export default function OrdersAdminClient() {
           </p>
         ) : null}
         {tab === "uploads" ? (
-          <UploadsAdminPanel
-            refreshToken={uploadsRefresh}
-            onAuthLost={() => setAuthenticated(false)}
-          />
+          <div className="space-y-6">
+            <MagikidThumbnailPanel />
+            <UploadsAdminPanel
+              refreshToken={uploadsRefresh}
+              onAuthLost={() => setAuthenticated(false)}
+            />
+          </div>
         ) : null}
 
         {tab === "orders" ? (
