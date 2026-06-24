@@ -9,11 +9,15 @@ import {
   unauthorizedMessageResponse,
 } from "@/lib/messageAuth";
 import { hashPassword, verifyPassword } from "@/lib/messagePassword";
+import { messageDisabledResponse } from "@/lib/messageApiGuard";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
+  const disabled = await messageDisabledResponse();
+  if (disabled) return disabled;
+
   const userId = getMessageUserId(request);
   if (!userId) return unauthorizedMessageResponse();
 
@@ -34,6 +38,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const disabled = await messageDisabledResponse();
+  if (disabled) return disabled;
+
   const userId = getMessageUserId(request);
   if (!userId) return unauthorizedMessageResponse();
 
@@ -92,6 +99,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const disabled = await messageDisabledResponse();
+  if (disabled) return disabled;
+
   const userId = getMessageUserId(request);
   if (!userId) return unauthorizedMessageResponse();
 

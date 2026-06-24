@@ -164,6 +164,13 @@ model ConversationMember {
   @@index([conversationId])
 }
 
+/// Key-value site settings (e.g. message app on/off from /orders admin).
+model SiteSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
 model Message {
   id                   String       @id @default(cuid())
   conversationId       String

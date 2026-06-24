@@ -9,12 +9,16 @@ import {
 } from "@/lib/messageAuth";
 import { canonicalParticipantIds } from "@/lib/messageConversation";
 import { serializeConversationPreview } from "@/lib/messageSerialize";
+import { messageDisabledResponse } from "@/lib/messageApiGuard";
 import { normalizeUsername } from "@/lib/messageUsername";
 import { prisma } from "@/lib/prisma";
 
 const MAX_GROUP_MEMBERS = 32;
 
 export async function GET(request: NextRequest) {
+  const disabled = await messageDisabledResponse();
+  if (disabled) return disabled;
+
   const userId = getMessageUserId(request);
   if (!userId) return unauthorizedMessageResponse();
 
@@ -28,6 +32,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const disabled = await messageDisabledResponse();
+  if (disabled) return disabled;
+
   const userId = getMessageUserId(request);
   if (!userId) return unauthorizedMessageResponse();
 

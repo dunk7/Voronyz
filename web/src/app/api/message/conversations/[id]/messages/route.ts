@@ -20,6 +20,7 @@ import {
   serializeChatMessage,
   serializeConversationDetail,
 } from "@/lib/messageSerialize";
+import { messageDisabledResponse } from "@/lib/messageApiGuard";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -105,6 +106,9 @@ async function verifyChunkedUpload(
 }
 
 export async function GET(request: NextRequest, context: RouteContext) {
+  const disabled = await messageDisabledResponse();
+  if (disabled) return disabled;
+
   const userId = getMessageUserId(request);
   if (!userId) return unauthorizedMessageResponse();
 
@@ -132,6 +136,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
+  const disabled = await messageDisabledResponse();
+  if (disabled) return disabled;
+
   const userId = getMessageUserId(request);
   if (!userId) return unauthorizedMessageResponse();
 

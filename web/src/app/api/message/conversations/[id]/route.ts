@@ -5,6 +5,7 @@ import {
   unauthorizedMessageResponse,
 } from "@/lib/messageAuth";
 import { deleteMessageBlobAttachments } from "@/lib/messageBlobStorage";
+import { messageDisabledResponse } from "@/lib/messageApiGuard";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -12,6 +13,9 @@ export const runtime = "nodejs";
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function DELETE(_request: NextRequest, context: RouteContext) {
+  const disabled = await messageDisabledResponse();
+  if (disabled) return disabled;
+
   const userId = getMessageUserId(_request);
   if (!userId) return unauthorizedMessageResponse();
 

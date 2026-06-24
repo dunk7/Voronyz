@@ -9,9 +9,13 @@ import {
   isUserTypingInConversation,
   typingExpiresAtFromNow,
 } from "@/lib/messagePresence";
+import { messageDisabledResponse } from "@/lib/messageApiGuard";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
+  const disabled = await messageDisabledResponse();
+  if (disabled) return disabled;
+
   const userId = getMessageUserId(request);
   if (!userId) return unauthorizedMessageResponse();
 
@@ -54,6 +58,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const disabled = await messageDisabledResponse();
+  if (disabled) return disabled;
+
   const userId = getMessageUserId(request);
   if (!userId) return unauthorizedMessageResponse();
 

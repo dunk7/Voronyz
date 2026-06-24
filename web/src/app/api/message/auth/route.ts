@@ -5,10 +5,14 @@ import {
   setMessageSession,
 } from "@/lib/messageAuth";
 import { messengerDatabaseErrorMessage } from "@/lib/messageDatabaseError";
+import { messageDisabledResponse } from "@/lib/messageApiGuard";
 import { verifyPassword } from "@/lib/messagePassword";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
+  const disabled = await messageDisabledResponse();
+  if (disabled) return disabled;
+
   const userId = getMessageUserId(request);
   if (!userId) {
     return NextResponse.json({ authenticated: false });
@@ -46,12 +50,18 @@ export async function GET(request: NextRequest) {
 }
 
 export async function DELETE() {
+  const disabled = await messageDisabledResponse();
+  if (disabled) return disabled;
+
   const res = NextResponse.json({ success: true });
   clearMessageSession(res);
   return res;
 }
 
 export async function POST(request: NextRequest) {
+  const disabled = await messageDisabledResponse();
+  if (disabled) return disabled;
+
   let body: { username?: string; password?: string };
   try {
     body = await request.json();

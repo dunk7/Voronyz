@@ -8,8 +8,12 @@ import {
 } from "@/lib/messageUsername";
 import { prisma } from "@/lib/prisma";
 import { messengerDatabaseErrorMessage } from "@/lib/messageDatabaseError";
+import { messageDisabledResponse } from "@/lib/messageApiGuard";
 
 export async function POST(request: NextRequest) {
+  const disabled = await messageDisabledResponse();
+  if (disabled) return disabled;
+
   let body: { username?: string; password?: string };
   try {
     body = await request.json();

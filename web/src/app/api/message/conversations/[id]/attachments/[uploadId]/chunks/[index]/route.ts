@@ -10,6 +10,7 @@ import {
   getMessageUserId,
   unauthorizedMessageResponse,
 } from "@/lib/messageAuth";
+import { messageDisabledResponse } from "@/lib/messageApiGuard";
 
 export const runtime = "nodejs";
 
@@ -18,6 +19,9 @@ type RouteContext = {
 };
 
 export async function PUT(request: NextRequest, context: RouteContext) {
+  const disabled = await messageDisabledResponse();
+  if (disabled) return disabled;
+
   const userId = getMessageUserId(request);
   if (!userId) return unauthorizedMessageResponse();
 

@@ -3,6 +3,7 @@ import {
   getMessageUserId,
   unauthorizedMessageResponse,
 } from "@/lib/messageAuth";
+import { messageDisabledResponse } from "@/lib/messageApiGuard";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -10,6 +11,9 @@ export const runtime = "nodejs";
 type RouteContext = { params: Promise<{ userId: string }> };
 
 export async function GET(request: NextRequest, context: RouteContext) {
+  const disabled = await messageDisabledResponse();
+  if (disabled) return disabled;
+
   const currentUserId = getMessageUserId(request);
   if (!currentUserId) return unauthorizedMessageResponse();
 

@@ -4,8 +4,8 @@ import { isMessageDisabled, MESSAGE_DOWN_MESSAGE } from "@/lib/messageMaintenanc
 
 export const dynamic = "force-dynamic";
 
-export default function MessagePage() {
-  if (isMessageDisabled()) {
+export default async function MessagePage() {
+  if (await isMessageDisabled()) {
     return (
       <div className="flex min-h-[100dvh] flex-col items-center justify-center px-6 text-center">
         <Image

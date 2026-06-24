@@ -17,6 +17,7 @@ import {
   getMessageUserId,
   unauthorizedMessageResponse,
 } from "@/lib/messageAuth";
+import { messageDisabledResponse } from "@/lib/messageApiGuard";
 
 export const runtime = "nodejs";
 
@@ -30,6 +31,9 @@ function parseDurationSeconds(raw: unknown): number | undefined {
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
+  const disabled = await messageDisabledResponse();
+  if (disabled) return disabled;
+
   const userId = getMessageUserId(request);
   if (!userId) return unauthorizedMessageResponse();
 

@@ -10,6 +10,7 @@ import {
   Copy,
   Loader2,
   LogOut,
+  MessageSquare,
   Package,
   Search,
   Upload,
@@ -132,6 +133,9 @@ export default function OrdersAdminClient() {
   const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null);
   const [tab, setTab] = useState<AdminTab>("orders");
   const [uploadsRefresh, setUploadsRefresh] = useState(0);
+  const [messageEnabled, setMessageEnabled] = useState<boolean | null>(null);
+  const [messageToggleSaving, setMessageToggleSaving] = useState(false);
+  const [messageToggleError, setMessageToggleError] = useState<string | null>(null);
 
   const checkAuth = useCallback(async () => {
     const res = await fetch("/api/orders/auth");
@@ -162,13 +166,37 @@ export default function OrdersAdminClient() {
     }
   }, []);
 
+  const loadMessageSetting = useCallback(async () => {
+    try {
+      const res = await fetch("/api/orders/admin/message");
+      if (res.status === 401) {
+        setAuthenticated(false);
+        return;
+      }
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to load message app setting");
+      }
+      const data = await res.json();
+      setMessageEnabled(Boolean(data.enabled));
+      setMessageToggleError(null);
+    } catch (err) {
+      setMessageToggleError(
+        err instanceof Error ? err.message : "Failed to load message app setting"
+      );
+    }
+  }, []);
+
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
   useEffect(() => {
-    if (authenticated) loadOrders();
-  }, [authenticated, loadOrders]);
+    if (authenticated) {
+      loadOrders();
+      loadMessageSetting();
+    }
+  }, [authenticated, loadOrders, loadMessageSetting]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -205,6 +233,35 @@ export default function OrdersAdminClient() {
   function handleRefresh() {
     if (tab === "orders") loadOrders();
     else setUploadsRefresh((n) => n + 1);
+    loadMessageSetting();
+  }
+
+  async function toggleMessageApp() {
+    if (messageEnabled === null || messageToggleSaving) return;
+
+    const nextEnabled = !messageEnabled;
+    setMessageToggleSaving(true);
+    setMessageToggleError(null);
+    try {
+      const res = await fetch("/api/orders/admin/message", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled: nextEnabled }),
+      });
+      if (res.status === 401) {
+        setAuthenticated(false);
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update message app");
+      }
+      setMessageEnabled(Boolean(data.enabled));
+    } catch (err) {
+      setMessageToggleError(err instanceof Error ? err.message : "Failed to update message app");
+    } finally {
+      setMessageToggleSaving(false);
+    }
   }
 
   async function updateOrderStatus(orderId: string, status: "completed" | "paid") {
@@ -369,7 +426,37 @@ export default function OrdersAdminClient() {
                 : "Customer file uploads"}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-3 rounded-full border border-black/10 bg-neutral-50 px-4 py-2">
+              <MessageSquare className="h-4 w-4 text-neutral-600" />
+              <div className="text-left">
+                <p className="text-xs font-medium text-neutral-800">Message app</p>
+                <p className="text-[11px] text-neutral-500">
+                  {messageEnabled === null
+                    ? "Loading…"
+                    : messageEnabled
+                      ? "Live at /message"
+                      : "Offline"}
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={messageEnabled ?? false}
+                aria-label="Toggle message app"
+                disabled={messageEnabled === null || messageToggleSaving}
+                onClick={toggleMessageApp}
+                className={`relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
+                  messageEnabled ? "bg-emerald-500" : "bg-neutral-300"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ${
+                    messageEnabled ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
             <button
               type="button"
               onClick={handleRefresh}
@@ -422,6 +509,11 @@ export default function OrdersAdminClient() {
       </header>
 
       <div className="container py-6 space-y-4 print:py-2">
+        {messageToggleError ? (
+          <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200 print:hidden">
+            {messageToggleError}
+          </p>
+        ) : null}
         {tab === "uploads" ? (
           <UploadsAdminPanel
             refreshToken={uploadsRefresh}

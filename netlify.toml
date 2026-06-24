@@ -10,8 +10,6 @@
   NODE_VERSION = "20"
   SECRETS_SCAN_OMIT_PATHS = "README.md,web/server.log,web/*.log"
   SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SITE_URL"
-  # Temporary: disable voronyz.com/message until re-enabled (remove or set false).
-  MESSAGE_DISABLED = "true"
 
 # Canonical host: apex only (add www CNAME → voronyz.netlify.app at your DNS provider first)
 [[redirects]]
