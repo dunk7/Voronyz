@@ -32,7 +32,23 @@ type Props = {
   secondaryLabel?: string;
   promoHint?: { code: string; promoPrice: number };
   fulfillmentOptions?: FulfillmentOption[];
+  defaultGender?: "men" | "women" | "kids";
 };
+
+const MENS_SIZES = ["6", "7", "8", "9", "10", "11", "12", "13"];
+const WOMENS_SIZES = ["4", "5", "6", "7", "8", "9", "10", "11"];
+const KIDS_SIZES = ["1", "2", "3", "4", "5", "6", "7"];
+
+function sizesForGender(gender: "men" | "women" | "kids") {
+  if (gender === "women") return WOMENS_SIZES;
+  if (gender === "kids") return KIDS_SIZES;
+  return MENS_SIZES;
+}
+
+function parseGenderParam(value: string | null): "men" | "women" | "kids" | null {
+  if (value === "men" || value === "women" || value === "kids") return value;
+  return null;
+}
 
 interface CartItem {
   id: string;
@@ -63,6 +79,7 @@ export default function AddToCart({
   productSlug,
   secondaryLabel,
   fulfillmentOptions = [],
+  defaultGender = "men",
 }: Props) {
   const hasSecondaryColors = secondaryColors.length > 0;
   const hasFulfillmentOptions = fulfillmentOptions.length > 0;
@@ -97,26 +114,19 @@ export default function AddToCart({
     () => fulfillmentOptions[0]?.id ?? "shipping"
   );
 
-  const [gender, setGender] = useState<"men" | "women" | "kids">("men");
-  
-  // Standard size ranges for men's, women's, and kids'
-  // Men's: covers most common sizes
-  const mensSizes = ["6", "7", "8", "9", "10", "11", "12", "13"];
-  // Women's: covers small to large sizes
-  const womensSizes = ["4", "5", "6", "7", "8", "9", "10", "11"];
-  // Kids': covers toddler to youth sizes
-  const kidsSizes = ["1", "2", "3", "4", "5", "6", "7"];
-  
-  const [selectedSize, setSelectedSize] = useState<string | undefined>(
-    () => {
-      const sizeParam = searchParams.get('size');
-      const defaultSizes = mensSizes;
-      if (sizeParam && defaultSizes.includes(sizeParam)) {
-        return sizeParam;
-      }
-      return defaultSizes[0];
+  const [gender, setGender] = useState<"men" | "women" | "kids">(() => {
+    return parseGenderParam(searchParams.get("gender")) ?? defaultGender;
+  });
+
+  const [selectedSize, setSelectedSize] = useState<string | undefined>(() => {
+    const sizeParam = searchParams.get("size");
+    const initialGender = parseGenderParam(searchParams.get("gender")) ?? defaultGender;
+    const initialSizes = sizesForGender(initialGender);
+    if (sizeParam && initialSizes.includes(sizeParam)) {
+      return sizeParam;
     }
-  );
+    return initialSizes[0];
+  });
 
   // Get stock for a primary color
   const getStockForPrimary = (color: string) => {
@@ -150,11 +160,7 @@ export default function AddToCart({
   const canAdd = selectedPrimary && (selectedSecondary || !hasSecondaryColors) && selectedSize && isPrimaryAvailable(selectedPrimary);
 
   // Get display sizes based on gender
-  const displaySizes = useMemo(() => {
-    if (gender === "women") return womensSizes;
-    if (gender === "kids") return kidsSizes;
-    return mensSizes;
-  }, [gender]);
+  const displaySizes = useMemo(() => sizesForGender(gender), [gender]);
 
   // Get size label based on gender
   const sizeLabel = gender === "men" ? "Men's" : gender === "women" ? "Women's" : "Kids'";

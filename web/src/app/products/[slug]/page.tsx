@@ -205,6 +205,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     secondaryLabel: "Lace Color",
                   })}
                   {...(isMagikidShoes && {
+                    defaultGender: "kids" as const,
                     fulfillmentOptions: [
                       {
                         id: "shipping",
