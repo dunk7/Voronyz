@@ -106,7 +106,26 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     "/products/slip-ons/InShot_20260405_204113872.jpg",
     "/products/slip-ons/InShot_20260405_204333303.jpg",
   ];
-  const images = slug === "v3-slides" ? defaultImages : slug === "dragonfly" ? dragonflyImages : slug === "slip-ons" ? slipOnsImages : ((product.images as string[] | null) ?? defaultImages);
+  const magikidShoesImages = [
+    "/products/magikid-shoes/magikid-shoes-thumbnail.jpg",
+    "/products/slip-ons/InShot_20260405_203151152.jpg",
+    "/products/slip-ons/InShot_20260405_203425292.jpg",
+    "/products/slip-ons/InShot_20260405_203601045.jpg",
+    "/products/slip-ons/InShot_20260405_203736918.jpg",
+    "/products/slip-ons/InShot_20260405_203930832.jpg",
+    "/products/slip-ons/InShot_20260405_204113872.jpg",
+    "/products/slip-ons/InShot_20260405_204333303.jpg",
+    "/products/slip-ons/InShot_20260405_202911983.jpg",
+  ];
+  const images = slug === "v3-slides"
+    ? defaultImages
+    : slug === "dragonfly"
+    ? dragonflyImages
+    : slug === "slip-ons"
+    ? slipOnsImages
+    : slug === "magikid-shoes"
+    ? magikidShoesImages
+    : ((product.images as string[] | null) ?? defaultImages);
   const galleryMedia: Media[] = images.map((src) => ({ type: "image" as const, src, alt: product.name }));
   if (slug === "slip-ons") {
     galleryMedia.push({
@@ -118,12 +137,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   const isDragonfly = slug === "dragonfly";
   const isSlipOns = slug === "slip-ons";
+  const isMagikidShoes = slug === "magikid-shoes";
 
   // Product-specific descriptions
   const displayDescription = slug === "v3-slides" 
     ? "World-class FDM printed slides with TPU 90A lattice lowers and breathable uppers. Engineered from precision 3D scans."
     : slug === "dragonfly"
     ? "Lightweight, breathable 3D-printed sneakers featuring a custom lattice sole for unmatched cushioning and style. Available in four stunning colorways with fully customizable lace colors."
+    : isMagikidShoes
+    ? "Custom 3D-printed slip-ons with a flexible lattice sole and Magikid star charm. Black and grey in stock — free US shipping, or pick up in person at Magikid Lab for $30."
     : isSlipOns
     ? "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — black, grey, orange in stock; white temporarily unavailable."
     : product.description;
@@ -158,6 +180,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             {isSlipOns && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Single-tone upper</span>
             )}
+            {isMagikidShoes && (
+              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Magikid Lab pickup available</span>
+            )}
           </div>
         </div>
 
@@ -175,6 +200,22 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   {...(isDragonfly && {
                     secondaryColors: (product.secondaryColors as string[]).filter(c => c.toLowerCase() !== "#007fff"),
                     secondaryLabel: "Lace Color",
+                  })}
+                  {...(isMagikidShoes && {
+                    fulfillmentOptions: [
+                      {
+                        id: "shipping",
+                        label: "Free shipping",
+                        priceCents: 3700,
+                        description: "Ships to your door — $37",
+                      },
+                      {
+                        id: "pickup",
+                        label: "Magikid Lab pickup",
+                        priceCents: 3000,
+                        description: "Pick up in person at Magikid Lab — $30",
+                      },
+                    ],
                   })}
                   sizes={product.sizes as string[]}
                   productName={product.name}
@@ -201,11 +242,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <div className="container pb-12">
         <div className="mt-10 overflow-hidden rounded-3xl ring-1 ring-black/5 bg-white">
           <div className="bg-black text-white px-6 py-4 text-sm font-medium">
-            {isDragonfly ? "Crafted for you" : isSlipOns ? "Print + finish" : "How it's made"}
+            {isDragonfly ? "Crafted for you" : isMagikidShoes ? "Magikid edition" : isSlipOns ? "Print + finish" : "How it's made"}
           </div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed">
             {isDragonfly
               ? "Each pair of Dragonfly's is 3D-printed with our proprietary TPU lattice technology, delivering a springy, responsive feel with every step. The breathable upper is precision-engineered for airflow, and every pair ships with your choice of lace color — making each one uniquely yours."
+              : isMagikidShoes
+              ? "Magikid Shoes are printed in one piece per colorway, finished with a Magikid star charm, and ready for daily wear. Choose free shipping or save $7 with in-person pickup at Magikid Lab."
               : isSlipOns
               ? "Slip Ons are printed in one piece per colorway for a seamless look, then finished for flex and daily wear. There is no secondary accent color — the shade you choose is the full shoe."
               : "Each pair takes a full day to print using our proprietary TPU blend. Following printing, we perform heat-treated post-processing to ensure exceptional quality, comfort, and durability."}
@@ -221,6 +264,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "How long does production take?", a: "Each pair is 3D-printed to order. Production takes about 1-2 days, then ships out next business day." },
               { q: "Is shipping really free?", a: "Yes! We offer free shipping on all domestic US orders. No minimum purchase required. We currently only ship within the US." },
               { q: "Can I wash them?", a: "Absolutely. The lattice sole and upper are fully washable — toss them in the washer on a gentle cycle." },
+            ] : isMagikidShoes ? [
+              { q: "What colors can I order?", a: "Black and grey are in stock. White and orange are listed but currently out of stock." },
+              { q: "How does Magikid Lab pickup work?", a: "Select pickup at checkout for $30 instead of $37. We'll email you when your pair is ready to collect in person at Magikid Lab." },
+              { q: "Is shipping free?", a: "Yes — standard shipping is free at the $37 price. Pickup at Magikid Lab is $30 with no shipping needed." },
+              { q: "How long does production take?", a: "About 1–2 days to print, then we ship or hold for pickup." },
             ] : isSlipOns ? [
               { q: "What colors can I order?", a: "Black, grey, white, and orange are listed — white is currently out of stock. Each pair is one solid body color (no two-tone option)." },
               { q: "Why is white unavailable?", a: "We're temporarily out of white material runs. Select another color or check back — inventory updates when we restock." },
@@ -259,6 +307,19 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const description =
       "Minimal 3D-printed slip-ons with a flexible lattice sole. $60. Black, grey, and orange in stock; white temporarily unavailable.";
     const images = ["/products/slip-ons/InShot_20260405_203151152.jpg"];
+    return {
+      title,
+      description,
+      openGraph: { title, description, images },
+      twitter: { card: "summary_large_image", title, description, images },
+    };
+  }
+
+  if (slug === "magikid-shoes") {
+    const title = "Magikid Shoes – Voronyz";
+    const description =
+      "Custom 3D-printed slip-ons with a Magikid star charm. $37 with free shipping, or $30 with in-person pickup at Magikid Lab. Black and grey in stock.";
+    const images = ["/products/magikid-shoes/magikid-shoes-thumbnail.jpg"];
     return {
       title,
       description,

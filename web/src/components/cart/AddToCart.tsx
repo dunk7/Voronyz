@@ -12,6 +12,13 @@ interface VariantProps {
   priceCents: number | null;
 }
 
+type FulfillmentOption = {
+  id: string;
+  label: string;
+  priceCents: number;
+  description?: string;
+};
+
 type Props = {
   variants: VariantProps[];
   primaryColors: string[];
@@ -24,6 +31,7 @@ type Props = {
   productSlug?: string;
   secondaryLabel?: string;
   promoHint?: { code: string; promoPrice: number };
+  fulfillmentOptions?: FulfillmentOption[];
 };
 
 interface CartItem {
@@ -34,7 +42,7 @@ interface CartItem {
   quantity: number;
   priceCents: number;
   variant: { name: string };
-  attributes?: { color?: string; size?: string };
+  attributes?: { color?: string; size?: string; fulfillment?: string };
   productSlug?: string;
   message?: string;
 }
@@ -54,8 +62,10 @@ export default function AddToCart({
   coverImage, 
   productSlug,
   secondaryLabel,
+  fulfillmentOptions = [],
 }: Props) {
   const hasSecondaryColors = secondaryColors.length > 0;
+  const hasFulfillmentOptions = fulfillmentOptions.length > 0;
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState(false);
@@ -81,6 +91,10 @@ export default function AddToCart({
       }
       return secondaryColors[0];
     }
+  );
+
+  const [selectedFulfillment, setSelectedFulfillment] = useState<string>(
+    () => fulfillmentOptions[0]?.id ?? "shipping"
   );
 
   const [gender, setGender] = useState<"men" | "women" | "kids">("men");
@@ -121,7 +135,14 @@ export default function AddToCart({
     return variants.find(v => v.color === selectedPrimary);
   }, [variants, selectedPrimary]);
 
-  const priceCents = selectedVariant?.priceCents ?? productPriceCents ?? 7500;
+  const selectedFulfillmentOption = useMemo(
+    () => fulfillmentOptions.find((o) => o.id === selectedFulfillment) ?? fulfillmentOptions[0],
+    [fulfillmentOptions, selectedFulfillment]
+  );
+
+  const priceCents = hasFulfillmentOptions
+    ? (selectedFulfillmentOption?.priceCents ?? productPriceCents ?? 7500)
+    : (selectedVariant?.priceCents ?? productPriceCents ?? 7500);
   const totalCents = priceCents * quantity;
   const formattedTotal = formatCentsAsCurrency(totalCents);
 
@@ -148,7 +169,7 @@ export default function AddToCart({
   // Reset added if selections change
   useEffect(() => {
     setAdded(false);
-  }, [selectedPrimary, selectedSecondary, selectedSize, gender]);
+  }, [selectedPrimary, selectedSecondary, selectedSize, gender, selectedFulfillment]);
 
   // Human-readable color names for hex values
   const colorDisplayName = (color: string) => {
@@ -194,7 +215,8 @@ export default function AddToCart({
       const existingItemIndex = cart.findIndex(item => 
         item.variantId === selectedVariant.id && 
         (hasSecondaryColors ? item.attributes?.color === selectedSecondary : !item.attributes?.color) && 
-        item.attributes?.size === selectedSize
+        item.attributes?.size === selectedSize &&
+        (hasFulfillmentOptions ? item.attributes?.fulfillment === selectedFulfillment : !item.attributes?.fulfillment)
       );
 
       if (existingItemIndex >= 0) {
@@ -218,7 +240,8 @@ export default function AddToCart({
           variant: { name: selectedPrimary },
           attributes: { 
             ...(selectedSecondary && { color: selectedSecondary }), 
-            size: selectedSize
+            size: selectedSize,
+            ...(hasFulfillmentOptions && { fulfillment: selectedFulfillment }),
           },
           productSlug,
           message: ''
@@ -392,6 +415,37 @@ export default function AddToCart({
                       isSelected ? 'border-white' : 'border-black/20'
                     }`} style={{ backgroundColor: color }} />
                     <span className="capitalize">{color}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Fulfillment (shipping vs pickup) */}
+        {hasFulfillmentOptions && (
+          <div className="grid gap-2">
+            <label className="text-sm text-neutral-700">Delivery</label>
+            <div className="flex flex-col gap-2">
+              {fulfillmentOptions.map((option) => {
+                const isSelected = selectedFulfillment === option.id;
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setSelectedFulfillment(option.id)}
+                    className={`flex flex-col items-start rounded-xl px-4 py-3 text-left ring-1 transition ${
+                      isSelected
+                        ? "bg-black text-white ring-black"
+                        : "bg-white text-neutral-900 ring-black/10 hover:bg-black/5"
+                    }`}
+                  >
+                    <span className="text-sm font-medium">{option.label}</span>
+                    {option.description && (
+                      <span className={`text-xs mt-0.5 ${isSelected ? "text-white/80" : "text-neutral-500"}`}>
+                        {option.description}
+                      </span>
+                    )}
                   </button>
                 );
               })}
