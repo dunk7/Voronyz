@@ -181,7 +181,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               </svg>
               {isMagikidShoes ? "Shipping" : "Free US shipping"}
             </span>
-            <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Made to order in &lt;2 days</span>
+            <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
+              {isMagikidShoes ? "Made to order in &lt;7 days" : "Made to order in &lt;2 days"}
+            </span>
             {!isMagikidShoes && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
             )}
@@ -281,7 +283,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "What colors can I order?", a: "Black and grey are in stock. White and orange are listed but currently out of stock." },
               { q: "How does Magikid Lab pickup work?", a: "Select pickup at checkout for $30 instead of $37. We'll email you when your pair is ready to collect in person at Magikid Lab." },
               { q: "How does shipping work?", a: "Shipping is $37. Pickup at Magikid Lab is $30 with no shipping needed." },
-              { q: "How long does production take?", a: "About 1–2 days to print, then we ship or hold for pickup." },
+              { q: "How long does production take?", a: "Made to order in under 7 days, then we ship or hold for pickup." },
             ] : isSlipOns ? [
               { q: "What colors can I order?", a: "Black, grey, white, and orange are listed — white is currently out of stock. Each pair is one solid body color (no two-tone option)." },
               { q: "Why is white unavailable?", a: "We're temporarily out of white material runs. Select another color or check back — inventory updates when we restock." },
