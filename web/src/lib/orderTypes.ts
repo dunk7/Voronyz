@@ -20,6 +20,7 @@ export type OrderLineItem = {
   quantity: number;
   amount: number;
   image?: string;
+  studentName?: string;
 };
 
 export type OrderCustomer = {
@@ -238,6 +239,8 @@ export function parseOrderMetadata(metadata: unknown): {
         quantity: typeof raw.quantity === "number" ? raw.quantity : 1,
         amount: typeof raw.amount === "number" ? raw.amount : 0,
         image: typeof raw.image === "string" ? raw.image : undefined,
+        studentName:
+          typeof raw.studentName === "string" ? raw.studentName : undefined,
       });
     }
   }

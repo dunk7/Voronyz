@@ -3,6 +3,7 @@ import { useMemo, useState, useEffect } from "react";
 import { formatCentsAsCurrency } from "@/lib/money";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { normalizeStudentName } from "@/lib/magikidShoesThumbnail";
 
 interface VariantProps {
   id: string;
@@ -33,6 +34,7 @@ type Props = {
   promoHint?: { code: string; promoPrice: number };
   fulfillmentOptions?: FulfillmentOption[];
   defaultGender?: "men" | "women" | "kids";
+  requireStudentName?: boolean;
 };
 
 const MENS_SIZES = ["6", "7", "8", "9", "10", "11", "12", "13"];
@@ -58,8 +60,9 @@ interface CartItem {
   quantity: number;
   priceCents: number;
   variant: { name: string };
-  attributes?: { color?: string; size?: string; fulfillment?: string };
+  attributes?: { color?: string; size?: string; fulfillment?: string; gender?: string };
   productSlug?: string;
+  studentName?: string;
   message?: string;
 }
 
@@ -80,6 +83,7 @@ export default function AddToCart({
   secondaryLabel,
   fulfillmentOptions = [],
   defaultGender = "men",
+  requireStudentName = false,
 }: Props) {
   const hasSecondaryColors = secondaryColors.length > 0;
   const hasFulfillmentOptions = fulfillmentOptions.length > 0;
@@ -128,6 +132,9 @@ export default function AddToCart({
     return initialSizes[0];
   });
 
+  const [studentName, setStudentName] = useState("");
+  const normalizedStudentName = requireStudentName ? normalizeStudentName(studentName) : null;
+
   // Get stock for a primary color
   const getStockForPrimary = (color: string) => {
     const variant = variants.find(v => v.color === color);
@@ -157,7 +164,12 @@ export default function AddToCart({
   const formattedTotal = formatCentsAsCurrency(totalCents);
 
   // Disable add if no selections or primary out of stock
-  const canAdd = selectedPrimary && (selectedSecondary || !hasSecondaryColors) && selectedSize && isPrimaryAvailable(selectedPrimary);
+  const canAdd =
+    selectedPrimary &&
+    (selectedSecondary || !hasSecondaryColors) &&
+    selectedSize &&
+    isPrimaryAvailable(selectedPrimary) &&
+    (!requireStudentName || Boolean(normalizedStudentName));
 
   // Get display sizes based on gender
   const displaySizes = useMemo(() => sizesForGender(gender), [gender]);
@@ -175,7 +187,7 @@ export default function AddToCart({
   // Reset added if selections change
   useEffect(() => {
     setAdded(false);
-  }, [selectedPrimary, selectedSecondary, selectedSize, gender, selectedFulfillment]);
+  }, [selectedPrimary, selectedSecondary, selectedSize, gender, selectedFulfillment, studentName]);
 
   // Human-readable color names for hex values
   const colorDisplayName = (color: string) => {
@@ -222,7 +234,9 @@ export default function AddToCart({
         item.variantId === selectedVariant.id && 
         (hasSecondaryColors ? item.attributes?.color === selectedSecondary : !item.attributes?.color) && 
         item.attributes?.size === selectedSize &&
-        (hasFulfillmentOptions ? item.attributes?.fulfillment === selectedFulfillment : !item.attributes?.fulfillment)
+        item.attributes?.gender === gender &&
+        (hasFulfillmentOptions ? item.attributes?.fulfillment === selectedFulfillment : !item.attributes?.fulfillment) &&
+        (requireStudentName ? item.studentName === normalizedStudentName : !item.studentName)
       );
 
       if (existingItemIndex >= 0) {
@@ -247,9 +261,11 @@ export default function AddToCart({
           attributes: { 
             ...(selectedSecondary && { color: selectedSecondary }), 
             size: selectedSize,
+            gender,
             ...(hasFulfillmentOptions && { fulfillment: selectedFulfillment }),
           },
           productSlug,
+          ...(normalizedStudentName && { studentName: normalizedStudentName }),
           message: ''
         };
         cart.push(newItem);
@@ -519,6 +535,27 @@ export default function AddToCart({
             })}
           </div>
         </div>
+
+        {requireStudentName && (
+          <div className="grid gap-2">
+            <label htmlFor="student-name" className="text-sm text-neutral-700">
+              Student name <span className="text-red-600">*</span>
+            </label>
+            <input
+              id="student-name"
+              type="text"
+              value={studentName}
+              onChange={(e) => setStudentName(e.target.value)}
+              placeholder="Enter the student's full name"
+              autoComplete="name"
+              maxLength={80}
+              className="w-full rounded-xl border border-black/10 px-4 py-3 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-black/10"
+            />
+            <p className="text-xs text-neutral-500">
+              Required so we can match each pair to the right student.
+            </p>
+          </div>
+        )}
 
         <div className="flex items-center gap-3">
           <input

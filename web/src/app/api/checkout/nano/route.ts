@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
+import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 
 const NANO_RECEIVE_ADDRESS = process.env.NANO_RECEIVE_ADDRESS;
 const NANO_DISCOUNT_RATE = 0.03;
@@ -27,6 +28,11 @@ export async function POST(request: NextRequest) {
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "No items provided" }, { status: 400 });
+    }
+
+    const magikidValidationError = validateMagikidCheckoutItems(items);
+    if (magikidValidationError) {
+      return NextResponse.json({ error: magikidValidationError }, { status: 400 });
     }
 
     // Calculate subtotal in USD cents — same discount code logic as Stripe checkout.

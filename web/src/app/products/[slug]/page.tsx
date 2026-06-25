@@ -214,6 +214,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   })}
                   {...(isMagikidShoes && {
                     defaultGender: "kids" as const,
+                    requireStudentName: true,
                     fulfillmentOptions: [
                       {
                         id: "shipping",
