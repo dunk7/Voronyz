@@ -57,6 +57,7 @@ function itemDetails(item: OrderLineItem) {
   if (item.baseColor) parts.push(item.baseColor);
   if (item.secondaryColor) parts.push(`+ ${item.secondaryColor}`);
   if (item.variantName && !item.baseColor) parts.push(item.variantName);
+  if (item.studentName) parts.push(`Student: ${item.studentName}`);
   return parts.join(" · ");
 }
 

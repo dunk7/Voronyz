@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { formatCentsAsCurrency } from "@/lib/money";
+import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -16,6 +17,7 @@ interface CartItem {
   variant: { name: string };
   attributes?: { size?: number | string; color?: string; gender?: string; fulfillment?: string };
   productSlug?: string;
+  studentName?: string;
 }
 
 interface CartData {
@@ -226,6 +228,11 @@ export default function CartClient() {
                       {String(it.attributes.color)}
                     </span>
                   )}
+                  {it.studentName && (
+                    <span className="rounded-full bg-black/5 px-2 py-0.5">
+                      Student: {it.studentName}
+                    </span>
+                  )}
                   {it.attributes?.fulfillment && (
                     <span className="rounded-full bg-black/5 px-2 py-0.5 capitalize">
                       {it.attributes.fulfillment === "pickup"
@@ -360,8 +367,15 @@ export default function CartClient() {
                 quantity: item.quantity,
                 priceCents: getDiscountedUnitPriceCents(getBaseUnitPriceCents(item), discountCode, item.productSlug, item.productName),
                 image: item.image,
-                productSlug: item.productSlug
+                productSlug: item.productSlug,
+                studentName: item.studentName,
               }));
+              const validationError = validateMagikidCheckoutItems(checkoutItems);
+              if (validationError) {
+                setMessage(validationError);
+                setIsCheckingOut(false);
+                return;
+              }
               console.log('Sending checkout items:', checkoutItems); // Add this log
               const response = await fetch('/api/checkout', {
                 method: 'POST',
@@ -434,7 +448,14 @@ export default function CartClient() {
                 priceCents: getDiscountedUnitPriceCents(getBaseUnitPriceCents(item), discountCode, item.productSlug, item.productName),
                 image: item.image,
                 productSlug: item.productSlug,
+                studentName: item.studentName,
               }));
+              const validationError = validateMagikidCheckoutItems(checkoutItems);
+              if (validationError) {
+                setMessage(validationError);
+                setIsNanoCheckingOut(false);
+                return;
+              }
 
               const response = await fetch('/api/checkout/nano', {
                 method: 'POST',

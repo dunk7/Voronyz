@@ -17,3 +17,25 @@ export const MAGIKID_SHOES_HOW_ITS_MADE =
 
 export const MAGIKID_SHOES_META_DESCRIPTION =
   "Your custom-designed 3D-printed slip-ons. $37 with shipping, or $30 with in-person pickup at Magikid Lab. Black and grey in stock.";
+
+export const MAGIKID_STUDENT_NAME_MIN = 2;
+export const MAGIKID_STUDENT_NAME_MAX = 80;
+
+export function normalizeStudentName(value: string): string | null {
+  const trimmed = value.trim().replace(/\s+/g, " ");
+  if (trimmed.length < MAGIKID_STUDENT_NAME_MIN || trimmed.length > MAGIKID_STUDENT_NAME_MAX) {
+    return null;
+  }
+  return trimmed;
+}
+
+export function validateMagikidCheckoutItems(
+  items: Array<{ productSlug?: string; studentName?: string }>
+): string | null {
+  for (const item of items) {
+    if (item.productSlug === "magikid-shoes" && !normalizeStudentName(item.studentName || "")) {
+      return "Student name is required for each Magikid Shoes order.";
+    }
+  }
+  return null;
+}

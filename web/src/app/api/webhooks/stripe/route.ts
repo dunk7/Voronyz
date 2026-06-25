@@ -107,6 +107,7 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
       priceCents: number;
       image?: string;
       productSlug?: string;
+      studentName?: string;
     }> = [];
     
     try {
@@ -138,6 +139,7 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
             quantity: cartItem.quantity,
             amount: cartItem.priceCents || stripeItem?.amount_total || 0,
             image: cartItem.image,
+            studentName: cartItem.studentName,
           };
         })
       : stripeLineItems.map((stripeItem) => ({

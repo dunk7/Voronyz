@@ -159,6 +159,7 @@ export async function POST(request: NextRequest) {
       priceCents: number;
       image?: string;
       productSlug?: string;
+      studentName?: string;
     }> = [];
     
     try {
@@ -187,6 +188,7 @@ export async function POST(request: NextRequest) {
             quantity: cartItem.quantity,
             amount: cartItem.priceCents || stripeItem?.amount_total || 0,
             image: cartItem.image,
+            studentName: cartItem.studentName,
           };
         })
       : stripeLineItems.map(item => ({

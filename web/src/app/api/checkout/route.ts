@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
+import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -69,6 +70,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const magikidValidationError = validateMagikidCheckoutItems(items);
+    if (magikidValidationError) {
+      return NextResponse.json({ error: magikidValidationError }, { status: 400 });
+    }
+
     if (debug) {
       console.log(`Processing ${items.length} items for checkout`);
     }
@@ -129,10 +135,11 @@ export async function POST(request: NextRequest) {
         const genderLabel = item.gender === "men" ? "Men's" : item.gender === "women" ? "Women's" : item.gender === "kids" ? "Kids'" : "";
         const sizeLabel = item.size ? `${item.size}${genderLabel ? ` (${genderLabel})` : ''}` : 'N/A';
         const fulfillmentLabel = item.fulfillment === 'pickup' ? ' — Magikid Lab pickup' : '';
+        const studentLabel = item.studentName?.trim() ? ` — Student: ${item.studentName.trim()}` : '';
         const productName = variant 
-          ? `${variant.product.name} - ${capitalize(variant.color)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}${fulfillmentLabel}`
+          ? `${variant.product.name} - ${capitalize(variant.color)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}${fulfillmentLabel}${studentLabel}`
           : (item.productName && item.variantName 
-            ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}${fulfillmentLabel}`
+            ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}${fulfillmentLabel}${studentLabel}`
             : `Product Variant ${item.variantId || 'unknown'}`);
 
         console.log(`Generated line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);
@@ -192,8 +199,9 @@ export async function POST(request: NextRequest) {
         const genderLabel = item.gender === "men" ? "Men's" : item.gender === "women" ? "Women's" : item.gender === "kids" ? "Kids'" : "";
         const sizeLabel = item.size ? `${item.size}${genderLabel ? ` (${genderLabel})` : ''}` : 'N/A';
         const fulfillmentLabel = item.fulfillment === 'pickup' ? ' — Magikid Lab pickup' : '';
+        const studentLabel = item.studentName?.trim() ? ` — Student: ${item.studentName.trim()}` : '';
         const productName = item.productName && item.variantName
-          ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}${fulfillmentLabel}`
+          ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}${fulfillmentLabel}${studentLabel}`
           : `Product Variant ${item.variantId || 'unknown'}`;
 
         console.log(`Fallback line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);
