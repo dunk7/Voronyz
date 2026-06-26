@@ -110,6 +110,10 @@ body {
   cursor: text;
 }
 
+.messenger-shell .messages-scroll-area {
+  overflow-anchor: auto;
+}
+
 .messenger-shell input,
 .messenger-shell textarea,
 .messenger-shell [contenteditable="true"] {

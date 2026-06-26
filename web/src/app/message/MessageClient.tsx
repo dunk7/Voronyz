@@ -46,6 +46,7 @@ import { downloadAttachment } from "@/lib/downloadAttachment";
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -602,8 +603,9 @@ export default function MessageClient() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const isAtBottomRef = useRef(true);
-  const prevMessagesLengthRef = useRef(0);
-  const prevConversationIdRef = useRef<string | null>(null);
+  const shouldStickToBottomRef = useRef(true);
+  const lastMessageIdRef = useRef<string | null>(null);
+  const pendingInitialScrollRef = useRef(false);
   const historyReadyRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -624,24 +626,33 @@ export default function MessageClient() {
     [conversations, activeConversationId]
   );
 
-  const scrollToBottom = useCallback(
-    (behavior: ScrollBehavior = "smooth", force = false) => {
-      if (!force && !isAtBottomRef.current) return;
+  const stickScrollToBottom = useCallback((force = false) => {
+    if (!force && !shouldStickToBottomRef.current) return;
+
+    const run = () => {
       const container = messagesContainerRef.current;
       if (container) {
-        container.scrollTo({ top: container.scrollHeight, behavior });
+        container.scrollTop = container.scrollHeight;
       } else {
-        messagesEndRef.current?.scrollIntoView({ behavior });
+        messagesEndRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
       }
-      if (force) isAtBottomRef.current = true;
-    },
-    []
-  );
+    };
+
+    requestAnimationFrame(() => {
+      run();
+      requestAnimationFrame(run);
+    });
+
+    if (force) {
+      shouldStickToBottomRef.current = true;
+      isAtBottomRef.current = true;
+    }
+  }, []);
 
   const checkIsAtBottom = useCallback(() => {
     const container = messagesContainerRef.current;
     if (!container) return true;
-    const threshold = 96;
+    const threshold = 120;
     return (
       container.scrollHeight - container.scrollTop - container.clientHeight <
       threshold
@@ -649,7 +660,9 @@ export default function MessageClient() {
   }, []);
 
   const handleMessagesScroll = useCallback(() => {
-    isAtBottomRef.current = checkIsAtBottom();
+    const atBottom = checkIsAtBottom();
+    isAtBottomRef.current = atBottom;
+    shouldStickToBottomRef.current = atBottom;
   }, [checkIsAtBottom]);
 
   const applyMessengerHistoryState = useCallback((state: MessengerHistoryState) => {
@@ -747,7 +760,31 @@ export default function MessageClient() {
         );
         if (!res.ok) return;
         const data = await res.json();
-        setMessages(data.messages ?? []);
+        const nextMessages: ChatMessage[] = data.messages ?? [];
+        const container = messagesContainerRef.current;
+        const scrollAnchor =
+          silent && container && !isAtBottomRef.current
+            ? { top: container.scrollTop, height: container.scrollHeight }
+            : null;
+
+        setMessages((prev) => {
+          if (
+            prev.length === nextMessages.length &&
+            prev.length > 0 &&
+            prev[0].id === nextMessages[0].id &&
+            prev[prev.length - 1].id === nextMessages[nextMessages.length - 1].id
+          ) {
+            return prev;
+          }
+          return nextMessages;
+        });
+
+        if (scrollAnchor && container) {
+          requestAnimationFrame(() => {
+            container.scrollTop =
+              scrollAnchor.top + (container.scrollHeight - scrollAnchor.height);
+          });
+        }
         if (data.conversation) {
           const conv = data.conversation;
           if (conv.isGroup) {
@@ -865,8 +902,36 @@ export default function MessageClient() {
   ]);
 
   useEffect(() => {
-    if (chatPresence.typingUsers.length > 0) scrollToBottom();
-  }, [chatPresence.typingUsers, scrollToBottom]);
+    if (!activeConversationId) {
+      lastMessageIdRef.current = null;
+      pendingInitialScrollRef.current = false;
+      return;
+    }
+    lastMessageIdRef.current = null;
+    pendingInitialScrollRef.current = true;
+    shouldStickToBottomRef.current = true;
+    isAtBottomRef.current = true;
+  }, [activeConversationId]);
+
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    const inner = container?.firstElementChild;
+    if (!inner || !container) return;
+
+    const observer = new ResizeObserver(() => {
+      if (shouldStickToBottomRef.current) {
+        container.scrollTop = container.scrollHeight;
+      }
+    });
+    observer.observe(inner);
+    return () => observer.disconnect();
+  }, [activeConversationId, messages.length]);
+
+  useEffect(() => {
+    if (chatPresence.typingUsers.length > 0 && shouldStickToBottomRef.current) {
+      stickScrollToBottom();
+    }
+  }, [chatPresence.typingUsers, stickScrollToBottom]);
 
   const typingLabel = useMemo(() => {
     const users = chatPresence.typingUsers;
@@ -876,31 +941,28 @@ export default function MessageClient() {
     return "Several people are typing…";
   }, [chatPresence.typingUsers]);
 
-  useEffect(() => {
-    if (messagesLoading) return;
+  useLayoutEffect(() => {
+    if (messagesLoading || messages.length === 0) return;
 
-    const conversationChanged =
-      prevConversationIdRef.current !== activeConversationId;
-    prevConversationIdRef.current = activeConversationId;
+    const lastId = messages[messages.length - 1]?.id ?? null;
 
-    if (conversationChanged) {
-      prevMessagesLengthRef.current = 0;
-      isAtBottomRef.current = true;
-    }
-
-    if (messages.length === 0) {
-      prevMessagesLengthRef.current = 0;
+    if (pendingInitialScrollRef.current) {
+      pendingInitialScrollRef.current = false;
+      lastMessageIdRef.current = lastId;
+      stickScrollToBottom(true);
       return;
     }
 
-    if (conversationChanged || messages.length <= prevMessagesLengthRef.current) {
-      scrollToBottom(messages.length <= 3 ? "auto" : "smooth", true);
-    } else if (messages.length > prevMessagesLengthRef.current) {
-      scrollToBottom("smooth");
-    }
+    const prevLastId = lastMessageIdRef.current;
+    const hasNewTailMessage =
+      lastId !== null && prevLastId !== null && lastId !== prevLastId;
 
-    prevMessagesLengthRef.current = messages.length;
-  }, [messages, messagesLoading, activeConversationId, scrollToBottom]);
+    lastMessageIdRef.current = lastId;
+
+    if (hasNewTailMessage && shouldStickToBottomRef.current) {
+      stickScrollToBottom();
+    }
+  }, [messages, messagesLoading, stickScrollToBottom]);
 
   useEffect(() => {
     if (!user || historyReadyRef.current) return;
@@ -1155,7 +1217,7 @@ export default function MessageClient() {
           if (res.ok && data.message) {
             setMessages((prev) => [...prev, data.message]);
             loadConversations();
-            scrollToBottom("smooth", true);
+            stickScrollToBottom(true);
             return true;
           }
           setSendError(data.error ?? "Could not send message. Try again.");
@@ -1177,7 +1239,7 @@ export default function MessageClient() {
         if (res.ok && data.message) {
           setMessages((prev) => [...prev, data.message]);
           loadConversations();
-          scrollToBottom("smooth", true);
+          stickScrollToBottom(true);
           return true;
         }
         setSendError(data.error ?? "Could not send message. Try again.");
@@ -1190,7 +1252,7 @@ export default function MessageClient() {
         return false;
       }
     },
-    [activeConversationId, loadConversations, scrollToBottom]
+    [activeConversationId, loadConversations, stickScrollToBottom]
   );
 
   async function finishVoiceRecording(sendImmediately: boolean) {
@@ -1291,7 +1353,7 @@ export default function MessageClient() {
         if (res.ok && data.message) {
           setMessages((prev) => [...prev, data.message]);
           loadConversations();
-          scrollToBottom("smooth", true);
+          stickScrollToBottom(true);
         } else {
           setDraft(savedDraft);
           setSendError(data.error ?? "Could not send message. Try again.");
@@ -1972,7 +2034,7 @@ export default function MessageClient() {
             <div
               ref={messagesContainerRef}
               onScroll={handleMessagesScroll}
-              className="flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4 sm:py-5"
+              className="messages-scroll-area flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4 sm:py-5"
             >
               {messagesLoading && messages.length === 0 ? (
                 <div className="flex justify-center py-12">
