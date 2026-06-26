@@ -6,6 +6,7 @@ import {
   ArrowUp,
   Camera,
   Check,
+  Download,
   FileText,
   ImageIcon,
   Loader2,
@@ -41,6 +42,7 @@ import {
   prepareMessageImage,
 } from "@/lib/prepareImageUpload";
 import { uploadMessageAttachmentChunks } from "@/lib/uploadMessageAttachment.client";
+import { downloadAttachment } from "@/lib/downloadAttachment";
 import {
   useCallback,
   useEffect,
@@ -189,6 +191,69 @@ function formatListTime(iso: string) {
   }).format(date);
 }
 
+type MessengerHistoryState = {
+  messenger: true;
+  layer: "list" | "chat" | "media" | "profile" | "newMessage";
+  conversationId?: string | null;
+  media?: MediaViewerItem | null;
+};
+
+function isMessengerHistoryState(
+  state: unknown
+): state is MessengerHistoryState {
+  return (
+    typeof state === "object" &&
+    state !== null &&
+    "messenger" in state &&
+    (state as MessengerHistoryState).messenger === true
+  );
+}
+
+function AttachmentDownloadButton({
+  url,
+  fileName,
+  className = "",
+  label = "Download file",
+}: {
+  url: string;
+  fileName: string;
+  className?: string;
+  label?: string;
+}) {
+  const [downloading, setDownloading] = useState(false);
+
+  async function handleDownload(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      await downloadAttachment(url, fileName);
+    } catch {
+      /* ignore */
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleDownload}
+      disabled={downloading}
+      className={className}
+      aria-label={label}
+      title={label}
+    >
+      {downloading ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <Download className="h-4 w-4" />
+      )}
+    </button>
+  );
+}
+
 function TypingIndicator({ label }: { label?: string }) {
   return (
     <div className="flex justify-start">
@@ -266,56 +331,73 @@ function MessageBubble({
         }`}
       >
         {attachment && isImage && (
-          <button
-            type="button"
-            onClick={() =>
-              onMediaClick({
-                url: attachment.url,
-                mimeType: attachment.mimeType,
-                fileName: attachment.fileName,
-              })
-            }
-            className="group relative block w-full touch-manipulation text-left"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={attachment.url}
-              alt={attachment.fileName}
-              className="max-h-64 w-full object-cover sm:max-h-72"
-              loading="lazy"
+          <div className="group relative">
+            <button
+              type="button"
+              onClick={() =>
+                onMediaClick({
+                  url: attachment.url,
+                  mimeType: attachment.mimeType,
+                  fileName: attachment.fileName,
+                })
+              }
+              className="block w-full touch-manipulation text-left"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={attachment.url}
+                alt={attachment.fileName}
+                className="max-h-64 w-full object-cover sm:max-h-72"
+                loading="lazy"
+                draggable={false}
+              />
+              <span className="absolute inset-0 flex items-center justify-center bg-black/0 transition group-hover:bg-black/25 group-active:bg-black/25">
+                <ZoomIn className="h-8 w-8 text-white opacity-70 drop-shadow transition sm:opacity-0 sm:group-hover:opacity-100" />
+              </span>
+            </button>
+            <AttachmentDownloadButton
+              url={attachment.url}
+              fileName={attachment.fileName}
+              label="Download image"
+              className="absolute right-2 top-2 rounded-full bg-black/50 p-2 text-white/90 ring-1 ring-white/20 transition hover:bg-black/70"
             />
-            <span className="absolute inset-0 flex items-center justify-center bg-black/0 transition group-hover:bg-black/25 group-active:bg-black/25">
-              <ZoomIn className="h-8 w-8 text-white opacity-70 drop-shadow transition sm:opacity-0 sm:group-hover:opacity-100" />
-            </span>
-          </button>
+          </div>
         )}
 
         {attachment && isVideo && (
-          <button
-            type="button"
-            onClick={() =>
-              onMediaClick({
-                url: attachment.url,
-                mimeType: attachment.mimeType,
-                fileName: attachment.fileName,
-              })
-            }
-            className="group relative block w-full touch-manipulation text-left"
-          >
-            {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-            <video
-              src={attachment.url}
-              className="max-h-64 w-full bg-black object-contain sm:max-h-72"
-              muted
-              playsInline
-              preload="metadata"
+          <div className="group relative">
+            <button
+              type="button"
+              onClick={() =>
+                onMediaClick({
+                  url: attachment.url,
+                  mimeType: attachment.mimeType,
+                  fileName: attachment.fileName,
+                })
+              }
+              className="block w-full touch-manipulation text-left"
+            >
+              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+              <video
+                src={attachment.url}
+                className="max-h-64 w-full bg-black object-contain sm:max-h-72"
+                muted
+                playsInline
+                preload="metadata"
+              />
+              <span className="absolute inset-0 flex items-center justify-center bg-black/25">
+                <div className="rounded-full bg-black/50 p-3 ring-1 ring-white/20">
+                  <Video className="h-7 w-7 text-white" />
+                </div>
+              </span>
+            </button>
+            <AttachmentDownloadButton
+              url={attachment.url}
+              fileName={attachment.fileName}
+              label="Download video"
+              className="absolute right-2 top-2 rounded-full bg-black/50 p-2 text-white/90 ring-1 ring-white/20 transition hover:bg-black/70"
             />
-            <span className="absolute inset-0 flex items-center justify-center bg-black/25">
-              <div className="rounded-full bg-black/50 p-3 ring-1 ring-white/20">
-                <Video className="h-7 w-7 text-white" />
-              </div>
-            </span>
-          </button>
+          </div>
         )}
 
         {attachment && isAudio && (
@@ -327,9 +409,7 @@ function MessageBubble({
         )}
 
         {attachment && !isMediaAttachment(attachment) && !isAudio && (
-        <a
-          href={attachment.url}
-          download={attachment.fileName}
+        <div
           className={`flex items-center gap-3 px-4 py-3 transition ${
             message.isMine
               ? "hover:bg-indigo-400/40"
@@ -353,12 +433,22 @@ function MessageBubble({
               {formatFileSize(attachment.sizeBytes)} · Tap to download
             </p>
           </div>
-        </a>
+          <AttachmentDownloadButton
+            url={attachment.url}
+            fileName={attachment.fileName}
+            label={`Download ${attachment.fileName}`}
+            className={`shrink-0 rounded-xl p-2.5 transition ${
+              message.isMine
+                ? "text-white/80 hover:bg-white/15"
+                : "text-white/60 hover:bg-white/10"
+            }`}
+          />
+        </div>
       )}
 
       {hasText && (
         <p
-          className={`whitespace-pre-wrap break-words px-4 py-2.5 text-[15px] leading-relaxed ${
+          className={`message-text whitespace-pre-wrap break-words px-4 py-2.5 text-[15px] leading-relaxed ${
             attachment ? "pt-2" : ""
           }`}
         >
@@ -510,6 +600,11 @@ export default function MessageClient() {
     typingUsers: string[];
   }>({ isOnline: false, typingUsers: [] });
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const isAtBottomRef = useRef(true);
+  const prevMessagesLengthRef = useRef(0);
+  const prevConversationIdRef = useRef<string | null>(null);
+  const historyReadyRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingPingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -529,8 +624,84 @@ export default function MessageClient() {
     [conversations, activeConversationId]
   );
 
-  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
-    messagesEndRef.current?.scrollIntoView({ behavior });
+  const scrollToBottom = useCallback(
+    (behavior: ScrollBehavior = "smooth", force = false) => {
+      if (!force && !isAtBottomRef.current) return;
+      const container = messagesContainerRef.current;
+      if (container) {
+        container.scrollTo({ top: container.scrollHeight, behavior });
+      } else {
+        messagesEndRef.current?.scrollIntoView({ behavior });
+      }
+      if (force) isAtBottomRef.current = true;
+    },
+    []
+  );
+
+  const checkIsAtBottom = useCallback(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return true;
+    const threshold = 96;
+    return (
+      container.scrollHeight - container.scrollTop - container.clientHeight <
+      threshold
+    );
+  }, []);
+
+  const handleMessagesScroll = useCallback(() => {
+    isAtBottomRef.current = checkIsAtBottom();
+  }, [checkIsAtBottom]);
+
+  const applyMessengerHistoryState = useCallback((state: MessengerHistoryState) => {
+    if (state.conversationId) {
+      setActiveConversationId(state.conversationId);
+    } else if (state.layer === "list") {
+      setActiveConversationId(null);
+    }
+
+    setMobileShowChat(state.layer === "chat" || state.layer === "media");
+    setMediaViewer(state.layer === "media" ? (state.media ?? null) : null);
+    setShowProfile(state.layer === "profile");
+    setShowNewMessage(state.layer === "newMessage");
+
+    if (state.layer !== "profile") {
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordError("");
+      setPasswordSuccess("");
+    }
+    if (state.layer !== "newMessage") {
+      setNewMessageError("");
+    }
+  }, []);
+
+  const pushMessengerHistory = useCallback(
+    (state: MessengerHistoryState, url?: string) => {
+      window.history.pushState(state, "", url ?? window.location.pathname + window.location.search);
+    },
+    []
+  );
+
+  const openMediaViewer = useCallback(
+    (item: MediaViewerItem) => {
+      setMediaViewer(item);
+      pushMessengerHistory({
+        messenger: true,
+        layer: "media",
+        conversationId: activeConversationId,
+        media: item,
+      });
+    },
+    [activeConversationId, pushMessengerHistory]
+  );
+
+  const closeMediaViewer = useCallback(() => {
+    if (isMessengerHistoryState(window.history.state) && window.history.state.layer === "media") {
+      window.history.back();
+      return;
+    }
+    setMediaViewer(null);
   }, []);
 
   const loadAuth = useCallback(async () => {
@@ -706,10 +877,73 @@ export default function MessageClient() {
   }, [chatPresence.typingUsers]);
 
   useEffect(() => {
-    if (!messagesLoading && messages.length > 0) {
-      scrollToBottom(messages.length <= 3 ? "auto" : "smooth");
+    if (messagesLoading) return;
+
+    const conversationChanged =
+      prevConversationIdRef.current !== activeConversationId;
+    prevConversationIdRef.current = activeConversationId;
+
+    if (conversationChanged) {
+      prevMessagesLengthRef.current = 0;
+      isAtBottomRef.current = true;
     }
-  }, [messages, messagesLoading, scrollToBottom]);
+
+    if (messages.length === 0) {
+      prevMessagesLengthRef.current = 0;
+      return;
+    }
+
+    if (conversationChanged || messages.length <= prevMessagesLengthRef.current) {
+      scrollToBottom(messages.length <= 3 ? "auto" : "smooth", true);
+    } else if (messages.length > prevMessagesLengthRef.current) {
+      scrollToBottom("smooth");
+    }
+
+    prevMessagesLengthRef.current = messages.length;
+  }, [messages, messagesLoading, activeConversationId, scrollToBottom]);
+
+  useEffect(() => {
+    if (!user || historyReadyRef.current) return;
+    historyReadyRef.current = true;
+
+    const params = new URLSearchParams(window.location.search);
+    const conversationId = params.get("c");
+    if (conversationId) {
+      setActiveConversationId(conversationId);
+      setMobileShowChat(true);
+      window.history.replaceState(
+        {
+          messenger: true,
+          layer: "chat",
+          conversationId,
+        } satisfies MessengerHistoryState,
+        "",
+        `/message?c=${encodeURIComponent(conversationId)}`
+      );
+      return;
+    }
+
+    window.history.replaceState(
+      { messenger: true, layer: "list" } satisfies MessengerHistoryState,
+      "",
+      "/message"
+    );
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const onPopState = (event: PopStateEvent) => {
+      if (isMessengerHistoryState(event.state)) {
+        applyMessengerHistoryState(event.state);
+        return;
+      }
+      applyMessengerHistoryState({ messenger: true, layer: "list" });
+    };
+
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [user, applyMessengerHistoryState]);
 
   const pendingAttachmentsRef = useRef(pendingAttachments);
   pendingAttachmentsRef.current = pendingAttachments;
@@ -921,7 +1155,7 @@ export default function MessageClient() {
           if (res.ok && data.message) {
             setMessages((prev) => [...prev, data.message]);
             loadConversations();
-            scrollToBottom();
+            scrollToBottom("smooth", true);
             return true;
           }
           setSendError(data.error ?? "Could not send message. Try again.");
@@ -943,7 +1177,7 @@ export default function MessageClient() {
         if (res.ok && data.message) {
           setMessages((prev) => [...prev, data.message]);
           loadConversations();
-          scrollToBottom();
+          scrollToBottom("smooth", true);
           return true;
         }
         setSendError(data.error ?? "Could not send message. Try again.");
@@ -1057,7 +1291,7 @@ export default function MessageClient() {
         if (res.ok && data.message) {
           setMessages((prev) => [...prev, data.message]);
           loadConversations();
-          scrollToBottom();
+          scrollToBottom("smooth", true);
         } else {
           setDraft(savedDraft);
           setSendError(data.error ?? "Could not send message. Try again.");
@@ -1118,6 +1352,15 @@ export default function MessageClient() {
       setNewGroupName("");
       setNewGroupMembers("");
       setNewMessageBody("");
+      window.history.replaceState(
+        {
+          messenger: true,
+          layer: "chat",
+          conversationId: conversation.id,
+        } satisfies MessengerHistoryState,
+        "",
+        `/message?c=${encodeURIComponent(conversation.id)}`
+      );
       await loadMessages(conversation.id);
       await loadConversations();
     } catch {
@@ -1258,6 +1501,11 @@ export default function MessageClient() {
       setMessages([]);
       setMobileShowChat(false);
       setChatPresence({ isOnline: false, typingUsers: [] });
+      window.history.replaceState(
+        { messenger: true, layer: "list" } satisfies MessengerHistoryState,
+        "",
+        "/message"
+      );
       await loadConversations();
     } catch {
       setSendError("Could not connect. Try again.");
@@ -1272,6 +1520,62 @@ export default function MessageClient() {
     setMobileShowChat(true);
     setSendError("");
     clearPendingAttachments();
+    pushMessengerHistory(
+      {
+        messenger: true,
+        layer: "chat",
+        conversationId: id,
+      },
+      `/message?c=${encodeURIComponent(id)}`
+    );
+  }
+
+  function openProfilePanel() {
+    setShowProfile(true);
+    setAvatarError("");
+    resetPasswordForm();
+    pushMessengerHistory({ messenger: true, layer: "profile" });
+  }
+
+  function closeProfilePanel() {
+    if (
+      isMessengerHistoryState(window.history.state) &&
+      window.history.state.layer === "profile"
+    ) {
+      window.history.back();
+      return;
+    }
+    setShowProfile(false);
+    resetPasswordForm();
+  }
+
+  function openNewMessagePanel() {
+    setShowNewMessage(true);
+    setNewMessageError("");
+    pushMessengerHistory({ messenger: true, layer: "newMessage" });
+  }
+
+  function closeNewMessagePanel() {
+    if (
+      isMessengerHistoryState(window.history.state) &&
+      window.history.state.layer === "newMessage"
+    ) {
+      window.history.back();
+      return;
+    }
+    setShowNewMessage(false);
+    setNewMessageError("");
+  }
+
+  function goBackToConversationList() {
+    if (
+      isMessengerHistoryState(window.history.state) &&
+      (window.history.state.layer === "chat" || window.history.state.layer === "media")
+    ) {
+      window.history.back();
+      return;
+    }
+    setMobileShowChat(false);
   }
 
   function handleTextareaKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -1450,11 +1754,7 @@ export default function MessageClient() {
         <div className="flex items-center justify-between border-b border-white/8 px-4 py-4 pt-[max(1rem,env(safe-area-inset-top))]">
           <button
             type="button"
-            onClick={() => {
-              setShowProfile(true);
-              setAvatarError("");
-              resetPasswordForm();
-            }}
+            onClick={openProfilePanel}
             className="flex min-w-0 items-center gap-3 rounded-xl py-1 pr-2 text-left transition hover:bg-white/5"
           >
             <MessengerAvatar
@@ -1472,10 +1772,7 @@ export default function MessageClient() {
           <div className="flex items-center gap-1">
             <button
               type="button"
-              onClick={() => {
-                setShowNewMessage(true);
-                setNewMessageError("");
-              }}
+              onClick={openNewMessagePanel}
               className="rounded-xl p-2.5 text-white/70 transition hover:bg-white/8 hover:text-white"
               title="New message"
             >
@@ -1483,11 +1780,7 @@ export default function MessageClient() {
             </button>
             <button
               type="button"
-              onClick={() => {
-                setShowProfile(true);
-                setAvatarError("");
-                resetPasswordForm();
-              }}
+              onClick={openProfilePanel}
               className="rounded-xl p-2.5 text-white/70 transition hover:bg-white/8 hover:text-white"
               title="Profile"
             >
@@ -1515,7 +1808,7 @@ export default function MessageClient() {
               <p className="text-sm text-white/50">No conversations yet.</p>
               <button
                 type="button"
-                onClick={() => setShowNewMessage(true)}
+                onClick={openNewMessagePanel}
                 className="mt-4 rounded-full bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-white/90"
               >
                 Start a conversation
@@ -1614,7 +1907,7 @@ export default function MessageClient() {
             </p>
             <button
               type="button"
-              onClick={() => setShowNewMessage(true)}
+              onClick={openNewMessagePanel}
               className="mt-6 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black transition hover:bg-white/90"
             >
               New message
@@ -1625,7 +1918,7 @@ export default function MessageClient() {
             <header className="flex items-center gap-3 border-b border-white/8 px-4 py-3.5 pt-[max(0.75rem,env(safe-area-inset-top))]">
               <button
                 type="button"
-                onClick={() => setMobileShowChat(false)}
+                onClick={goBackToConversationList}
                 className="rounded-lg p-2 text-white/60 transition hover:bg-white/8 hover:text-white md:hidden"
                 aria-label="Back to conversations"
               >
@@ -1676,7 +1969,11 @@ export default function MessageClient() {
               </button>
             </header>
 
-            <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4 sm:py-5">
+            <div
+              ref={messagesContainerRef}
+              onScroll={handleMessagesScroll}
+              className="flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4 sm:py-5"
+            >
               {messagesLoading && messages.length === 0 ? (
                 <div className="flex justify-center py-12">
                   <Loader2 className="h-6 w-6 animate-spin text-white/40" />
@@ -1704,7 +2001,7 @@ export default function MessageClient() {
                         >
                           <MessageBubble
                             message={message}
-                            onMediaClick={setMediaViewer}
+                            onMediaClick={openMediaViewer}
                             showSender={activeConversation.isGroup}
                           />
                         </div>
@@ -1887,7 +2184,7 @@ export default function MessageClient() {
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-sm sm:items-center">
           <div
             className="absolute inset-0"
-            onClick={() => !newMessageSubmitting && setShowNewMessage(false)}
+            onClick={() => !newMessageSubmitting && closeNewMessagePanel()}
             aria-hidden
           />
           <div className="relative max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-3xl bg-[#161618] p-6 ring-1 ring-white/10 shadow-2xl">
@@ -2004,7 +2301,7 @@ export default function MessageClient() {
               <div className="flex gap-2 pt-1">
                 <button
                   type="button"
-                  onClick={() => setShowNewMessage(false)}
+                  onClick={closeNewMessagePanel}
                   disabled={newMessageSubmitting}
                   className="flex-1 rounded-xl border border-white/10 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/5"
                 >
@@ -2037,8 +2334,7 @@ export default function MessageClient() {
             className="absolute inset-0"
             onClick={() => {
               if (!avatarUploading && !passwordSubmitting) {
-                setShowProfile(false);
-                resetPasswordForm();
+                closeProfilePanel();
               }
             }}
             aria-hidden
@@ -2167,10 +2463,7 @@ export default function MessageClient() {
 
             <button
               type="button"
-              onClick={() => {
-                setShowProfile(false);
-                resetPasswordForm();
-              }}
+              onClick={closeProfilePanel}
               disabled={avatarUploading || passwordSubmitting}
               className="mt-6 w-full rounded-xl border border-white/10 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/5"
             >
@@ -2181,7 +2474,7 @@ export default function MessageClient() {
       )}
 
       {mediaViewer && (
-        <MediaViewer item={mediaViewer} onClose={() => setMediaViewer(null)} />
+        <MediaViewer item={mediaViewer} onClose={closeMediaViewer} />
       )}
     </div>
   );

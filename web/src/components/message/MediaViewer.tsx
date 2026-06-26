@@ -1,6 +1,6 @@
 "use client";
 
-import { Minus, Plus, X } from "lucide-react";
+import { Minus, Plus, Download, Loader2, X } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -8,6 +8,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import { downloadAttachment } from "@/lib/downloadAttachment";
 
 export type MediaViewerItem = {
   url: string;
@@ -54,6 +55,7 @@ export function MediaViewer({
   const [scale, setScale] = useState(1);
   const [translate, setTranslate] = useState<Point>({ x: 0, y: 0 });
   const [isGesturing, setIsGesturing] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const transformRef = useRef({ scale: 1, translate: { x: 0, y: 0 } });
@@ -116,6 +118,18 @@ export function MediaViewer({
     },
     [applyZoomAtFocal]
   );
+
+  async function handleDownload() {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      await downloadAttachment(item.url, item.fileName ?? "download");
+    } catch {
+      /* ignore */
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   const handlePointerDown = (e: ReactPointerEvent) => {
     if (isVideo || !containerRef.current) return;
@@ -233,6 +247,19 @@ export function MediaViewer({
           {item.fileName ?? (isVideo ? "Video" : "Photo")}
         </p>
         <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={handleDownload}
+            disabled={downloading}
+            className="rounded-full p-2.5 text-white/80 transition hover:bg-white/10 disabled:opacity-50"
+            aria-label="Download"
+          >
+            {downloading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Download className="h-5 w-5" />
+            )}
+          </button>
           {!isVideo && (
             <>
               <button

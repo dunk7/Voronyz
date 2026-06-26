@@ -98,12 +98,16 @@ body {
   z-index: 1;
 }
 
-/* Messenger: avoid accidental text selection when tapping UI or messages */
+/* Messenger: avoid accidental selection on chrome; allow copying message text */
 .messenger-shell {
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+.messenger-shell .message-text {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+  cursor: text;
 }
 
 .messenger-shell input,
