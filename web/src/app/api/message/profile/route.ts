@@ -89,11 +89,13 @@ export async function POST(request: NextRequest) {
     select: { id: true, username: true, avatarMimeType: true },
   });
 
+  const avatarVersion = Date.now();
+
   return NextResponse.json({
     user: {
       id: user.id,
       username: user.username,
-      avatarUrl: avatarUrlForUser(user),
+      avatarUrl: avatarUrlForUser(user, avatarVersion),
     },
   });
 }

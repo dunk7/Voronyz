@@ -574,6 +574,7 @@ export default function MessageClient() {
 
   const [showProfile, setShowProfile] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
   const [avatarError, setAvatarError] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -583,6 +584,7 @@ export default function MessageClient() {
   const [passwordSubmitting, setPasswordSubmitting] = useState(false);
   const [deletingConversation, setDeletingConversation] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const avatarPreviewUrlRef = useRef<string | null>(null);
 
   const [mobileShowChat, setMobileShowChat] = useState(false);
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>(
@@ -715,6 +717,50 @@ export default function MessageClient() {
       return;
     }
     setMediaViewer(null);
+  }, []);
+
+  const patchUserAvatar = useCallback((userId: string, avatarUrl: string | null) => {
+    setUser((prev) => (prev?.id === userId ? { ...prev, avatarUrl } : prev));
+    setConversations((prev) =>
+      prev.map((conversation) => {
+        if (conversation.isGroup) {
+          return {
+            ...conversation,
+            members: conversation.members.map((member) =>
+              member.id === userId ? { ...member, avatarUrl } : member
+            ),
+          };
+        }
+        if (conversation.otherUser.id === userId) {
+          return {
+            ...conversation,
+            otherUser: { ...conversation.otherUser, avatarUrl },
+          };
+        }
+        return conversation;
+      })
+    );
+    setMessages((prev) =>
+      prev.map((message) =>
+        message.isMine ? { ...message, senderAvatarUrl: avatarUrl } : message
+      )
+    );
+  }, []);
+
+  const clearAvatarPreview = useCallback(() => {
+    if (avatarPreviewUrlRef.current) {
+      URL.revokeObjectURL(avatarPreviewUrlRef.current);
+      avatarPreviewUrlRef.current = null;
+    }
+    setAvatarPreviewUrl(null);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreviewUrlRef.current) {
+        URL.revokeObjectURL(avatarPreviewUrlRef.current);
+      }
+    };
   }, []);
 
   const loadAuth = useCallback(async () => {
@@ -1434,9 +1480,15 @@ export default function MessageClient() {
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !user) return;
+
+    clearAvatarPreview();
+    const localPreview = URL.createObjectURL(file);
+    avatarPreviewUrlRef.current = localPreview;
+    setAvatarPreviewUrl(localPreview);
     setAvatarError("");
     setAvatarUploading(true);
+
     try {
       const prepared = isImageUploadFile(file)
         ? await prepareAvatarImage(file)
@@ -1452,20 +1504,24 @@ export default function MessageClient() {
         setAvatarError(data.error ?? "Could not update profile picture.");
         return;
       }
-      setUser(data.user);
-      await loadConversations();
+      patchUserAvatar(user.id, data.user.avatarUrl ?? null);
     } catch {
       setAvatarError(
         "Could not upload that photo. Try saving it as JPEG or PNG first."
       );
     } finally {
+      clearAvatarPreview();
       setAvatarUploading(false);
       if (avatarInputRef.current) avatarInputRef.current.value = "";
     }
   }
 
   async function handleRemoveAvatar() {
+    if (!user) return;
     setAvatarError("");
+    const previousUrl = user.avatarUrl;
+    clearAvatarPreview();
+    patchUserAvatar(user.id, null);
     setAvatarUploading(true);
     try {
       const formData = new FormData();
@@ -1476,12 +1532,13 @@ export default function MessageClient() {
       });
       const data = await res.json();
       if (!res.ok) {
+        patchUserAvatar(user.id, previousUrl ?? null);
         setAvatarError(data.error ?? "Could not remove profile picture.");
         return;
       }
-      setUser(data.user);
-      await loadConversations();
+      patchUserAvatar(user.id, null);
     } catch {
+      patchUserAvatar(user.id, previousUrl ?? null);
       setAvatarError("Could not remove avatar.");
     } finally {
       setAvatarUploading(false);
@@ -1822,6 +1879,8 @@ export default function MessageClient() {
             <MessengerAvatar
               username={user.username}
               avatarUrl={user.avatarUrl}
+              previewUrl={avatarPreviewUrl}
+              isUpdating={avatarUploading}
               size="sm"
             />
             <div className="min-w-0">
@@ -2409,6 +2468,8 @@ export default function MessageClient() {
               <MessengerAvatar
                 username={user.username}
                 avatarUrl={user.avatarUrl}
+                previewUrl={avatarPreviewUrl}
+                isUpdating={avatarUploading}
                 size="lg"
               />
               <input
@@ -2432,7 +2493,7 @@ export default function MessageClient() {
                   )}
                   Change photo
                 </button>
-                {user.avatarUrl && (
+                {user.avatarUrl && !avatarPreviewUrl && (
                   <button
                     type="button"
                     disabled={avatarUploading}

@@ -18,8 +18,14 @@ export type PublicMessengerUser = {
   typingExpiresAt: Date | null;
 };
 
-export function avatarUrlForUser(user: { id: string; avatarMimeType: string | null }) {
-  return user.avatarMimeType ? `/api/message/users/${user.id}/avatar` : null;
+export function avatarUrlForUser(
+  user: { id: string; avatarMimeType: string | null },
+  version?: number | string
+) {
+  if (!user.avatarMimeType) return null;
+  const base = `/api/message/users/${user.id}/avatar`;
+  if (version == null) return base;
+  return `${base}?v=${encodeURIComponent(String(version))}`;
 }
 
 export async function getConversationForMember(
