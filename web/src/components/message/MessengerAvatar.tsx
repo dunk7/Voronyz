@@ -1,6 +1,7 @@
 "use client";
 
 import { Users } from "lucide-react";
+import { useEffect, useState } from "react";
 
 function usernameHue(username: string) {
   return username.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % 360;
@@ -9,15 +10,19 @@ function usernameHue(username: string) {
 export function MessengerAvatar({
   username,
   avatarUrl,
+  previewUrl,
   online,
   size = "md",
   isGroup,
+  isUpdating = false,
 }: {
   username: string;
   avatarUrl?: string | null;
+  previewUrl?: string | null;
   online?: boolean;
   size?: "md" | "sm" | "lg";
   isGroup?: boolean;
+  isUpdating?: boolean;
 }) {
   const letter = username.charAt(0).toUpperCase();
   const hue = usernameHue(username);
@@ -25,25 +30,38 @@ export function MessengerAvatar({
     size === "sm" ? "h-9 w-9 text-xs" : size === "lg" ? "h-14 w-14 text-base" : "h-11 w-11 text-sm";
   const dotSize = size === "sm" ? "h-2.5 w-2.5" : "h-3 w-3";
   const borderColor = size === "lg" ? "border-[#111113]" : "border-[#0e0e10]";
+  const displayUrl = previewUrl ?? avatarUrl ?? null;
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  useEffect(() => {
+    setImageLoaded(false);
+  }, [displayUrl]);
+
+  const showImage = Boolean(displayUrl);
 
   return (
     <div className="relative shrink-0">
       <div
         className={`${dimensions} overflow-hidden rounded-full shadow-inner ring-1 ring-white/10`}
         style={
-          avatarUrl
-            ? undefined
+          showImage
+            ? { backgroundColor: "rgba(255,255,255,0.06)" }
             : {
                 background: `linear-gradient(135deg, hsl(${hue} 45% 42%), hsl(${(hue + 40) % 360} 50% 32%))`,
               }
         }
       >
-        {avatarUrl ? (
+        {showImage && displayUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={avatarUrl}
+            key={displayUrl}
+            src={displayUrl}
             alt=""
-            className="h-full w-full object-cover"
+            className={`h-full w-full object-cover transition-opacity duration-200 ${
+              imageLoaded && !isUpdating ? "opacity-100" : "opacity-0"
+            }`}
+            onLoad={() => setImageLoaded(true)}
+            onError={() => setImageLoaded(false)}
           />
         ) : isGroup ? (
           <div className="flex h-full w-full items-center justify-center bg-indigo-500/30 text-white">
