@@ -177,6 +177,21 @@ export function messageAttachmentStream(
   });
 }
 
+export async function writeMessageAsSingleChunk(
+  messageId: string,
+  data: Buffer | Uint8Array | ArrayBuffer
+): Promise<void> {
+  const store = getAttachmentBlobStore();
+  const bytes = Buffer.isBuffer(data)
+    ? data
+    : Buffer.from(data instanceof ArrayBuffer ? new Uint8Array(data) : data);
+  const arrayBuffer = bytes.buffer.slice(
+    bytes.byteOffset,
+    bytes.byteOffset + bytes.byteLength
+  ) as ArrayBuffer;
+  await store.set(messageChunkKey(messageId, 0), arrayBuffer);
+}
+
 export async function deleteMessageBlobAttachments(
   messageId: string,
   chunkCount: number

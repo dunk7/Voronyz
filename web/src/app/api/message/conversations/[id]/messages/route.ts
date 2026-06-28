@@ -10,6 +10,7 @@ import {
   countPendingChunks,
   pendingChunkExists,
   readPendingUploadMeta,
+  writeMessageAsSingleChunk,
 } from "@/lib/messageBlobStorage";
 import { getConversationForMember } from "@/lib/messageAccess";
 import {
@@ -113,26 +114,46 @@ export async function GET(request: NextRequest, context: RouteContext) {
   if (!userId) return unauthorizedMessageResponse();
 
   const { id } = await context.params;
+  const afterAtRaw = request.nextUrl.searchParams.get("afterAt");
+  const touch = request.nextUrl.searchParams.get("touch") !== "0";
+  const incremental = Boolean(afterAtRaw?.trim());
+
   const conversation = await getConversationForMember(id, userId);
   if (!conversation) {
     return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
   }
 
+  const afterAt = afterAtRaw ? new Date(afterAtRaw) : null;
+  const afterAtValid = afterAt && !Number.isNaN(afterAt.getTime()) ? afterAt : null;
+
   const messages = await prisma.message.findMany({
-    where: { conversationId: id },
+    where: {
+      conversationId: id,
+      ...(afterAtValid ? { createdAt: { gt: afterAtValid } } : {}),
+    },
     orderBy: { createdAt: "asc" },
     select: MESSAGE_SELECT,
   });
 
-  await prisma.messengerUser.update({
-    where: { id: userId },
-    data: { lastSeenAt: new Date() },
-  });
+  if (touch) {
+    await prisma.messengerUser.update({
+      where: { id: userId },
+      data: { lastSeenAt: new Date() },
+    });
+  }
 
-  return NextResponse.json({
-    conversation: serializeConversationDetail(conversation, userId, id),
+  const payload: {
+    conversation?: ReturnType<typeof serializeConversationDetail>;
+    messages: ReturnType<typeof serializeChatMessage>[];
+  } = {
     messages: messages.map((m) => serializeChatMessage(m, id, userId)),
-  });
+  };
+
+  if (!incremental) {
+    payload.conversation = serializeConversationDetail(conversation, userId, id);
+  }
+
+  return NextResponse.json(payload);
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -260,7 +281,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
                 attachmentMimeType: directAttachment.mimeType,
                 attachmentSizeBytes: directAttachment.sizeBytes,
                 attachmentDurationSeconds: directAttachment.durationSeconds,
-                attachmentData: directAttachment.data,
+                attachmentChunkCount: 1,
+                attachmentStorageKey: "pending",
               }
             : chunkedAttachment
               ? {
@@ -310,6 +332,22 @@ export async function POST(request: NextRequest, context: RouteContext) {
       });
     } catch (err) {
       console.error("Failed to finalize chunked upload:", err);
+      await prisma.message.delete({ where: { id: message.id } }).catch(() => undefined);
+      return NextResponse.json(
+        { error: "Upload failed while saving. Try again." },
+        { status: 500 }
+      );
+    }
+  } else if (directAttachment) {
+    try {
+      await writeMessageAsSingleChunk(message.id, directAttachment.data);
+      message = await prisma.message.update({
+        where: { id: message.id },
+        data: { attachmentStorageKey: messageStoragePrefix(message.id) },
+        select: MESSAGE_SELECT,
+      });
+    } catch (err) {
+      console.error("Failed to store attachment:", err);
       await prisma.message.delete({ where: { id: message.id } }).catch(() => undefined);
       return NextResponse.json(
         { error: "Upload failed while saving. Try again." },

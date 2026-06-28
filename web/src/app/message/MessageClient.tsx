@@ -607,6 +607,7 @@ export default function MessageClient() {
   const isAtBottomRef = useRef(true);
   const shouldStickToBottomRef = useRef(true);
   const lastMessageIdRef = useRef<string | null>(null);
+  const lastMessageAtRef = useRef<string | null>(null);
   const pendingInitialScrollRef = useRef(false);
   const historyReadyRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -800,37 +801,59 @@ export default function MessageClient() {
     async (conversationId: string, { silent = false }: { silent?: boolean } = {}) => {
       if (!silent) setMessagesLoading(true);
       try {
+        const params = new URLSearchParams();
+        if (silent && lastMessageAtRef.current) {
+          params.set("afterAt", lastMessageAtRef.current);
+          params.set("touch", "0");
+        }
+
+        const query = params.toString();
         const res = await fetch(
-          `/api/message/conversations/${conversationId}/messages`,
+          `/api/message/conversations/${conversationId}/messages${query ? `?${query}` : ""}`,
           { cache: "no-store" }
         );
         if (!res.ok) return;
         const data = await res.json();
         const nextMessages: ChatMessage[] = data.messages ?? [];
-        const container = messagesContainerRef.current;
-        const scrollAnchor =
-          silent && container && !isAtBottomRef.current
-            ? { top: container.scrollTop, height: container.scrollHeight }
-            : null;
+        const incremental = silent && params.has("afterAt");
 
-        setMessages((prev) => {
-          if (
-            prev.length === nextMessages.length &&
-            prev.length > 0 &&
-            prev[0].id === nextMessages[0].id &&
-            prev[prev.length - 1].id === nextMessages[nextMessages.length - 1].id
-          ) {
-            return prev;
-          }
-          return nextMessages;
-        });
-
-        if (scrollAnchor && container) {
-          requestAnimationFrame(() => {
-            container.scrollTop =
-              scrollAnchor.top + (container.scrollHeight - scrollAnchor.height);
+        if (incremental) {
+          if (nextMessages.length === 0) return;
+          setMessages((prev) => {
+            const existingIds = new Set(prev.map((message) => message.id));
+            const merged = [...prev];
+            for (const message of nextMessages) {
+              if (!existingIds.has(message.id)) merged.push(message);
+            }
+            return merged;
           });
+        } else {
+          const container = messagesContainerRef.current;
+          const scrollAnchor =
+            silent && container && !isAtBottomRef.current
+              ? { top: container.scrollTop, height: container.scrollHeight }
+              : null;
+
+          setMessages((prev) => {
+            if (
+              prev.length === nextMessages.length &&
+              prev.length > 0 &&
+              prev[0].id === nextMessages[0].id &&
+              prev[prev.length - 1].id === nextMessages[nextMessages.length - 1].id
+            ) {
+              return prev;
+            }
+            return nextMessages;
+          });
+
+          if (scrollAnchor && container) {
+            requestAnimationFrame(() => {
+              container.scrollTop =
+                scrollAnchor.top + (container.scrollHeight - scrollAnchor.height);
+            });
+          }
         }
+
         if (data.conversation) {
           const conv = data.conversation;
           if (conv.isGroup) {
@@ -904,18 +927,48 @@ export default function MessageClient() {
   useEffect(() => {
     if (!user) return;
     loadConversations();
-    const interval = window.setInterval(loadConversations, 5000);
-    return () => window.clearInterval(interval);
+
+    const visibleMs = 20_000;
+    const hiddenMs = 60_000;
+    let intervalId = 0;
+
+    const schedule = () => {
+      window.clearInterval(intervalId);
+      const ms = document.hidden ? hiddenMs : visibleMs;
+      intervalId = window.setInterval(loadConversations, ms);
+    };
+
+    schedule();
+    document.addEventListener("visibilitychange", schedule);
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", schedule);
+    };
   }, [user, loadConversations]);
 
   useEffect(() => {
     if (!user || !activeConversationId) return;
     loadMessages(activeConversationId);
-    const interval = window.setInterval(
-      () => loadMessages(activeConversationId, { silent: true }),
-      3000
-    );
-    return () => window.clearInterval(interval);
+
+    const visibleMs = 10_000;
+    const hiddenMs = 60_000;
+    let intervalId = 0;
+
+    const schedule = () => {
+      window.clearInterval(intervalId);
+      const ms = document.hidden ? hiddenMs : visibleMs;
+      intervalId = window.setInterval(
+        () => loadMessages(activeConversationId, { silent: true }),
+        ms
+      );
+    };
+
+    schedule();
+    document.addEventListener("visibilitychange", schedule);
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", schedule);
+    };
   }, [user, activeConversationId, loadMessages]);
 
   useEffect(() => {
@@ -950,10 +1003,12 @@ export default function MessageClient() {
   useEffect(() => {
     if (!activeConversationId) {
       lastMessageIdRef.current = null;
+      lastMessageAtRef.current = null;
       pendingInitialScrollRef.current = false;
       return;
     }
     lastMessageIdRef.current = null;
+    lastMessageAtRef.current = null;
     pendingInitialScrollRef.current = true;
     shouldStickToBottomRef.current = true;
     isAtBottomRef.current = true;
@@ -991,10 +1046,12 @@ export default function MessageClient() {
     if (messagesLoading || messages.length === 0) return;
 
     const lastId = messages[messages.length - 1]?.id ?? null;
+    const lastAt = messages[messages.length - 1]?.createdAt ?? null;
 
     if (pendingInitialScrollRef.current) {
       pendingInitialScrollRef.current = false;
       lastMessageIdRef.current = lastId;
+      lastMessageAtRef.current = lastAt;
       stickScrollToBottom(true);
       return;
     }
@@ -1004,6 +1061,7 @@ export default function MessageClient() {
       lastId !== null && prevLastId !== null && lastId !== prevLastId;
 
     lastMessageIdRef.current = lastId;
+    lastMessageAtRef.current = lastAt;
 
     if (hasNewTailMessage && shouldStickToBottomRef.current) {
       stickScrollToBottom();

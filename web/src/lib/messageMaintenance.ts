@@ -5,7 +5,7 @@ export const MESSAGE_DOWN_MESSAGE =
 
 export const MESSAGE_ENABLED_KEY = "message_enabled";
 
-const CACHE_MS = 3000;
+const CACHE_MS = 60_000;
 
 let cachedEnabled: boolean | null = null;
 let cachedAt = 0;

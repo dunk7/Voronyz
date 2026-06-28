@@ -1,7 +1,7 @@
 /** ~2 GB (fits signed 32-bit integer column). */
 export const MESSAGE_ATTACHMENT_MAX_BYTES = 2 * 1024 * 1024 * 1024 - 1;
 export const MESSAGE_ATTACHMENT_CHUNK_BYTES = 4 * 1024 * 1024;
-export const DIRECT_UPLOAD_MAX_BYTES = 3 * 1024 * 1024;
+export const DIRECT_UPLOAD_MAX_BYTES = 0;
 export const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
 
 const AVATAR_MIME_TYPES = new Set([

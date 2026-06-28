@@ -101,7 +101,7 @@ model StlSubmission {
   customizationRequest String?
   originalFileName     String
   storageKey           String   @unique
-  fileData             Bytes
+  fileData             Bytes?
   sizeBytes            Int
   ipHash               String?
   createdAt            DateTime @default(now())
@@ -122,6 +122,8 @@ model MessengerUser {
   typingExpiresAt      DateTime?
   avatarMimeType       String?
   avatarData           Bytes?
+  avatarStorageKey     String?
+  avatarEtag           String?
 
   sentMessages        Message[]
   conversationMembers ConversationMember[]

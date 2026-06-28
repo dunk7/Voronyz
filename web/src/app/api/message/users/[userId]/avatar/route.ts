@@ -1,5 +1,6 @@
 import { createHash } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { readAvatarFile } from "@/lib/avatarBlobStorage";
 import {
   getMessageUserId,
   unauthorizedMessageResponse,
@@ -11,7 +12,7 @@ export const runtime = "nodejs";
 
 type RouteContext = { params: Promise<{ userId: string }> };
 
-function avatarEtag(buffer: Buffer, mimeType: string) {
+function legacyAvatarEtag(buffer: Buffer, mimeType: string) {
   return `"${createHash("sha256").update(mimeType).update(buffer).digest("hex").slice(0, 32)}"`;
 }
 
@@ -40,25 +41,57 @@ export async function GET(request: NextRequest, context: RouteContext) {
         },
       ],
     },
-    select: { avatarMimeType: true, avatarData: true },
+    select: {
+      avatarMimeType: true,
+      avatarData: true,
+      avatarStorageKey: true,
+      avatarEtag: true,
+    },
   });
 
-  if (!user?.avatarData?.length || !user.avatarMimeType) {
+  if (!user?.avatarMimeType) {
+    return NextResponse.json({ error: "Avatar not found." }, { status: 404 });
+  }
+
+  const ifNoneMatch = request.headers.get("if-none-match");
+  const cacheHeaders = {
+    ETag: user.avatarEtag ?? "",
+    "Cache-Control": "private, max-age=86400, stale-while-revalidate=604800",
+  };
+
+  if (user.avatarStorageKey && user.avatarEtag) {
+    if (ifNoneMatch === user.avatarEtag) {
+      return new NextResponse(null, { status: 304, headers: cacheHeaders });
+    }
+
+    const blobData = await readAvatarFile(userId);
+    if (blobData?.byteLength) {
+      return new NextResponse(blobData, {
+        status: 200,
+        headers: {
+          "Content-Type": user.avatarMimeType,
+          "Content-Length": String(blobData.byteLength),
+          ...cacheHeaders,
+        },
+      });
+    }
+  }
+
+  if (!user.avatarData?.length) {
     return NextResponse.json({ error: "Avatar not found." }, { status: 404 });
   }
 
   const buffer = Buffer.isBuffer(user.avatarData)
     ? user.avatarData
     : Buffer.from(user.avatarData);
-  const etag = avatarEtag(buffer, user.avatarMimeType);
-  const ifNoneMatch = request.headers.get("if-none-match");
+  const etag = legacyAvatarEtag(buffer, user.avatarMimeType);
 
   if (ifNoneMatch === etag) {
     return new NextResponse(null, {
       status: 304,
       headers: {
         ETag: etag,
-        "Cache-Control": "private, no-cache, must-revalidate",
+        "Cache-Control": "private, max-age=86400, stale-while-revalidate=604800",
       },
     });
   }
@@ -69,7 +102,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       "Content-Type": user.avatarMimeType,
       "Content-Length": String(buffer.length),
       ETag: etag,
-      "Cache-Control": "private, no-cache, must-revalidate",
+      "Cache-Control": "private, max-age=86400, stale-while-revalidate=604800",
     },
   });
 }

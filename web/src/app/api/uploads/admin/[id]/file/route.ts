@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { readStlFile } from "@/lib/stlBlobStorage";
 import {
   isOrdersAdminAuthenticated,
   isOrdersAdminConfigured,
@@ -47,15 +48,26 @@ export async function GET(
 
   const row = await prisma.stlSubmission.findUnique({
     where: { id },
-    select: { fileData: true, originalFileName: true },
+    select: { fileData: true, originalFileName: true, storageKey: true, sizeBytes: true },
   });
 
-  if (!row?.fileData?.length) {
+  if (!row) {
     return NextResponse.json({ error: "Upload not found." }, { status: 404 });
   }
 
   const fileName = row.originalFileName || "upload.bin";
-  const buffer = Buffer.isBuffer(row.fileData) ? row.fileData : Buffer.from(row.fileData);
+  let buffer: Buffer | null = null;
+
+  const blobData = await readStlFile(row.storageKey);
+  if (blobData?.byteLength) {
+    buffer = Buffer.from(blobData);
+  } else if (row.fileData?.length) {
+    buffer = Buffer.isBuffer(row.fileData) ? row.fileData : Buffer.from(row.fileData);
+  }
+
+  if (!buffer?.length) {
+    return NextResponse.json({ error: "Upload file not found." }, { status: 404 });
+  }
 
   return new NextResponse(new Uint8Array(buffer), {
     status: 200,
