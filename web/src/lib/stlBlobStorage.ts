@@ -1,9 +1,9 @@
-import { getStore } from "@netlify/blobs";
+import { getConfiguredBlobStore } from "@/lib/netlifyBlobStore";
 
 export const STL_BLOB_STORE = "stl-uploads";
 
 export function getStlBlobStore() {
-  return getStore({ name: STL_BLOB_STORE, consistency: "strong" });
+  return getConfiguredBlobStore(STL_BLOB_STORE);
 }
 
 function toArrayBuffer(data: Buffer | Uint8Array | ArrayBuffer): ArrayBuffer {
