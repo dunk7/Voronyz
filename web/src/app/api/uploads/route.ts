@@ -10,7 +10,7 @@ import {
   verifyTurnstileIfConfigured,
 } from "@/lib/uploadAntiSpam";
 import { buildStlStorageKey } from "@/lib/stlUploadStorage";
-import { writeStlFile } from "@/lib/stlBlobStorage";
+import { writeStlFile, deleteStlFile } from "@/lib/stlBlobStorage";
 import { notifyNewUpload } from "@/lib/adminNotifyEmail";
 import {
   normalizeCustomizationRequest,
@@ -129,20 +129,47 @@ export async function POST(request: NextRequest) {
     const submissionId = randomUUID();
     const storageKey = buildStlStorageKey(submissionId, originalFileName);
 
-    await writeStlFile(storageKey, buffer);
+    let storedInBlob = false;
+    try {
+      await writeStlFile(storageKey, buffer);
+      storedInBlob = true;
+    } catch (blobErr) {
+      console.error("STL blob write failed, falling back to Postgres fileData:", blobErr);
+    }
 
-    const row = await prisma.stlSubmission.create({
-      data: {
-        id: submissionId,
-        name,
-        email,
-        customizationRequest,
-        originalFileName,
-        storageKey,
-        sizeBytes: buffer.length,
-        ipHash,
-      },
-    });
+    const baseRow = {
+      id: submissionId,
+      name,
+      email,
+      customizationRequest,
+      originalFileName,
+      storageKey,
+      sizeBytes: buffer.length,
+      ipHash,
+    };
+
+    let row;
+    try {
+      row = await prisma.stlSubmission.create({
+        data: storedInBlob ? baseRow : { ...baseRow, fileData: buffer },
+      });
+    } catch (createErr) {
+      // Schema migration may not have made fileData optional yet — retry with bytes in Postgres.
+      if (
+        storedInBlob &&
+        createErr instanceof Error &&
+        (createErr.message.includes("fileData") || createErr.message.includes("null constraint"))
+      ) {
+        row = await prisma.stlSubmission.create({
+          data: { ...baseRow, fileData: buffer },
+        });
+      } else {
+        if (storedInBlob) {
+          await deleteStlFile(storageKey).catch(() => undefined);
+        }
+        throw createErr;
+      }
+    }
 
     notifyNewUpload(row);
 

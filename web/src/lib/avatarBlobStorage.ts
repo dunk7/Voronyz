@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { getStore } from "@netlify/blobs";
+import { getConfiguredBlobStore } from "@/lib/netlifyBlobStore";
 
 export const AVATAR_BLOB_STORE = "messenger-avatars";
 
@@ -13,7 +13,7 @@ export function avatarEtagFromBuffer(buffer: Buffer, mimeType: string): string {
 }
 
 export function getAvatarBlobStore() {
-  return getStore({ name: AVATAR_BLOB_STORE, consistency: "strong" });
+  return getConfiguredBlobStore(AVATAR_BLOB_STORE);
 }
 
 function toArrayBuffer(data: Buffer | Uint8Array | ArrayBuffer): ArrayBuffer {

@@ -1,4 +1,4 @@
-import { getStore } from "@netlify/blobs";
+import { getConfiguredBlobStore } from "@/lib/netlifyBlobStore";
 import { randomUUID } from "crypto";
 
 import { MESSAGE_ATTACHMENT_CHUNK_BYTES } from "@/lib/messageAttachment";
@@ -18,7 +18,7 @@ export type PendingUploadMeta = {
 };
 
 export function getAttachmentBlobStore() {
-  return getStore({ name: MESSAGE_BLOB_STORE, consistency: "strong" });
+  return getConfiguredBlobStore(MESSAGE_BLOB_STORE);
 }
 
 export function newUploadId() {

@@ -81,15 +81,10 @@ export default function UploadsClient() {
 
     setSubmitting(true);
     try {
-      const body = new FormData();
-      body.set("name", name.trim());
-      if (email.trim()) body.set("email", email.trim());
-      if (customizationRequest.trim()) {
-        body.set("customizationRequest", customizationRequest.trim());
-      }
-      body.set("file", file);
+      const form = e.currentTarget;
+      const body = new FormData(form);
+      if (!body.get("file") && file) body.set("file", file);
       body.set("_formStartedAt", String(formStartedAtRef.current));
-      body.set("company", "");
       if (turnstileToken) body.set("cf-turnstile-response", turnstileToken);
 
       const res = await fetch("/api/uploads", {

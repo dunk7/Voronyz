@@ -1,4 +1,4 @@
-import { getStore } from "@netlify/blobs";
+import { getConfiguredBlobStore } from "@/lib/netlifyBlobStore";
 
 export const CATALOG_BLOB_STORE = "catalog-assets";
 export const MAGIKID_THUMB_BLOB_KEY = "magikid-shoes/thumbnail";
@@ -11,5 +11,5 @@ export type CatalogImageMeta = {
 };
 
 export function getCatalogBlobStore() {
-  return getStore({ name: CATALOG_BLOB_STORE, consistency: "strong" });
+  return getConfiguredBlobStore(CATALOG_BLOB_STORE);
 }
