@@ -2,30 +2,58 @@
  * One-time migration: move legacy BYTEA payloads from Supabase Postgres to Netlify Blobs.
  *
  * Usage (from web/):
- *   node --env-file=.env.local scripts/migrate-binary-to-blobs.mjs
+ *   node scripts/migrate-binary-to-blobs.mjs
  *
  * Safe to re-run — skips rows already in blob storage.
  */
 import { createHash } from "crypto";
 import { PrismaClient } from "@prisma/client";
 import { getStore } from "@netlify/blobs";
+import { loadDotenv } from "./load-dotenv.mjs";
+import { resolveDatabaseUrlForMigrations } from "./resolve-database-url-for-migrations.mjs";
 
-const prisma = new PrismaClient();
+loadDotenv();
+
+const databaseUrl = resolveDatabaseUrlForMigrations();
+if (!databaseUrl) {
+  console.error("DATABASE_URL or DIRECT_DATABASE_URL must be set.");
+  process.exit(1);
+}
+
+const prisma = new PrismaClient({
+  datasources: { db: { url: databaseUrl } },
+});
 
 const STL_STORE = "stl-uploads";
 const AVATAR_STORE = "messenger-avatars";
 const ATTACHMENT_STORE = "message-attachments";
 
+function toArrayBuffer(buffer) {
+  return buffer.buffer.slice(
+    buffer.byteOffset,
+    buffer.byteOffset + buffer.byteLength
+  );
+}
+
+function blobStore(name) {
+  const siteID = process.env.NETLIFY_SITE_ID?.trim();
+  const token = process.env.NETLIFY_AUTH_TOKEN?.trim();
+  if (siteID && token) {
+    return getStore({ name, siteID, token, consistency: "strong" });
+  }
+  return getStore({ name, consistency: "strong" });
+}
+
 function stlStore() {
-  return getStore({ name: STL_STORE, consistency: "strong" });
+  return blobStore(STL_STORE);
 }
 
 function avatarStore() {
-  return getStore({ name: AVATAR_STORE, consistency: "strong" });
+  return blobStore(AVATAR_STORE);
 }
 
 function attachmentStore() {
-  return getStore({ name: ATTACHMENT_STORE, consistency: "strong" });
+  return blobStore(ATTACHMENT_STORE);
 }
 
 function avatarEtag(buffer, mimeType) {
@@ -52,7 +80,7 @@ async function migrateStlSubmissions() {
     }
 
     const buffer = Buffer.from(row.fileData);
-    await stlStore().set(row.storageKey, buffer);
+    await stlStore().set(row.storageKey, toArrayBuffer(buffer));
     await prisma.stlSubmission.update({
       where: { id: row.id },
       data: { fileData: null },
@@ -81,7 +109,7 @@ async function migrateAvatars() {
     const etag = avatarEtag(buffer, row.avatarMimeType);
 
     if (!(existing instanceof ArrayBuffer && existing.byteLength > 0)) {
-      await avatarStore().set(key, buffer);
+      await avatarStore().set(key, toArrayBuffer(buffer));
     }
 
     await prisma.messengerUser.update({
@@ -107,9 +135,6 @@ async function migrateMessageAttachments() {
     select: {
       id: true,
       attachmentData: true,
-      attachmentFileName: true,
-      attachmentMimeType: true,
-      attachmentSizeBytes: true,
     },
   });
 
@@ -121,7 +146,7 @@ async function migrateMessageAttachments() {
     const buffer = Buffer.from(row.attachmentData);
 
     if (!(existing instanceof ArrayBuffer && existing.byteLength > 0)) {
-      await attachmentStore().set(chunkKey, buffer);
+      await attachmentStore().set(chunkKey, toArrayBuffer(buffer));
     }
 
     await prisma.message.update({

@@ -1,0 +1,43 @@
+# One-time (or safe re-run): move legacy BYTEA payloads from Postgres to Netlify Blobs.
+name: Migrate binary data to blobs
+
+on:
+  workflow_dispatch:
+
+env:
+  NETLIFY_SITE_ID: cd229aa6-16ce-4912-8da2-39b756823133
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Apply pending migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL }}
+        run: node scripts/migrate-deploy.mjs
+
+      - name: Move legacy BYTEA data to Netlify Blobs
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ env.NETLIFY_SITE_ID }}
+        run: node scripts/migrate-binary-to-blobs.mjs
