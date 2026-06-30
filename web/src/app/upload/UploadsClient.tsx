@@ -3,6 +3,8 @@
 import Script from "next/script";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CheckCircle2, Loader2, Upload } from "lucide-react";
+import { uploadStlFile } from "@/lib/uploadStlFile.client";
+import { STL_DIRECT_UPLOAD_MAX_BYTES } from "@/lib/stlUploadValidation";
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() ?? "";
 
@@ -33,6 +35,7 @@ export default function UploadsClient() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState("");
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const formStartedAtRef = useRef(Date.now());
   const turnstileRef = useRef<HTMLDivElement>(null);
   const turnstileWidgetIdRef = useRef<string | null>(null);
@@ -80,31 +83,31 @@ export default function UploadsClient() {
     }
 
     setSubmitting(true);
+    setUploadProgress(null);
     try {
       const form = e.currentTarget;
-      const body = new FormData(form);
-      if (!body.get("file") && file) body.set("file", file);
-      body.set("_formStartedAt", String(formStartedAtRef.current));
-      if (turnstileToken) body.set("cf-turnstile-response", turnstileToken);
+      const company =
+        (form.elements.namedItem("company") as HTMLInputElement | null)?.value ?? "";
 
-      const res = await fetch("/api/uploads", {
-        method: "POST",
-        body,
-      });
-
-      const data = (await res.json()) as { error?: string; message?: string };
-      if (!res.ok) {
-        setError(data.error ?? "Upload failed. Please try again.");
-        if (TURNSTILE_SITE_KEY && window.turnstile && turnstileWidgetIdRef.current) {
-          window.turnstile.reset(turnstileWidgetIdRef.current);
-          setTurnstileToken("");
+      const result = await uploadStlFile(
+        file,
+        {
+          name,
+          email,
+          customizationRequest,
+          company,
+          formStartedAt: formStartedAtRef.current,
+          turnstileToken,
+        },
+        {
+          onProgress:
+            file.size > STL_DIRECT_UPLOAD_MAX_BYTES
+              ? (fraction) => setUploadProgress(fraction)
+              : undefined,
         }
-        return;
-      }
-
-      setSuccessMessage(
-        data.message ?? "Thanks! We received your file and will review it soon."
       );
+
+      setSuccessMessage(result.message);
       setName("");
       setEmail("");
       setCustomizationRequest("");
@@ -116,10 +119,19 @@ export default function UploadsClient() {
         window.turnstile.reset(turnstileWidgetIdRef.current);
         setTurnstileToken("");
       }
-    } catch {
-      setError("Network error. Check your connection and try again.");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Network error. Check your connection and try again."
+      );
+      if (TURNSTILE_SITE_KEY && window.turnstile && turnstileWidgetIdRef.current) {
+        window.turnstile.reset(turnstileWidgetIdRef.current);
+        setTurnstileToken("");
+      }
     } finally {
       setSubmitting(false);
+      setUploadProgress(null);
     }
   }
 
@@ -252,6 +264,20 @@ export default function UploadsClient() {
           <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
             {error}
           </p>
+        ) : null}
+
+        {uploadProgress !== null ? (
+          <div>
+            <div className="h-2 overflow-hidden rounded-full bg-neutral-200">
+              <div
+                className="h-full rounded-full bg-black transition-all duration-300"
+                style={{ width: `${Math.round(uploadProgress * 100)}%` }}
+              />
+            </div>
+            <p className="mt-2 text-center text-sm text-neutral-600">
+              Uploading… {Math.round(uploadProgress * 100)}%
+            </p>
+          </div>
         ) : null}
 
         <button

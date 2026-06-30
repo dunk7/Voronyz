@@ -1,24 +1,7 @@
-import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import {
-  checkUploadSpam,
-  getClientIp,
-  hashClientIp,
-  MAX_PER_DAY,
-  MAX_PER_HOUR,
-  verifyTurnstileIfConfigured,
-} from "@/lib/uploadAntiSpam";
-import { buildStlStorageKey } from "@/lib/stlUploadStorage";
-import { writeStlFile, deleteStlFile } from "@/lib/stlBlobStorage";
-import { notifyNewUpload } from "@/lib/adminNotifyEmail";
-import {
-  normalizeCustomizationRequest,
-  normalizeUploadEmail,
-  normalizeUploadName,
-  sanitizeUploadFileName,
-  UPLOAD_MAX_BYTES,
-} from "@/lib/stlUploadValidation";
+import { validateUploadFields, checkUploadRateLimit } from "@/lib/stlUploadForm";
+import { notifyPersistedUpload, persistStlUpload } from "@/lib/stlUploadPersist";
+import { UPLOAD_MAX_BYTES } from "@/lib/stlUploadValidation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -47,49 +30,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid form submission." }, { status: 400 });
     }
 
-    const clientIp = getClientIp(request);
-    const ipHash = hashClientIp(clientIp);
-
-    const spam = checkUploadSpam({
-      honeypot: String(formData.get("company") ?? ""),
-      formStartedAt: Number(formData.get("_formStartedAt")),
-      turnstileToken: String(formData.get("cf-turnstile-response") ?? ""),
-    });
-
-    if (!spam.ok) {
-      if (spam.silentReject) return fakeSuccess();
-      return NextResponse.json({ error: spam.message }, { status: 400 });
-    }
-
-    const turnstile = await verifyTurnstileIfConfigured(
-      String(formData.get("cf-turnstile-response") ?? ""),
-      clientIp
+    const fields = await validateUploadFields(
+      {
+        honeypot: String(formData.get("company") ?? ""),
+        formStartedAt: Number(formData.get("_formStartedAt")),
+        turnstileToken: String(formData.get("cf-turnstile-response") ?? ""),
+        nameRaw: String(formData.get("name") ?? ""),
+        emailRaw: String(formData.get("email") ?? ""),
+        customizationRaw: String(formData.get("customizationRequest") ?? ""),
+      },
+      request
     );
-    if (!turnstile.ok) {
-      if (turnstile.silentReject) return fakeSuccess();
-      return NextResponse.json({ error: turnstile.message }, { status: 400 });
-    }
 
-    const name = normalizeUploadName(String(formData.get("name") ?? ""));
-    if (!name) {
-      return NextResponse.json({ error: "Please enter your name (2–120 characters)." }, { status: 400 });
-    }
-
-    const emailRaw = String(formData.get("email") ?? "");
-    const email = emailRaw.trim() ? normalizeUploadEmail(emailRaw) : null;
-    if (emailRaw.trim() && !email) {
-      return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
-    }
-
-    const customizationRaw = String(formData.get("customizationRequest") ?? "");
-    const customizationRequest = customizationRaw.trim()
-      ? normalizeCustomizationRequest(customizationRaw)
-      : null;
-    if (customizationRaw.trim() && !customizationRequest) {
-      return NextResponse.json(
-        { error: "Customization notes must be 4,000 characters or fewer." },
-        { status: 400 }
-      );
+    if ("error" in fields) {
+      if (fields.silentReject) return fakeSuccess();
+      return NextResponse.json({ error: fields.error }, { status: fields.status });
     }
 
     const fileField = formData.get("file");
@@ -104,74 +59,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const rateLimit = await checkUploadRateLimit(fields.ipHash);
+    if (rateLimit) {
+      return NextResponse.json({ error: rateLimit.error }, { status: rateLimit.status });
+    }
+
     const buffer = Buffer.from(await fileField.arrayBuffer());
+    const row = await persistStlUpload({
+      name: fields.name,
+      email: fields.email,
+      customizationRequest: fields.customizationRequest,
+      originalFileName: fileField.name,
+      buffer,
+      ipHash: fields.ipHash,
+    });
 
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-
-    const [hourCount, dayCount] = await Promise.all([
-      prisma.stlSubmission.count({
-        where: { ipHash, createdAt: { gte: oneHourAgo } },
-      }),
-      prisma.stlSubmission.count({
-        where: { ipHash, createdAt: { gte: oneDayAgo } },
-      }),
-    ]);
-
-    if (hourCount >= MAX_PER_HOUR || dayCount >= MAX_PER_DAY) {
-      return NextResponse.json(
-        { error: "Too many uploads from your connection. Please try again later." },
-        { status: 429 }
-      );
-    }
-
-    const originalFileName = sanitizeUploadFileName(fileField.name);
-    const submissionId = randomUUID();
-    const storageKey = buildStlStorageKey(submissionId, originalFileName);
-
-    let storedInBlob = false;
-    try {
-      await writeStlFile(storageKey, buffer);
-      storedInBlob = true;
-    } catch (blobErr) {
-      console.error("STL blob write failed, falling back to Postgres fileData:", blobErr);
-    }
-
-    const baseRow = {
-      id: submissionId,
-      name,
-      email,
-      customizationRequest,
-      originalFileName,
-      storageKey,
-      sizeBytes: buffer.length,
-      ipHash,
-    };
-
-    let row;
-    try {
-      row = await prisma.stlSubmission.create({
-        data: storedInBlob ? baseRow : { ...baseRow, fileData: buffer },
-      });
-    } catch (createErr) {
-      // Schema migration may not have made fileData optional yet — retry with bytes in Postgres.
-      if (
-        storedInBlob &&
-        createErr instanceof Error &&
-        (createErr.message.includes("fileData") || createErr.message.includes("null constraint"))
-      ) {
-        row = await prisma.stlSubmission.create({
-          data: { ...baseRow, fileData: buffer },
-        });
-      } else {
-        if (storedInBlob) {
-          await deleteStlFile(storageKey).catch(() => undefined);
-        }
-        throw createErr;
-      }
-    }
-
-    notifyNewUpload(row);
+    notifyPersistedUpload(row);
 
     return NextResponse.json({
       success: true,
