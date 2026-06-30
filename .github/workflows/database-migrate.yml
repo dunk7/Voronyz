@@ -1,6 +1,7 @@
-# Applies Prisma migrations to production when schema/migrations change on main.
-# Optional: applies Prisma migrations when GitHub repo secrets are configured.
-# Production deploys also run migrations during the Netlify build (Netlify env vars).
+# Applies Prisma migrations and offloads legacy BYTEA data to Netlify Blobs.
+# Requires GitHub repository secrets:
+#   DATABASE_URL, DIRECT_DATABASE_URL (Supabase)
+#   NETLIFY_AUTH_TOKEN (for blob migration step)
 name: Database migrate (production)
 
 on:
@@ -10,7 +11,11 @@ on:
       - main
     paths:
       - "web/prisma/**"
+      - "web/scripts/migrate-binary-to-blobs.mjs"
       - ".github/workflows/database-migrate.yml"
+
+env:
+  NETLIFY_SITE_ID: cd229aa6-16ce-4912-8da2-39b756823133
 
 jobs:
   migrate:
@@ -30,8 +35,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Apply migrations
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Apply schema migrations
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DIRECT_DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL }}
         run: node scripts/migrate-deploy.mjs
+
+      - name: Move legacy BYTEA data to Netlify Blobs
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ env.NETLIFY_SITE_ID }}
+        run: node scripts/migrate-binary-to-blobs.mjs
