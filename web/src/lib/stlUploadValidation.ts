@@ -1,4 +1,7 @@
 export const UPLOAD_MAX_BYTES = 50 * 1024 * 1024; // 50 MB
+/** Netlify request bodies fail above ~4–5 MB; use chunked upload beyond this. */
+export const STL_UPLOAD_CHUNK_BYTES = 4 * 1024 * 1024;
+export const STL_DIRECT_UPLOAD_MAX_BYTES = STL_UPLOAD_CHUNK_BYTES;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
