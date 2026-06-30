@@ -10,6 +10,7 @@ import {
   verifyTurnstileIfConfigured,
 } from "@/lib/uploadAntiSpam";
 import { buildStlStorageKey } from "@/lib/stlUploadStorage";
+import { writeStlFile } from "@/lib/stlBlobStorage";
 import { notifyNewUpload } from "@/lib/adminNotifyEmail";
 import {
   normalizeCustomizationRequest,
@@ -128,6 +129,8 @@ export async function POST(request: NextRequest) {
     const submissionId = randomUUID();
     const storageKey = buildStlStorageKey(submissionId, originalFileName);
 
+    await writeStlFile(storageKey, buffer);
+
     const row = await prisma.stlSubmission.create({
       data: {
         id: submissionId,
@@ -136,7 +139,6 @@ export async function POST(request: NextRequest) {
         customizationRequest,
         originalFileName,
         storageKey,
-        fileData: buffer,
         sizeBytes: buffer.length,
         ipHash,
       },

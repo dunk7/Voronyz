@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { avatarUrlForUser } from "@/lib/messageAccess";
+import { deleteAvatarFile, writeAvatarFile } from "@/lib/avatarBlobStorage";
 import {
   inferMimeType,
   validateAvatarFile,
@@ -53,9 +54,15 @@ export async function POST(request: NextRequest) {
 
   const remove = formData.get("remove") === "true";
   if (remove) {
+    await deleteAvatarFile(userId);
     const user = await prisma.messengerUser.update({
       where: { id: userId },
-      data: { avatarMimeType: null, avatarData: null },
+      data: {
+        avatarMimeType: null,
+        avatarData: null,
+        avatarStorageKey: null,
+        avatarEtag: null,
+      },
       select: { id: true, username: true, avatarMimeType: true },
     });
     return NextResponse.json({
@@ -79,12 +86,15 @@ export async function POST(request: NextRequest) {
 
   const buffer = Buffer.from(await fileField.arrayBuffer());
   const mimeType = inferMimeType(fileField);
+  const { storageKey, etag } = await writeAvatarFile(userId, buffer, mimeType);
 
   const user = await prisma.messengerUser.update({
     where: { id: userId },
     data: {
       avatarMimeType: mimeType,
-      avatarData: buffer,
+      avatarData: null,
+      avatarStorageKey: storageKey,
+      avatarEtag: etag,
     },
     select: { id: true, username: true, avatarMimeType: true },
   });
