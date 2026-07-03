@@ -184,7 +184,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
             </span>
             <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
-              {isMagikidShoes ? "Made to order in &lt;7 days" : "Made to order in &lt;2 days"}
+              {isMagikidShoes ? "Made to order in <7 days" : "Made to order in <2 days"}
             </span>
             {!isMagikidShoes && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
