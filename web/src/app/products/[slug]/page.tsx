@@ -222,7 +222,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                         id: "shipping",
                         label: "Shipping",
                         priceCents: 3700,
-                        description: "Ships to your door — $37",
+                        description: "Ships to your door — +$7",
                       },
                       {
                         id: "pickup",
