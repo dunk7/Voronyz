@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { MAGIKID_SHOES_THUMBNAIL_URL, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT } from "@/lib/magikidShoesThumbnail";
+import { MAGIKID_SHOES_THUMBNAIL_URL, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT, MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
 
 const MAGIKID_SHOES_IMAGES = [
   MAGIKID_SHOES_THUMBNAIL_URL,
@@ -30,7 +30,7 @@ export async function ensureMagikidShoes(): Promise<void> {
         slug: "magikid-shoes",
         name: "Magikid Shoes",
         description: MAGIKID_SHOES_DESCRIPTION_SHORT,
-        priceCents: 3700,
+        priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
         currency: "usd",
         images: MAGIKID_SHOES_IMAGES,
         primaryColors: ["black", "grey", "white", "orange"],
@@ -49,7 +49,7 @@ export async function ensureMagikidShoes(): Promise<void> {
     data: {
       name: "Magikid Shoes",
       description: MAGIKID_SHOES_DESCRIPTION_SHORT,
-      priceCents: 3700,
+      priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
       images: MAGIKID_SHOES_IMAGES,
       primaryColors: ["black", "grey", "white", "orange"],
       secondaryColors: [],

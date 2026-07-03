@@ -3,6 +3,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { formatCentsAsCurrency } from "@/lib/money";
+import { MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
 import { useEffect, useState, useCallback } from "react";
 
 interface Product {
@@ -278,8 +279,11 @@ export default function ProductsContent() {
                         {p.name}
                       </h2>
                       <span className="text-[15px] font-semibold tabular-nums text-neutral-900 whitespace-nowrap shrink-0">
-                        {p.slug === "dragonfly" ? "From " : ""}
-                        {formatCentsAsCurrency(p.slug === "dragonfly" ? 6000 : p.priceCents, p.currency)}
+                        {p.slug === "dragonfly" || p.slug === "magikid-shoes" ? "From " : ""}
+                        {formatCentsAsCurrency(
+                          p.slug === "dragonfly" ? 6000 : p.slug === "magikid-shoes" ? MAGIKID_SHOES_BASE_PRICE_CENTS : p.priceCents,
+                          p.currency
+                        )}
                       </span>
                     </div>
                     <p className="mt-1 text-[13px] leading-relaxed text-neutral-500 line-clamp-1">
@@ -297,7 +301,7 @@ export default function ProductsContent() {
                         <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
                         </svg>
-                        {slugKey === "magikid-shoes" ? "Shipping" : "Free US shipping"}
+                        {slugKey === "magikid-shoes" ? "+$7 shipping" : "Free US shipping"}
                       </span>
                     </div>
                   </div>
