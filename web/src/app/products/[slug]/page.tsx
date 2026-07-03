@@ -12,6 +12,8 @@ import {
   MAGIKID_SHOES_DESCRIPTION,
   MAGIKID_SHOES_HOW_ITS_MADE,
   MAGIKID_SHOES_META_DESCRIPTION,
+  MAGIKID_SHOES_BASE_PRICE_CENTS,
+  MAGIKID_SHOES_SHIPPED_PRICE_CENTS,
 } from "@/lib/magikidShoesThumbnail";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
@@ -179,7 +181,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
               </svg>
-              {isMagikidShoes ? "Shipping" : "Free US shipping"}
+              {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
             </span>
             <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
               {isMagikidShoes ? "Made to order in &lt;7 days" : "Made to order in &lt;2 days"}
@@ -219,16 +221,16 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     requireStudentName: true,
                     fulfillmentOptions: [
                       {
-                        id: "shipping",
-                        label: "Shipping",
-                        priceCents: 3700,
-                        description: "Ships to your door — +$7",
-                      },
-                      {
                         id: "pickup",
                         label: "Magikid Lab pickup",
-                        priceCents: 3000,
-                        description: "Pick up in person at Magikid Lab — $30",
+                        priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
+                        description: "$30 — no shipping fee",
+                      },
+                      {
+                        id: "shipping",
+                        label: "Ship to me",
+                        priceCents: MAGIKID_SHOES_SHIPPED_PRICE_CENTS,
+                        description: "$30 shoe + $7 shipping",
                       },
                     ],
                   })}
@@ -246,7 +248,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  {isMagikidShoes ? "Shipping" : "Free US shipping"}
+                  {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
                 </span>
               </div>
             </div>
@@ -281,8 +283,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Can I wash them?", a: "Absolutely. The lattice sole and upper are fully washable — toss them in the washer on a gentle cycle." },
             ] : isMagikidShoes ? [
               { q: "What colors can I order?", a: "Black and grey are in stock. White and orange are listed but currently out of stock." },
-              { q: "How does Magikid Lab pickup work?", a: "Select pickup at checkout for $30 instead of $37. We'll email you when your pair is ready to collect in person at Magikid Lab." },
-              { q: "How does shipping work?", a: "Shipping is $37. Pickup at Magikid Lab is $30 with no shipping needed." },
+              { q: "How does Magikid Lab pickup work?", a: "Choose pickup at checkout — you pay $30 for the shoes with no shipping fee. We'll email you when your pair is ready to collect in person at Magikid Lab." },
+              { q: "How does shipping work?", a: "The shoes are $30. Shipping is an additional $7 ($37 total). Pickup at Magikid Lab is $30 with no shipping charge." },
               { q: "How long does production take?", a: "Made to order in under 7 days, then we ship or hold for pickup." },
             ] : isSlipOns ? [
               { q: "What colors can I order?", a: "Black, grey, white, and orange are listed — white is currently out of stock. Each pair is one solid body color (no two-tone option)." },

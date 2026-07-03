@@ -238,7 +238,7 @@ export default function CartClient() {
                       {it.attributes.fulfillment === "pickup"
                         ? "Magikid Lab pickup"
                         : it.productSlug === "magikid-shoes"
-                        ? "Shipping"
+                        ? "+$7 shipping"
                         : "Free shipping"}
                     </span>
                   )}

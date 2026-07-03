@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { MAGIKID_SHOES_THUMBNAIL_URL, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT } from "../src/lib/magikidShoesThumbnail";
+import { MAGIKID_SHOES_THUMBNAIL_URL, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT, MAGIKID_SHOES_BASE_PRICE_CENTS } from "../src/lib/magikidShoesThumbnail";
 
 const prisma = new PrismaClient();
 
@@ -290,7 +290,7 @@ async function main() {
           slug: "magikid-shoes",
           name: "Magikid Shoes",
           description: MAGIKID_SHOES_DESCRIPTION_SHORT,
-          priceCents: 3700,
+          priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
           currency: "usd",
           images: magikidShoesImages,
           primaryColors: ["black", "grey", "white", "orange"],
@@ -315,7 +315,7 @@ async function main() {
         data: {
           name: "Magikid Shoes",
           description: MAGIKID_SHOES_DESCRIPTION_SHORT,
-          priceCents: 3700,
+          priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
           images: magikidShoesImages,
           primaryColors: ["black", "grey", "white", "orange"],
           secondaryColors: [],
