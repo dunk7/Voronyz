@@ -1,0 +1,61 @@
+# Export messenger files between two users and upload as a downloadable artifact.
+name: Export conversation files
+
+on:
+  workflow_dispatch:
+    inputs:
+      user_a:
+        description: "First username (no @)"
+        required: true
+        default: "braydengay"
+      user_b:
+        description: "Second username (no @)"
+        required: true
+        default: "dunk7"
+
+env:
+  NETLIFY_SITE_ID: cd229aa6-16ce-4912-8da2-39b756823133
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Export conversation files
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_DATABASE_URL: ${{ secrets.DIRECT_DATABASE_URL }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ env.NETLIFY_SITE_ID }}
+        run: |
+          node scripts/export-conversation-files.mjs \
+            --users "${{ inputs.user_a }},${{ inputs.user_b }}" \
+            --out "./exports/${{ inputs.user_a }}-${{ inputs.user_b }}"
+
+      - name: Zip export
+        run: |
+          cd exports
+          zip -r "../conversation-${{ inputs.user_a }}-${{ inputs.user_b }}.zip" "${{ inputs.user_a }}-${{ inputs.user_b }}"
+
+      - name: Upload zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: conversation-${{ inputs.user_a }}-${{ inputs.user_b }}
+          path: web/conversation-${{ inputs.user_a }}-${{ inputs.user_b }}.zip
+          retention-days: 14
