@@ -27,6 +27,7 @@ import {
 type SortKey = "date" | "price" | "name" | "status";
 type SortDir = "asc" | "desc";
 type AdminTab = "orders" | "uploads";
+type OrdersView = "open" | "completed" | "all";
 
 const STATUS_STYLES: Record<string, string> = {
   paid: "bg-emerald-100 text-emerald-800",
@@ -130,6 +131,7 @@ export default function OrdersAdminClient() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortKey, setSortKey] = useState<SortKey>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [ordersView, setOrdersView] = useState<OrdersView>("open");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
   const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null);
@@ -302,9 +304,24 @@ export default function OrdersAdminClient() {
     }
   }
 
+  const openOrdersCount = useMemo(
+    () => orders.filter((o) => o.status !== "completed").length,
+    [orders]
+  );
+  const completedOrdersCount = useMemo(
+    () => orders.filter((o) => o.status === "completed").length,
+    [orders]
+  );
+
   const filteredOrders = useMemo(() => {
     const q = search.trim().toLowerCase();
     let list = orders;
+
+    if (ordersView === "open") {
+      list = list.filter((o) => o.status !== "completed");
+    } else if (ordersView === "completed") {
+      list = list.filter((o) => o.status === "completed");
+    }
 
     if (statusFilter !== "all") {
       list = list.filter((o) => o.status === statusFilter);
@@ -331,6 +348,13 @@ export default function OrdersAdminClient() {
     }
 
     const sorted = [...list].sort((a, b) => {
+      // Open: oldest first. Completed: newest first. All: user sort controls.
+      if (ordersView === "open" || ordersView === "completed") {
+        const cmp =
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        return ordersView === "open" ? cmp : -cmp;
+      }
+
       let cmp = 0;
       switch (sortKey) {
         case "price":
@@ -353,12 +377,18 @@ export default function OrdersAdminClient() {
     });
 
     return sorted;
-  }, [orders, search, statusFilter, sortKey, sortDir]);
+  }, [orders, ordersView, search, statusFilter, sortKey, sortDir]);
 
   const statusOptions = useMemo(() => {
-    const set = new Set(orders.map((o) => o.status));
+    const scoped =
+      ordersView === "open"
+        ? orders.filter((o) => o.status !== "completed")
+        : ordersView === "completed"
+          ? orders.filter((o) => o.status === "completed")
+          : orders;
+    const set = new Set(scoped.map((o) => o.status));
     return ["all", ...Array.from(set).sort()];
-  }, [orders]);
+  }, [orders, ordersView]);
 
   if (authenticated === null) {
     return (
@@ -424,7 +454,7 @@ export default function OrdersAdminClient() {
             <h1 className="text-xl font-semibold tracking-tight">Admin</h1>
             <p className="text-sm text-neutral-500">
               {tab === "orders"
-                ? `${filteredOrders.length} of ${orders.length} orders`
+                ? `${filteredOrders.length} shown · ${openOrdersCount} open · ${completedOrdersCount} completed`
                 : "Customer file uploads"}
             </p>
           </div>
@@ -528,6 +558,51 @@ export default function OrdersAdminClient() {
 
         {tab === "orders" ? (
         <>
+        <div
+          className="flex flex-wrap gap-2 print:hidden"
+          role="tablist"
+          aria-label="Order lists"
+        >
+          {(
+            [
+              { id: "open" as const, label: "Open", count: openOrdersCount },
+              {
+                id: "completed" as const,
+                label: "Completed",
+                count: completedOrdersCount,
+              },
+              { id: "all" as const, label: "All", count: orders.length },
+            ] as const
+          ).map((view) => (
+            <button
+              key={view.id}
+              type="button"
+              role="tab"
+              aria-selected={ordersView === view.id}
+              onClick={() => {
+                setOrdersView(view.id);
+                setStatusFilter("all");
+              }}
+              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
+                ordersView === view.id
+                  ? "bg-black text-white"
+                  : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
+              }`}
+            >
+              {view.label}
+              <span
+                className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${
+                  ordersView === view.id
+                    ? "bg-white/20 text-white"
+                    : "bg-neutral-100 text-neutral-600"
+                }`}
+              >
+                {view.count}
+              </span>
+            </button>
+          ))}
+        </div>
+
         <div className="flex flex-wrap items-center gap-3 print:hidden">
           <div className="relative flex-1 min-w-[200px] max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
@@ -539,43 +614,53 @@ export default function OrdersAdminClient() {
               className="w-full rounded-xl border border-black/10 bg-white pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
             />
           </div>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm"
-          >
-            {statusOptions.map((s) => (
-              <option key={s} value={s}>
-                {s === "all" ? "All statuses" : s}
-              </option>
-            ))}
-          </select>
-          <div className="flex flex-wrap gap-2">
-            <SortButton
-              label="Date"
-              active={sortKey === "date"}
-              direction={sortDir}
-              onClick={() => toggleSort("date")}
-            />
-            <SortButton
-              label="Price"
-              active={sortKey === "price"}
-              direction={sortDir}
-              onClick={() => toggleSort("price")}
-            />
-            <SortButton
-              label="Name"
-              active={sortKey === "name"}
-              direction={sortDir}
-              onClick={() => toggleSort("name")}
-            />
-            <SortButton
-              label="Status"
-              active={sortKey === "status"}
-              direction={sortDir}
-              onClick={() => toggleSort("status")}
-            />
-          </div>
+          {ordersView !== "completed" ? (
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm"
+            >
+              {statusOptions.map((s) => (
+                <option key={s} value={s}>
+                  {s === "all" ? "All statuses" : s}
+                </option>
+              ))}
+            </select>
+          ) : null}
+          {ordersView === "all" ? (
+            <div className="flex flex-wrap gap-2">
+              <SortButton
+                label="Date"
+                active={sortKey === "date"}
+                direction={sortDir}
+                onClick={() => toggleSort("date")}
+              />
+              <SortButton
+                label="Price"
+                active={sortKey === "price"}
+                direction={sortDir}
+                onClick={() => toggleSort("price")}
+              />
+              <SortButton
+                label="Name"
+                active={sortKey === "name"}
+                direction={sortDir}
+                onClick={() => toggleSort("name")}
+              />
+              <SortButton
+                label="Status"
+                active={sortKey === "status"}
+                direction={sortDir}
+                onClick={() => toggleSort("status")}
+              />
+            </div>
+          ) : (
+            <p className="text-xs text-neutral-500">
+              {ordersView === "open"
+                ? "Oldest first"
+                : "Newest first"}
+            </p>
+          )}
         </div>
 
         {ordersError && (
@@ -596,7 +681,11 @@ export default function OrdersAdminClient() {
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="rounded-2xl bg-white p-12 text-center text-neutral-500 ring-1 ring-black/5">
-            No orders match your filters.
+            {ordersView === "open"
+              ? "No open orders."
+              : ordersView === "completed"
+                ? "No completed orders yet."
+                : "No orders match your filters."}
           </div>
         ) : (
           <div className="space-y-4">
