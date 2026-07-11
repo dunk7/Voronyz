@@ -31,7 +31,12 @@ export async function GET(request: NextRequest) {
   const status = request.nextUrl.searchParams.get("status");
 
   const orders = await prisma.order.findMany({
-    where: status ? { status } : undefined,
+    where: {
+      status:
+        status && status !== "pending_nano"
+          ? status
+          : { not: "pending_nano" },
+    },
     orderBy: { createdAt: "desc" },
   });
 
