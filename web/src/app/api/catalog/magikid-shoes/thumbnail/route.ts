@@ -20,7 +20,7 @@ function imageResponse(bytes: Buffer, contentType: string) {
   return new NextResponse(bytes as unknown as BodyInit, {
     headers: {
       "Content-Type": contentType,
-      "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+      "Cache-Control": "public, max-age=31536000, immutable",
     },
   });
 }

@@ -13,7 +13,7 @@ export default function Home() {
         <div
           className="absolute inset-0 -z-10 opacity-10"
           style={{
-            backgroundImage: "url('/hero-bg.png')",
+            backgroundImage: "url('/hero-bg.jpg')",
             backgroundSize: "cover",
             backgroundPosition: "center bottom",
             backgroundRepeat: "no-repeat",
@@ -137,10 +137,11 @@ export default function Home() {
               <HeroParallax>
                 <div className="relative w-full rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-[4/3] lg:h-full xl:h-full 2xl:h-full">
                   <Image
-                    src="/products/v3-slides/side-render-of-both.png"
+                    src="/products/v3-slides/side-render-of-both.jpg"
                     alt="Voronyz V3 Slides"
                     fill
                     priority
+                    sizes="(max-width: 1024px) 100vw, 66vw"
                     className="object-contain object-[60%_50%]"
                   />
                 </div>
@@ -164,6 +165,7 @@ export default function Home() {
                   muted
                   loop
                   playsInline
+                  preload="metadata"
                 />
               </div>
             </div>

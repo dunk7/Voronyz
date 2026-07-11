@@ -12,11 +12,12 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center max-w-6xl mx-auto">
           <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl ring-1 ring-neutral-200 shadow-lg">
             <Image
-              src="/349.png"
+              src="/349.jpg"
               alt="Voronyz — behind the scenes"
               fill
               className="object-cover"
               priority
+              sizes="(max-width: 1024px) 100vw, 50vw"
             />
           </div>
 

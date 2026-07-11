@@ -5,7 +5,7 @@ export default function ContactPage() {
     <div className="bg-texture-white">
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-neutral-50 to-neutral-100">
-        <div className="absolute inset-0 bg-[url('/hero-bg.png')] bg-cover bg-center opacity-5" />
+        <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-center opacity-5" />
         <div className="relative container py-24 text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-neutral-900 mb-6">
             Get In Touch

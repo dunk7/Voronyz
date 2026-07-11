@@ -102,7 +102,7 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
         const img = new Image();
         img.fetchPriority = priority;
         img.decoding = 'async';
-        img.src = `/hero_frames/frame_${String(index + 1).padStart(3, '0')}.png`;
+        img.src = `/hero_frames/frame_${String(index + 1).padStart(3, '0')}.jpg`;
         img.onload = () => {
           if (!isMounted) return resolve();
           imagesRef.current[index] = img;
