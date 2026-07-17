@@ -284,54 +284,61 @@ export default function Header() {
               <Image src="/logo.png" alt="Voronyz" width={40} height={40} />
               <span className="text-lg sm:text-xl font-semibold tracking-[0.2em] text-white">VORONYZ</span>
             </Link>
-            <nav className="hidden md:flex items-center gap-2 ml-2">
+            <nav className="hidden xl:flex items-center gap-1 ml-2 min-w-0">
               <Link
                 href="/products"
-                className={`relative uppercase tracking-[0.24em] text-[12px] sm:text-[13px] rounded-full px-5 py-2.5 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/products") ? "text-white" : "text-white/70"}`}
+                className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/products") ? "text-white" : "text-white/70"}`}
               >
                 <span>All Footwear</span>
-                <span className={`pointer-events-none absolute left-5 right-5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/products") ? "opacity-100" : "opacity-0"}`} aria-hidden />
+                <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/products") ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
               <Link
                 href="/apparel"
-                className={`relative uppercase tracking-[0.24em] text-[12px] sm:text-[13px] rounded-full px-5 py-2.5 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/apparel") && !pathname?.startsWith("/apparel/accessories") ? "text-white" : "text-white/70"}`}
+                className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/apparel") && !pathname?.startsWith("/apparel/accessories") ? "text-white" : "text-white/70"}`}
               >
                 <span>Apparel</span>
-                <span className={`pointer-events-none absolute left-5 right-5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/apparel") && !pathname?.startsWith("/apparel/accessories") ? "opacity-100" : "opacity-0"}`} aria-hidden />
+                <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/apparel") && !pathname?.startsWith("/apparel/accessories") ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
               <Link
                 href="/apparel/accessories"
-                className={`relative uppercase tracking-[0.24em] text-[12px] sm:text-[13px] rounded-full px-5 py-2.5 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/apparel/accessories") ? "text-white" : "text-white/70"}`}
+                className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/apparel/accessories") ? "text-white" : "text-white/70"}`}
               >
                 <span>Accessories</span>
-                <span className={`pointer-events-none absolute left-5 right-5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/apparel/accessories") ? "opacity-100" : "opacity-0"}`} aria-hidden />
+                <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/apparel/accessories") ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
               <Link
                 href="/accessories"
-                className={`relative uppercase tracking-[0.24em] text-[12px] sm:text-[13px] rounded-full px-5 py-2.5 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/accessories") ? "text-white" : "text-white/70"}`}
+                className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/accessories") ? "text-white" : "text-white/70"}`}
               >
                 <span>Engineering</span>
-                <span className={`pointer-events-none absolute left-5 right-5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/accessories") ? "opacity-100" : "opacity-0"}`} aria-hidden />
+                <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/accessories") ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
               <Link
                 href="/health"
-                className={`relative uppercase tracking-[0.24em] text-[12px] sm:text-[13px] rounded-full px-5 py-2.5 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/health") ? "text-white" : "text-white/70"}`}
+                className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/health") ? "text-white" : "text-white/70"}`}
               >
                 <span>Collaborative</span>
-                <span className={`pointer-events-none absolute left-5 right-5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/health") ? "opacity-100" : "opacity-0"}`} aria-hidden />
+                <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/health") ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
               <Link
                 href="/about"
-                className={`relative uppercase tracking-[0.24em] text-[12px] sm:text-[13px] rounded-full px-5 py-2.5 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname === "/about" ? "text-white" : "text-white/70"}`}
+                className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname === "/about" ? "text-white" : "text-white/70"}`}
               >
                 <span>About</span>
-                <span className={`pointer-events-none absolute left-5 right-5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname === "/about" ? "opacity-100" : "opacity-0"}`} aria-hidden />
+                <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname === "/about" ? "opacity-100" : "opacity-0"}`} aria-hidden />
+              </Link>
+              <Link
+                href="/quiz"
+                className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/quiz") ? "text-white" : "text-white/70"}`}
+              >
+                <span>Take the Quiz</span>
+                <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/quiz") ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
             </nav>
           </div>
 
-          {/* Middle: search */}
-          <div className="hidden md:block flex-1">
+          {/* Middle: search — show from lg so tablet uses hamburger with full menu */}
+          <div className="hidden lg:block flex-1 min-w-0">
             <div className="relative max-w-xl ml-2">
               <form
                 onSubmit={handleSearchSubmit}
@@ -444,7 +451,7 @@ export default function Header() {
             </Link>
             {/* Mobile menu toggle */}
             <button
-              className="md:hidden relative w-10 h-10 rounded-full ring-1 ring-white/15 text-white hover:bg-white/10 hover:ring-white/25 active:scale-95 transition-all duration-200 flex items-center justify-center"
+              className="xl:hidden relative w-10 h-10 rounded-full ring-1 ring-white/15 text-white hover:bg-white/10 hover:ring-white/25 active:scale-95 transition-all duration-200 flex items-center justify-center"
               onClick={() => setOpen(!open)}
               aria-label={open ? "Close menu" : "Open menu"}
               aria-expanded={open}
@@ -473,7 +480,7 @@ export default function Header() {
 
       {/* Mobile Menu Overlay */}
       <div
-        className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`fixed inset-0 z-40 xl:hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           open ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
         }`}
       >
@@ -573,6 +580,20 @@ export default function Header() {
                     <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
                   )}
                   About
+                </Link>
+                <Link
+                  href="/quiz"
+                  className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
+                    pathname?.startsWith("/quiz")
+                      ? "text-white bg-white/10"
+                      : "text-white/70 hover:text-white hover:bg-white/[.06]"
+                  }`}
+                  onClick={() => setOpen(false)}
+                >
+                  {pathname?.startsWith("/quiz") && (
+                    <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
+                  )}
+                  Take the Quiz
                 </Link>
                 <div className="my-2 h-px bg-white/10" />
                 <Link
