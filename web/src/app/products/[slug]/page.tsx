@@ -435,7 +435,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <h2 className="text-lg font-semibold text-neutral-900 mb-4">FAQs</h2>
           <FAQ
             items={isDragonfly ? [
-              { q: "What colors are available?", a: "The Dragonfly's come in Black, White, Red, and Azure Blue. Black is $5 less at $60. Laces can be any color you want!" },
+              { q: "What colors are available?", a: "The Dragonfly's come in Black, White, Red, and Azure Blue — white is currently out of stock. Black is $5 less at $60. Laces can be any color you want!" },
               { q: "Are they true to size?", a: "Yes — we offer Men's, Women's, and Kids' sizing. They're designed for a comfortable, snug fit right out of the box." },
               { q: "How long does production take?", a: "Each pair is 3D-printed to order. Production takes about 1-2 days, then ships out next business day." },
               { q: "Is shipping really free?", a: "Yes! We offer free shipping on all domestic US orders. No minimum purchase required. We currently only ship within the US." },
