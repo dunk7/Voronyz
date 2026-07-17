@@ -16,7 +16,7 @@ function srcToKey(src: ImageProps["src"]): string {
 }
 
 /**
- * Instant-feel image: neutral placeholder with the Voronyz mark,
+ * Instant-feel image: soft Voronyz mark while decoding (no opaque block),
  * then a fast fade-in once the image is ready. Does not delay fetch.
  *
  * Resets load state whenever `src` changes so reused instances

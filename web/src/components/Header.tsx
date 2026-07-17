@@ -271,9 +271,7 @@ export default function Header() {
     <>
       {routeLoading && (
         <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-neutral-900/90 border border-white/15 rounded-2xl px-8 py-6 shadow-2xl">
-            <LogoLoader size="md" tone="light" label="Loading" />
-          </div>
+          <LogoLoader size="md" tone="light" label="Loading" />
         </div>
       )}
       <header className={`sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/70 bg-neutral-950/80 border-b border-white/10 transition-transform duration-300 ${hide ? "-translate-y-full" : "translate-y-0"}`}>
