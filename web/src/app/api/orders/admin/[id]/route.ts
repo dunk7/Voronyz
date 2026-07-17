@@ -40,6 +40,7 @@ function toAdminOrder(order: {
     shipping: parsed.shipping,
     lineItems: parsed.lineItems.map(enrichLineItemImage),
     paymentMethod: parsed.paymentMethod,
+    discountCode: parsed.discountCode,
   };
 }
 

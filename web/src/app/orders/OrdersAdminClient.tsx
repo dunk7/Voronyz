@@ -13,9 +13,11 @@ import {
   MessageSquare,
   Package,
   Search,
+  Tag,
   Upload,
 } from "lucide-react";
 import MagikidThumbnailPanel from "./MagikidThumbnailPanel";
+import DiscountCodesAdminPanel from "./DiscountCodesAdminPanel";
 import UploadsAdminPanel from "./UploadsAdminPanel";
 import { formatCentsAsCurrency } from "@/lib/money";
 import {
@@ -26,7 +28,7 @@ import {
 
 type SortKey = "date" | "price" | "name" | "status";
 type SortDir = "asc" | "desc";
-type AdminTab = "orders" | "uploads";
+type AdminTab = "orders" | "discounts" | "uploads";
 type OrdersView = "open" | "completed" | "all";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -235,7 +237,7 @@ export default function OrdersAdminClient() {
   }
 
   function handleRefresh() {
-    if (tab === "orders") loadOrders();
+    if (tab === "orders" || tab === "discounts") loadOrders();
     else setUploadsRefresh((n) => n + 1);
     loadMessageSetting();
   }
@@ -310,6 +312,10 @@ export default function OrdersAdminClient() {
   );
   const completedOrdersCount = useMemo(
     () => orders.filter((o) => o.status === "completed").length,
+    [orders]
+  );
+  const discountOrdersCount = useMemo(
+    () => orders.filter((o) => Boolean(o.discountCode?.trim())).length,
     [orders]
   );
 
@@ -455,7 +461,9 @@ export default function OrdersAdminClient() {
             <p className="text-sm text-neutral-500">
               {tab === "orders"
                 ? `${filteredOrders.length} shown · ${openOrdersCount} open · ${completedOrdersCount} completed`
-                : "Customer file uploads"}
+                : tab === "discounts"
+                  ? `${discountOrdersCount} order${discountOrdersCount === 1 ? "" : "s"} with discount codes`
+                  : "Customer file uploads"}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -492,10 +500,12 @@ export default function OrdersAdminClient() {
             <button
               type="button"
               onClick={handleRefresh}
-              disabled={tab === "orders" && loadingOrders}
+              disabled={(tab === "orders" || tab === "discounts") && loadingOrders}
               className="rounded-full border border-black/10 px-4 py-2 text-sm hover:bg-neutral-50 disabled:opacity-50"
             >
-              {tab === "orders" && loadingOrders ? "Refreshing…" : "Refresh"}
+              {(tab === "orders" || tab === "discounts") && loadingOrders
+                ? "Refreshing…"
+                : "Refresh"}
             </button>
             <button
               type="button"
@@ -523,6 +533,29 @@ export default function OrdersAdminClient() {
             >
               <Package className="h-4 w-4" />
               Orders
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("discounts")}
+              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
+                tab === "discounts"
+                  ? "bg-black text-white"
+                  : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
+              }`}
+            >
+              <Tag className="h-4 w-4" />
+              Discount codes
+              {discountOrdersCount > 0 ? (
+                <span
+                  className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${
+                    tab === "discounts"
+                      ? "bg-white/20 text-white"
+                      : "bg-neutral-100 text-neutral-600"
+                  }`}
+                >
+                  {discountOrdersCount}
+                </span>
+              ) : null}
             </button>
             <button
               type="button"
@@ -554,6 +587,10 @@ export default function OrdersAdminClient() {
               onAuthLost={() => setAuthenticated(false)}
             />
           </div>
+        ) : null}
+
+        {tab === "discounts" ? (
+          <DiscountCodesAdminPanel orders={orders} loading={loadingOrders} />
         ) : null}
 
         {tab === "orders" ? (

@@ -55,6 +55,7 @@ export async function GET(request: NextRequest) {
       shipping: parsed.shipping,
       lineItems: parsed.lineItems.map(enrichLineItemImage),
       paymentMethod: parsed.paymentMethod,
+      discountCode: parsed.discountCode,
     };
   });
 
