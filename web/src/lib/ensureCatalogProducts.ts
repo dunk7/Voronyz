@@ -27,6 +27,145 @@ import {
   apparelSku,
   getApparelImages,
 } from "@/lib/apparel";
+import { FOOTWEAR_CATALOG } from "@/lib/footwear";
+
+/**
+ * Self-heal Product.category / Product.subcategory when the apparel migration
+ * has not been applied yet. Without these columns every Prisma product query
+ * 500s (empty footwear grids + broken product pages).
+ */
+export async function ensureProductCategoryColumns(): Promise<void> {
+  await prisma.$executeRawUnsafe(
+    `ALTER TABLE "Product" ADD COLUMN IF NOT EXISTS "category" TEXT`,
+  );
+  await prisma.$executeRawUnsafe(
+    `ALTER TABLE "Product" ADD COLUMN IF NOT EXISTS "subcategory" TEXT`,
+  );
+  await prisma.$executeRawUnsafe(
+    `CREATE INDEX IF NOT EXISTS "Product_category_idx" ON "Product"("category")`,
+  );
+  await prisma.$executeRawUnsafe(
+    `CREATE INDEX IF NOT EXISTS "Product_category_subcategory_idx" ON "Product"("category", "subcategory")`,
+  );
+}
+
+const FOOTWEAR_VARIANTS: Record<
+  string,
+  ReadonlyArray<{ color: string; sku: string; stock: number; priceCents?: number }>
+> = {
+  "v3-slides": [
+    { color: "black", sku: "V3-BLK", stock: 999 },
+    { color: "white", sku: "V3-WHT", stock: 999 },
+    { color: "grey", sku: "V3-GRY", stock: 999 },
+    { color: "green", sku: "V3-GRN", stock: 0 },
+    { color: "pink", sku: "V3-PNK", stock: 0 },
+  ],
+  dragonfly: [
+    { color: "black", sku: "DF-BLK", stock: 999, priceCents: 6000 },
+    { color: "white", sku: "DF-WHT", stock: 999, priceCents: 6500 },
+    { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
+    { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
+  ],
+  "slip-ons": [
+    { color: "black", sku: "SO-BLK", stock: 999 },
+    { color: "grey", sku: "SO-GRY", stock: 999 },
+    { color: "white", sku: "SO-WHT", stock: 0 },
+    { color: "orange", sku: "SO-ORG", stock: 999 },
+  ],
+};
+
+const FOOTWEAR_COLORS: Record<string, string[]> = {
+  "v3-slides": ["black", "white", "grey", "green", "pink"],
+  dragonfly: ["black", "white", "red", "#007FFF"],
+  "slip-ons": ["black", "grey", "white", "orange"],
+};
+
+const FOOTWEAR_SECONDARY: Record<string, string[]> = {
+  dragonfly: [
+    "black",
+    "white",
+    "grey",
+    "red",
+    "#007FFF",
+    "green",
+    "blue",
+    "maroon",
+    "pink",
+    "purple",
+    "orange",
+    "yellow",
+    "navy",
+    "teal",
+  ],
+};
+
+const FOOTWEAR_SIZES = ["5", "6", "7", "8", "9", "10", "11", "12"];
+
+/** Idempotently upsert core footwear so listings/PDPs work without a manual seed. */
+export async function ensureFootwearProducts(): Promise<void> {
+  for (const item of FOOTWEAR_CATALOG) {
+    if (item.slug === "magikid-shoes") continue; // handled by ensureMagikidShoes
+
+    const variants = FOOTWEAR_VARIANTS[item.slug] ?? [];
+    const primaryColors = FOOTWEAR_COLORS[item.slug] ?? ["black"];
+    const secondaryColors = FOOTWEAR_SECONDARY[item.slug] ?? [];
+    const existing = await prisma.product.findUnique({ where: { slug: item.slug } });
+
+    if (!existing) {
+      await prisma.product.create({
+        data: {
+          slug: item.slug,
+          name: item.name,
+          description: item.description,
+          priceCents: item.priceCents,
+          currency: "usd",
+          category: "footwear",
+          images: item.images,
+          primaryColors,
+          secondaryColors,
+          sizes: FOOTWEAR_SIZES,
+          variants: {
+            create: variants.map((v) => ({
+              color: v.color,
+              sku: v.sku,
+              stock: v.stock,
+              priceCents: v.priceCents ?? null,
+            })),
+          },
+        },
+      });
+      continue;
+    }
+
+    await prisma.product.update({
+      where: { id: existing.id },
+      data: {
+        name: item.name,
+        description: item.description,
+        priceCents: item.priceCents,
+        category: "footwear",
+        images: item.images,
+        primaryColors,
+        secondaryColors,
+        sizes: FOOTWEAR_SIZES,
+      },
+    });
+
+    for (const v of variants) {
+      await prisma.variant.upsert({
+        where: { sku: v.sku },
+        update: { stock: v.stock, color: v.color, priceCents: v.priceCents ?? null },
+        create: {
+          product: { connect: { id: existing.id } },
+          color: v.color,
+          sku: v.sku,
+          stock: v.stock,
+          priceCents: v.priceCents ?? null,
+        },
+      });
+    }
+  }
+}
 
 const MAGIKID_SHOES_IMAGES = [
   MAGIKID_SHOES_THUMBNAIL_URL,
@@ -59,6 +198,7 @@ export async function ensureMagikidShoes(): Promise<void> {
         description: MAGIKID_SHOES_DESCRIPTION_SHORT,
         priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
         currency: "usd",
+        category: "footwear",
         images: MAGIKID_SHOES_IMAGES,
         primaryColors: ["black", "grey", "white", "orange"],
         secondaryColors: [],
@@ -77,6 +217,7 @@ export async function ensureMagikidShoes(): Promise<void> {
       name: "Magikid Shoes",
       description: MAGIKID_SHOES_DESCRIPTION_SHORT,
       priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
+      category: "footwear",
       images: MAGIKID_SHOES_IMAGES,
       primaryColors: ["black", "grey", "white", "orange"],
       secondaryColors: [],
@@ -313,7 +454,11 @@ export async function ensureApparelProducts(): Promise<void> {
 }
 
 export async function ensureCatalogProducts(): Promise<void> {
+  // Schema heal must not be swallowed — without these columns every product query 500s.
+  await ensureProductCategoryColumns();
+
   try {
+    await ensureFootwearProducts();
     await ensureMagikidShoes();
     await ensureGunHolster();
     await ensureTrailMix();
