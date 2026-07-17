@@ -104,10 +104,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   }
   if (!product) return <div className="container py-12 text-neutral-900">Not found.</div>;
 
+  // First and third gallery frames swapped so the preferred cover leads.
   const defaultImages = [
-    "/products/v3-slides/InShot_20260212_194215252.jpg",
-    "/products/v3-slides/InShot_20260212_193956953.jpg",
     "/products/v3-slides/InShot_20260212_194352014.jpg",
+    "/products/v3-slides/InShot_20260212_193956953.jpg",
+    "/products/v3-slides/InShot_20260212_194215252.jpg",
     "/products/v3-slides/InShot_20260212_194654595.jpg",
     "/products/v3-slides/InShot_20260212_194922422.jpg",
     "/products/v3-slides/InShot_20260212_195048118.jpg",
@@ -554,7 +555,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     if (product) {
       const title = `${product.name} – Voronyz`;
       const description = product.description;
-      const images = (product.images as string[] | null) ?? ["/products/v3-slides/InShot_20260212_194215252.jpg"]; 
+      const images = (product.images as string[] | null) ?? ["/products/v3-slides/InShot_20260212_194352014.jpg"]; 
       return {
         title,
         description,
@@ -568,8 +569,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: fallbackTitle,
     description: fallbackDescription,
-    openGraph: { title: fallbackTitle, description: fallbackDescription, images: ["/products/v3-slides/InShot_20260212_194215252.jpg"] },
-    twitter: { card: "summary_large_image", title: fallbackTitle, description: fallbackDescription, images: ["/products/v3-slides/InShot_20260212_194215252.jpg"] },
+    openGraph: { title: fallbackTitle, description: fallbackDescription, images: ["/products/v3-slides/InShot_20260212_194352014.jpg"] },
+    twitter: { card: "summary_large_image", title: fallbackTitle, description: fallbackDescription, images: ["/products/v3-slides/InShot_20260212_194352014.jpg"] },
   };
 }
 

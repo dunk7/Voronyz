@@ -308,6 +308,7 @@ export default function V3Gallery({
     if (m.type === "image") {
       return (
         <SoftImage
+          key={m.src}
           src={m.src}
           alt={m.alt || "Product image"}
           fill
