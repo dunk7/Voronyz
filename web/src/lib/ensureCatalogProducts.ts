@@ -20,6 +20,10 @@ import {
   TRAIL_MIX_SLUG,
   TRAIL_MIX_VARIANTS,
 } from "@/lib/trailMix";
+import {
+  APPAREL_CATALOG,
+  apparelSku,
+} from "@/lib/apparel";
 
 const MAGIKID_SHOES_IMAGES = [
   MAGIKID_SHOES_THUMBNAIL_URL,
@@ -209,11 +213,78 @@ export async function ensureTrailMix(): Promise<void> {
   });
 }
 
+/** Idempotently upsert apparel catalog products. */
+export async function ensureApparelProducts(): Promise<void> {
+  for (const item of APPAREL_CATALOG) {
+    const existing = await prisma.product.findUnique({ where: { slug: item.slug } });
+    const variants = item.colors.map((color) => ({
+      color,
+      sku: apparelSku(item.skuPrefix, color),
+      stock: 999,
+    }));
+
+    if (!existing) {
+      await prisma.product.create({
+        data: {
+          slug: item.slug,
+          name: item.name,
+          description: item.description,
+          priceCents: item.priceCents,
+          currency: "usd",
+          images: [item.image],
+          primaryColors: [...item.colors],
+          secondaryColors: [],
+          sizes: [...item.sizes],
+          variants: {
+            create: variants,
+          },
+        },
+      });
+      continue;
+    }
+
+    await prisma.product.update({
+      where: { id: existing.id },
+      data: {
+        name: item.name,
+        description: item.description,
+        priceCents: item.priceCents,
+        images: [item.image],
+        primaryColors: [...item.colors],
+        secondaryColors: [],
+        sizes: [...item.sizes],
+      },
+    });
+
+    for (const variant of variants) {
+      await prisma.variant.upsert({
+        where: { sku: variant.sku },
+        update: { stock: variant.stock, color: variant.color },
+        create: {
+          product: { connect: { id: existing.id } },
+          color: variant.color,
+          sku: variant.sku,
+          stock: variant.stock,
+        },
+      });
+    }
+
+    const keepSkus = variants.map((variant) => variant.sku);
+    await prisma.variant.deleteMany({
+      where: {
+        productId: existing.id,
+        sku: { notIn: keepSkus },
+      },
+    });
+  }
+}
+
 export async function ensureCatalogProducts(): Promise<void> {
   try {
     await ensureMagikidShoes();
     await ensureGunHolster();
     await ensureTrailMix();
+    await ensureApparelProducts();
   } catch (error) {
     console.error("ensureCatalogProducts failed:", error);
   }

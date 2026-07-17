@@ -1,3 +1,5 @@
+import { APPAREL_SLUGS, isApparelSlug } from "@/lib/apparel";
+
 /** Product slugs in Voronyz Engineering (not footwear). */
 export const ACCESSORY_SLUGS = ["gun-holster"] as const;
 
@@ -17,8 +19,10 @@ export function isHealthSlug(slug: string | null | undefined): boolean {
   return (HEALTH_SLUGS as readonly string[]).includes(key);
 }
 
+export { isApparelSlug, APPAREL_SLUGS };
+
 export function isFootwearSlug(slug: string | null | undefined): boolean {
-  return !isAccessorySlug(slug) && !isHealthSlug(slug);
+  return !isAccessorySlug(slug) && !isHealthSlug(slug) && !isApparelSlug(slug);
 }
 
 export function filterFootwearProducts<T extends { slug: string }>(products: T[]): T[] {
@@ -31,4 +35,8 @@ export function filterAccessoryProducts<T extends { slug: string }>(products: T[
 
 export function filterHealthProducts<T extends { slug: string }>(products: T[]): T[] {
   return products.filter((p) => isHealthSlug(p.slug));
+}
+
+export function filterApparelProducts<T extends { slug: string }>(products: T[]): T[] {
+  return products.filter((p) => isApparelSlug(p.slug));
 }

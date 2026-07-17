@@ -32,7 +32,8 @@ import {
   TRAIL_MIX_SLUG,
   TRAIL_MIX_THUMBNAIL_URL,
 } from "@/lib/trailMix";
-import { isAccessorySlug, isHealthSlug } from "@/lib/productCategories";
+import { isAccessorySlug, isApparelSlug, isHealthSlug } from "@/lib/productCategories";
+import { getApparelItem, getApparelSubcategory } from "@/lib/apparel";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
 // This page is rendered on-demand.
@@ -158,6 +159,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? [...GUN_HOLSTER_IMAGES]
     : slug === TRAIL_MIX_SLUG
     ? [...TRAIL_MIX_IMAGES]
+    : getApparelItem(slug)
+    ? [getApparelItem(slug)!.image]
     : ((product.images as string[] | null) ?? defaultImages);
   const galleryMedia: Media[] = images.map((src) => ({ type: "image" as const, src, alt: product.name }));
   if (slug === "slip-ons") {
@@ -173,16 +176,22 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isMagikidShoes = slug === "magikid-shoes";
   const isGunHolster = slug === GUN_HOLSTER_SLUG;
   const isTrailMix = slug === TRAIL_MIX_SLUG;
+  const apparelItem = getApparelItem(slug);
+  const isApparel = Boolean(apparelItem);
   const shopHref = isAccessorySlug(slug)
     ? "/accessories"
     : isHealthSlug(slug)
       ? "/health"
-      : "/products";
+      : isApparelSlug(slug)
+        ? "/apparel"
+        : "/products";
   const shopLabel = isAccessorySlug(slug)
     ? "Back to Voronyz Engineering"
     : isHealthSlug(slug)
       ? "Back to Voronyz Health"
-      : "Back to Shop";
+      : isApparelSlug(slug)
+        ? "Back to Apparel"
+        : "Back to Shop";
   const displayName = isGunHolster
     ? GUN_HOLSTER_NAME
     : isTrailMix
@@ -245,8 +254,18 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 {isMagikidShoes ? "Made to order in <7 days" : "Made to order in <2 days"}
               </span>
             )}
-            {!isMagikidShoes && !isGunHolster && !isTrailMix && (
+            {!isMagikidShoes && !isGunHolster && !isTrailMix && !isApparel && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
+            )}
+            {isApparel && apparelItem && (
+              <>
+                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
+                  {getApparelSubcategory(apparelItem.subcategory)?.label ?? "Apparel"}
+                </span>
+                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
+                  {apparelItem.sizes.join(" · ")}
+                </span>
+              </>
             )}
             {isGunHolster && (
               <>
@@ -322,6 +341,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     soldOut: true,
                     flavorOptions: TRAIL_MIX_FLAVORS,
                   })}
+                  {...(isApparel && {
+                    useCatalogSizes: true,
+                  })}
                   sizes={product.sizes as string[]}
                   productName={displayName}
                   coverImage={(images[0] as string) || defaultImages[0]}
@@ -360,7 +382,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <div className="container pb-12">
         <div className="mt-10 overflow-hidden rounded-3xl ring-1 ring-black/5 bg-white">
           <div className="bg-black text-white px-6 py-4 text-sm font-medium">
-            {isDragonfly ? "Crafted for you" : isMagikidShoes ? "Magikid edition" : isSlipOns ? "Print + finish" : isGunHolster ? "Carbon fiber nylon" : isTrailMix ? "Voronyz Health" : "How it's made"}
+            {isDragonfly ? "Crafted for you" : isMagikidShoes ? "Magikid edition" : isSlipOns ? "Print + finish" : isGunHolster ? "Carbon fiber nylon" : isTrailMix ? "Voronyz Health" : isApparel ? "Apparel" : "How it's made"}
           </div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed">
             {isDragonfly
@@ -373,6 +395,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? GUN_HOLSTER_HOW_ITS_MADE
               : isTrailMix
               ? TRAIL_MIX_HOW_ITS_MADE
+              : isApparel
+              ? "Voronyz Apparel is cut for a clean modern fit — consistent fabrics, considered proportions, and colorways that work across the full lineup. Pick your size and color and we fulfill to order."
               : "Each pair takes a full day to print using our proprietary TPU blend. Following printing, we perform heat-treated post-processing to ensure exceptional quality, comfort, and durability."}
           </div>
         </div>
@@ -408,6 +432,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Does it come in sizes?", a: "No sizes — choose a flavor instead." },
               { q: "How much does it cost?", a: "$60 per bag when back in stock." },
               { q: "When will it restock?", a: "We're restocking the next batch soon. Check back on Voronyz Health." },
+            ] : isApparel ? [
+              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Socks use S–XL." },
+              { q: "How do I shop by type?", a: "Open Apparel and use Socks, Hoodies, Sweats, Shirts, Pants, or Outerwear filters." },
+              { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : [
               { q: "What if my size doesn't fit?", a: "They're going to fit and also be extremely comfortable. Trust the process" },
               { q: "Are they waterproof?", a: "Yes. 100% waterproof. Throw them in your washer to clean!" },
