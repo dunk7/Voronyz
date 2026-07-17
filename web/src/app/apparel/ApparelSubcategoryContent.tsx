@@ -89,7 +89,10 @@ export default function ApparelSubcategoryContent({
   }, [subcategoryId]);
 
   const enriched = useMemo(() => {
-    return products
+    const order = new Map(
+      getApparelBySubcategory(subcategoryId).map((item, index) => [item.slug, index]),
+    );
+    const items = products
       .map((product) => {
         const meta = getApparelItem(product.slug);
         if (!meta || meta.subcategory !== subcategoryId) return null;
@@ -106,7 +109,15 @@ export default function ApparelSubcategoryContent({
           cover: product.thumbnail || meta.image || (product.images?.[0] ?? meta.image),
         } satisfies ApparelGridProduct;
       })
-      .filter(Boolean) as ApparelGridProduct[];
+      .filter((product): product is ApparelGridProduct => product !== null);
+
+    items.sort((a, b) => {
+      const aKey = a.slug.trim().toLowerCase();
+      const bKey = b.slug.trim().toLowerCase();
+      return (order.get(aKey) ?? Number.MAX_SAFE_INTEGER) - (order.get(bKey) ?? Number.MAX_SAFE_INTEGER);
+    });
+
+    return items;
   }, [products, subcategoryId]);
 
   const siblingCollections = APPAREL_COLLECTION_SUBCATEGORIES.filter(
