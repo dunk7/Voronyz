@@ -23,7 +23,8 @@ export type FootwearCatalogItem = {
 
 /**
  * Display order for All Footwear:
- * Magikid → Slip Ons → Gators → Slides → Sneakers (Dragonfly last).
+ * Magikid → Slides → Gators → Slip Ons → Sneakers (Dragonfly last).
+ * Gators stays in the grid — just not first.
  */
 export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
   {
@@ -44,30 +45,6 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     ],
   },
   {
-    slug: "slip-ons",
-    name: "Slip Ons",
-    description:
-      "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, or orange (white coming soon).",
-    priceCents: 6000,
-    images: [
-      "/products/slip-ons/InShot_20260405_203151152.jpg",
-      "/products/slip-ons/InShot_20260405_203425292.jpg",
-      "/products/slip-ons/InShot_20260405_203601045.jpg",
-      "/products/slip-ons/InShot_20260405_203736918.jpg",
-      "/products/slip-ons/InShot_20260405_203930832.jpg",
-      "/products/slip-ons/InShot_20260405_204113872.jpg",
-      "/products/slip-ons/InShot_20260405_204333303.jpg",
-      "/products/slip-ons/InShot_20260405_202911983.jpg",
-    ],
-  },
-  {
-    slug: GATORS_SLUG,
-    name: GATORS_NAME,
-    description: GATORS_DESCRIPTION_SHORT,
-    priceCents: GATORS_PRICE_CENTS,
-    images: [...GATORS_IMAGES],
-  },
-  {
     slug: "v3-slides",
     name: "V3 Slides",
     description:
@@ -84,6 +61,30 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
       "/products/v3-slides/InShot_20260212_195358936.jpg",
       "/products/v3-slides/InShot_20260212_195535113.jpg",
       "/products/v3-slides/InShot_20260212_195649672.jpg",
+    ],
+  },
+  {
+    slug: GATORS_SLUG,
+    name: GATORS_NAME,
+    description: GATORS_DESCRIPTION_SHORT,
+    priceCents: GATORS_PRICE_CENTS,
+    images: [...GATORS_IMAGES],
+  },
+  {
+    slug: "slip-ons",
+    name: "Slip Ons",
+    description:
+      "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, or orange (white coming soon).",
+    priceCents: 6000,
+    images: [
+      "/products/slip-ons/InShot_20260405_203151152.jpg",
+      "/products/slip-ons/InShot_20260405_203425292.jpg",
+      "/products/slip-ons/InShot_20260405_203601045.jpg",
+      "/products/slip-ons/InShot_20260405_203736918.jpg",
+      "/products/slip-ons/InShot_20260405_203930832.jpg",
+      "/products/slip-ons/InShot_20260405_204113872.jpg",
+      "/products/slip-ons/InShot_20260405_204333303.jpg",
+      "/products/slip-ons/InShot_20260405_202911983.jpg",
     ],
   },
   {
