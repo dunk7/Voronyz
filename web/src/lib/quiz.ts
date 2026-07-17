@@ -87,25 +87,28 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
   },
   {
     id: "shoe_type",
-    prompt: "What kind of footwear do you need right now?",
-    helper: "We'll point you at the pair that fits that need.",
+    prompt: "What's your biggest foot frustration lately?",
+    helper: "Honest answers get better matches — this isn't a product catalog.",
     poll: true,
     options: [
       {
         id: "slip_on",
-        label: "Slip-ons for everyday comfort",
+        label: "Shoes that take forever to get on",
+        hint: "I want grab-and-go ease",
       },
       {
         id: "active",
-        label: "Something closer to running / walking shoes",
+        label: "Not enough support when I'm moving",
+        hint: "Walking, errands, workouts",
       },
       {
         id: "slides",
-        label: "Casual slides for home & around town",
+        label: "Nothing that feels like a break after a long day",
+        hint: "Recovery vibes, still wearable out",
       },
       {
         id: "unsure",
-        label: "Not sure yet — help me decide",
+        label: "No strong frustration — just looking around",
       },
     ],
   },
