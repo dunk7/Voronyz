@@ -8,7 +8,6 @@ import { Metadata } from "next";
 import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
 import {
   MAGIKID_SHOES_THUMBNAIL_URL,
-  MAGIKID_SHOES_KIDS_SIZES,
   MAGIKID_SHOES_DESCRIPTION,
   MAGIKID_SHOES_HOW_ITS_MADE,
   MAGIKID_SHOES_META_DESCRIPTION,
