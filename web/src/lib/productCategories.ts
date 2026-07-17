@@ -47,6 +47,14 @@ export function filterHealthProducts<T extends { slug: string }>(products: T[]):
   return products.filter((p) => isHealthSlug(p.slug));
 }
 
+/** Filter apparel products and keep catalog display order (stable across reloads). */
 export function filterApparelProducts<T extends { slug: string }>(products: T[]): T[] {
-  return products.filter((p) => isApparelSlug(p.slug));
+  const order = new Map(APPAREL_SLUGS.map((slug, index) => [slug, index]));
+  return products
+    .filter((p) => isApparelSlug(p.slug))
+    .sort((a, b) => {
+      const aKey = a.slug.trim().toLowerCase();
+      const bKey = b.slug.trim().toLowerCase();
+      return (order.get(aKey) ?? Number.MAX_SAFE_INTEGER) - (order.get(bKey) ?? Number.MAX_SAFE_INTEGER);
+    });
 }

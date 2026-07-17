@@ -87,7 +87,8 @@ export default function ApparelContent() {
   }, []);
 
   const enriched = useMemo(() => {
-    return products
+    const order = new Map(APPAREL_CATALOG.map((item, index) => [item.slug, index]));
+    const items = products
       .map((product) => {
         const meta = getApparelItem(product.slug);
         if (!meta) return null;
@@ -99,14 +100,22 @@ export default function ApparelContent() {
           cover: product.thumbnail || meta.image || (product.images?.[0] ?? meta.image),
         };
       })
-      .filter(Boolean) as Array<
-      Product & {
-        subcategory: ApparelSubcategoryId;
-        colors: string[];
-        sizes: string[];
-        cover: string;
-      }
-    >;
+      .filter(
+        (product): product is Product & {
+          subcategory: ApparelSubcategoryId;
+          colors: string[];
+          sizes: string[];
+          cover: string;
+        } => product !== null
+      );
+
+    items.sort((a, b) => {
+      const aKey = a.slug.trim().toLowerCase();
+      const bKey = b.slug.trim().toLowerCase();
+      return (order.get(aKey) ?? Number.MAX_SAFE_INTEGER) - (order.get(bKey) ?? Number.MAX_SAFE_INTEGER);
+    });
+
+    return items;
   }, [products]);
 
   function handleCardClick(e: React.MouseEvent, slug: string) {
