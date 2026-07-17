@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getProductThumbnail } from "@/lib/productImages";
-import { ensureCatalogProducts, ensureFootwearCatalog } from "@/lib/ensureCatalogProducts";
+import { ensureCatalogProducts, ensureFootwearCatalog, ensureHealthCatalog } from "@/lib/ensureCatalogProducts";
 import { getFootwearCatalogSeed } from "@/lib/footwear";
 import {
   filterAccessoryProducts,
@@ -17,11 +17,7 @@ import {
   GUN_HOLSTER_SLUG,
 } from "@/lib/gunHolster";
 import {
-  TRAIL_MIX_DESCRIPTION_SHORT,
-  TRAIL_MIX_IMAGES,
-  TRAIL_MIX_NAME,
-  TRAIL_MIX_PRICE_CENTS,
-  TRAIL_MIX_SLUG,
+  getHealthCatalogSeed,
 } from "@/lib/trailMix";
 import { APPAREL_CATALOG, getApparelImages } from "@/lib/apparel";
 
@@ -71,6 +67,7 @@ function applyCategoryFilter<T extends { slug: string }>(
 function getStaticCatalogFallback() {
   const now = new Date().toISOString();
   const footwear = getFootwearCatalogSeed();
+  const health = getHealthCatalogSeed();
   const extras = [
     {
       id: `catalog-${GUN_HOLSTER_SLUG}`,
@@ -81,18 +78,6 @@ function getStaticCatalogFallback() {
       currency: "usd",
       images: [...GUN_HOLSTER_IMAGES],
       thumbnail: getProductThumbnail({ slug: GUN_HOLSTER_SLUG, images: GUN_HOLSTER_IMAGES }),
-      createdAt: now,
-      updatedAt: now,
-    },
-    {
-      id: `catalog-${TRAIL_MIX_SLUG}`,
-      slug: TRAIL_MIX_SLUG,
-      name: TRAIL_MIX_NAME,
-      description: TRAIL_MIX_DESCRIPTION_SHORT,
-      priceCents: TRAIL_MIX_PRICE_CENTS,
-      currency: "usd",
-      images: [...TRAIL_MIX_IMAGES],
-      thumbnail: getProductThumbnail({ slug: TRAIL_MIX_SLUG, images: TRAIL_MIX_IMAGES }),
       createdAt: now,
       updatedAt: now,
     },
@@ -112,7 +97,7 @@ function getStaticCatalogFallback() {
       };
     }),
   ];
-  return [...footwear, ...extras];
+  return [...footwear, ...health, ...extras];
 }
 
 export async function GET(request: NextRequest) {
@@ -122,9 +107,11 @@ export async function GET(request: NextRequest) {
   const category = parseCategory(searchParams.get("category"));
 
   try {
-    // Footwear listing only needs Magikid sync — skip heavy apparel upserts.
+    // Category listings skip heavy apparel upserts when possible.
     if (category === "footwear" && !(query && query.trim().length > 0)) {
       await ensureFootwearCatalog();
+    } else if (category === "health" && !(query && query.trim().length > 0)) {
+      await ensureHealthCatalog();
     } else {
       await ensureCatalogProducts();
     }
@@ -212,6 +199,23 @@ export async function GET(request: NextRequest) {
     }
 
     products = applyCategoryFilter(products, category);
+
+    // Collaborative is a single product — never return/cache an empty health listing.
+    if (
+      category === "health" &&
+      products.length === 0 &&
+      !(query && query.trim().length > 0)
+    ) {
+      const fallback = applyCategoryFilter(getStaticCatalogFallback(), category);
+      return NextResponse.json(
+        { products: fallback },
+        {
+          headers: {
+            "Cache-Control": "public, s-maxage=10, stale-while-revalidate=30",
+          },
+        },
+      );
+    }
 
     const productsWithThumbnail = products.map((p) => ({
       ...p,

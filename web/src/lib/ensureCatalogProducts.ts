@@ -376,26 +376,32 @@ export async function ensureGunHolster(): Promise<void> {
 
 /** Idempotently upsert Antioxidant Trail Mix so it appears without a manual seed run. */
 export async function ensureTrailMix(): Promise<void> {
-  const existing = await prisma.product.findUnique({ where: { slug: TRAIL_MIX_SLUG } });
+  let existing = await prisma.product.findUnique({ where: { slug: TRAIL_MIX_SLUG } });
 
   if (!existing) {
-    await prisma.product.create({
-      data: {
-        slug: TRAIL_MIX_SLUG,
-        name: TRAIL_MIX_NAME,
-        description: TRAIL_MIX_DESCRIPTION_SHORT,
-        priceCents: TRAIL_MIX_PRICE_CENTS,
-        currency: "usd",
-        images: [...TRAIL_MIX_IMAGES],
-        primaryColors: [...TRAIL_MIX_FLAVOR_IDS],
-        secondaryColors: [],
-        sizes: [...TRAIL_MIX_SIZES],
-        variants: {
-          create: TRAIL_MIX_VARIANTS.map((v) => ({ ...v })),
+    try {
+      await prisma.product.create({
+        data: {
+          slug: TRAIL_MIX_SLUG,
+          name: TRAIL_MIX_NAME,
+          description: TRAIL_MIX_DESCRIPTION_SHORT,
+          priceCents: TRAIL_MIX_PRICE_CENTS,
+          currency: "usd",
+          images: [...TRAIL_MIX_IMAGES],
+          primaryColors: [...TRAIL_MIX_FLAVOR_IDS],
+          secondaryColors: [],
+          sizes: [...TRAIL_MIX_SIZES],
+          variants: {
+            create: TRAIL_MIX_VARIANTS.map((v) => ({ ...v })),
+          },
         },
-      },
-    });
-    return;
+      });
+      return;
+    } catch (error) {
+      // Concurrent serverless creates can race on unique slug/sku — recover and update.
+      existing = await prisma.product.findUnique({ where: { slug: TRAIL_MIX_SLUG } });
+      if (!existing) throw error;
+    }
   }
 
   await prisma.product.update({
@@ -607,8 +613,8 @@ export async function ensureCatalogProducts(): Promise<void> {
     try {
       // Schema heal must not be swallowed — without these columns every product query 500s.
       await ensureProductCategoryColumns();
-      // Parallelize independent upserts — apparel is the slow path.
-      await Promise.all([
+      // Isolate failures so apparel/stock errors cannot skip Trail Mix / holster sync.
+      const results = await Promise.allSettled([
         ensureFootwearProducts(),
         ensureFootwearStock(),
         ensureMagikidShoes(),
@@ -617,6 +623,12 @@ export async function ensureCatalogProducts(): Promise<void> {
         ensureTrailMix(),
         ensureApparelProducts(),
       ]);
+      for (const result of results) {
+        if (result.status === "rejected") {
+          console.error("ensureCatalogProducts task failed:", result.reason);
+        }
+      }
+      // Advance TTL after an attempt — Collaborative also has ensureHealthCatalog.
       lastEnsureAt = Date.now();
     } catch (error) {
       console.error("ensureCatalogProducts failed:", error);
@@ -661,4 +673,29 @@ export async function ensureFootwearCatalog(): Promise<void> {
   })();
 
   return footwearEnsureInFlight;
+}
+
+/** Collaborative-only ensure — skips apparel/footwear for fast /health loads. */
+let healthEnsureAt = 0;
+let healthEnsureInFlight: Promise<void> | null = null;
+const HEALTH_ENSURE_TTL_MS = 10 * 60 * 1000;
+
+export async function ensureHealthCatalog(): Promise<void> {
+  const now = Date.now();
+  if (healthEnsureInFlight) return healthEnsureInFlight;
+  if (now - healthEnsureAt < HEALTH_ENSURE_TTL_MS) return;
+
+  healthEnsureInFlight = (async () => {
+    try {
+      await ensureProductCategoryColumns();
+      await ensureTrailMix();
+      healthEnsureAt = Date.now();
+    } catch (error) {
+      console.error("ensureHealthCatalog failed:", error);
+    } finally {
+      healthEnsureInFlight = null;
+    }
+  })();
+
+  return healthEnsureInFlight;
 }
