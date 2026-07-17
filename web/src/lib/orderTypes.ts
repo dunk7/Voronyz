@@ -47,6 +47,7 @@ export type AdminOrder = {
   shipping: OrderShipping | null;
   lineItems: OrderLineItem[];
   paymentMethod?: string | null;
+  discountCode?: string | null;
 };
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
@@ -189,6 +190,7 @@ export function parseOrderMetadata(metadata: unknown): {
   shipping: OrderShipping | null;
   lineItems: OrderLineItem[];
   paymentMethod: string | null;
+  discountCode: string | null;
 } {
   if (!isRecord(metadata)) {
     return {
@@ -197,6 +199,7 @@ export function parseOrderMetadata(metadata: unknown): {
       shipping: null,
       lineItems: [],
       paymentMethod: null,
+      discountCode: null,
     };
   }
 
@@ -248,7 +251,11 @@ export function parseOrderMetadata(metadata: unknown): {
   const paymentMethod =
     typeof metadata.paymentMethod === "string" ? metadata.paymentMethod : null;
 
-  return { orderNumber, customer, shipping, lineItems, paymentMethod };
+  const discountCodeRaw =
+    typeof metadata.discountCode === "string" ? metadata.discountCode.trim() : "";
+  const discountCode = discountCodeRaw ? discountCodeRaw : null;
+
+  return { orderNumber, customer, shipping, lineItems, paymentMethod, discountCode };
 }
 
 export function formatShippingAddress(shipping: OrderShipping | null): string {
