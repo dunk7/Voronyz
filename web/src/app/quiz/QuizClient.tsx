@@ -10,6 +10,11 @@ import {
   type QuizAnswers,
   type QuizProfileId,
 } from "@/lib/quiz";
+import {
+  clearQuizSession,
+  loadQuizSession,
+  saveQuizSession,
+} from "@/lib/quizSession";
 
 type QuizResultProfile = {
   id: QuizProfileId;
@@ -89,6 +94,7 @@ function inStockVariants(product: QuizProduct) {
 }
 
 export default function QuizClient() {
+  const [ready, setReady] = useState(false);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswers>({});
   const [submitting, setSubmitting] = useState(false);
@@ -111,49 +117,122 @@ export default function QuizClient() {
   const selectedForStep = question ? answers[question.id] : undefined;
   const isLastQuestion = step === totalSteps - 1;
 
-  const loadProducts = useCallback(async (slugs: string[]) => {
-    if (slugs.length === 0) {
-      setProducts([]);
-      return;
-    }
-    setProductsLoading(true);
-    setProductsError(null);
-    try {
-      const res = await fetch(`/api/quiz/products?slugs=${encodeURIComponent(slugs.join(","))}`);
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Could not load recommended products");
+  const persistResults = useCallback(
+    (
+      next: {
+        answers: QuizAnswers;
+        profile: QuizResultProfile;
+        recommendedSlugs: string[];
+        selections?: Record<string, { color: string; size: string }>;
+        addedSlugs?: Record<string, boolean>;
       }
-      const data = await res.json();
-      const list = (data.products ?? []) as QuizProduct[];
-      setProducts(list);
+    ) => {
+      saveQuizSession({
+        answers: next.answers,
+        profile: next.profile,
+        recommendedSlugs: next.recommendedSlugs,
+        selections: next.selections,
+        addedSlugs: next.addedSlugs,
+      });
+    },
+    []
+  );
 
-      const nextSelections: Record<string, { color: string; size: string }> = {};
-      for (const product of list) {
-        const stocked = inStockVariants(product);
-        const color =
-          stocked[0]?.color ||
-          product.primaryColors[0] ||
-          product.variants[0]?.color ||
-          "black";
-        nextSelections[product.slug] = {
-          color,
-          size: defaultSizeForProduct(product.slug, product.sizes),
-        };
+  const loadProducts = useCallback(
+    async (
+      slugs: string[],
+      options?: { preserveSelections?: Record<string, { color: string; size: string }> }
+    ) => {
+      if (slugs.length === 0) {
+        setProducts([]);
+        return;
       }
-      setSelections(nextSelections);
-    } catch (err) {
-      setProductsError(err instanceof Error ? err.message : "Could not load products");
-    } finally {
-      setProductsLoading(false);
+      setProductsLoading(true);
+      setProductsError(null);
+      try {
+        const res = await fetch(
+          `/api/quiz/products?slugs=${encodeURIComponent(slugs.join(","))}`
+        );
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "Could not load recommended products");
+        }
+        const data = await res.json();
+        const list = (data.products ?? []) as QuizProduct[];
+        setProducts(list);
+
+        const preserved = options?.preserveSelections;
+        const nextSelections: Record<string, { color: string; size: string }> = {};
+        for (const product of list) {
+          const stocked = inStockVariants(product);
+          const saved = preserved?.[product.slug];
+          const color =
+            (saved?.color && stocked.some((v) => v.color === saved.color)
+              ? saved.color
+              : null) ||
+            stocked[0]?.color ||
+            product.primaryColors[0] ||
+            product.variants[0]?.color ||
+            "black";
+          nextSelections[product.slug] = {
+            color,
+            size:
+              saved?.size ||
+              defaultSizeForProduct(product.slug, product.sizes),
+          };
+        }
+        setSelections(nextSelections);
+      } catch (err) {
+        setProductsError(
+          err instanceof Error ? err.message : "Could not load products"
+        );
+      } finally {
+        setProductsLoading(false);
+      }
+    },
+    []
+  );
+
+  // Restore completed quiz results after navigating away (e.g. product → back).
+  useEffect(() => {
+    const saved = loadQuizSession();
+    if (saved) {
+      setAnswers(saved.answers);
+      setProfile(saved.profile);
+      setRecommendedSlugs(saved.recommendedSlugs);
+      if (saved.selections) setSelections(saved.selections);
+      if (saved.addedSlugs) setAddedSlugs(saved.addedSlugs);
     }
+    setReady(true);
   }, []);
 
   useEffect(() => {
-    if (recommendedSlugs.length > 0) {
-      void loadProducts(recommendedSlugs);
-    }
-  }, [recommendedSlugs, loadProducts]);
+    if (!ready || recommendedSlugs.length === 0) return;
+    const saved = loadQuizSession();
+    void loadProducts(recommendedSlugs, {
+      preserveSelections: saved?.selections,
+    });
+  }, [ready, recommendedSlugs, loadProducts]);
+
+  // Keep session in sync when shopper adjusts color/size or adds items.
+  useEffect(() => {
+    if (!ready || !profile || recommendedSlugs.length === 0) return;
+    persistResults({
+      answers,
+      profile,
+      recommendedSlugs,
+      selections,
+      addedSlugs,
+    });
+  }, [
+    ready,
+    answers,
+    profile,
+    recommendedSlugs,
+    selections,
+    addedSlugs,
+    persistResults,
+  ]);
 
   function pickOption(optionId: string) {
     if (!question) return;
@@ -174,8 +253,19 @@ export default function QuizClient() {
       if (!res.ok) {
         throw new Error(data.error || "Could not finish the quiz");
       }
-      setProfile(data.profile);
-      setRecommendedSlugs(data.recommendedSlugs ?? []);
+      const nextProfile = data.profile as QuizResultProfile;
+      const nextSlugs = (data.recommendedSlugs ?? []) as string[];
+      setAnswers(finalAnswers);
+      setProfile(nextProfile);
+      setRecommendedSlugs(nextSlugs);
+      setAddedSlugs({});
+      persistResults({
+        answers: finalAnswers,
+        profile: nextProfile,
+        recommendedSlugs: nextSlugs,
+        selections: {},
+        addedSlugs: {},
+      });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Could not finish the quiz");
@@ -195,10 +285,12 @@ export default function QuizClient() {
 
   function goBack() {
     if (profile) {
+      clearQuizSession();
       setProfile(null);
       setRecommendedSlugs([]);
       setProducts([]);
       setAddedSlugs({});
+      setSelections({});
       setStep(totalSteps - 1);
       return;
     }
@@ -206,6 +298,7 @@ export default function QuizClient() {
   }
 
   function restart() {
+    clearQuizSession();
     setStep(0);
     setAnswers({});
     setProfile(null);
@@ -297,6 +390,14 @@ export default function QuizClient() {
     () => products.some((p) => inStockVariants(p).length > 0),
     [products]
   );
+
+  if (!ready) {
+    return (
+      <div className="max-w-2xl mx-auto py-10 text-center text-neutral-500">
+        Loading…
+      </div>
+    );
+  }
 
   if (profile) {
     return (

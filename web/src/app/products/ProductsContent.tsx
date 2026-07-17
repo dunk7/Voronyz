@@ -4,23 +4,14 @@ import Link from "next/link";
 import { formatCentsAsCurrency } from "@/lib/money";
 import { MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
 import { filterAccessoryProducts, filterFootwearProducts, filterHealthProducts } from "@/lib/productCategories";
+import { getFootwearCatalogSeed, type FootwearListProduct } from "@/lib/footwear";
 import { useEffect, useState, useCallback } from "react";
 import { TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
+import { GATORS_SLUG } from "@/lib/gators";
 
-interface Product {
-  id: string;
-  slug: string;
-  name: string;
-  description: string;
-  priceCents: number;
-  currency: string;
-  images: string[] | null;
-  thumbnail?: string;
-  createdAt: string | Date;
-  updatedAt: string | Date;
-}
+type Product = FootwearListProduct;
 
 /* ── per-product metadata (tags / alt images). “New” / “Best Seller” badges are rendered by slug below so only Slip Ons can show New. ── */
 const productMeta: Record<string, {
@@ -50,6 +41,9 @@ const productMeta: Record<string, {
   "antioxidant-trail-mix": {
     tag: "Collaborative",
   },
+  gators: {
+    tag: "Clogs",
+  },
 };
 
 function cardMetaForSlug(slug: string) {
@@ -67,6 +61,9 @@ function cardMetaForSlug(slug: string) {
       return productMeta["gun-holster"];
     case "antioxidant-trail-mix":
       return productMeta["antioxidant-trail-mix"];
+    case GATORS_SLUG:
+    case "gators":
+      return productMeta.gators;
     default:
       return productMeta[s] as (typeof productMeta)["v3-slides"] | undefined;
   }
@@ -81,7 +78,9 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q");
   const router = useRouter();
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>(() =>
+    category === "footwear" && !searchQuery ? getFootwearCatalogSeed() : [],
+  );
   const [loading, setLoading] = useState(true);
   const [navigatingSlug, setNavigatingSlug] = useState<string | null>(null);
 
@@ -95,31 +94,66 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
   );
 
   useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+
     async function fetchProducts() {
+      // Seed footwear immediately so the grid never goes empty behind the logo loader.
+      if (category === "footwear" && !searchQuery) {
+        setProducts(getFootwearCatalogSeed());
+      }
       setLoading(true);
       try {
-        const url = searchQuery
-          ? `/api/search?q=${encodeURIComponent(searchQuery)}`
-          : "/api/search";
-        const response = await fetch(url);
+        const params = new URLSearchParams();
+        if (searchQuery) params.set("q", searchQuery);
+        // Server filters by category so All Footwear skips heavy catalog sync.
+        if (category !== "all") params.set("category", category);
+        const qs = params.toString();
+        const url = qs ? `/api/search?${qs}` : "/api/search";
+        const response = await fetch(url, { signal: controller.signal });
         if (response.ok) {
           const data = await response.json();
           let list: Product[] = data.products || [];
+          // Client-side filter remains as a safety net for cached/old responses.
           if (category === "footwear") list = filterFootwearProducts(list);
           else if (category === "accessories") list = filterAccessoryProducts(list);
           else if (category === "health") list = filterHealthProducts(list);
-          setProducts(list);
-        } else {
-          setProducts([]);
+          if (!cancelled) {
+            // Keep static footwear seed if the API returned nothing (DB outage / schema lag).
+            if (list.length > 0) {
+              setProducts(list);
+            } else if (category === "footwear" && !searchQuery) {
+              setProducts(getFootwearCatalogSeed());
+            } else {
+              setProducts([]);
+            }
+          }
+        } else if (!cancelled) {
+          if (category === "footwear" && !searchQuery) {
+            setProducts(getFootwearCatalogSeed());
+          } else {
+            setProducts([]);
+          }
         }
       } catch (error) {
+        if ((error as Error)?.name === "AbortError") return;
         console.error("Failed to fetch products:", error);
-        setProducts([]);
+        if (!cancelled) {
+          if (category === "footwear" && !searchQuery) {
+            setProducts(getFootwearCatalogSeed());
+          } else {
+            setProducts([]);
+          }
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
     fetchProducts();
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
   }, [searchQuery, category]);
 
   const heading =
@@ -149,8 +183,8 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
         ? "View Collaborative"
         : "View all products";
 
-  /* ── Logo loader (never flash “0 products”) ── */
-  if (loading) {
+  /* ── Logo loader only when we have nothing to show yet ── */
+  if (loading && products.length === 0) {
     return (
       <div className="bg-texture-white min-h-[80vh]">
         <div className="container py-16">
@@ -166,7 +200,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
             <div className="mt-6 h-px bg-neutral-200" />
           </div>
           <div className="flex min-h-[40vh] items-center justify-center py-16">
-            <LogoLoader size="lg" label="Loading" />
+            <LogoLoader size="lg" label="Loading" orbit />
           </div>
         </div>
       </div>
@@ -283,7 +317,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                       />
                     )}
 
-                    {/* Top badges — slug-explicit so “New” only appears on Slip Ons */}
+                    {/* Top badges — slug-explicit so “New” / “New Listing” only appear on intended products */}
                     <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
                       {slugKey === "v3-slides" && (
                         <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-black text-white">
@@ -294,6 +328,16 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                         <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
                           New
                         </span>
+                      )}
+                      {slugKey === GATORS_SLUG && (
+                        <>
+                          <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
+                            New Listing
+                          </span>
+                          <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-amber-600 text-white">
+                            Low Stock
+                          </span>
+                        </>
                       )}
                       {slugKey === TRAIL_MIX_SLUG && (
                         <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-neutral-900 text-white">
@@ -348,6 +392,10 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                       {slugKey === TRAIL_MIX_SLUG ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-neutral-900 px-2.5 py-0.5 text-[11px] font-medium text-white">
                           Sold Out
+                        </span>
+                      ) : slugKey === GATORS_SLUG ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[11px] font-medium text-amber-800">
+                          Low Stock
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-0.5 text-[11px] text-neutral-500">

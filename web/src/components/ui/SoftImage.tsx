@@ -1,7 +1,7 @@
 "use client";
 
 import Image, { type ImageProps } from "next/image";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LogoMark } from "@/components/ui/LogoLoader";
 
 type SoftImageProps = Omit<ImageProps, "onLoad" | "onLoadingComplete"> & {
@@ -21,6 +21,7 @@ function srcToKey(src: ImageProps["src"]): string {
  *
  * Resets load state whenever `src` changes so reused instances
  * (e.g. gallery slides / product grids) never show the previous image.
+ * Also detects already-cached images (onLoad may not fire).
  */
 export default function SoftImage({
   className = "",
@@ -34,6 +35,15 @@ export default function SoftImage({
   const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
   const loaded = loadedSrc === srcKey;
   const manageFade = showLogoPlaceholder;
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    const el = imgRef.current;
+    if (!el) return;
+    if (el.complete && el.naturalWidth > 0) {
+      setLoadedSrc(srcKey);
+    }
+  }, [srcKey]);
 
   return (
     <>
@@ -52,6 +62,7 @@ export default function SoftImage({
       <Image
         key={srcKey}
         {...props}
+        ref={imgRef}
         src={src}
         alt={alt}
         onLoad={() => setLoadedSrc(srcKey)}
