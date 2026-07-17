@@ -124,6 +124,8 @@ export async function POST(request: NextRequest) {
           unitAmount = 5000;
         } else if (lowerCode === 'pedro30') {
           unitAmount = 3000;
+        } else if (lowerCode === 'nicole50') {
+          unitAmount = 5000;
         } else if (typeof item.priceCents === 'number' && item.priceCents > 0) {
           unitAmount = item.priceCents;
         } else {
@@ -188,6 +190,8 @@ export async function POST(request: NextRequest) {
           unitAmount = 5000;
         } else if (lowerCode === 'pedro30') {
           unitAmount = 3000;
+        } else if (lowerCode === 'nicole50') {
+          unitAmount = 5000;
         } else if (typeof item.priceCents === 'number' && item.priceCents > 0) {
           unitAmount = item.priceCents;
         } else {
