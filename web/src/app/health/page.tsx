@@ -3,9 +3,9 @@ import ProductsContent from "@/app/products/ProductsContent";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
-  title: "Voronyz Health – Voronyz",
+  title: "Collaborative – Voronyz",
   description:
-    "Shop Voronyz Health, including Antioxidant Trail Mix in Wild Berry, Super Protein, and Chocolate.",
+    "Shop the Collaborative collection, including Antioxidant Trail Mix in Wild Berry, Super Protein, and Chocolate.",
 };
 
 export default function HealthPage() {

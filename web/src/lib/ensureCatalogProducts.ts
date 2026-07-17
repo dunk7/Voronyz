@@ -24,6 +24,7 @@ import {
   APPAREL_CATALOG,
   OBSOLETE_APPAREL_SLUGS,
   apparelSku,
+  getApparelImages,
 } from "@/lib/apparel";
 
 const MAGIKID_SHOES_IMAGES = [
@@ -217,9 +218,29 @@ export async function ensureTrailMix(): Promise<void> {
 /** Idempotently upsert apparel catalog products (coming soon / stock 0). */
 export async function ensureApparelProducts(): Promise<void> {
   if (OBSOLETE_APPAREL_SLUGS.length > 0) {
-    await prisma.product.deleteMany({
+    const obsolete = await prisma.product.findMany({
       where: { slug: { in: [...OBSOLETE_APPAREL_SLUGS] } },
+      select: { id: true },
     });
+    const obsoleteIds = obsolete.map((product) => product.id);
+    if (obsoleteIds.length > 0) {
+      const variants = await prisma.variant.findMany({
+        where: { productId: { in: obsoleteIds } },
+        select: { id: true },
+      });
+      const variantIds = variants.map((variant) => variant.id);
+      if (variantIds.length > 0) {
+        await prisma.cartItem.deleteMany({
+          where: { variantId: { in: variantIds } },
+        });
+        await prisma.variant.deleteMany({
+          where: { id: { in: variantIds } },
+        });
+      }
+      await prisma.product.deleteMany({
+        where: { id: { in: obsoleteIds } },
+      });
+    }
   }
 
   for (const item of APPAREL_CATALOG) {
@@ -238,7 +259,7 @@ export async function ensureApparelProducts(): Promise<void> {
           description: item.description,
           priceCents: item.priceCents,
           currency: "usd",
-          images: [item.image],
+          images: getApparelImages(item),
           primaryColors: [...item.colors],
           secondaryColors: [],
           sizes: [...item.sizes],
@@ -256,7 +277,7 @@ export async function ensureApparelProducts(): Promise<void> {
         name: item.name,
         description: item.description,
         priceCents: item.priceCents,
-        images: [item.image],
+        images: getApparelImages(item),
         primaryColors: [...item.colors],
         secondaryColors: [],
         sizes: [...item.sizes],

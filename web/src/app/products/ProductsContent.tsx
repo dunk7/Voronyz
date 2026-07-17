@@ -44,10 +44,10 @@ const productMeta: Record<string, {
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
   "gun-holster": {
-    tag: "Voronyz Engineering",
+    tag: "Engineering",
   },
   "antioxidant-trail-mix": {
-    tag: "Voronyz Health",
+    tag: "Collaborative",
   },
 };
 
@@ -72,7 +72,7 @@ function cardMetaForSlug(slug: string) {
 }
 
 type ProductsContentProps = {
-  /** Default "footwear" keeps Engineering/Health products out of the All Footwear grid. */
+  /** Default "footwear" keeps Engineering/Collaborative products out of the All Footwear grid. */
   category?: "footwear" | "accessories" | "health" | "all";
 };
 
@@ -125,15 +125,15 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
     searchQuery
       ? `Results for "${searchQuery}"`
       : category === "accessories"
-      ? "Voronyz Engineering"
+      ? "Engineering"
       : category === "health"
-      ? "Voronyz Health"
+      ? "Collaborative"
       : "All Footwear";
   const subheading =
     category === "accessories"
       ? "Engineered carry gear — carbon fiber nylon, made to order."
       : category === "health"
-      ? "Everyday nutrition from Voronyz Health."
+      ? "Everyday products from the Collaborative collection."
       : "3D-printed, scan-calibrated footwear — engineered for comfort, built to last.";
   const emptyHref =
     category === "accessories"
@@ -143,9 +143,9 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
         : "/products";
   const emptyLabel =
     category === "accessories"
-      ? "View Voronyz Engineering"
+      ? "View Engineering"
       : category === "health"
-        ? "View Voronyz Health"
+        ? "View Collaborative"
         : "View all products";
 
   /* ── Loading skeleton ── */

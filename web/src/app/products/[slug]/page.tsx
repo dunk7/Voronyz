@@ -33,7 +33,7 @@ import {
   TRAIL_MIX_THUMBNAIL_URL,
 } from "@/lib/trailMix";
 import { isAccessorySlug, isApparelSlug, isHealthSlug } from "@/lib/productCategories";
-import { getApparelItem, getApparelSubcategory } from "@/lib/apparel";
+import { getApparelItem, getApparelImages, getApparelSubcategory } from "@/lib/apparel";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
 // This page is rendered on-demand.
@@ -160,7 +160,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     : slug === TRAIL_MIX_SLUG
     ? [...TRAIL_MIX_IMAGES]
     : getApparelItem(slug)
-    ? [getApparelItem(slug)!.image]
+    ? getApparelImages(getApparelItem(slug)!)
     : ((product.images as string[] | null) ?? defaultImages);
   const galleryMedia: Media[] = images.map((src) => ({ type: "image" as const, src, alt: product.name }));
   if (slug === "slip-ons") {
@@ -186,9 +186,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         ? "/apparel"
         : "/products";
   const shopLabel = isAccessorySlug(slug)
-    ? "Back to Voronyz Engineering"
+    ? "Back to Engineering"
     : isHealthSlug(slug)
-      ? "Back to Voronyz Health"
+      ? "Back to Collaborative"
       : isApparelSlug(slug)
         ? "Back to Apparel"
         : "Back to Shop";
@@ -396,7 +396,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <div className="container pb-12">
         <div className="mt-10 overflow-hidden rounded-3xl ring-1 ring-black/5 bg-white">
           <div className="bg-black text-white px-6 py-4 text-sm font-medium">
-            {isDragonfly ? "Crafted for you" : isMagikidShoes ? "Magikid edition" : isSlipOns ? "Print + finish" : isGunHolster ? "Carbon fiber nylon" : isTrailMix ? "Voronyz Health" : isApparel ? "Apparel" : "How it's made"}
+            {isDragonfly ? "Crafted for you" : isMagikidShoes ? "Magikid edition" : isSlipOns ? "Print + finish" : isGunHolster ? "Carbon fiber nylon" : isTrailMix ? "Collaborative" : isApparel ? "Apparel" : "How it's made"}
           </div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed">
             {isDragonfly
@@ -445,10 +445,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "What flavors are available?", a: "Wild Berry, Super Protein, and Chocolate — all currently sold out." },
               { q: "Does it come in sizes?", a: "No sizes — choose a flavor instead." },
               { q: "How much does it cost?", a: "$60 per bag when back in stock." },
-              { q: "When will it restock?", a: "We're restocking the next batch soon. Check back on Voronyz Health." },
+              { q: "When will it restock?", a: "We're restocking the next batch soon. Check back on Collaborative." },
             ] : isApparel ? [
-              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Socks use S–XL." },
-              { q: "How do I shop by type?", a: "Open Apparel and use Socks, Hoodies, Sweats, Shirts, Pants, or Outerwear filters." },
+              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Socks, scarf, UV hat, and water bottle are One Size." },
+              { q: "Where can I browse the lineup?", a: "Open Apparel to see the full grid of coming-soon pieces." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : [
               { q: "What if my size doesn't fit?", a: "They're going to fit and also be extremely comfortable. Trust the process" },
@@ -519,6 +519,19 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const title = `${TRAIL_MIX_NAME} – Voronyz`;
     const description = TRAIL_MIX_DESCRIPTION;
     const images = [TRAIL_MIX_THUMBNAIL_URL];
+    return {
+      title,
+      description,
+      openGraph: { title, description, images },
+      twitter: { card: "summary_large_image", title, description, images },
+    };
+  }
+
+  const apparelMeta = getApparelItem(slug);
+  if (apparelMeta) {
+    const title = `${apparelMeta.name} – Voronyz`;
+    const description = apparelMeta.description;
+    const images = getApparelImages(apparelMeta);
     return {
       title,
       description,

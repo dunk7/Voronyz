@@ -7,6 +7,8 @@ export type ApparelSubcategoryId =
   | "sweats"
   | "shirts"
   | "shorts"
+  | "pants"
+  | "outerwear"
   | "accessories";
 
 export type ApparelSubcategory = {
@@ -15,7 +17,7 @@ export type ApparelSubcategory = {
   description: string;
 };
 
-/** Display order: Socks first, then core layers, shirts, shorts, accessories. */
+/** Display order: Socks first, then core layers, shirts, bottoms, outerwear, accessories. */
 export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "socks",
@@ -43,6 +45,16 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
     description: "Everyday and training shorts",
   },
   {
+    id: "pants",
+    label: "Pants",
+    description: "Everyday and technical pants",
+  },
+  {
+    id: "outerwear",
+    label: "Outerwear",
+    description: "Shells, jackets, and weather layers",
+  },
+  {
     id: "accessories",
     label: "Accessories",
     description: "Scarves, UV hats, and bottles",
@@ -57,17 +69,22 @@ export type ApparelCatalogItem = {
   priceCents: number;
   colors: string[];
   sizes: string[];
+  /** Primary cover / thumbnail image. */
   image: string;
+  /** Full gallery; defaults to `[image]` when omitted. */
+  images?: string[];
   skuPrefix: string;
   /** Apparel drops are previewable but not purchasable yet. */
   comingSoon: true;
 };
 
+export function getApparelImages(item: ApparelCatalogItem): string[] {
+  if (item.images && item.images.length > 0) return [...item.images];
+  return [item.image];
+}
+
 /** Slugs removed from the live apparel catalog (cleaned up on ensure). */
-export const OBSOLETE_APPAREL_SLUGS = [
-  "voronyz-technical-pants",
-  "voronyz-shell-jacket",
-] as const;
+export const OBSOLETE_APPAREL_SLUGS = [] as const;
 
 export const APPAREL_CATALOG: ApparelCatalogItem[] = [
   {
@@ -78,7 +95,11 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     priceCents: 2800,
     colors: ["black", "grey", "white"],
     sizes: ["S", "M", "L", "XL"],
-    image: "/products/apparel/socks.jpg",
+    image: "/products/apparel/socks-features.jpg",
+    images: [
+      "/products/apparel/socks-features.jpg",
+      "/products/apparel/socks.jpg",
+    ],
     skuPrefix: "APP-SOCK",
     comingSoon: true,
   },
@@ -155,6 +176,30 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     comingSoon: true,
   },
   {
+    slug: "voronyz-technical-pants",
+    subcategory: "pants",
+    name: "Technical Pants",
+    description: "Streamlined pants with a sharp taper and everyday stretch.",
+    priceCents: 8800,
+    colors: ["black", "grey"],
+    sizes: [...APPAREL_SIZES],
+    image: "/products/apparel/pants.jpg",
+    skuPrefix: "APP-PNT",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-shell-jacket",
+    subcategory: "outerwear",
+    name: "Shell Jacket",
+    description: "Lightweight outerwear shell for commuting and cool weather.",
+    priceCents: 12800,
+    colors: ["black", "grey"],
+    sizes: [...APPAREL_SIZES],
+    image: "/products/apparel/outerwear.jpg",
+    skuPrefix: "APP-OUT",
+    comingSoon: true,
+  },
+  {
     slug: "voronyz-uv-hat",
     subcategory: "accessories",
     name: "UV Hat",
@@ -181,6 +226,11 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
 ];
 
 export const APPAREL_SLUGS = APPAREL_CATALOG.map((item) => item.slug);
+
+export function isObsoleteApparelSlug(slug: string | null | undefined): boolean {
+  const key = (slug || "").trim().toLowerCase();
+  return (OBSOLETE_APPAREL_SLUGS as readonly string[]).includes(key);
+}
 
 export function isApparelSlug(slug: string | null | undefined): boolean {
   const key = (slug || "").trim().toLowerCase();

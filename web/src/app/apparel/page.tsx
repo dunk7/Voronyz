@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import ApparelContent from "./ApparelContent";
 
 export const metadata: Metadata = {
@@ -9,9 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function ApparelPage() {
-  return (
-    <Suspense fallback={<div className="container py-12">Loading apparel…</div>}>
-      <ApparelContent />
-    </Suspense>
-  );
+  return <ApparelContent />;
 }

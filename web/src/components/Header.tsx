@@ -297,23 +297,30 @@ export default function Header() {
               </Link>
               <Link
                 href="/apparel"
-                className={`relative uppercase tracking-[0.24em] text-[12px] sm:text-[13px] rounded-full px-5 py-2.5 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/apparel") ? "text-white" : "text-white/70"}`}
+                className={`relative uppercase tracking-[0.24em] text-[12px] sm:text-[13px] rounded-full px-5 py-2.5 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/apparel") && searchParams.get("type") !== "accessories" ? "text-white" : "text-white/70"}`}
               >
                 <span>Apparel</span>
-                <span className={`pointer-events-none absolute left-5 right-5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/apparel") ? "opacity-100" : "opacity-0"}`} aria-hidden />
+                <span className={`pointer-events-none absolute left-5 right-5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/apparel") && searchParams.get("type") !== "accessories" ? "opacity-100" : "opacity-0"}`} aria-hidden />
+              </Link>
+              <Link
+                href="/apparel?type=accessories"
+                className={`relative uppercase tracking-[0.24em] text-[12px] sm:text-[13px] rounded-full px-5 py-2.5 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/apparel") && searchParams.get("type") === "accessories" ? "text-white" : "text-white/70"}`}
+              >
+                <span>Accessories</span>
+                <span className={`pointer-events-none absolute left-5 right-5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/apparel") && searchParams.get("type") === "accessories" ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
               <Link
                 href="/accessories"
                 className={`relative uppercase tracking-[0.24em] text-[12px] sm:text-[13px] rounded-full px-5 py-2.5 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/accessories") ? "text-white" : "text-white/70"}`}
               >
-                <span>Voronyz Engineering</span>
+                <span>Engineering</span>
                 <span className={`pointer-events-none absolute left-5 right-5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/accessories") ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
               <Link
                 href="/health"
                 className={`relative uppercase tracking-[0.24em] text-[12px] sm:text-[13px] rounded-full px-5 py-2.5 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/health") ? "text-white" : "text-white/70"}`}
               >
-                <span>Voronyz Health</span>
+                <span>Collaborative</span>
                 <span className={`pointer-events-none absolute left-5 right-5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/health") ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
               <Link
@@ -512,16 +519,30 @@ export default function Header() {
                 <Link
                   href="/apparel"
                   className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
-                    pathname?.startsWith("/apparel")
+                    pathname?.startsWith("/apparel") && searchParams.get("type") !== "accessories"
                       ? "text-white bg-white/10"
                       : "text-white/70 hover:text-white hover:bg-white/[.06]"
                   }`}
                   onClick={() => setOpen(false)}
                 >
-                  {pathname?.startsWith("/apparel") && (
+                  {pathname?.startsWith("/apparel") && searchParams.get("type") !== "accessories" && (
                     <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
                   )}
                   Apparel
+                </Link>
+                <Link
+                  href="/apparel?type=accessories"
+                  className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
+                    pathname?.startsWith("/apparel") && searchParams.get("type") === "accessories"
+                      ? "text-white bg-white/10"
+                      : "text-white/70 hover:text-white hover:bg-white/[.06]"
+                  }`}
+                  onClick={() => setOpen(false)}
+                >
+                  {pathname?.startsWith("/apparel") && searchParams.get("type") === "accessories" && (
+                    <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
+                  )}
+                  Accessories
                 </Link>
                 <Link
                   href="/accessories"
@@ -535,7 +556,7 @@ export default function Header() {
                   {pathname?.startsWith("/accessories") && (
                     <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
                   )}
-                  Voronyz Engineering
+                  Engineering
                 </Link>
                 <Link
                   href="/health"
@@ -549,7 +570,7 @@ export default function Header() {
                   {pathname?.startsWith("/health") && (
                     <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
                   )}
-                  Voronyz Health
+                  Collaborative
                 </Link>
                 <Link
                   href="/about"
