@@ -2,16 +2,94 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getProductThumbnail } from "@/lib/productImages";
 import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
+import { getFootwearCatalogSeed } from "@/lib/footwear";
+import {
+  GUN_HOLSTER_DESCRIPTION_SHORT,
+  GUN_HOLSTER_IMAGES,
+  GUN_HOLSTER_NAME,
+  GUN_HOLSTER_PRICE_CENTS,
+  GUN_HOLSTER_SLUG,
+} from "@/lib/gunHolster";
+import {
+  TRAIL_MIX_DESCRIPTION_SHORT,
+  TRAIL_MIX_IMAGES,
+  TRAIL_MIX_NAME,
+  TRAIL_MIX_PRICE_CENTS,
+  TRAIL_MIX_SLUG,
+} from "@/lib/trailMix";
+import { APPAREL_CATALOG, getApparelImages } from "@/lib/apparel";
 
 // Normalize text for better matching (remove hyphens, spaces, convert to lowercase)
 function normalizeText(text: string): string {
   return text.toLowerCase().replace(/[-\s]/g, "");
 }
 
+/** Last-resort catalog when the database is unreachable so the shop never goes blank. */
+function getStaticCatalogFallback() {
+  const now = new Date().toISOString();
+  const footwear = getFootwearCatalogSeed();
+  const extras = [
+    {
+      id: `catalog-${GUN_HOLSTER_SLUG}`,
+      slug: GUN_HOLSTER_SLUG,
+      name: GUN_HOLSTER_NAME,
+      description: GUN_HOLSTER_DESCRIPTION_SHORT,
+      priceCents: GUN_HOLSTER_PRICE_CENTS,
+      currency: "usd",
+      images: [...GUN_HOLSTER_IMAGES],
+      thumbnail: getProductThumbnail({ slug: GUN_HOLSTER_SLUG, images: GUN_HOLSTER_IMAGES }),
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: `catalog-${TRAIL_MIX_SLUG}`,
+      slug: TRAIL_MIX_SLUG,
+      name: TRAIL_MIX_NAME,
+      description: TRAIL_MIX_DESCRIPTION_SHORT,
+      priceCents: TRAIL_MIX_PRICE_CENTS,
+      currency: "usd",
+      images: [...TRAIL_MIX_IMAGES],
+      thumbnail: getProductThumbnail({ slug: TRAIL_MIX_SLUG, images: TRAIL_MIX_IMAGES }),
+      createdAt: now,
+      updatedAt: now,
+    },
+    ...APPAREL_CATALOG.map((item) => {
+      const images = getApparelImages(item);
+      return {
+        id: `catalog-${item.slug}`,
+        slug: item.slug,
+        name: item.name,
+        description: item.description,
+        priceCents: item.priceCents,
+        currency: "usd",
+        images,
+        thumbnail: item.image,
+        createdAt: now,
+        updatedAt: now,
+      };
+    }),
+  ];
+  return [...footwear, ...extras];
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("q");
   const limit = searchParams.get("limit");
+
+  const productSelect = {
+    id: true,
+    slug: true,
+    name: true,
+    description: true,
+    priceCents: true,
+    currency: true,
+    images: true,
+    primaryColors: true,
+    sizes: true,
+    createdAt: true,
+    updatedAt: true,
+  } as const;
 
   try {
     await ensureCatalogProducts();
@@ -25,21 +103,7 @@ export async function GET(request: NextRequest) {
       // First, get all products and filter in memory for normalized matching
       // This allows us to search normalized versions of name, slug, and description
       const allProducts = await prisma.product.findMany({
-        select: {
-          id: true,
-          slug: true,
-          name: true,
-          description: true,
-          priceCents: true,
-          currency: true,
-          category: true,
-          subcategory: true,
-          images: true,
-          primaryColors: true,
-          sizes: true,
-          createdAt: true,
-          updatedAt: true,
-        },
+        select: productSelect,
       });
 
       // Filter products using multiple matching strategies
@@ -107,21 +171,7 @@ export async function GET(request: NextRequest) {
     } else {
       // All products mode
       products = await prisma.product.findMany({
-        select: {
-          id: true,
-          slug: true,
-          name: true,
-          description: true,
-          priceCents: true,
-          currency: true,
-          category: true,
-          subcategory: true,
-          images: true,
-          primaryColors: true,
-          sizes: true,
-          createdAt: true,
-          updatedAt: true,
-        },
+        select: productSelect,
         orderBy: { createdAt: "desc" },
       });
     }
@@ -134,9 +184,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ products: productsWithThumbnail });
   } catch (error) {
     console.error("Search API error:", error);
+    // Prefer a static catalog over an empty shop while DB/schema recovers.
+    const fallback = getStaticCatalogFallback();
     return NextResponse.json(
-      { error: "Failed to fetch products", products: [] },
-      { status: 500 }
+      { error: "Failed to fetch products", products: fallback },
+      { status: 200 },
     );
   }
 }

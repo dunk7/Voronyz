@@ -4,23 +4,13 @@ import Link from "next/link";
 import { formatCentsAsCurrency } from "@/lib/money";
 import { MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
 import { filterAccessoryProducts, filterFootwearProducts, filterHealthProducts } from "@/lib/productCategories";
+import { getFootwearCatalogSeed, type FootwearListProduct } from "@/lib/footwear";
 import { useEffect, useState, useCallback } from "react";
 import { TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 
-interface Product {
-  id: string;
-  slug: string;
-  name: string;
-  description: string;
-  priceCents: number;
-  currency: string;
-  images: string[] | null;
-  thumbnail?: string;
-  createdAt: string | Date;
-  updatedAt: string | Date;
-}
+type Product = FootwearListProduct;
 
 /* ── per-product metadata (tags / alt images). “New” / “Best Seller” badges are rendered by slug below so only Slip Ons can show New. ── */
 const productMeta: Record<string, {
@@ -81,7 +71,9 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q");
   const router = useRouter();
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>(() =>
+    category === "footwear" && !searchQuery ? getFootwearCatalogSeed() : [],
+  );
   const [loading, setLoading] = useState(true);
   const [navigatingSlug, setNavigatingSlug] = useState<string | null>(null);
 
@@ -95,7 +87,13 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
   );
 
   useEffect(() => {
+    let cancelled = false;
+
     async function fetchProducts() {
+      // Seed footwear immediately so the grid never goes empty behind the logo loader.
+      if (category === "footwear" && !searchQuery) {
+        setProducts(getFootwearCatalogSeed());
+      }
       setLoading(true);
       try {
         const url = searchQuery
@@ -108,18 +106,40 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
           if (category === "footwear") list = filterFootwearProducts(list);
           else if (category === "accessories") list = filterAccessoryProducts(list);
           else if (category === "health") list = filterHealthProducts(list);
-          setProducts(list);
-        } else {
-          setProducts([]);
+          if (!cancelled) {
+            // Keep static footwear seed if the API returned nothing (DB outage / schema lag).
+            if (list.length > 0) {
+              setProducts(list);
+            } else if (category === "footwear" && !searchQuery) {
+              setProducts(getFootwearCatalogSeed());
+            } else {
+              setProducts([]);
+            }
+          }
+        } else if (!cancelled) {
+          if (category === "footwear" && !searchQuery) {
+            setProducts(getFootwearCatalogSeed());
+          } else {
+            setProducts([]);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch products:", error);
-        setProducts([]);
+        if (!cancelled) {
+          if (category === "footwear" && !searchQuery) {
+            setProducts(getFootwearCatalogSeed());
+          } else {
+            setProducts([]);
+          }
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
     fetchProducts();
+    return () => {
+      cancelled = true;
+    };
   }, [searchQuery, category]);
 
   const heading =
@@ -149,8 +169,8 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
         ? "View Collaborative"
         : "View all products";
 
-  /* ── Logo loader (never flash “0 products”) ── */
-  if (loading) {
+  /* ── Logo loader only when we have nothing to show yet ── */
+  if (loading && products.length === 0) {
     return (
       <div className="bg-texture-white min-h-[80vh]">
         <div className="container py-16">
