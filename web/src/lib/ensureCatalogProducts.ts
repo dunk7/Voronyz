@@ -47,6 +47,72 @@ const MAGIKID_VARIANTS = [
   { color: "orange", sku: "MK-ORG", stock: 0 },
 ] as const;
 
+/** Keep footwear white OOS / pink in stock without requiring a manual seed run. */
+type FootwearStockVariant = {
+  color: string;
+  sku: string;
+  stock: number;
+  priceCents?: number;
+};
+
+const FOOTWEAR_STOCK_SYNC: Array<{
+  slug: string;
+  variants: FootwearStockVariant[];
+}> = [
+  {
+    slug: "v3-slides",
+    variants: [
+      { color: "black", sku: "V3-BLK", stock: 999 },
+      { color: "white", sku: "V3-WHT", stock: 0 },
+      { color: "grey", sku: "V3-GRY", stock: 999 },
+      { color: "green", sku: "V3-GRN", stock: 0 },
+      { color: "pink", sku: "V3-PNK", stock: 999 },
+    ],
+  },
+  {
+    slug: "dragonfly",
+    variants: [
+      { color: "black", sku: "DF-BLK", stock: 999, priceCents: 6000 },
+      { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },
+      { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
+      { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
+    ],
+  },
+  {
+    slug: "slip-ons",
+    variants: [
+      { color: "black", sku: "SO-BLK", stock: 999 },
+      { color: "grey", sku: "SO-GRY", stock: 999 },
+      { color: "white", sku: "SO-WHT", stock: 0 },
+      { color: "orange", sku: "SO-ORG", stock: 999 },
+    ],
+  },
+];
+
+async function ensureFootwearStock(): Promise<void> {
+  for (const product of FOOTWEAR_STOCK_SYNC) {
+    const existing = await prisma.product.findUnique({ where: { slug: product.slug } });
+    if (!existing) continue;
+
+    for (const variant of product.variants) {
+      await prisma.variant.upsert({
+        where: { sku: variant.sku },
+        update: {
+          stock: variant.stock,
+          ...(variant.priceCents !== undefined ? { priceCents: variant.priceCents } : {}),
+        },
+        create: {
+          product: { connect: { id: existing.id } },
+          color: variant.color,
+          sku: variant.sku,
+          stock: variant.stock,
+          ...(variant.priceCents !== undefined ? { priceCents: variant.priceCents } : {}),
+        },
+      });
+    }
+  }
+}
+
 /** Idempotently upsert Magikid Shoes so new catalog entries appear without a manual seed run. */
 export async function ensureMagikidShoes(): Promise<void> {
   const existing = await prisma.product.findUnique({ where: { slug: "magikid-shoes" } });
@@ -314,6 +380,7 @@ export async function ensureApparelProducts(): Promise<void> {
 
 export async function ensureCatalogProducts(): Promise<void> {
   try {
+    await ensureFootwearStock();
     await ensureMagikidShoes();
     await ensureGunHolster();
     await ensureTrailMix();

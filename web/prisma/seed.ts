@@ -56,10 +56,10 @@ async function main() {
           variants: {
             create: [
               { color: "black", sku: "V3-BLK", stock: 999 },
-              { color: "white", sku: "V3-WHT", stock: 999 },
+              { color: "white", sku: "V3-WHT", stock: 0 },  // Out of stock
               { color: "grey", sku: "V3-GRY", stock: 999 },
               { color: "green", sku: "V3-GRN", stock: 0 },  // Out of stock
-              { color: "pink", sku: "V3-PNK", stock: 0 },  // Out of stock
+              { color: "pink", sku: "V3-PNK", stock: 999 },
             ],
           },
         },
@@ -95,10 +95,10 @@ async function main() {
       const primaryColors = ["black", "white", "grey", "green", "pink"];
       const stockMap = {
         black: 999,
-        white: 999,
+        white: 0,
         grey: 999,
         green: 0,
-        pink: 0,
+        pink: 999,
       };
 
       const skuMap: Record<string, string> = {
@@ -157,7 +157,7 @@ async function main() {
           variants: {
             create: [
               { color: "black", sku: "DF-BLK", stock: 999, priceCents: 6000 },
-              { color: "white", sku: "DF-WHT", stock: 999, priceCents: 6500 },
+              { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },  // Out of stock
               { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
               { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
             ],
@@ -195,7 +195,7 @@ async function main() {
       // Upsert Dragonfly variants
       const dfVariants = [
         { color: "black", sku: "DF-BLK", stock: 999, priceCents: 6000 },
-        { color: "white", sku: "DF-WHT", stock: 999, priceCents: 6500 },
+        { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },
         { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
         { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
       ];
