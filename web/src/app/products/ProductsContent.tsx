@@ -9,6 +9,7 @@ import { useEffect, useState, useCallback } from "react";
 import { TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
+import { GATORS_SLUG } from "@/lib/gators";
 
 type Product = FootwearListProduct;
 
@@ -40,6 +41,9 @@ const productMeta: Record<string, {
   "antioxidant-trail-mix": {
     tag: "Collaborative",
   },
+  gators: {
+    tag: "Clogs",
+  },
 };
 
 function cardMetaForSlug(slug: string) {
@@ -57,6 +61,9 @@ function cardMetaForSlug(slug: string) {
       return productMeta["gun-holster"];
     case "antioxidant-trail-mix":
       return productMeta["antioxidant-trail-mix"];
+    case GATORS_SLUG:
+    case "gators":
+      return productMeta.gators;
     default:
       return productMeta[s] as (typeof productMeta)["v3-slides"] | undefined;
   }
@@ -310,7 +317,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                       />
                     )}
 
-                    {/* Top badges — slug-explicit so “New” only appears on Slip Ons */}
+                    {/* Top badges — slug-explicit so “New” / “New Listing” only appear on intended products */}
                     <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
                       {slugKey === "v3-slides" && (
                         <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-black text-white">
@@ -321,6 +328,16 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                         <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
                           New
                         </span>
+                      )}
+                      {slugKey === GATORS_SLUG && (
+                        <>
+                          <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
+                            New Listing
+                          </span>
+                          <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-amber-600 text-white">
+                            Low Stock
+                          </span>
+                        </>
                       )}
                       {slugKey === TRAIL_MIX_SLUG && (
                         <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-neutral-900 text-white">
@@ -375,6 +392,10 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                       {slugKey === TRAIL_MIX_SLUG ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-neutral-900 px-2.5 py-0.5 text-[11px] font-medium text-white">
                           Sold Out
+                        </span>
+                      ) : slugKey === GATORS_SLUG ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[11px] font-medium text-amber-800">
+                          Low Stock
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-0.5 text-[11px] text-neutral-500">
