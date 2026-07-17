@@ -71,7 +71,7 @@ export default function Home() {
 
               {/* Main headline */}
               <h1 className="hero-stagger-2 text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-semibold leading-[1.08] sm:leading-[1.1] tracking-tight text-white">
-                Step Into<br className="hidden sm:block" /> the Future
+                3D Printed<br className="hidden sm:block" /> Footwear
               </h1>
 
               {/* Subheadline */}
