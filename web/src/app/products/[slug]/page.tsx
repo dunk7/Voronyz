@@ -33,7 +33,13 @@ import {
   TRAIL_MIX_THUMBNAIL_URL,
 } from "@/lib/trailMix";
 import { isAccessorySlug, isApparelSlug, isHealthSlug } from "@/lib/productCategories";
-import { getApparelItem, getApparelImages, getApparelSubcategory } from "@/lib/apparel";
+import {
+  apparelProductShopHref,
+  apparelProductShopLabel,
+  getApparelItem,
+  getApparelImages,
+  getApparelSubcategory,
+} from "@/lib/apparel";
 import LogoLoader from "@/components/ui/LogoLoader";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
@@ -184,14 +190,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     : isHealthSlug(slug)
       ? "/health"
       : isApparelSlug(slug)
-        ? "/apparel"
+        ? apparelProductShopHref(slug)
         : "/products";
   const shopLabel = isAccessorySlug(slug)
     ? "Back to Engineering"
     : isHealthSlug(slug)
       ? "Back to Collaborative"
       : isApparelSlug(slug)
-        ? "Back to Apparel"
+        ? apparelProductShopLabel(slug)
         : "Back to Shop";
   const displayName = isGunHolster
     ? GUN_HOLSTER_NAME
@@ -456,8 +462,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "How much does it cost?", a: "$60 per bag when back in stock." },
               { q: "When will it restock?", a: "We're restocking the next batch soon. Check back on Collaborative." },
             ] : isApparel ? [
-              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Socks, scarf, UV hat, and water bottle are One Size." },
-              { q: "Where can I browse the lineup?", a: "Open Apparel to see the full grid of coming-soon pieces." },
+              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Socks and standalone accessories like scarf, UV hat, and water bottle are One Size." },
+              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, Socks, Shorts, and more. Each section lists every design in that category." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : [
               { q: "What if my size doesn't fit?", a: "They're going to fit and also be extremely comfortable. Trust the process" },

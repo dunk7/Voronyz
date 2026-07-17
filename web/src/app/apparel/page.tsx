@@ -1,12 +1,22 @@
 import type { Metadata } from "next";
-import ApparelContent from "./ApparelContent";
+import { redirect } from "next/navigation";
+import ApparelHubContent from "./ApparelHubContent";
 
 export const metadata: Metadata = {
   title: "Apparel – Voronyz",
   description:
-    "Shop Voronyz Apparel: socks, scarf, shorts, hoodie, shirts, sweats, UV hat, and water bottle — coming soon.",
+    "Shop Voronyz Apparel by type: shirts, sweaters, socks, shorts, sweats, pants, outerwear — plus standalone accessories.",
 };
 
-export default function ApparelPage() {
-  return <ApparelContent />;
+type PageProps = {
+  searchParams: Promise<{ type?: string }>;
+};
+
+export default async function ApparelPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  // Legacy bookmark: /apparel?type=accessories → /apparel/accessories
+  if ((params.type || "").trim().toLowerCase() === "accessories") {
+    redirect("/apparel/accessories");
+  }
+  return <ApparelHubContent />;
 }

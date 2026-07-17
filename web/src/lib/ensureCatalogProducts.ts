@@ -22,6 +22,7 @@ import {
 } from "@/lib/trailMix";
 import {
   APPAREL_CATALOG,
+  APPAREL_CATEGORY,
   OBSOLETE_APPAREL_SLUGS,
   apparelSku,
   getApparelImages,
@@ -259,6 +260,8 @@ export async function ensureApparelProducts(): Promise<void> {
           description: item.description,
           priceCents: item.priceCents,
           currency: "usd",
+          category: APPAREL_CATEGORY,
+          subcategory: item.subcategory,
           images: getApparelImages(item),
           primaryColors: [...item.colors],
           secondaryColors: [],
@@ -277,6 +280,8 @@ export async function ensureApparelProducts(): Promise<void> {
         name: item.name,
         description: item.description,
         priceCents: item.priceCents,
+        category: APPAREL_CATEGORY,
+        subcategory: item.subcategory,
         images: getApparelImages(item),
         primaryColors: [...item.colors],
         secondaryColors: [],

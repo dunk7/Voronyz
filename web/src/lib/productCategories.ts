@@ -1,7 +1,9 @@
 import {
   APPAREL_SLUGS,
+  getApparelItem,
   isApparelSlug,
   isObsoleteApparelSlug,
+  type ApparelSubcategoryId,
 } from "@/lib/apparel";
 
 /** Product slugs in Engineering (not footwear). */
@@ -49,4 +51,12 @@ export function filterHealthProducts<T extends { slug: string }>(products: T[]):
 
 export function filterApparelProducts<T extends { slug: string }>(products: T[]): T[] {
   return products.filter((p) => isApparelSlug(p.slug));
+}
+
+/** Filter apparel products to a single sub-section (shirts, socks, accessories, …). */
+export function filterApparelBySubcategory<T extends { slug: string }>(
+  products: T[],
+  subcategory: ApparelSubcategoryId,
+): T[] {
+  return products.filter((p) => getApparelItem(p.slug)?.subcategory === subcategory);
 }
