@@ -22,6 +22,7 @@ import {
 } from "@/lib/trailMix";
 import {
   APPAREL_CATALOG,
+  OBSOLETE_APPAREL_SLUGS,
   apparelSku,
 } from "@/lib/apparel";
 
@@ -213,14 +214,20 @@ export async function ensureTrailMix(): Promise<void> {
   });
 }
 
-/** Idempotently upsert apparel catalog products. */
+/** Idempotently upsert apparel catalog products (coming soon / stock 0). */
 export async function ensureApparelProducts(): Promise<void> {
+  if (OBSOLETE_APPAREL_SLUGS.length > 0) {
+    await prisma.product.deleteMany({
+      where: { slug: { in: [...OBSOLETE_APPAREL_SLUGS] } },
+    });
+  }
+
   for (const item of APPAREL_CATALOG) {
     const existing = await prisma.product.findUnique({ where: { slug: item.slug } });
     const variants = item.colors.map((color) => ({
       color,
       sku: apparelSku(item.skuPrefix, color),
-      stock: 999,
+      stock: 0,
     }));
 
     if (!existing) {

@@ -59,6 +59,8 @@ type Props = {
   /** Replace color swatches with flavor choices (e.g. trail mix). */
   flavorOptions?: FlavorOption[];
   soldOut?: boolean;
+  /** Label when soldOut (e.g. "Coming Soon" for apparel). Defaults to "Sold Out". */
+  soldOutLabel?: string;
 };
 
 const MENS_SIZES = ["6", "7", "8", "9", "10", "11", "12", "13"];
@@ -115,6 +117,7 @@ export default function AddToCart({
   onCarryStyleChange,
   flavorOptions = [],
   soldOut = false,
+  soldOutLabel = "Sold Out",
 }: Props) {
   const hasSecondaryColors = secondaryColors.length > 0;
   const hasFulfillmentOptions = fulfillmentOptions.length > 0;
@@ -197,6 +200,8 @@ export default function AddToCart({
 
   // Check if primary is available
   const isPrimaryAvailable = (color: string) => {
+    // Coming soon / sold-out catalog items stay browsable like regular products.
+    if (soldOut) return true;
     const stock = getStockForPrimary(color);
     return stock > 0;
   };
@@ -469,7 +474,7 @@ export default function AddToCart({
       <div className="space-y-4">
         {soldOut && (
           <div className="rounded-2xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white">
-            Sold Out
+            {soldOutLabel}
           </div>
         )}
 
@@ -497,7 +502,7 @@ export default function AddToCart({
                   >
                     <span className="text-sm font-semibold tracking-wide">
                       {flavor.label}
-                      {!available || soldOut ? " — Sold Out" : ""}
+                      {!available || soldOut ? ` — ${soldOutLabel}` : ""}
                     </span>
                     {flavor.description && (
                       <span className={`text-xs mt-0.5 ${isSelected ? "text-white/80" : "text-neutral-500"}`}>
@@ -758,7 +763,7 @@ export default function AddToCart({
                     : "bg-black text-white hover:bg-neutral-800"
                 } flex items-center justify-center gap-2`}
               >
-                {loading ? "Adding…" : soldOut ? "Sold Out" : "Add to Cart"}
+                {loading ? "Adding…" : soldOut ? soldOutLabel : "Add to Cart"}
               </button>
             )}
           </div>

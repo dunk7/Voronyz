@@ -241,6 +241,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <span className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-white">
                 Sold Out
               </span>
+            ) : isApparel ? (
+              <span className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-white">
+                Coming Soon
+              </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-medium text-emerald-700">
                 <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
@@ -249,7 +253,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
               </span>
             )}
-            {!isTrailMix && (
+            {!isTrailMix && !isApparel && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
                 {isMagikidShoes ? "Made to order in <7 days" : "Made to order in <2 days"}
               </span>
@@ -343,6 +347,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   })}
                   {...(isApparel && {
                     useCatalogSizes: true,
+                    soldOut: true,
+                    soldOutLabel: "Coming Soon",
+                    hideSizeSelector: apparelItem?.sizes.length === 1,
                   })}
                   sizes={product.sizes as string[]}
                   productName={displayName}
@@ -354,12 +361,19 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
               <div className="flex items-center gap-4 text-xs text-neutral-500">
                 <Link href={shopHref} className="underline hover:no-underline">← {shopLabel}</Link>
-                <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
-                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
-                </span>
+                {!isTrailMix && !isApparel && (
+                  <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
+                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
+                  </span>
+                )}
+                {isApparel && (
+                  <span className="inline-flex items-center gap-1 text-neutral-600 font-medium">
+                    Coming Soon
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -396,7 +410,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               : isTrailMix
               ? TRAIL_MIX_HOW_ITS_MADE
               : isApparel
-              ? "Voronyz Apparel is cut for a clean modern fit — consistent fabrics, considered proportions, and colorways that work across the full lineup. Pick your size and color and we fulfill to order."
+              ? "Voronyz Apparel is designed for a clean modern fit — consistent fabrics, considered proportions, and colorways that work across the full lineup. These pieces are listed as Coming Soon and are not available to purchase yet."
               : "Each pair takes a full day to print using our proprietary TPU blend. Following printing, we perform heat-treated post-processing to ensure exceptional quality, comfort, and durability."}
           </div>
         </div>

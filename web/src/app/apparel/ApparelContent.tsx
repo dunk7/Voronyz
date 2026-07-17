@@ -38,6 +38,7 @@ function colorSwatch(color: string) {
     grey: "#9ca3af",
     gray: "#9ca3af",
     white: "#f5f5f5",
+    beige: "#d6c6a8",
   };
   return map[color.toLowerCase()] ?? color;
 }
@@ -149,7 +150,7 @@ export default function ApparelContent() {
   const heading = activeSubcategory ? activeSubcategory.label : "Apparel";
   const subheading = activeSubcategory
     ? activeSubcategory.description
-    : "Socks, hoodies, sweats, shirts, pants, and outerwear — clean fits with a consistent look.";
+    : "Socks, hoodie, sweats, shirts, shorts, and accessories — coming soon, still viewable.";
 
   function handleCardClick(e: React.MouseEvent, slug: string) {
     e.preventDefault();
@@ -364,9 +365,12 @@ export default function ApparelContent() {
                                 }`}
                                 sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
                               />
-                              <div className="absolute top-3 left-3 z-10">
+                              <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-1.5">
                                 <span className="rounded-full bg-white/90 backdrop-blur-sm px-3 py-1 text-[11px] font-medium text-neutral-600 shadow-sm ring-1 ring-black/5">
                                   {subcategory?.label ?? "Apparel"}
+                                </span>
+                                <span className="rounded-full bg-neutral-900 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white shadow-sm">
+                                  Coming Soon
                                 </span>
                               </div>
                               {isNavigating && (
@@ -388,6 +392,9 @@ export default function ApparelContent() {
                                 {product.description}
                               </p>
                               <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                                <span className="inline-flex items-center rounded-full bg-neutral-900 px-2.5 py-0.5 text-[11px] font-medium text-white">
+                                  Coming Soon
+                                </span>
                                 {product.colors.slice(0, 4).map((color) => (
                                   <span
                                     key={`${product.slug}-${color}`}
