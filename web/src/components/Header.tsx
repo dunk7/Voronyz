@@ -321,6 +321,13 @@ export default function Header() {
                 <span className={`pointer-events-none absolute left-5 right-5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/health") ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
               <Link
+                href="/quiz"
+                className={`relative uppercase tracking-[0.24em] text-[12px] sm:text-[13px] rounded-full px-5 py-2.5 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/quiz") ? "text-white" : "text-white/70"}`}
+              >
+                <span>Take the Quiz</span>
+                <span className={`pointer-events-none absolute left-5 right-5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/quiz") ? "opacity-100" : "opacity-0"}`} aria-hidden />
+              </Link>
+              <Link
                 href="/about"
                 className={`relative uppercase tracking-[0.24em] text-[12px] sm:text-[13px] rounded-full px-5 py-2.5 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname === "/about" ? "text-white" : "text-white/70"}`}
               >
@@ -559,6 +566,20 @@ export default function Header() {
                     <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
                   )}
                   Collaborative
+                </Link>
+                <Link
+                  href="/quiz"
+                  className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
+                    pathname?.startsWith("/quiz")
+                      ? "text-white bg-white/10"
+                      : "text-white/70 hover:text-white hover:bg-white/[.06]"
+                  }`}
+                  onClick={() => setOpen(false)}
+                >
+                  {pathname?.startsWith("/quiz") && (
+                    <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
+                  )}
+                  Take the Quiz
                 </Link>
                 <Link
                   href="/about"

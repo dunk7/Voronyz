@@ -6,6 +6,7 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
+  BarChart3,
   Check,
   Copy,
   Loader2,
@@ -19,6 +20,7 @@ import {
 import MagikidThumbnailPanel from "./MagikidThumbnailPanel";
 import DiscountCodesAdminPanel from "./DiscountCodesAdminPanel";
 import UploadsAdminPanel from "./UploadsAdminPanel";
+import QuizResultsAdminPanel from "./QuizResultsAdminPanel";
 import { formatCentsAsCurrency } from "@/lib/money";
 import {
   formatShippingAddress,
@@ -28,7 +30,7 @@ import {
 
 type SortKey = "date" | "price" | "name" | "status";
 type SortDir = "asc" | "desc";
-type AdminTab = "orders" | "discounts" | "uploads";
+type AdminTab = "orders" | "discounts" | "uploads" | "quiz";
 type OrdersView = "open" | "completed" | "all";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -143,6 +145,7 @@ export default function OrdersAdminClient() {
   const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null);
   const [tab, setTab] = useState<AdminTab>("orders");
   const [uploadsRefresh, setUploadsRefresh] = useState(0);
+  const [quizRefresh, setQuizRefresh] = useState(0);
   const [messageEnabled, setMessageEnabled] = useState<boolean | null>(null);
   const [messageToggleSaving, setMessageToggleSaving] = useState(false);
   const [messageToggleError, setMessageToggleError] = useState<string | null>(null);
@@ -242,6 +245,7 @@ export default function OrdersAdminClient() {
 
   function handleRefresh() {
     if (tab === "orders" || tab === "discounts") loadOrders();
+    else if (tab === "quiz") setQuizRefresh((n) => n + 1);
     else setUploadsRefresh((n) => n + 1);
     loadMessageSetting();
   }
@@ -467,7 +471,9 @@ export default function OrdersAdminClient() {
                 ? `${filteredOrders.length} shown · ${openOrdersCount} open · ${completedOrdersCount} completed`
                 : tab === "discounts"
                   ? `${discountOrdersCount} order${discountOrdersCount === 1 ? "" : "s"} with discount codes`
-                  : "Customer file uploads"}
+                  : tab === "quiz"
+                    ? "Take the Quiz poll results"
+                    : "Customer file uploads"}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -573,6 +579,18 @@ export default function OrdersAdminClient() {
               <Upload className="h-4 w-4" />
               Uploads
             </button>
+            <button
+              type="button"
+              onClick={() => setTab("quiz")}
+              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
+                tab === "quiz"
+                  ? "bg-black text-white"
+                  : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
+              }`}
+            >
+              <BarChart3 className="h-4 w-4" />
+              Quiz results
+            </button>
           </div>
         </nav>
       </header>
@@ -591,6 +609,13 @@ export default function OrdersAdminClient() {
               onAuthLost={() => setAuthenticated(false)}
             />
           </div>
+        ) : null}
+
+        {tab === "quiz" ? (
+          <QuizResultsAdminPanel
+            refreshToken={quizRefresh}
+            onAuthLost={() => setAuthenticated(false)}
+          />
         ) : null}
 
         {tab === "discounts" ? (

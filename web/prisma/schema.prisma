@@ -180,6 +180,19 @@ model SiteSetting {
   updatedAt DateTime @updatedAt
 }
 
+/// Footwear needs quiz submissions (poll/analytics for /orders admin).
+model QuizResponse {
+  id               String   @id @default(cuid())
+  answers          Json
+  resultProfile    String
+  recommendedSlugs String[] @default([])
+  createdAt        DateTime @default(now())
+  ipHash           String?
+
+  @@index([createdAt])
+  @@index([resultProfile])
+}
+
 model Message {
   id                   String       @id @default(cuid())
   conversationId       String
