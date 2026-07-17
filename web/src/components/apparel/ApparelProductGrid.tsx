@@ -31,6 +31,9 @@ function colorSwatch(color: string) {
     gray: "#9ca3af",
     white: "#f5f5f5",
     beige: "#d6c6a8",
+    gold: "#d4af37",
+    silver: "#c0c0c0",
+    orange: "#f97316",
   };
   return map[color.toLowerCase()] ?? color;
 }
