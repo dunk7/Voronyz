@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatCentsAsCurrency } from "@/lib/money";
 import { MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
-import { filterAccessoryProducts, filterFootwearProducts } from "@/lib/productCategories";
+import { filterAccessoryProducts, filterFootwearProducts, filterHealthProducts } from "@/lib/productCategories";
 import { useEffect, useState, useCallback } from "react";
+import { TRAIL_MIX_SLUG } from "@/lib/trailMix";
 
 interface Product {
   id: string;
@@ -45,6 +46,9 @@ const productMeta: Record<string, {
   "gun-holster": {
     tag: "Voronyz Engineering",
   },
+  "antioxidant-trail-mix": {
+    tag: "Voronyz Health",
+  },
 };
 
 function cardMetaForSlug(slug: string) {
@@ -60,14 +64,16 @@ function cardMetaForSlug(slug: string) {
       return productMeta["magikid-shoes"];
     case "gun-holster":
       return productMeta["gun-holster"];
+    case "antioxidant-trail-mix":
+      return productMeta["antioxidant-trail-mix"];
     default:
       return productMeta[s] as (typeof productMeta)["v3-slides"] | undefined;
   }
 }
 
 type ProductsContentProps = {
-  /** Default "footwear" keeps Voronyz Engineering products out of the All Footwear grid. */
-  category?: "footwear" | "accessories" | "all";
+  /** Default "footwear" keeps Engineering/Health products out of the All Footwear grid. */
+  category?: "footwear" | "accessories" | "health" | "all";
 };
 
 export default function ProductsContent({ category = "footwear" }: ProductsContentProps) {
@@ -100,6 +106,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
           let list: Product[] = data.products || [];
           if (category === "footwear") list = filterFootwearProducts(list);
           else if (category === "accessories") list = filterAccessoryProducts(list);
+          else if (category === "health") list = filterHealthProducts(list);
           setProducts(list);
         } else {
           setProducts([]);
@@ -119,13 +126,27 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
       ? `Results for "${searchQuery}"`
       : category === "accessories"
       ? "Voronyz Engineering"
+      : category === "health"
+      ? "Voronyz Health"
       : "All Footwear";
   const subheading =
     category === "accessories"
       ? "Engineered carry gear — carbon fiber nylon, made to order."
+      : category === "health"
+      ? "Everyday nutrition from Voronyz Health."
       : "3D-printed, scan-calibrated footwear — engineered for comfort, built to last.";
-  const emptyHref = category === "accessories" ? "/accessories" : "/products";
-  const emptyLabel = category === "accessories" ? "View Voronyz Engineering" : "View all products";
+  const emptyHref =
+    category === "accessories"
+      ? "/accessories"
+      : category === "health"
+        ? "/health"
+        : "/products";
+  const emptyLabel =
+    category === "accessories"
+      ? "View Voronyz Engineering"
+      : category === "health"
+        ? "View Voronyz Health"
+        : "View all products";
 
   /* ── Loading skeleton ── */
   if (loading) {
@@ -273,6 +294,11 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                           New
                         </span>
                       )}
+                      {slugKey === TRAIL_MIX_SLUG && (
+                        <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-neutral-900 text-white">
+                          Sold Out
+                        </span>
+                      )}
                       {meta?.tag && (
                         <span className="rounded-full bg-white/90 backdrop-blur-sm px-3 py-1 text-[11px] font-medium text-neutral-600 shadow-sm ring-1 ring-black/5">
                           {meta.tag}
@@ -318,18 +344,26 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                     </p>
                     {/* Quick info chips */}
                     <div className="mt-2.5 flex flex-wrap gap-1.5">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-0.5 text-[11px] text-neutral-500">
-                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        {slugKey === "magikid-shoes" ? "Made in <7 days" : "Ships in 1-2 days"}
-                      </span>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700">
-                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
-                        </svg>
-                        {slugKey === "magikid-shoes" ? "+$7 shipping" : "Free US shipping"}
-                      </span>
+                      {slugKey === TRAIL_MIX_SLUG ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-neutral-900 px-2.5 py-0.5 text-[11px] font-medium text-white">
+                          Sold Out
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-0.5 text-[11px] text-neutral-500">
+                          <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {slugKey === "magikid-shoes" ? "Made in <7 days" : "Ships in 1-2 days"}
+                        </span>
+                      )}
+                      {slugKey !== TRAIL_MIX_SLUG && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700">
+                          <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
+                          </svg>
+                          {slugKey === "magikid-shoes" ? "+$7 shipping" : "Free US shipping"}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </Link>

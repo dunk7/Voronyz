@@ -10,6 +10,16 @@ import {
   GUN_HOLSTER_SLUG,
   GUN_HOLSTER_VARIANTS,
 } from "../src/lib/gunHolster";
+import {
+  TRAIL_MIX_DESCRIPTION_SHORT,
+  TRAIL_MIX_FLAVOR_IDS,
+  TRAIL_MIX_IMAGES,
+  TRAIL_MIX_NAME,
+  TRAIL_MIX_PRICE_CENTS,
+  TRAIL_MIX_SIZES,
+  TRAIL_MIX_SLUG,
+  TRAIL_MIX_VARIANTS,
+} from "../src/lib/trailMix";
 
 const prisma = new PrismaClient();
 
@@ -409,6 +419,64 @@ async function main() {
         },
       });
       console.log("Updated Gun Holster product and variants.");
+    }
+
+    // ── Antioxidant Trail Mix (Voronyz Health — not footwear) ──
+    const existingTrail = await prisma.product.findUnique({ where: { slug: TRAIL_MIX_SLUG } });
+    console.log("Antioxidant Trail Mix product check:", existingTrail ? "Found" : "Not found");
+    if (!existingTrail) {
+      const trailProduct = await prisma.product.create({
+        data: {
+          slug: TRAIL_MIX_SLUG,
+          name: TRAIL_MIX_NAME,
+          description: TRAIL_MIX_DESCRIPTION_SHORT,
+          priceCents: TRAIL_MIX_PRICE_CENTS,
+          currency: "usd",
+          images: [...TRAIL_MIX_IMAGES],
+          primaryColors: [...TRAIL_MIX_FLAVOR_IDS],
+          secondaryColors: [],
+          sizes: [...TRAIL_MIX_SIZES],
+          variants: {
+            create: TRAIL_MIX_VARIANTS.map((v) => ({ ...v })),
+          },
+        },
+        include: { variants: true },
+      });
+      console.log("Seeded product:", trailProduct.slug);
+    } else {
+      console.log("Updating existing Antioxidant Trail Mix product...");
+      await prisma.product.update({
+        where: { id: existingTrail.id },
+        data: {
+          name: TRAIL_MIX_NAME,
+          description: TRAIL_MIX_DESCRIPTION_SHORT,
+          priceCents: TRAIL_MIX_PRICE_CENTS,
+          images: [...TRAIL_MIX_IMAGES],
+          primaryColors: [...TRAIL_MIX_FLAVOR_IDS],
+          secondaryColors: [],
+          sizes: [...TRAIL_MIX_SIZES],
+        },
+      });
+      for (const v of TRAIL_MIX_VARIANTS) {
+        await prisma.variant.upsert({
+          where: { sku: v.sku },
+          update: { stock: v.stock, color: v.color },
+          create: {
+            product: { connect: { id: existingTrail.id } },
+            color: v.color,
+            sku: v.sku,
+            stock: v.stock,
+          },
+        });
+      }
+      const keepTrailSkus = TRAIL_MIX_VARIANTS.map((v) => v.sku);
+      await prisma.variant.deleteMany({
+        where: {
+          productId: existingTrail.id,
+          sku: { notIn: [...keepTrailSkus] },
+        },
+      });
+      console.log("Updated Antioxidant Trail Mix product and variants.");
     }
 
     console.log('Seed script completed successfully.');
