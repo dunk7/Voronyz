@@ -251,7 +251,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               </span>
             ) : isApparel ? (
               <span className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-white">
-                Coming Soon
+                Pre-order
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-medium text-emerald-700">
@@ -363,8 +363,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   })}
                   {...(isApparel && {
                     useCatalogSizes: true,
-                    soldOut: true,
-                    soldOutLabel: "Coming Soon",
+                    preOrder: true,
                     hideSizeSelector: apparelItem?.sizes.length === 1,
                   })}
                   sizes={product.sizes as string[]}
@@ -387,7 +386,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 )}
                 {isApparel && (
                   <span className="inline-flex items-center gap-1 text-neutral-600 font-medium">
-                    Coming Soon
+                    Pre-order · ships when ready
                   </span>
                 )}
               </div>
@@ -426,7 +425,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               : isTrailMix
               ? TRAIL_MIX_HOW_ITS_MADE
               : isApparel
-              ? "Voronyz Apparel is designed for a clean modern fit — consistent fabrics, considered proportions, and colorways that work across the full lineup. These pieces are listed as Coming Soon and are not available to purchase yet."
+              ? "Voronyz Apparel is designed for a clean modern fit — consistent fabrics, considered proportions, and colorways that work across the full lineup. These pieces are available for pre-order: pay now to join the waitlist, and we'll ship when the drop arrives."
               : "Each pair takes a full day to print using our proprietary TPU blend. Following printing, we perform heat-treated post-processing to ensure exceptional quality, comfort, and durability."}
           </div>
         </div>
@@ -464,8 +463,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "When will it restock?", a: "We're restocking the next batch soon. Check back on Collaborative." },
             ] : isApparel ? [
               { q: "What sizes are available?", a: "Most pieces run XS–XXL. Socks, scarf, UV hat, water bottle, cool shades, jewelry, keychains, lace locks, drone parts, and RC stickers are One Size. Lattice Insoles and Lattice Shoe Trees use S–XL / S–L sizing." },
+              { q: "Can I pre-order coming soon pieces?", a: "Yes. Choose your color and size, then pay now to join the waitlist. We ship your order when that product arrives — timing can be a day or much longer depending on the drop." },
+              { q: "When will my pre-order ship?", a: "As soon as we receive the product. You'll get updates by email. Pre-orders are paid reservations, not instant ship." },
               { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, Socks, Shorts, and more. Accessories live under their own section." },
-              { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
+              { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders once your pre-order ships." },
             ] : [
               { q: "What if my size doesn't fit?", a: "They're going to fit and also be extremely comfortable. Trust the process" },
               { q: "Are they waterproof?", a: "Yes. 100% waterproof. Throw them in your washer to clean!" },

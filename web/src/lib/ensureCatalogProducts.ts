@@ -216,7 +216,7 @@ export async function ensureTrailMix(): Promise<void> {
   });
 }
 
-/** Idempotently upsert apparel catalog products (coming soon / stock 0). */
+/** Idempotently upsert apparel catalog products (coming soon / pre-order, stock 0). */
 export async function ensureApparelProducts(): Promise<void> {
   if (OBSOLETE_APPAREL_SLUGS.length > 0) {
     const obsolete = await prisma.product.findMany({

@@ -36,6 +36,7 @@ type OrdersView = "open" | "completed" | "all";
 const STATUS_STYLES: Record<string, string> = {
   paid: "bg-emerald-100 text-emerald-800",
   completed: "bg-blue-100 text-blue-800",
+  preorder: "bg-violet-100 text-violet-900",
   pending: "bg-amber-100 text-amber-800",
   pending_nano: "bg-sky-100 text-sky-800",
   expired: "bg-neutral-200 text-neutral-700",
@@ -278,7 +279,10 @@ export default function OrdersAdminClient() {
     }
   }
 
-  async function updateOrderStatus(orderId: string, status: "completed" | "paid") {
+  async function updateOrderStatus(
+    orderId: string,
+    status: "completed" | "paid" | "preorder"
+  ) {
     setStatusUpdatingId(orderId);
     setStatusUpdateError(null);
     try {
@@ -799,9 +803,11 @@ export default function OrdersAdminClient() {
 
                   {expanded && (
                     <div className="border-t border-black/5 px-5 py-5 space-y-5">
-                      {(order.status === "paid" || order.status === "completed") && (
+                      {(order.status === "paid" ||
+                        order.status === "preorder" ||
+                        order.status === "completed") && (
                         <div className="flex flex-wrap items-center gap-2 print:hidden">
-                          {order.status === "paid" ? (
+                          {order.status === "paid" || order.status === "preorder" ? (
                             <button
                               type="button"
                               onClick={() => updateOrderStatus(order.id, "completed")}
@@ -813,12 +819,19 @@ export default function OrdersAdminClient() {
                               ) : (
                                 <Check className="h-4 w-4" />
                               )}
-                              Mark complete
+                              {order.status === "preorder"
+                                ? "Mark shipped / complete"
+                                : "Mark complete"}
                             </button>
                           ) : (
                             <button
                               type="button"
-                              onClick={() => updateOrderStatus(order.id, "paid")}
+                              onClick={() =>
+                                updateOrderStatus(
+                                  order.id,
+                                  order.hasPreOrder ? "preorder" : "paid"
+                                )
+                              }
                               disabled={statusUpdatingId === order.id}
                               className="inline-flex items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
                             >
@@ -877,7 +890,14 @@ export default function OrdersAdminClient() {
                                   )}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                  <p className="font-medium text-sm">{item.name}</p>
+                                  <p className="font-medium text-sm">
+                                    {item.isPreOrder && (
+                                      <span className="mr-1.5 inline-flex rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-900">
+                                        Pre-order
+                                      </span>
+                                    )}
+                                    {item.name}
+                                  </p>
                                   {details && (
                                     <p className="text-xs text-neutral-600 mt-0.5">{details}</p>
                                   )}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { notifyPaidOrder } from "@/lib/adminNotifyEmail";
 import { prisma } from "@/lib/prisma";
+import { paidStatusForCart } from "@/lib/preorder";
 
 const NANO_RPC_URL = process.env.NANO_RPC_URL || "https://rpc.nano.to/";
 const NANO_RECEIVE_ADDRESS = process.env.NANO_RECEIVE_ADDRESS;
@@ -238,12 +239,26 @@ async function markPaid(
   blockHash: string,
   sender?: string
 ) {
+  let cartItems: Array<{ isPreOrder?: boolean; productSlug?: string }> = [];
+  try {
+    if (typeof metadata?.cartItems === "string") {
+      cartItems = JSON.parse(metadata.cartItems);
+    }
+  } catch {
+    cartItems = [];
+  }
+  const orderStatus =
+    metadata?.hasPreOrder === true || metadata?.hasPreOrder === "true"
+      ? "preorder"
+      : paidStatusForCart(cartItems);
+
   await prisma.order.update({
     where: { id: orderId },
     data: {
-      status: "paid",
+      status: orderStatus,
       metadata: {
         ...((metadata as object) ?? {}),
+        hasPreOrder: orderStatus === "preorder",
         paymentStatus: "paid",
         nanoBlockHash: blockHash,
         nanoSender: sender ?? null,
@@ -256,7 +271,7 @@ async function markPaid(
   notifyPaidOrder(orderId);
 
   return NextResponse.json({
-    status: "paid",
+    status: orderStatus,
     orderId,
     blockHash,
     nanoAddress: NANO_RECEIVE_ADDRESS,

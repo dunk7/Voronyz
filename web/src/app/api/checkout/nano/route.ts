@@ -6,6 +6,7 @@ import {
   getDiscountedUnitPriceCents,
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
+import { cartHasPreOrder, resolveIsPreOrder } from "@/lib/preorder";
 
 const NANO_RECEIVE_ADDRESS = process.env.NANO_RECEIVE_ADDRESS;
 const NANO_DISCOUNT_RATE = 0.03;
@@ -42,11 +43,17 @@ export async function POST(request: NextRequest) {
       quantity: number;
       unitCents: number;
       image?: string;
+      productSlug?: string;
+      isPreOrder?: boolean;
     }> = [];
     const normalizedDiscountCode = normalizeDiscountCode(discountCode);
 
     for (const item of items) {
       const productSlug = item.productSlug || "";
+      const isPreOrder = resolveIsPreOrder({
+        isPreOrder: item.isPreOrder,
+        productSlug,
+      });
       let unitAmount = 7500;
 
       try {
@@ -71,12 +78,15 @@ export async function POST(request: NextRequest) {
           productName: productNameForDiscount,
         });
 
+        const baseName = variant?.product?.name || item.productName || "Product";
         lineItems.push({
-          name: variant?.product?.name || item.productName || "Product",
+          name: isPreOrder ? `Pre-order: ${baseName}` : baseName,
           variant: item.variantName || variant?.color || "",
           quantity: item.quantity,
           unitCents: unitAmount,
           image: item.image || undefined,
+          productSlug: slug,
+          isPreOrder,
         });
       } catch {
         // Fallback pricing when DB is unavailable
@@ -89,12 +99,15 @@ export async function POST(request: NextRequest) {
           }
         );
 
+        const baseName = item.productName || "Product";
         lineItems.push({
-          name: item.productName || "Product",
+          name: isPreOrder ? `Pre-order: ${baseName}` : baseName,
           variant: item.variantName || "",
           quantity: item.quantity,
           unitCents: unitAmount,
           image: item.image || undefined,
+          productSlug,
+          isPreOrder,
         });
       }
 
@@ -104,6 +117,8 @@ export async function POST(request: NextRequest) {
     if (subtotalCents <= 0) {
       return NextResponse.json({ error: "Invalid order total" }, { status: 400 });
     }
+
+    const hasPreOrder = cartHasPreOrder(items);
 
     const nanoDiscountCents = Math.round(subtotalCents * NANO_DISCOUNT_RATE);
     const totalCents = subtotalCents - nanoDiscountCents;
@@ -171,8 +186,21 @@ export async function POST(request: NextRequest) {
           nanoDiscountRate: NANO_DISCOUNT_RATE,
           usdTotal: totalUsd,
           lineItems,
+          hasPreOrder,
           discountCode: discountCode || null,
-          cartItems: JSON.stringify(items),
+          cartItems: JSON.stringify(
+            items.map((item: {
+              isPreOrder?: boolean;
+              productSlug?: string;
+              [key: string]: unknown;
+            }) => ({
+              ...item,
+              isPreOrder: resolveIsPreOrder({
+                isPreOrder: item.isPreOrder,
+                productSlug: item.productSlug,
+              }),
+            }))
+          ),
           createdAt: new Date().toISOString(),
           expiresAt,
         },

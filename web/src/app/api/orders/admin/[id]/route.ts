@@ -41,12 +41,14 @@ function toAdminOrder(order: {
     lineItems: parsed.lineItems.map(enrichLineItemImage),
     paymentMethod: parsed.paymentMethod,
     discountCode: parsed.discountCode,
+    hasPreOrder: parsed.hasPreOrder,
   };
 }
 
-const ALLOWED_TRANSITIONS: Record<string, string> = {
-  completed: "paid",
-  paid: "completed",
+const ALLOWED_FROM: Record<string, string[]> = {
+  completed: ["paid", "preorder"],
+  paid: ["completed"],
+  preorder: ["completed"],
 };
 
 export async function PATCH(
@@ -74,9 +76,9 @@ export async function PATCH(
   }
 
   const newStatus = body.status?.trim();
-  if (!newStatus || !(newStatus in ALLOWED_TRANSITIONS)) {
+  if (!newStatus || !(newStatus in ALLOWED_FROM)) {
     return NextResponse.json(
-      { error: 'Status must be "completed" or "paid"' },
+      { error: 'Status must be "completed", "paid", or "preorder"' },
       { status: 400 }
     );
   }
@@ -86,10 +88,12 @@ export async function PATCH(
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
 
-  const requiredCurrentStatus = ALLOWED_TRANSITIONS[newStatus];
-  if (order.status !== requiredCurrentStatus) {
+  const allowedCurrent = ALLOWED_FROM[newStatus];
+  if (!allowedCurrent.includes(order.status)) {
     return NextResponse.json(
-      { error: `Only ${requiredCurrentStatus} orders can be marked as ${newStatus}` },
+      {
+        error: `Only ${allowedCurrent.join(" or ")} orders can be marked as ${newStatus}`,
+      },
       { status: 400 }
     );
   }

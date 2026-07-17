@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { notifyPaidOrder } from "@/lib/adminNotifyEmail";
 import { preferNonEmptyShipping } from "@/lib/orderTypes";
 import { shippingFromStripeSession } from "@/lib/stripeShipping";
+import { paidStatusForCart, resolveIsPreOrder } from "@/lib/preorder";
 
 type CheckoutSession = {
   id: string;
@@ -160,6 +161,7 @@ export async function POST(request: NextRequest) {
       image?: string;
       productSlug?: string;
       studentName?: string;
+      isPreOrder?: boolean;
     }> = [];
     
     try {
@@ -175,6 +177,10 @@ export async function POST(request: NextRequest) {
     const lineItems = cartItems.length > 0 
       ? cartItems.map((cartItem, index) => {
           const stripeItem = stripeLineItems[index];
+          const isPreOrder = resolveIsPreOrder({
+            isPreOrder: cartItem.isPreOrder,
+            productSlug: cartItem.productSlug,
+          });
           return {
             name: cartItem.productName || stripeItem?.description || 'Unknown Product',
             variantId: cartItem.variantId,
@@ -189,14 +195,29 @@ export async function POST(request: NextRequest) {
             amount: cartItem.priceCents || stripeItem?.amount_total || 0,
             image: cartItem.image,
             studentName: cartItem.studentName,
+            isPreOrder,
           };
         })
       : stripeLineItems.map(item => ({
           name: item.description || 'Unknown Product',
           quantity: item.quantity,
           amount: item.amount_total,
+          isPreOrder: Boolean(
+            item.description?.toLowerCase().startsWith("pre-order")
+          ),
         }));
 
+    const hasPreOrder =
+      actualSession.metadata?.hasPreOrder === "true" ||
+      lineItems.some((item) => Boolean((item as { isPreOrder?: boolean }).isPreOrder));
+    const orderStatus = paidStatusForCart(
+      cartItems.length > 0
+        ? cartItems
+        : lineItems.map((item) => ({
+            isPreOrder: (item as { isPreOrder?: boolean }).isPreOrder,
+            productSlug: (item as { productSlug?: string }).productSlug,
+          }))
+    );
     // Generate order number (human-readable format: VOR-YYYYMMDD-XXXXX)
     // Use timestamp + random string to minimize collisions
     const now = new Date();
@@ -228,6 +249,7 @@ export async function POST(request: NextRequest) {
         ...existingMetadata,
         orderNumber: finalOrderNumber,
         lineItems,
+        hasPreOrder,
         shipping,
         billing,
         customer: {
@@ -256,7 +278,7 @@ export async function POST(request: NextRequest) {
       order = await prisma.order.upsert({
         where: { stripeId: actualSession.id },
         update: {
-          ...(existingOrder?.status === "completed" ? {} : { status: "paid" }),
+          ...(existingOrder?.status === "completed" ? {} : { status: orderStatus }),
           currency,
           subtotalCents,
           totalCents,
@@ -264,7 +286,7 @@ export async function POST(request: NextRequest) {
         },
         create: {
           stripeId: actualSession.id,
-          status: "paid",
+          status: orderStatus,
           currency,
           subtotalCents,
           totalCents,

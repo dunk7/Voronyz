@@ -8,6 +8,7 @@ import {
   KNOWN_DISCOUNTED_UNIT_PRICES,
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
+import { resolveIsPreOrder } from "@/lib/preorder";
 import Image from "next/image";
 import Link from "next/link";
 import LogoLoader from "@/components/ui/LogoLoader";
@@ -25,6 +26,8 @@ interface CartItem {
   attributes?: { size?: number | string; color?: string; gender?: string; fulfillment?: string };
   productSlug?: string;
   studentName?: string;
+  /** Pay-now waitlist item — ships when the product arrives. */
+  isPreOrder?: boolean;
 }
 
 interface CartData {
@@ -153,6 +156,9 @@ export default function CartClient() {
   const subtotal = items.reduce((sum, it) => {
     return sum + unitPriceForItem(it, discountCode) * it.quantity;
   }, 0);
+  const hasPreOrderItems = items.some((it) =>
+    resolveIsPreOrder({ isPreOrder: it.isPreOrder, productSlug: it.productSlug })
+  );
 
   if (isLoading) {
     return (
@@ -189,6 +195,14 @@ export default function CartClient() {
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm lg:text-base font-medium text-neutral-900">{it.productName || it.variant?.name || "Item"}</div>
                 <div className="mt-1 flex flex-wrap items-center gap-1 lg:gap-2 text-xs text-neutral-700">
+                  {resolveIsPreOrder({
+                    isPreOrder: it.isPreOrder,
+                    productSlug: it.productSlug,
+                  }) && (
+                    <span className="rounded-full bg-neutral-900 px-2 py-0.5 font-semibold text-white">
+                      Pre-order
+                    </span>
+                  )}
                   {it.variant?.name && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-black/5 px-2 py-0.5 capitalize">
                       {it.productSlug !== "antioxidant-trail-mix" && (
@@ -315,6 +329,12 @@ export default function CartClient() {
           </svg>
           <span className="text-sm font-medium text-emerald-700">Free US shipping on all orders</span>
         </div>
+        {hasPreOrderItems && (
+          <div className="rounded-lg border border-black/10 bg-neutral-50 px-4 py-3 text-sm text-neutral-700">
+            <span className="font-semibold text-neutral-900">Pre-order waitlist:</span>{" "}
+            you pay now to reserve your spot. Pre-order items ship when we receive them — timing can range from a day to much longer.
+          </div>
+        )}
         {/* Combined Discount and Subtotal Section */}
         <div className="rounded-xl border border-black/10 p-4 space-y-4 bg-white">
           {/* Discount Input */}
@@ -376,6 +396,10 @@ export default function CartClient() {
                 image: item.image,
                 productSlug: item.productSlug,
                 studentName: item.studentName,
+                isPreOrder: resolveIsPreOrder({
+                  isPreOrder: item.isPreOrder,
+                  productSlug: item.productSlug,
+                }),
               }));
               const validationError = validateMagikidCheckoutItems(checkoutItems);
               if (validationError) {
@@ -424,7 +448,7 @@ export default function CartClient() {
             className="w-full rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Proceed to checkout"
           >
-            {isCheckingOut ? "Processing..." : "Checkout"}
+            {isCheckingOut ? "Processing..." : hasPreOrderItems ? "Pre-order checkout" : "Checkout"}
           </button>
         </form>
 
@@ -456,6 +480,10 @@ export default function CartClient() {
                 image: item.image,
                 productSlug: item.productSlug,
                 studentName: item.studentName,
+                isPreOrder: resolveIsPreOrder({
+                  isPreOrder: item.isPreOrder,
+                  productSlug: item.productSlug,
+                }),
               }));
               const validationError = validateMagikidCheckoutItems(checkoutItems);
               if (validationError) {
