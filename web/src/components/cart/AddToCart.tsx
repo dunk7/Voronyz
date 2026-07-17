@@ -282,8 +282,23 @@ export default function AddToCart({
       "wild-berry": "Wild Berry",
       "super-protein": "Super Protein",
       chocolate: "Chocolate",
+      tan: "Tan",
+      grey: "Grey",
+      gray: "Grey",
     };
     return names[color] || color;
+  };
+
+  const colorSwatch = (color: string) => {
+    const map: Record<string, string> = {
+      grey: "#9ca3af",
+      gray: "#9ca3af",
+      tan: "#d2b48c",
+      pink: "#ec4899",
+      black: "#111111",
+      white: "#f5f5f5",
+    };
+    return map[color.toLowerCase()] ?? color;
   };
 
   function add() {
@@ -537,7 +552,7 @@ export default function AddToCart({
                 >
                   <span className={`inline-block h-4 w-4 rounded-full mr-2 border flex-shrink-0 ${
                     isSelected ? 'border-white' : 'border-black/20'
-                  }`} style={{ backgroundColor: color }} />
+                  }`} style={{ backgroundColor: colorSwatch(color) }} />
                   <span className="capitalize">
                     {colorDisplayName(color)}
                     {!available && " (Out of Stock)"}
@@ -568,7 +583,7 @@ export default function AddToCart({
                   >
                     <span className={`inline-block h-4 w-4 rounded-full mr-2 border flex-shrink-0 ${
                       isSelected ? 'border-white' : 'border-black/20'
-                    }`} style={{ backgroundColor: color }} />
+                    }`} style={{ backgroundColor: colorSwatch(color) }} />
                     <span className="capitalize">{color}</span>
                   </button>
                 );

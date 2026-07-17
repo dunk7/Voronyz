@@ -21,6 +21,16 @@ import {
   TRAIL_MIX_VARIANTS,
 } from "@/lib/trailMix";
 import {
+  GATORS_DESCRIPTION_SHORT,
+  GATORS_IMAGES,
+  GATORS_NAME,
+  GATORS_PRICE_CENTS,
+  GATORS_PRIMARY_COLORS,
+  GATORS_SIZES,
+  GATORS_SLUG,
+  GATORS_VARIANTS,
+} from "@/lib/gators";
+import {
   APPAREL_CATALOG,
   APPAREL_CATEGORY,
   OBSOLETE_APPAREL_SLUGS,
@@ -216,6 +226,65 @@ export async function ensureTrailMix(): Promise<void> {
   });
 }
 
+/** Idempotently upsert The Gators so the new listing appears without a manual seed run. */
+export async function ensureGators(): Promise<void> {
+  const existing = await prisma.product.findUnique({ where: { slug: GATORS_SLUG } });
+
+  if (!existing) {
+    await prisma.product.create({
+      data: {
+        slug: GATORS_SLUG,
+        name: GATORS_NAME,
+        description: GATORS_DESCRIPTION_SHORT,
+        priceCents: GATORS_PRICE_CENTS,
+        currency: "usd",
+        images: [...GATORS_IMAGES],
+        primaryColors: [...GATORS_PRIMARY_COLORS],
+        secondaryColors: [],
+        sizes: [...GATORS_SIZES],
+        variants: {
+          create: GATORS_VARIANTS.map((v) => ({ ...v })),
+        },
+      },
+    });
+    return;
+  }
+
+  await prisma.product.update({
+    where: { id: existing.id },
+    data: {
+      name: GATORS_NAME,
+      description: GATORS_DESCRIPTION_SHORT,
+      priceCents: GATORS_PRICE_CENTS,
+      images: [...GATORS_IMAGES],
+      primaryColors: [...GATORS_PRIMARY_COLORS],
+      secondaryColors: [],
+      sizes: [...GATORS_SIZES],
+    },
+  });
+
+  for (const v of GATORS_VARIANTS) {
+    await prisma.variant.upsert({
+      where: { sku: v.sku },
+      update: { stock: v.stock, color: v.color },
+      create: {
+        product: { connect: { id: existing.id } },
+        color: v.color,
+        sku: v.sku,
+        stock: v.stock,
+      },
+    });
+  }
+
+  const keepSkus = GATORS_VARIANTS.map((v) => v.sku);
+  await prisma.variant.deleteMany({
+    where: {
+      productId: existing.id,
+      sku: { notIn: [...keepSkus] },
+    },
+  });
+}
+
 /** Idempotently upsert apparel catalog products (coming soon / stock 0). */
 export async function ensureApparelProducts(): Promise<void> {
   if (OBSOLETE_APPAREL_SLUGS.length > 0) {
@@ -317,6 +386,7 @@ export async function ensureCatalogProducts(): Promise<void> {
     await ensureMagikidShoes();
     await ensureGunHolster();
     await ensureTrailMix();
+    await ensureGators();
     await ensureApparelProducts();
   } catch (error) {
     console.error("ensureCatalogProducts failed:", error);
