@@ -23,7 +23,16 @@ import {
   GUN_HOLSTER_SLUG,
   GUN_HOLSTER_THUMBNAIL_URL,
 } from "@/lib/gunHolster";
-import { isAccessorySlug } from "@/lib/productCategories";
+import {
+  TRAIL_MIX_DESCRIPTION,
+  TRAIL_MIX_FLAVORS,
+  TRAIL_MIX_HOW_ITS_MADE,
+  TRAIL_MIX_IMAGES,
+  TRAIL_MIX_NAME,
+  TRAIL_MIX_SLUG,
+  TRAIL_MIX_THUMBNAIL_URL,
+} from "@/lib/trailMix";
+import { isAccessorySlug, isHealthSlug } from "@/lib/productCategories";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
 // This page is rendered on-demand.
@@ -147,6 +156,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? magikidShoesImages
     : slug === GUN_HOLSTER_SLUG
     ? [...GUN_HOLSTER_IMAGES]
+    : slug === TRAIL_MIX_SLUG
+    ? [...TRAIL_MIX_IMAGES]
     : ((product.images as string[] | null) ?? defaultImages);
   const galleryMedia: Media[] = images.map((src) => ({ type: "image" as const, src, alt: product.name }));
   if (slug === "slip-ons") {
@@ -161,11 +172,22 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isSlipOns = slug === "slip-ons";
   const isMagikidShoes = slug === "magikid-shoes";
   const isGunHolster = slug === GUN_HOLSTER_SLUG;
-  const shopHref = isAccessorySlug(slug) ? "/accessories" : "/products";
+  const isTrailMix = slug === TRAIL_MIX_SLUG;
+  const shopHref = isAccessorySlug(slug)
+    ? "/accessories"
+    : isHealthSlug(slug)
+      ? "/health"
+      : "/products";
   const shopLabel = isAccessorySlug(slug)
     ? "Back to Voronyz Engineering"
-    : "Back to Shop";
-  const displayName = isGunHolster ? GUN_HOLSTER_NAME : product.name;
+    : isHealthSlug(slug)
+      ? "Back to Voronyz Health"
+      : "Back to Shop";
+  const displayName = isGunHolster
+    ? GUN_HOLSTER_NAME
+    : isTrailMix
+      ? TRAIL_MIX_NAME
+      : product.name;
 
   // Product-specific descriptions
   const displayDescription = slug === "v3-slides" 
@@ -178,12 +200,17 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — black, grey, orange in stock; white temporarily unavailable."
     : isGunHolster
     ? GUN_HOLSTER_DESCRIPTION
+    : isTrailMix
+    ? TRAIL_MIX_DESCRIPTION
     : product.description;
 
   const holsterVariants = isGunHolster
     ? product.variants.filter((variant) => variant.color.toLowerCase() === "black")
     : product.variants;
   const holsterColors = isGunHolster ? ["black"] : (product.primaryColors as string[]);
+  const trailMixColors = isTrailMix
+    ? TRAIL_MIX_FLAVORS.map((flavor) => flavor.id)
+    : (product.primaryColors as string[]);
 
   return (
     <div className="bg-texture-white">
@@ -201,16 +228,24 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <div className="mb-8 space-y-4">
           <p className="text-neutral-700 leading-relaxed">{displayDescription}</p>
           <div className="flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-medium text-emerald-700">
-              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
-              </svg>
-              {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
-            </span>
-            <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
-              {isMagikidShoes ? "Made to order in <7 days" : "Made to order in <2 days"}
-            </span>
-            {!isMagikidShoes && !isGunHolster && (
+            {isTrailMix ? (
+              <span className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-white">
+                Sold Out
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-medium text-emerald-700">
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
+                </svg>
+                {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
+              </span>
+            )}
+            {!isTrailMix && (
+              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
+                {isMagikidShoes ? "Made to order in <7 days" : "Made to order in <2 days"}
+              </span>
+            )}
+            {!isMagikidShoes && !isGunHolster && !isTrailMix && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
             )}
             {isGunHolster && (
@@ -218,6 +253,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Glock 43x</span>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Carbon fiber nylon</span>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">OWB &amp; IWB</span>
+              </>
+            )}
+            {isTrailMix && (
+              <>
+                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">$60</span>
+                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">3 flavors</span>
               </>
             )}
             {isDragonfly && (
@@ -252,7 +293,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <Suspense fallback={<div className="h-[48px] bg-gray-200 rounded-full animate-pulse" />}>
                 <AddToCart
                   variants={product.variants}
-                  primaryColors={product.primaryColors as string[]}
+                  primaryColors={isTrailMix ? trailMixColors : (product.primaryColors as string[])}
                   productPriceCents={product.priceCents}
                   {...(isDragonfly && {
                     secondaryColors: (product.secondaryColors as string[]).filter(c => c.toLowerCase() !== "#007fff"),
@@ -276,8 +317,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                       },
                     ],
                   })}
+                  {...(isTrailMix && {
+                    hideSizeSelector: true,
+                    soldOut: true,
+                    flavorOptions: TRAIL_MIX_FLAVORS,
+                  })}
                   sizes={product.sizes as string[]}
-                  productName={product.name}
+                  productName={displayName}
                   coverImage={(images[0] as string) || defaultImages[0]}
                   productSlug={slug}
                   promoHint={undefined}
@@ -314,7 +360,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <div className="container pb-12">
         <div className="mt-10 overflow-hidden rounded-3xl ring-1 ring-black/5 bg-white">
           <div className="bg-black text-white px-6 py-4 text-sm font-medium">
-            {isDragonfly ? "Crafted for you" : isMagikidShoes ? "Magikid edition" : isSlipOns ? "Print + finish" : isGunHolster ? "Carbon fiber nylon" : "How it's made"}
+            {isDragonfly ? "Crafted for you" : isMagikidShoes ? "Magikid edition" : isSlipOns ? "Print + finish" : isGunHolster ? "Carbon fiber nylon" : isTrailMix ? "Voronyz Health" : "How it's made"}
           </div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed">
             {isDragonfly
@@ -325,6 +371,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? "Slip Ons are printed in one piece per colorway for a seamless look, then finished for flex and daily wear. There is no secondary accent color — the shade you choose is the full shoe."
               : isGunHolster
               ? GUN_HOLSTER_HOW_ITS_MADE
+              : isTrailMix
+              ? TRAIL_MIX_HOW_ITS_MADE
               : "Each pair takes a full day to print using our proprietary TPU blend. Following printing, we perform heat-treated post-processing to ensure exceptional quality, comfort, and durability."}
           </div>
         </div>
@@ -355,6 +403,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "What color is available?", a: "Black only." },
               { q: "How long does production take?", a: "Printed to order in about 1–2 days, then ships the next business day." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
+            ] : isTrailMix ? [
+              { q: "What flavors are available?", a: "Wild Berry, Super Protein, and Chocolate — all currently sold out." },
+              { q: "Does it come in sizes?", a: "No sizes — choose a flavor instead." },
+              { q: "How much does it cost?", a: "$60 per bag when back in stock." },
+              { q: "When will it restock?", a: "We're restocking the next batch soon. Check back on Voronyz Health." },
             ] : [
               { q: "What if my size doesn't fit?", a: "They're going to fit and also be extremely comfortable. Trust the process" },
               { q: "Are they waterproof?", a: "Yes. 100% waterproof. Throw them in your washer to clean!" },
@@ -412,6 +465,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const title = `${GUN_HOLSTER_NAME} – Voronyz`;
     const description = GUN_HOLSTER_DESCRIPTION;
     const images = [GUN_HOLSTER_THUMBNAIL_URL, ...GUN_HOLSTER_IMAGES];
+    return {
+      title,
+      description,
+      openGraph: { title, description, images },
+      twitter: { card: "summary_large_image", title, description, images },
+    };
+  }
+
+  if (slug === TRAIL_MIX_SLUG) {
+    const title = `${TRAIL_MIX_NAME} – Voronyz`;
+    const description = TRAIL_MIX_DESCRIPTION;
+    const images = [TRAIL_MIX_THUMBNAIL_URL];
     return {
       title,
       description,

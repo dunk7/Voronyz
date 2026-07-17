@@ -27,6 +27,12 @@ type CarryStyleOption = {
   image: string;
 };
 
+type FlavorOption = {
+  id: string;
+  label: string;
+  description?: string;
+};
+
 type Props = {
   variants: VariantProps[];
   primaryColors: string[];
@@ -48,6 +54,9 @@ type Props = {
   carryStyles?: CarryStyleOption[];
   selectedCarryStyleId?: string;
   onCarryStyleChange?: (id: string) => void;
+  /** Replace color swatches with flavor choices (e.g. trail mix). */
+  flavorOptions?: FlavorOption[];
+  soldOut?: boolean;
 };
 
 const MENS_SIZES = ["6", "7", "8", "9", "10", "11", "12", "13"];
@@ -101,10 +110,13 @@ export default function AddToCart({
   carryStyles = [],
   selectedCarryStyleId,
   onCarryStyleChange,
+  flavorOptions = [],
+  soldOut = false,
 }: Props) {
   const hasSecondaryColors = secondaryColors.length > 0;
   const hasFulfillmentOptions = fulfillmentOptions.length > 0;
   const hasCarryStyles = carryStyles.length > 0;
+  const hasFlavorOptions = flavorOptions.length > 0;
   const oneSizeLabel = sizes[0] || "One Size";
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -196,6 +208,7 @@ export default function AddToCart({
 
   // Disable add if no selections or primary out of stock
   const canAdd =
+    !soldOut &&
     selectedPrimary &&
     (selectedSecondary || !hasSecondaryColors) &&
     selectedSize &&
@@ -241,6 +254,9 @@ export default function AddToCart({
       "#007fff": "Azure Blue",
       "#C6FF00": "Neon Green",
       "#c6ff00": "Neon Green",
+      "wild-berry": "Wild Berry",
+      "super-protein": "Super Protein",
+      chocolate: "Chocolate",
     };
     return names[color] || color;
   };
@@ -431,7 +447,50 @@ export default function AddToCart({
         }
       `}</style>
       <div className="space-y-4">
-        {/* Primary Color */}
+        {soldOut && (
+          <div className="rounded-2xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white">
+            Sold Out
+          </div>
+        )}
+
+        {/* Flavor options (trail mix) */}
+        {hasFlavorOptions ? (
+          <div className="grid gap-2">
+            <label className="text-sm text-neutral-700">Flavor</label>
+            <div className="grid gap-2">
+              {flavorOptions.map((flavor) => {
+                const isSelected = selectedPrimary === flavor.id;
+                const available = isPrimaryAvailable(flavor.id);
+                return (
+                  <button
+                    key={flavor.id}
+                    type="button"
+                    onClick={() => available && setSelectedPrimary(flavor.id)}
+                    disabled={!available || soldOut}
+                    className={`flex flex-col items-start rounded-2xl px-4 py-3 text-left ring-1 transition ${
+                      isSelected
+                        ? "bg-black text-white ring-black"
+                        : available
+                          ? "bg-white text-neutral-900 ring-black/10 hover:bg-black/5"
+                          : "bg-neutral-50 text-neutral-400 ring-neutral-200 cursor-not-allowed"
+                    }`}
+                  >
+                    <span className="text-sm font-semibold tracking-wide">
+                      {flavor.label}
+                      {!available || soldOut ? " — Sold Out" : ""}
+                    </span>
+                    {flavor.description && (
+                      <span className={`text-xs mt-0.5 ${isSelected ? "text-white/80" : "text-neutral-500"}`}>
+                        {flavor.description}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+        /* Primary Color */
         <div className="grid gap-2">
           <label className="text-sm text-neutral-700">Primary Color</label>
           <div className="flex flex-wrap gap-2">
@@ -463,6 +522,7 @@ export default function AddToCart({
             })}
           </div>
         </div>
+        )}
 
         {/* Secondary / Lace Color — only shown when product has secondary colors */}
         {hasSecondaryColors && (
@@ -676,7 +736,7 @@ export default function AddToCart({
                     : "bg-black text-white hover:bg-neutral-800"
                 } flex items-center justify-center gap-2`}
               >
-                {loading ? "Adding…" : "Add to Cart"}
+                {loading ? "Adding…" : soldOut ? "Sold Out" : "Add to Cart"}
               </button>
             )}
           </div>

@@ -184,11 +184,25 @@ export default function CartClient() {
                 <div className="mt-1 flex flex-wrap items-center gap-1 lg:gap-2 text-xs text-neutral-700">
                   {it.variant?.name && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-black/5 px-2 py-0.5 capitalize">
-                      <span className="inline-block h-3 w-3 rounded-full ring-1 ring-black/10" style={{ backgroundColor: it.variant.name }} />
-                      {it.variant.name}
+                      {it.productSlug !== "antioxidant-trail-mix" && (
+                        <span
+                          className="inline-block h-3 w-3 rounded-full ring-1 ring-black/10"
+                          style={{ backgroundColor: it.variant.name }}
+                        />
+                      )}
+                      {it.productSlug === "antioxidant-trail-mix"
+                        ? it.variant.name === "wild-berry"
+                          ? "Wild Berry"
+                          : it.variant.name === "super-protein"
+                            ? "Super Protein"
+                            : it.variant.name === "chocolate"
+                              ? "Chocolate"
+                              : it.variant.name
+                        : it.variant.name}
                     </span>
                   )}
-                  {it.attributes?.size !== undefined && (
+                  {it.attributes?.size !== undefined &&
+                    it.productSlug !== "antioxidant-trail-mix" && (
                     <span className="rounded-full bg-black/5 px-2 py-0.5">
                       {it.productSlug === "gun-holster"
                         ? it.attributes.size === "IWB"

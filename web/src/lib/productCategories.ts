@@ -1,15 +1,24 @@
 /** Product slugs in Voronyz Engineering (not footwear). */
 export const ACCESSORY_SLUGS = ["gun-holster"] as const;
 
+/** Product slugs in Voronyz Health (not footwear). */
+export const HEALTH_SLUGS = ["antioxidant-trail-mix"] as const;
+
 export type AccessorySlug = (typeof ACCESSORY_SLUGS)[number];
+export type HealthSlug = (typeof HEALTH_SLUGS)[number];
 
 export function isAccessorySlug(slug: string | null | undefined): boolean {
   const key = (slug || "").trim().toLowerCase();
   return (ACCESSORY_SLUGS as readonly string[]).includes(key);
 }
 
+export function isHealthSlug(slug: string | null | undefined): boolean {
+  const key = (slug || "").trim().toLowerCase();
+  return (HEALTH_SLUGS as readonly string[]).includes(key);
+}
+
 export function isFootwearSlug(slug: string | null | undefined): boolean {
-  return !isAccessorySlug(slug);
+  return !isAccessorySlug(slug) && !isHealthSlug(slug);
 }
 
 export function filterFootwearProducts<T extends { slug: string }>(products: T[]): T[] {
@@ -18,4 +27,8 @@ export function filterFootwearProducts<T extends { slug: string }>(products: T[]
 
 export function filterAccessoryProducts<T extends { slug: string }>(products: T[]): T[] {
   return products.filter((p) => isAccessorySlug(p.slug));
+}
+
+export function filterHealthProducts<T extends { slug: string }>(products: T[]): T[] {
+  return products.filter((p) => isHealthSlug(p.slug));
 }
