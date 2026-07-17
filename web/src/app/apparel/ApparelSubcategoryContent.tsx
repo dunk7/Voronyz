@@ -162,54 +162,6 @@ export default function ApparelSubcategoryContent({
             </span>
           </div>
 
-          {!isStandalone && (
-            <div className="mt-6 flex flex-wrap gap-2">
-              <Link
-                href="/apparel"
-                className="rounded-full px-3.5 py-1.5 text-[12px] font-medium text-neutral-500 ring-1 ring-neutral-200 hover:bg-neutral-50 hover:text-neutral-800 transition"
-              >
-                All
-              </Link>
-              {APPAREL_COLLECTION_SUBCATEGORIES.map((item) => {
-                const active = item.id === subcategoryId;
-                const count = getApparelBySubcategory(item.id).length;
-                return (
-                  <Link
-                    key={item.id}
-                    href={apparelSubcategoryHref(item.id)}
-                    className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${
-                      active
-                        ? "bg-neutral-900 text-white"
-                        : "text-neutral-600 ring-1 ring-neutral-200 hover:bg-neutral-50 hover:text-neutral-900"
-                    }`}
-                  >
-                    {item.label}
-                    <span className={`ml-1.5 tabular-nums ${active ? "text-white/60" : "text-neutral-400"}`}>
-                      {count}
-                    </span>
-                  </Link>
-                );
-              })}
-              <Link
-                href="/apparel/accessories"
-                className="rounded-full px-3.5 py-1.5 text-[12px] font-medium text-neutral-500 ring-1 ring-neutral-200 hover:bg-neutral-50 hover:text-neutral-800 transition"
-              >
-                Accessories
-              </Link>
-            </div>
-          )}
-
-          {isStandalone && (
-            <div className="mt-6 flex flex-wrap gap-2">
-              <Link
-                href="/apparel"
-                className="rounded-full px-3.5 py-1.5 text-[12px] font-medium text-neutral-500 ring-1 ring-neutral-200 hover:bg-neutral-50 hover:text-neutral-800 transition"
-              >
-                ← Apparel collections
-              </Link>
-            </div>
-          )}
-
           <div className="mt-6 h-px bg-neutral-200" />
         </div>
 
