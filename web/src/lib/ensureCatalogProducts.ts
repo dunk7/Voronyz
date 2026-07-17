@@ -700,3 +700,28 @@ export async function ensureHealthCatalog(): Promise<void> {
 
   return healthEnsureInFlight;
 }
+
+/** Engineering-only ensure — skips apparel/footwear for fast /accessories loads. */
+let accessoriesEnsureAt = 0;
+let accessoriesEnsureInFlight: Promise<void> | null = null;
+const ACCESSORIES_ENSURE_TTL_MS = 10 * 60 * 1000;
+
+export async function ensureAccessoriesCatalog(): Promise<void> {
+  const now = Date.now();
+  if (accessoriesEnsureInFlight) return accessoriesEnsureInFlight;
+  if (now - accessoriesEnsureAt < ACCESSORIES_ENSURE_TTL_MS) return;
+
+  accessoriesEnsureInFlight = (async () => {
+    try {
+      await ensureProductCategoryColumns();
+      await ensureGunHolster();
+      accessoriesEnsureAt = Date.now();
+    } catch (error) {
+      console.error("ensureAccessoriesCatalog failed:", error);
+    } finally {
+      accessoriesEnsureInFlight = null;
+    }
+  })();
+
+  return accessoriesEnsureInFlight;
+}
