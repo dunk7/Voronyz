@@ -152,14 +152,10 @@ function drawRoundedRect(
   ctx.closePath();
 }
 
-function isPortraitViewport() {
-  if (typeof window === "undefined") return false;
-  return window.innerHeight > window.innerWidth;
-}
-
 export default function StoreNavGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef({ w: 900, h: 560 });
   const cameraRef = useRef<Vec>({ x: 0, y: 0 });
   const playerRef = useRef<Vec>({ ...START_POS });
@@ -172,14 +168,13 @@ export default function StoreNavGame() {
   const popupRef = useRef<{ text: string; t: number } | null>(null);
   const activeZoneRef = useRef<string | null>(null);
   const fullscreenRef = useRef(false);
-  const forceLandscapeRef = useRef(false);
+  const pointerActiveRef = useRef(false);
 
   const [score, setScore] = useState(0);
   const [hint, setHint] = useState("Tap anywhere to walk around the store!");
   const [won, setWon] = useState(false);
   const [activeZone, setActiveZone] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [forceLandscape, setForceLandscape] = useState(false);
 
   const syncCamera = useCallback((player: Vec) => {
     const { w: vw, h: vh } = viewportRef.current;
@@ -200,14 +195,10 @@ export default function StoreNavGame() {
     let cssH: number;
 
     if (fullscreenRef.current) {
-      if (forceLandscapeRef.current && isPortraitViewport()) {
-        // CSS-rotated landscape: visual width = phone height, visual height = phone width
-        cssW = window.innerHeight;
-        cssH = window.innerWidth;
-      } else {
-        cssW = window.innerWidth;
-        cssH = window.innerHeight;
-      }
+      // Portrait-friendly fullscreen: fill the actual viewport (including mobile browser chrome)
+      const vv = window.visualViewport;
+      cssW = Math.max(1, Math.floor(vv?.width ?? window.innerWidth));
+      cssH = Math.max(1, Math.floor(vv?.height ?? window.innerHeight));
     } else {
       const rect = wrapper.getBoundingClientRect();
       cssW = Math.max(280, Math.floor(rect.width));
@@ -229,29 +220,29 @@ export default function StoreNavGame() {
 
   const exitFullscreen = useCallback(() => {
     fullscreenRef.current = false;
-    forceLandscapeRef.current = false;
+    pointerActiveRef.current = false;
     setIsFullscreen(false);
-    setForceLandscape(false);
     document.documentElement.style.overflow = "";
     document.body.style.overflow = "";
     document.body.style.touchAction = "";
     document.body.style.position = "";
     document.body.style.width = "";
     document.body.style.height = "";
+    document.body.style.top = "";
+    document.body.style.left = "";
     // Defer resize so layout can settle after leaving fixed mode
     requestAnimationFrame(() => resizeCanvas());
   }, [resizeCanvas]);
 
   const enterFullscreen = useCallback(() => {
-    const portrait = isPortraitViewport();
     fullscreenRef.current = true;
-    forceLandscapeRef.current = portrait;
     setIsFullscreen(true);
-    setForceLandscape(portrait);
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
     document.body.style.touchAction = "none";
     document.body.style.position = "fixed";
+    document.body.style.top = "0";
+    document.body.style.left = "0";
     document.body.style.width = "100%";
     document.body.style.height = "100%";
     requestAnimationFrame(() => resizeCanvas());
@@ -283,7 +274,7 @@ export default function StoreNavGame() {
     const rect = canvas.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return null;
 
-    // getBoundingClientRect already reflects CSS rotation, so client coords map directly
+    // Map client coords into the CSS pixel viewport used by the game camera
     const localX = ((clientX - rect.left) / rect.width) * viewportRef.current.w;
     const localY = ((clientY - rect.top) / rect.height) * viewportRef.current.h;
     return {
@@ -293,7 +284,7 @@ export default function StoreNavGame() {
   }, []);
 
   const handlePointer = useCallback(
-    (clientX: number, clientY: number) => {
+    (clientX: number, clientY: number, opts?: { showRipple?: boolean }) => {
       if (won) return;
       const point = screenToMap(clientX, clientY);
       if (!point) return;
@@ -321,25 +312,23 @@ export default function StoreNavGame() {
       dest.y = Math.max(PLAYER_R + 8, Math.min(MAP_H - PLAYER_R - 8, dest.y));
 
       targetRef.current = dest;
-      rippleRef.current = { x: dest.x, y: dest.y, t: 0 };
+      if (opts?.showRipple !== false) {
+        rippleRef.current = { x: dest.x, y: dest.y, t: 0 };
+      }
       setHint("On the way…");
     },
     [screenToMap, won]
   );
 
-  // Resize + orientation
+  // Resize
   useEffect(() => {
     resizeCanvas();
-    const onResize = () => {
-      if (fullscreenRef.current) {
-        const portrait = isPortraitViewport();
-        forceLandscapeRef.current = portrait;
-        setForceLandscape(portrait);
-      }
-      resizeCanvas();
-    };
+    const onResize = () => resizeCanvas();
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onResize);
+    const vv = typeof window !== "undefined" ? window.visualViewport : null;
+    vv?.addEventListener("resize", onResize);
+    vv?.addEventListener("scroll", onResize);
     const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => {
       if (!fullscreenRef.current) resizeCanvas();
     }) : null;
@@ -347,6 +336,8 @@ export default function StoreNavGame() {
     return () => {
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onResize);
+      vv?.removeEventListener("resize", onResize);
+      vv?.removeEventListener("scroll", onResize);
       ro?.disconnect();
     };
   }, [resizeCanvas]);
@@ -363,17 +354,14 @@ export default function StoreNavGame() {
     return () => window.removeEventListener("keydown", onKey);
   }, [exitFullscreen]);
 
-  // Prevent page scroll / rubber-band when interacting with the game canvas
+  // Prevent page scroll / rubber-band when interacting with the game
   useEffect(() => {
     const canvas = canvasRef.current;
     const wrapper = wrapperRef.current;
+    const root = rootRef.current;
     if (!canvas || !wrapper) return;
 
-    const blockCanvasTouch = (e: TouchEvent) => {
-      if (e.cancelable) e.preventDefault();
-    };
-    const blockWrapperScroll = (e: TouchEvent) => {
-      // Allow taps on HUD controls; only stop scroll gestures on the playfield
+    const blockTouch = (e: TouchEvent) => {
       const target = e.target as HTMLElement | null;
       if (target?.closest("button, a")) return;
       if (e.cancelable) e.preventDefault();
@@ -381,17 +369,37 @@ export default function StoreNavGame() {
     const blockWheel = (e: WheelEvent) => {
       e.preventDefault();
     };
+    const blockFullscreenScroll = (e: TouchEvent | WheelEvent) => {
+      if (!fullscreenRef.current) return;
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("button, a")) return;
+      if (e.cancelable) e.preventDefault();
+    };
 
-    canvas.addEventListener("touchstart", blockCanvasTouch, { passive: false });
-    canvas.addEventListener("touchmove", blockCanvasTouch, { passive: false });
-    wrapper.addEventListener("touchmove", blockWrapperScroll, { passive: false });
+    canvas.addEventListener("touchstart", blockTouch, { passive: false });
+    canvas.addEventListener("touchmove", blockTouch, { passive: false });
+    wrapper.addEventListener("touchstart", blockTouch, { passive: false });
+    wrapper.addEventListener("touchmove", blockTouch, { passive: false });
     wrapper.addEventListener("wheel", blockWheel, { passive: false });
+    root?.addEventListener("touchmove", blockFullscreenScroll, { passive: false });
+    root?.addEventListener("wheel", blockFullscreenScroll, { passive: false });
+
+    // Extra guard while fullscreen so the page behind can't rubber-band
+    if (isFullscreen) {
+      document.addEventListener("touchmove", blockFullscreenScroll, { passive: false });
+      document.addEventListener("wheel", blockFullscreenScroll, { passive: false });
+    }
 
     return () => {
-      canvas.removeEventListener("touchstart", blockCanvasTouch);
-      canvas.removeEventListener("touchmove", blockCanvasTouch);
-      wrapper.removeEventListener("touchmove", blockWrapperScroll);
+      canvas.removeEventListener("touchstart", blockTouch);
+      canvas.removeEventListener("touchmove", blockTouch);
+      wrapper.removeEventListener("touchstart", blockTouch);
+      wrapper.removeEventListener("touchmove", blockTouch);
       wrapper.removeEventListener("wheel", blockWheel);
+      root?.removeEventListener("touchmove", blockFullscreenScroll);
+      root?.removeEventListener("wheel", blockFullscreenScroll);
+      document.removeEventListener("touchmove", blockFullscreenScroll);
+      document.removeEventListener("wheel", blockFullscreenScroll);
     };
   }, [isFullscreen]);
 
@@ -404,6 +412,8 @@ export default function StoreNavGame() {
       document.body.style.position = "";
       document.body.style.width = "";
       document.body.style.height = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
     };
   }, []);
 
@@ -690,11 +700,11 @@ export default function StoreNavGame() {
 
       ctx.restore();
 
-      // Mini-map (screen space)
+      // Mini-map (screen space) — leave room for the top-right fullscreen logo
       const mmW = 110;
       const mmH = Math.round((mmW * MAP_H) / MAP_W);
       const mmX = vw - mmW - 14;
-      const mmY = 14;
+      const mmY = 56;
       const scaleX = mmW / MAP_W;
       const scaleY = mmH / MAP_H;
       ctx.fillStyle = "rgba(35, 25, 45, 0.72)";
@@ -717,10 +727,24 @@ export default function StoreNavGame() {
     return () => cancelAnimationFrame(raf);
   }, [syncCamera]);
 
+  const fullscreenToggle = (
+    <button
+      type="button"
+      onClick={toggleFullscreen}
+      className="absolute right-3 top-3 z-30 flex h-10 w-10 items-center justify-center rounded-xl bg-white/90 shadow-sm ring-1 ring-black/5 transition hover:bg-white active:scale-95"
+      aria-label={isFullscreen ? "Exit full screen" : "Enter full screen"}
+      aria-pressed={isFullscreen}
+      title={isFullscreen ? "Exit full screen" : "Full screen"}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/logo.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" draggable={false} />
+    </button>
+  );
+
   const hud = (
     <div
       className={`flex flex-wrap items-center justify-between gap-3 ${
-        isFullscreen ? "absolute left-0 right-0 top-0 z-20 px-3 py-2 sm:px-4" : ""
+        isFullscreen ? "absolute left-0 right-14 top-0 z-20 px-3 py-2 sm:px-4" : ""
       }`}
       style={
         isFullscreen
@@ -745,14 +769,6 @@ export default function StoreNavGame() {
         </div>
         <button
           type="button"
-          onClick={toggleFullscreen}
-          className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 transition hover:border-neutral-300 hover:bg-neutral-50 sm:px-4"
-          aria-pressed={isFullscreen}
-        >
-          {isFullscreen ? "Exit" : "Full screen"}
-        </button>
-        <button
-          type="button"
           onClick={resetGame}
           className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 transition hover:border-neutral-300 hover:bg-neutral-50 sm:px-4"
         >
@@ -764,23 +780,27 @@ export default function StoreNavGame() {
 
   const tip = (
     <p className="text-center text-xs text-neutral-500">
-      Tip: you stay in the center while the big store map scrolls under you. Use Full screen on phone
-      for landscape play without tilting.
+      Tip: you stay in the center while the big store map scrolls under you. Tap the logo for tall
+      full screen — hold and drag to keep walking.
     </p>
   );
 
   return (
     <div
+      ref={rootRef}
       className={
         isFullscreen
           ? "fixed inset-0 z-[200] bg-black"
-          : "space-y-5"
+          : "relative space-y-5"
       }
       style={
         isFullscreen
           ? {
               touchAction: "none",
               overscrollBehavior: "none",
+              width: "100vw",
+              height: "100dvh",
+              maxHeight: "100dvh",
             }
           : undefined
       }
@@ -788,29 +808,17 @@ export default function StoreNavGame() {
       {!isFullscreen && hud}
 
       <div
-        className={isFullscreen ? "bg-[#fff5eb]" : undefined}
+        className={isFullscreen ? "bg-[#fff5eb]" : "relative"}
         style={
           isFullscreen
-            ? forceLandscape
-              ? {
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  width: "100vh",
-                  height: "100vw",
-                  transform: "translate(-50%, -50%) rotate(90deg)",
-                  transformOrigin: "center center",
-                  touchAction: "none",
-                  overscrollBehavior: "none",
-                }
-              : {
-                  position: "absolute",
-                  inset: 0,
-                  width: "100%",
-                  height: "100%",
-                  touchAction: "none",
-                  overscrollBehavior: "none",
-                }
+            ? {
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                touchAction: "none",
+                overscrollBehavior: "none",
+              }
             : undefined
         }
       >
@@ -844,23 +852,33 @@ export default function StoreNavGame() {
             onPointerDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              pointerActiveRef.current = true;
               (e.target as HTMLCanvasElement).setPointerCapture?.(e.pointerId);
-              handlePointer(e.clientX, e.clientY);
+              handlePointer(e.clientX, e.clientY, { showRipple: true });
             }}
             onPointerMove={(e) => {
-              if (e.buttons > 0) e.preventDefault();
+              if (!pointerActiveRef.current) return;
+              e.preventDefault();
+              handlePointer(e.clientX, e.clientY, { showRipple: false });
+            }}
+            onPointerUp={() => {
+              pointerActiveRef.current = false;
+            }}
+            onPointerCancel={() => {
+              pointerActiveRef.current = false;
+            }}
+            onPointerLeave={(e) => {
+              // Keep dragging while captured; only clear if we lost the pointer
+              if (!canvasRef.current?.hasPointerCapture?.(e.pointerId)) {
+                pointerActiveRef.current = false;
+              }
             }}
             role="img"
-            aria-label="Top-down Voronyz store map. Tap to move your character. You stay centered while the map moves."
+            aria-label="Top-down Voronyz store map. Tap or drag to move your character. You stay centered while the map moves."
           />
 
+          {fullscreenToggle}
           {isFullscreen && hud}
-
-          {isFullscreen && forceLandscape && (
-            <p className="pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/45 px-3 py-1 text-[11px] font-medium text-white">
-              Landscape full screen — no need to tilt your phone
-            </p>
-          )}
 
           {won && (
             <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/55 backdrop-blur-[2px]">
