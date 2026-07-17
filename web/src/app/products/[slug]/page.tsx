@@ -33,7 +33,7 @@ import {
   TRAIL_MIX_THUMBNAIL_URL,
 } from "@/lib/trailMix";
 import { isAccessorySlug, isApparelSlug, isHealthSlug } from "@/lib/productCategories";
-import { getApparelItem, getApparelSubcategory } from "@/lib/apparel";
+import { getApparelItem, getApparelImages, getApparelSubcategory } from "@/lib/apparel";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
 // This page is rendered on-demand.
@@ -160,7 +160,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     : slug === TRAIL_MIX_SLUG
     ? [...TRAIL_MIX_IMAGES]
     : getApparelItem(slug)
-    ? [getApparelItem(slug)!.image]
+    ? getApparelImages(getApparelItem(slug)!)
     : ((product.images as string[] | null) ?? defaultImages);
   const galleryMedia: Media[] = images.map((src) => ({ type: "image" as const, src, alt: product.name }));
   if (slug === "slip-ons") {
@@ -519,6 +519,19 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const title = `${TRAIL_MIX_NAME} – Voronyz`;
     const description = TRAIL_MIX_DESCRIPTION;
     const images = [TRAIL_MIX_THUMBNAIL_URL];
+    return {
+      title,
+      description,
+      openGraph: { title, description, images },
+      twitter: { card: "summary_large_image", title, description, images },
+    };
+  }
+
+  const apparelMeta = getApparelItem(slug);
+  if (apparelMeta) {
+    const title = `${apparelMeta.name} – Voronyz`;
+    const description = apparelMeta.description;
+    const images = getApparelImages(apparelMeta);
     return {
       title,
       description,

@@ -57,11 +57,19 @@ export type ApparelCatalogItem = {
   priceCents: number;
   colors: string[];
   sizes: string[];
+  /** Primary cover / thumbnail image. */
   image: string;
+  /** Full gallery; defaults to `[image]` when omitted. */
+  images?: string[];
   skuPrefix: string;
   /** Apparel drops are previewable but not purchasable yet. */
   comingSoon: true;
 };
+
+export function getApparelImages(item: ApparelCatalogItem): string[] {
+  if (item.images && item.images.length > 0) return [...item.images];
+  return [item.image];
+}
 
 /** Slugs removed from the live apparel catalog (cleaned up on ensure). */
 export const OBSOLETE_APPAREL_SLUGS = [
@@ -78,7 +86,11 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     priceCents: 2800,
     colors: ["black", "grey", "white"],
     sizes: ["S", "M", "L", "XL"],
-    image: "/products/apparel/socks.jpg",
+    image: "/products/apparel/socks-features.jpg",
+    images: [
+      "/products/apparel/socks-features.jpg",
+      "/products/apparel/socks.jpg",
+    ],
     skuPrefix: "APP-SOCK",
     comingSoon: true,
   },

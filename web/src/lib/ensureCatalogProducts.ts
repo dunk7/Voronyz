@@ -24,6 +24,7 @@ import {
   APPAREL_CATALOG,
   OBSOLETE_APPAREL_SLUGS,
   apparelSku,
+  getApparelImages,
 } from "@/lib/apparel";
 
 const MAGIKID_SHOES_IMAGES = [
@@ -238,7 +239,7 @@ export async function ensureApparelProducts(): Promise<void> {
           description: item.description,
           priceCents: item.priceCents,
           currency: "usd",
-          images: [item.image],
+          images: getApparelImages(item),
           primaryColors: [...item.colors],
           secondaryColors: [],
           sizes: [...item.sizes],
@@ -256,7 +257,7 @@ export async function ensureApparelProducts(): Promise<void> {
         name: item.name,
         description: item.description,
         priceCents: item.priceCents,
-        images: [item.image],
+        images: getApparelImages(item),
         primaryColors: [...item.colors],
         secondaryColors: [],
         sizes: [...item.sizes],
