@@ -24,7 +24,6 @@ const productMeta: Record<string, {
     altImage: "/products/v3-slides/InShot_20260212_193956953.jpg",
   },
   dragonfly: {
-    tag: "Sneakers",
     altImage: "/products/dragonfly/InShot_20260212_153903491.jpg",
   },
   "slip-ons": {
