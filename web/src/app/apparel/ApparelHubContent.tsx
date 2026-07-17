@@ -122,7 +122,7 @@ export default function ApparelHubContent() {
                   Individual pieces
                 </h2>
                 <p className="mt-2 text-sm text-neutral-500 max-w-lg">
-                  Hats, bottles, and other standalone items — not multi-design collections.
+                  Insoles, shades, jewelry, and other accessory pieces — separate from clothing collections.
                 </p>
               </div>
               <Link

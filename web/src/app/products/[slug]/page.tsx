@@ -463,8 +463,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "How much does it cost?", a: "$60 per bag when back in stock." },
               { q: "When will it restock?", a: "We're restocking the next batch soon. Check back on Collaborative." },
             ] : isApparel ? [
-              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Socks, scarf, UV hat, water bottle, cool shades, jewelry, keychains, lace locks, drone parts, and RC stickers are One Size. Lattice Insoles and Lattice Shoe Trees use S–XL / S–L sizing." },
-              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, Socks, Shorts, and more. Accessories live under their own section." },
+              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Hats, scarves, bottles, cool shades, jewelry, keychains, lace locks, drone parts, and RC stickers are One Size. Socks use S–XL. Lattice Insoles and Lattice Shoe Trees use S–XL / S–L sizing." },
+              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Hats, Scarves, Bottles, and more. Accessories (insoles, shades, jewelry) live under their own Apparel section. Engineering is separate." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : [
               { q: "What if my size doesn't fit?", a: "They're going to fit and also be extremely comfortable. Trust the process" },

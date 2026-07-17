@@ -3,10 +3,10 @@ export const APPAREL_ONE_SIZE = ["One Size"] as const;
 
 /**
  * Apparel sub-sections.
- * - `collection`: multi-product listing pages (shirts, sweaters, socks, …) —
+ * - `collection`: multi-product listing pages (shirts, hats, scarves, bottles, …) —
  *   add new designs to APPAREL_CATALOG with the matching subcategory.
- * - `standalone`: individual products (hats, bottles, scarves) that are not
- *   part of a multi-design collection.
+ * - `standalone`: Accessories only (insoles, shades, jewelry, …) — never mixed
+ *   into clothing collections, and never shown on Engineering `/accessories`.
  */
 export type ApparelSubcategoryId =
   | "shirts"
@@ -16,6 +16,9 @@ export type ApparelSubcategoryId =
   | "sweats"
   | "pants"
   | "outerwear"
+  | "hats"
+  | "scarves"
+  | "bottles"
   | "accessories";
 
 export type ApparelListingKind = "collection" | "standalone";
@@ -24,7 +27,7 @@ export type ApparelSubcategory = {
   id: ApparelSubcategoryId;
   label: string;
   description: string;
-  /** collection = multi-product PLP; standalone = individual accessory products */
+  /** collection = multi-product PLP; standalone = Accessories tab products only */
   listing: ApparelListingKind;
 };
 
@@ -70,6 +73,24 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
     id: "outerwear",
     label: "Outerwear",
     description: "Shells, jackets, and weather layers",
+    listing: "collection",
+  },
+  {
+    id: "hats",
+    label: "Hats",
+    description: "UV hats and headwear designs",
+    listing: "collection",
+  },
+  {
+    id: "scarves",
+    label: "Scarves",
+    description: "Knit scarves and cool-weather neck layers",
+    listing: "collection",
+  },
+  {
+    id: "bottles",
+    label: "Bottles",
+    description: "Insulated bottles and everyday drinkware",
     listing: "collection",
   },
   {
@@ -223,22 +244,10 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-OUT",
     comingSoon: true,
   },
-  // ── Standalone accessories (not multi-product collections) ──────────────
-  {
-    slug: "voronyz-scarf",
-    subcategory: "accessories",
-    name: "Scarf",
-    description: "Soft knit scarf with a clean drape for cool-weather layers.",
-    priceCents: 4200,
-    colors: ["black", "grey"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/scarf.jpg",
-    skuPrefix: "APP-SCRF",
-    comingSoon: true,
-  },
+  // ── Hats (multi-product) ────────────────────────────────────────────────
   {
     slug: "voronyz-uv-hat",
-    subcategory: "accessories",
+    subcategory: "hats",
     name: "UV Hat",
     description: "Wide-brim UV hat for sun coverage on long outdoor days.",
     priceCents: 3800,
@@ -248,9 +257,23 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-UVHT",
     comingSoon: true,
   },
+  // ── Scarves (multi-product) ─────────────────────────────────────────────
+  {
+    slug: "voronyz-scarf",
+    subcategory: "scarves",
+    name: "Scarf",
+    description: "Soft knit scarf with a clean drape for cool-weather layers.",
+    priceCents: 4200,
+    colors: ["black", "grey"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/scarf.jpg",
+    skuPrefix: "APP-SCRF",
+    comingSoon: true,
+  },
+  // ── Bottles (multi-product) ─────────────────────────────────────────────
   {
     slug: "voronyz-water-bottle",
-    subcategory: "accessories",
+    subcategory: "bottles",
     name: "Water Bottle",
     description: "Insulated stainless bottle with a clean Voronyz finish.",
     priceCents: 3600,
@@ -260,6 +283,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-BTTL",
     comingSoon: true,
   },
+  // ── Accessories only (never mixed into clothing collections) ────────────
   {
     slug: "voronyz-lattice-insoles",
     subcategory: "accessories",
