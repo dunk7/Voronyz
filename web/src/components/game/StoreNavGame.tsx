@@ -152,11 +152,6 @@ function drawRoundedRect(
   ctx.closePath();
 }
 
-function isPortraitViewport() {
-  if (typeof window === "undefined") return false;
-  return window.innerHeight > window.innerWidth;
-}
-
 export default function StoreNavGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -171,15 +166,11 @@ export default function StoreNavGame() {
   const rippleRef = useRef<{ x: number; y: number; t: number } | null>(null);
   const popupRef = useRef<{ text: string; t: number } | null>(null);
   const activeZoneRef = useRef<string | null>(null);
-  const fullscreenRef = useRef(false);
-  const forceLandscapeRef = useRef(false);
 
   const [score, setScore] = useState(0);
   const [hint, setHint] = useState("Tap anywhere to walk around the store!");
   const [won, setWon] = useState(false);
   const [activeZone, setActiveZone] = useState<string | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [forceLandscape, setForceLandscape] = useState(false);
 
   const syncCamera = useCallback((player: Vec) => {
     const { w: vw, h: vh } = viewportRef.current;
@@ -196,24 +187,10 @@ export default function StoreNavGame() {
     if (!canvas || !wrapper) return;
 
     const dpr = Math.min(2, window.devicePixelRatio || 1);
-    let cssW: number;
-    let cssH: number;
-
-    if (fullscreenRef.current) {
-      if (forceLandscapeRef.current && isPortraitViewport()) {
-        // CSS-rotated landscape: visual width = phone height, visual height = phone width
-        cssW = window.innerHeight;
-        cssH = window.innerWidth;
-      } else {
-        cssW = window.innerWidth;
-        cssH = window.innerHeight;
-      }
-    } else {
-      const rect = wrapper.getBoundingClientRect();
-      cssW = Math.max(280, Math.floor(rect.width));
-      // Keep a playable landscape-ish playfield in the page layout
-      cssH = Math.max(240, Math.min(Math.round(cssW * 0.62), Math.round(window.innerHeight * 0.55)));
-    }
+    const rect = wrapper.getBoundingClientRect();
+    const cssW = Math.max(280, Math.floor(rect.width));
+    // Keep a playable landscape-ish playfield in the page layout
+    const cssH = Math.max(240, Math.min(Math.round(cssW * 0.62), Math.round(window.innerHeight * 0.55)));
 
     viewportRef.current = { w: cssW, h: cssH };
     canvas.style.width = `${cssW}px`;
@@ -226,41 +203,6 @@ export default function StoreNavGame() {
 
     syncCamera(playerRef.current);
   }, [syncCamera]);
-
-  const exitFullscreen = useCallback(() => {
-    fullscreenRef.current = false;
-    forceLandscapeRef.current = false;
-    setIsFullscreen(false);
-    setForceLandscape(false);
-    document.documentElement.style.overflow = "";
-    document.body.style.overflow = "";
-    document.body.style.touchAction = "";
-    document.body.style.position = "";
-    document.body.style.width = "";
-    document.body.style.height = "";
-    // Defer resize so layout can settle after leaving fixed mode
-    requestAnimationFrame(() => resizeCanvas());
-  }, [resizeCanvas]);
-
-  const enterFullscreen = useCallback(() => {
-    const portrait = isPortraitViewport();
-    fullscreenRef.current = true;
-    forceLandscapeRef.current = portrait;
-    setIsFullscreen(true);
-    setForceLandscape(portrait);
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-    document.body.style.touchAction = "none";
-    document.body.style.position = "fixed";
-    document.body.style.width = "100%";
-    document.body.style.height = "100%";
-    requestAnimationFrame(() => resizeCanvas());
-  }, [resizeCanvas]);
-
-  const toggleFullscreen = useCallback(() => {
-    if (fullscreenRef.current) exitFullscreen();
-    else enterFullscreen();
-  }, [enterFullscreen, exitFullscreen]);
 
   const resetGame = useCallback(() => {
     playerRef.current = { ...START_POS };
@@ -283,7 +225,6 @@ export default function StoreNavGame() {
     const rect = canvas.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return null;
 
-    // getBoundingClientRect already reflects CSS rotation, so client coords map directly
     const localX = ((clientX - rect.left) / rect.width) * viewportRef.current.w;
     const localY = ((clientY - rect.top) / rect.height) * viewportRef.current.h;
     return {
@@ -330,19 +271,10 @@ export default function StoreNavGame() {
   // Resize + orientation
   useEffect(() => {
     resizeCanvas();
-    const onResize = () => {
-      if (fullscreenRef.current) {
-        const portrait = isPortraitViewport();
-        forceLandscapeRef.current = portrait;
-        setForceLandscape(portrait);
-      }
-      resizeCanvas();
-    };
+    const onResize = () => resizeCanvas();
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onResize);
-    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => {
-      if (!fullscreenRef.current) resizeCanvas();
-    }) : null;
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => resizeCanvas()) : null;
     if (ro && wrapperRef.current) ro.observe(wrapperRef.current);
     return () => {
       window.removeEventListener("resize", onResize);
@@ -350,18 +282,6 @@ export default function StoreNavGame() {
       ro?.disconnect();
     };
   }, [resizeCanvas]);
-
-  // Escape exits fullscreen; lock page scroll while playing fullscreen
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && fullscreenRef.current) {
-        e.preventDefault();
-        exitFullscreen();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [exitFullscreen]);
 
   // Prevent page scroll / rubber-band when interacting with the game canvas
   useEffect(() => {
@@ -392,18 +312,6 @@ export default function StoreNavGame() {
       canvas.removeEventListener("touchmove", blockCanvasTouch);
       wrapper.removeEventListener("touchmove", blockWrapperScroll);
       wrapper.removeEventListener("wheel", blockWheel);
-    };
-  }, [isFullscreen]);
-
-  // Cleanup body lock on unmount
-  useEffect(() => {
-    return () => {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
-      document.body.style.touchAction = "";
-      document.body.style.position = "";
-      document.body.style.width = "";
-      document.body.style.height = "";
     };
   }, []);
 
@@ -717,180 +625,97 @@ export default function StoreNavGame() {
     return () => cancelAnimationFrame(raf);
   }, [syncCamera]);
 
-  const hud = (
-    <div
-      className={`flex flex-wrap items-center justify-between gap-3 ${
-        isFullscreen ? "absolute left-0 right-0 top-0 z-20 px-3 py-2 sm:px-4" : ""
-      }`}
-      style={
-        isFullscreen
-          ? {
-              background: "linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0))",
-              pointerEvents: "none",
-            }
-          : undefined
-      }
-    >
-      <div className="space-y-1" style={{ pointerEvents: "auto" }}>
-        <p className={`text-sm ${isFullscreen ? "text-neutral-800" : "text-neutral-600"}`}>{hint}</p>
-        {activeZone && (
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-rose-500">
-            Now in: {activeZone}
-          </p>
-        )}
-      </div>
-      <div className="flex items-center gap-2 sm:gap-3" style={{ pointerEvents: "auto" }}>
-        <div className="rounded-full bg-gradient-to-r from-rose-400 to-amber-300 px-3 py-1.5 text-sm font-semibold text-white shadow-sm sm:px-4">
-          Finds {score}/{INITIAL_COLLECTIBLES.length}
-        </div>
-        <button
-          type="button"
-          onClick={toggleFullscreen}
-          className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 transition hover:border-neutral-300 hover:bg-neutral-50 sm:px-4"
-          aria-pressed={isFullscreen}
-        >
-          {isFullscreen ? "Exit" : "Full screen"}
-        </button>
-        <button
-          type="button"
-          onClick={resetGame}
-          className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 transition hover:border-neutral-300 hover:bg-neutral-50 sm:px-4"
-        >
-          Reset
-        </button>
-      </div>
-    </div>
-  );
-
-  const tip = (
-    <p className="text-center text-xs text-neutral-500">
-      Tip: you stay in the center while the big store map scrolls under you. Use Full screen on phone
-      for landscape play without tilting.
-    </p>
-  );
-
   return (
-    <div
-      className={
-        isFullscreen
-          ? "fixed inset-0 z-[200] bg-black"
-          : "space-y-5"
-      }
-      style={
-        isFullscreen
-          ? {
-              touchAction: "none",
-              overscrollBehavior: "none",
-            }
-          : undefined
-      }
-    >
-      {!isFullscreen && hud}
-
-      <div
-        className={isFullscreen ? "bg-[#fff5eb]" : undefined}
-        style={
-          isFullscreen
-            ? forceLandscape
-              ? {
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  width: "100vh",
-                  height: "100vw",
-                  transform: "translate(-50%, -50%) rotate(90deg)",
-                  transformOrigin: "center center",
-                  touchAction: "none",
-                  overscrollBehavior: "none",
-                }
-              : {
-                  position: "absolute",
-                  inset: 0,
-                  width: "100%",
-                  height: "100%",
-                  touchAction: "none",
-                  overscrollBehavior: "none",
-                }
-            : undefined
-        }
-      >
-        <div
-          ref={wrapperRef}
-          className={`relative overflow-hidden select-none touch-none overscroll-none ${
-            isFullscreen
-              ? "h-full w-full rounded-none ring-0 shadow-none"
-              : "rounded-[28px] ring-1 ring-rose-200/60 shadow-[0_20px_60px_-28px_rgba(255,107,107,0.55)]"
-          }`}
-          style={{
-            background:
-              "radial-gradient(circle at 20% 20%, #ffe8f0, transparent 45%), radial-gradient(circle at 80% 10%, #e8f8ff, transparent 40%), #fff5eb",
-            touchAction: "none",
-            overscrollBehavior: "none",
-            WebkitUserSelect: "none",
-            userSelect: "none",
-          }}
-          onContextMenu={(e) => e.preventDefault()}
-        >
-          <canvas
-            ref={canvasRef}
-            className="block cursor-pointer"
-            style={{
-              touchAction: "none",
-              WebkitTouchCallout: "none",
-              WebkitUserSelect: "none",
-              userSelect: "none",
-              display: "block",
-            }}
-            onPointerDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              (e.target as HTMLCanvasElement).setPointerCapture?.(e.pointerId);
-              handlePointer(e.clientX, e.clientY);
-            }}
-            onPointerMove={(e) => {
-              if (e.buttons > 0) e.preventDefault();
-            }}
-            role="img"
-            aria-label="Top-down Voronyz store map. Tap to move your character. You stay centered while the map moves."
-          />
-
-          {isFullscreen && hud}
-
-          {isFullscreen && forceLandscape && (
-            <p className="pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/45 px-3 py-1 text-[11px] font-medium text-white">
-              Landscape full screen — no need to tilt your phone
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="space-y-1">
+          <p className="text-sm text-neutral-600">{hint}</p>
+          {activeZone && (
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-rose-500">
+              Now in: {activeZone}
             </p>
           )}
-
-          {won && (
-            <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/55 backdrop-blur-[2px]">
-              <div className="mx-4 max-w-sm rounded-3xl bg-white/95 p-6 text-center shadow-xl ring-1 ring-rose-100">
-                <p className="text-2xl font-bold text-neutral-900">You explored the whole store!</p>
-                <p className="mt-2 text-sm text-neutral-600">
-                  Cute stroll complete. Tap reset for another lap, or hop over to shop for real.
-                </p>
-                <div className="mt-5 flex flex-wrap justify-center gap-2">
-                  <button
-                    type="button"
-                    onClick={resetGame}
-                    className="rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white"
-                  >
-                    Play again
-                  </button>
-                  <Link
-                    href="/products"
-                    className="rounded-full bg-gradient-to-r from-rose-400 to-amber-300 px-5 py-2.5 text-sm font-semibold text-white"
-                  >
-                    Shop footwear
-                  </Link>
-                </div>
-              </div>
-            </div>
-          )}
+        </div>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="rounded-full bg-gradient-to-r from-rose-400 to-amber-300 px-3 py-1.5 text-sm font-semibold text-white shadow-sm sm:px-4">
+            Finds {score}/{INITIAL_COLLECTIBLES.length}
+          </div>
+          <button
+            type="button"
+            onClick={resetGame}
+            className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 transition hover:border-neutral-300 hover:bg-neutral-50 sm:px-4"
+          >
+            Reset
+          </button>
         </div>
       </div>
 
-      {!isFullscreen && tip}
+      <div
+        ref={wrapperRef}
+        className="relative overflow-hidden select-none touch-none overscroll-none rounded-[28px] ring-1 ring-rose-200/60 shadow-[0_20px_60px_-28px_rgba(255,107,107,0.55)]"
+        style={{
+          background:
+            "radial-gradient(circle at 20% 20%, #ffe8f0, transparent 45%), radial-gradient(circle at 80% 10%, #e8f8ff, transparent 40%), #fff5eb",
+          touchAction: "none",
+          overscrollBehavior: "none",
+          WebkitUserSelect: "none",
+          userSelect: "none",
+        }}
+        onContextMenu={(e) => e.preventDefault()}
+      >
+        <canvas
+          ref={canvasRef}
+          className="block cursor-pointer"
+          style={{
+            touchAction: "none",
+            WebkitTouchCallout: "none",
+            WebkitUserSelect: "none",
+            userSelect: "none",
+            display: "block",
+          }}
+          onPointerDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            (e.target as HTMLCanvasElement).setPointerCapture?.(e.pointerId);
+            handlePointer(e.clientX, e.clientY);
+          }}
+          onPointerMove={(e) => {
+            if (e.buttons > 0) e.preventDefault();
+          }}
+          role="img"
+          aria-label="Top-down Voronyz store map. Tap to move your character. You stay centered while the map moves."
+        />
+
+        {won && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/55 backdrop-blur-[2px]">
+            <div className="mx-4 max-w-sm rounded-3xl bg-white/95 p-6 text-center shadow-xl ring-1 ring-rose-100">
+              <p className="text-2xl font-bold text-neutral-900">You explored the whole store!</p>
+              <p className="mt-2 text-sm text-neutral-600">
+                Cute stroll complete. Tap reset for another lap, or hop over to shop for real.
+              </p>
+              <div className="mt-5 flex flex-wrap justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={resetGame}
+                  className="rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white"
+                >
+                  Play again
+                </button>
+                <Link
+                  href="/products"
+                  className="rounded-full bg-gradient-to-r from-rose-400 to-amber-300 px-5 py-2.5 text-sm font-semibold text-white"
+                >
+                  Shop footwear
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <p className="text-center text-xs text-neutral-500">
+        Tip: you stay in the center while the big store map scrolls under you.
+      </p>
     </div>
   );
 }

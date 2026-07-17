@@ -28,7 +28,7 @@ export default function GamePage() {
             Store Stroll
           </h1>
           <p className="text-neutral-600 text-base md:text-lg leading-relaxed">
-            Tap where you want to go — you stay centered while the big store map moves. On phone, hit Full screen for landscape play without tilting.
+            Tap where you want to go — you stay centered while the big store map moves.
           </p>
         </div>
 
