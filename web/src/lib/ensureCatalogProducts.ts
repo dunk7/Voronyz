@@ -1,5 +1,15 @@
 import { prisma } from "@/lib/prisma";
 import { MAGIKID_SHOES_THUMBNAIL_URL, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT, MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
+import {
+  GUN_HOLSTER_DESCRIPTION_SHORT,
+  GUN_HOLSTER_IMAGES,
+  GUN_HOLSTER_NAME,
+  GUN_HOLSTER_PRICE_CENTS,
+  GUN_HOLSTER_PRIMARY_COLORS,
+  GUN_HOLSTER_SIZES,
+  GUN_HOLSTER_SLUG,
+  GUN_HOLSTER_VARIANTS,
+} from "@/lib/gunHolster";
 
 const MAGIKID_SHOES_IMAGES = [
   MAGIKID_SHOES_THUMBNAIL_URL,
@@ -71,9 +81,61 @@ export async function ensureMagikidShoes(): Promise<void> {
   }
 }
 
+/** Idempotently upsert Gun Holster so it appears without a manual seed run. */
+export async function ensureGunHolster(): Promise<void> {
+  const existing = await prisma.product.findUnique({ where: { slug: GUN_HOLSTER_SLUG } });
+
+  if (!existing) {
+    await prisma.product.create({
+      data: {
+        slug: GUN_HOLSTER_SLUG,
+        name: GUN_HOLSTER_NAME,
+        description: GUN_HOLSTER_DESCRIPTION_SHORT,
+        priceCents: GUN_HOLSTER_PRICE_CENTS,
+        currency: "usd",
+        images: [...GUN_HOLSTER_IMAGES],
+        primaryColors: [...GUN_HOLSTER_PRIMARY_COLORS],
+        secondaryColors: [],
+        sizes: [...GUN_HOLSTER_SIZES],
+        variants: {
+          create: GUN_HOLSTER_VARIANTS.map((v) => ({ ...v })),
+        },
+      },
+    });
+    return;
+  }
+
+  await prisma.product.update({
+    where: { id: existing.id },
+    data: {
+      name: GUN_HOLSTER_NAME,
+      description: GUN_HOLSTER_DESCRIPTION_SHORT,
+      priceCents: GUN_HOLSTER_PRICE_CENTS,
+      images: [...GUN_HOLSTER_IMAGES],
+      primaryColors: [...GUN_HOLSTER_PRIMARY_COLORS],
+      secondaryColors: [],
+      sizes: [...GUN_HOLSTER_SIZES],
+    },
+  });
+
+  for (const v of GUN_HOLSTER_VARIANTS) {
+    await prisma.variant.upsert({
+      where: { sku: v.sku },
+      update: { stock: v.stock },
+      create: {
+        product: { connect: { id: existing.id } },
+        color: v.color,
+        sku: v.sku,
+        stock: v.stock,
+      },
+    });
+  }
+}
+
 export async function ensureCatalogProducts(): Promise<void> {
   try {
     await ensureMagikidShoes();
+    await ensureGunHolster();
   } catch (error) {
     console.error("ensureCatalogProducts failed:", error);
   }

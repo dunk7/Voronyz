@@ -8,13 +8,18 @@ import { Metadata } from "next";
 import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
 import {
   MAGIKID_SHOES_THUMBNAIL_URL,
-  MAGIKID_SHOES_KIDS_SIZES,
   MAGIKID_SHOES_DESCRIPTION,
   MAGIKID_SHOES_HOW_ITS_MADE,
   MAGIKID_SHOES_META_DESCRIPTION,
   MAGIKID_SHOES_BASE_PRICE_CENTS,
   MAGIKID_SHOES_SHIPPED_PRICE_CENTS,
 } from "@/lib/magikidShoesThumbnail";
+import {
+  GUN_HOLSTER_DESCRIPTION,
+  GUN_HOLSTER_IMAGES,
+  GUN_HOLSTER_SLUG,
+} from "@/lib/gunHolster";
+import { isAccessorySlug } from "@/lib/productCategories";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
 // This page is rendered on-demand.
@@ -136,6 +141,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? slipOnsImages
     : slug === "magikid-shoes"
     ? magikidShoesImages
+    : slug === GUN_HOLSTER_SLUG
+    ? [...GUN_HOLSTER_IMAGES]
     : ((product.images as string[] | null) ?? defaultImages);
   const galleryMedia: Media[] = images.map((src) => ({ type: "image" as const, src, alt: product.name }));
   if (slug === "slip-ons") {
@@ -149,6 +156,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isDragonfly = slug === "dragonfly";
   const isSlipOns = slug === "slip-ons";
   const isMagikidShoes = slug === "magikid-shoes";
+  const isGunHolster = slug === GUN_HOLSTER_SLUG;
+  const shopHref = isAccessorySlug(slug) ? "/accessories" : "/products";
+  const shopLabel = isAccessorySlug(slug) ? "Back to Accessories" : "Back to Shop";
 
   // Product-specific descriptions
   const displayDescription = slug === "v3-slides" 
@@ -159,13 +169,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? MAGIKID_SHOES_DESCRIPTION
     : isSlipOns
     ? "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — black, grey, orange in stock; white temporarily unavailable."
+    : isGunHolster
+    ? GUN_HOLSTER_DESCRIPTION
     : product.description;
 
   return (
     <div className="bg-texture-white">
       <div className="container pt-4 pb-12">
         <div className="flex items-center gap-3 mb-6">
-          <Link href="/products" className="inline-flex items-center justify-center rounded-full p-2 ring-1 ring-black/10 hover:bg-black/5 text-neutral-600 hover:text-neutral-900 transition-colors bg-white" aria-label="Back to shop">
+          <Link href={shopHref} className="inline-flex items-center justify-center rounded-full p-2 ring-1 ring-black/10 hover:bg-black/5 text-neutral-600 hover:text-neutral-900 transition-colors bg-white" aria-label={shopLabel}>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
@@ -186,8 +198,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
               {isMagikidShoes ? "Made to order in <7 days" : "Made to order in <2 days"}
             </span>
-            {!isMagikidShoes && (
+            {!isMagikidShoes && !isGunHolster && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
+            )}
+            {isGunHolster && (
+              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">One size</span>
             )}
             {isDragonfly && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Custom lace colors</span>
@@ -234,6 +249,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                       },
                     ],
                   })}
+                  {...(isGunHolster && {
+                    hideSizeSelector: true,
+                  })}
                   sizes={product.sizes as string[]}
                   productName={product.name}
                   coverImage={(images[0] as string) || defaultImages[0]}
@@ -243,7 +261,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               </Suspense>
 
               <div className="flex items-center gap-4 text-xs text-neutral-500">
-                <Link href="/products" className="underline hover:no-underline">← Back to Shop</Link>
+                <Link href={shopHref} className="underline hover:no-underline">← {shopLabel}</Link>
                 <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
                   <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -259,7 +277,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <div className="container pb-12">
         <div className="mt-10 overflow-hidden rounded-3xl ring-1 ring-black/5 bg-white">
           <div className="bg-black text-white px-6 py-4 text-sm font-medium">
-            {isDragonfly ? "Crafted for you" : isMagikidShoes ? "Magikid edition" : isSlipOns ? "Print + finish" : "How it's made"}
+            {isDragonfly ? "Crafted for you" : isMagikidShoes ? "Magikid edition" : isSlipOns ? "Print + finish" : isGunHolster ? "Built for carry" : "How it's made"}
           </div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed">
             {isDragonfly
@@ -268,6 +286,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? MAGIKID_SHOES_HOW_ITS_MADE
               : isSlipOns
               ? "Slip Ons are printed in one piece per colorway for a seamless look, then finished for flex and daily wear. There is no secondary accent color — the shade you choose is the full shoe."
+              : isGunHolster
+              ? "Each holster is 3D-printed to order from a durable polymer blend, then finished for a smooth, consistent carry profile. One size fits standard everyday carry setups — pick your color and we print."
               : "Each pair takes a full day to print using our proprietary TPU blend. Following printing, we perform heat-treated post-processing to ensure exceptional quality, comfort, and durability."}
           </div>
         </div>
@@ -291,6 +311,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Why is white unavailable?", a: "We're temporarily out of white material runs. Select another color or check back — inventory updates when we restock." },
               { q: "Are they true to size?", a: "Use the Men's / Women's / Kids' toggles on the product page to pick your usual US size." },
               { q: "How long does production take?", a: "About 1–2 days to print, then we ship the next business day." },
+            ] : isGunHolster ? [
+              { q: "What colors are available?", a: "Black, grey, and tan." },
+              { q: "Does it come in multiple sizes?", a: "One size — designed for a standard everyday carry setup." },
+              { q: "How long does production take?", a: "Printed to order in about 1–2 days, then ships the next business day." },
+              { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : [
               { q: "What if my size doesn't fit?", a: "They're going to fit and also be extremely comfortable. Trust the process" },
               { q: "Are they waterproof?", a: "Yes. 100% waterproof. Throw them in your washer to clean!" },
@@ -336,6 +361,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const title = "Magikid Shoes – Voronyz";
     const description = MAGIKID_SHOES_META_DESCRIPTION;
     const images = [MAGIKID_SHOES_THUMBNAIL_URL];
+    return {
+      title,
+      description,
+      openGraph: { title, description, images },
+      twitter: { card: "summary_large_image", title, description, images },
+    };
+  }
+
+  if (slug === GUN_HOLSTER_SLUG) {
+    const title = "Gun Holster – Voronyz";
+    const description = GUN_HOLSTER_DESCRIPTION;
+    const images = [...GUN_HOLSTER_IMAGES];
     return {
       title,
       description,
