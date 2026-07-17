@@ -3,6 +3,13 @@ import {
   MAGIKID_SHOES_DESCRIPTION_SHORT,
   MAGIKID_SHOES_THUMBNAIL_URL,
 } from "@/lib/magikidShoesThumbnail";
+import {
+  GATORS_DESCRIPTION_SHORT,
+  GATORS_IMAGES,
+  GATORS_NAME,
+  GATORS_PRICE_CENTS,
+  GATORS_SLUG,
+} from "@/lib/gators";
 import { getProductThumbnail } from "@/lib/productImages";
 
 /** Core footwear catalog — used as an immediate client seed when /api/search is slow or down. */
@@ -14,7 +21,52 @@ export type FootwearCatalogItem = {
   images: string[];
 };
 
+/**
+ * Display order for All Footwear:
+ * Magikid → Slip Ons → Gators → Slides → Sneakers (Dragonfly last).
+ */
 export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
+  {
+    slug: "magikid-shoes",
+    name: "Magikid Shoes",
+    description: MAGIKID_SHOES_DESCRIPTION_SHORT,
+    priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
+    images: [
+      MAGIKID_SHOES_THUMBNAIL_URL,
+      "/products/slip-ons/InShot_20260405_203151152.jpg",
+      "/products/slip-ons/InShot_20260405_203425292.jpg",
+      "/products/slip-ons/InShot_20260405_203601045.jpg",
+      "/products/slip-ons/InShot_20260405_203736918.jpg",
+      "/products/slip-ons/InShot_20260405_203930832.jpg",
+      "/products/slip-ons/InShot_20260405_204113872.jpg",
+      "/products/slip-ons/InShot_20260405_204333303.jpg",
+      "/products/slip-ons/InShot_20260405_202911983.jpg",
+    ],
+  },
+  {
+    slug: "slip-ons",
+    name: "Slip Ons",
+    description:
+      "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, or orange (white coming soon).",
+    priceCents: 6000,
+    images: [
+      "/products/slip-ons/InShot_20260405_203151152.jpg",
+      "/products/slip-ons/InShot_20260405_203425292.jpg",
+      "/products/slip-ons/InShot_20260405_203601045.jpg",
+      "/products/slip-ons/InShot_20260405_203736918.jpg",
+      "/products/slip-ons/InShot_20260405_203930832.jpg",
+      "/products/slip-ons/InShot_20260405_204113872.jpg",
+      "/products/slip-ons/InShot_20260405_204333303.jpg",
+      "/products/slip-ons/InShot_20260405_202911983.jpg",
+    ],
+  },
+  {
+    slug: GATORS_SLUG,
+    name: GATORS_NAME,
+    description: GATORS_DESCRIPTION_SHORT,
+    priceCents: GATORS_PRICE_CENTS,
+    images: [...GATORS_IMAGES],
+  },
   {
     slug: "v3-slides",
     name: "V3 Slides",
@@ -50,40 +102,6 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
       "/products/dragonfly/InShot_20260212_155434004.jpg",
       "/products/dragonfly/InShot_20260212_155809942.jpg",
       "/products/dragonfly/InShot_20260212_160512335.jpg",
-    ],
-  },
-  {
-    slug: "slip-ons",
-    name: "Slip Ons",
-    description:
-      "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, or orange (white coming soon).",
-    priceCents: 6000,
-    images: [
-      "/products/slip-ons/InShot_20260405_203151152.jpg",
-      "/products/slip-ons/InShot_20260405_203425292.jpg",
-      "/products/slip-ons/InShot_20260405_203601045.jpg",
-      "/products/slip-ons/InShot_20260405_203736918.jpg",
-      "/products/slip-ons/InShot_20260405_203930832.jpg",
-      "/products/slip-ons/InShot_20260405_204113872.jpg",
-      "/products/slip-ons/InShot_20260405_204333303.jpg",
-      "/products/slip-ons/InShot_20260405_202911983.jpg",
-    ],
-  },
-  {
-    slug: "magikid-shoes",
-    name: "Magikid Shoes",
-    description: MAGIKID_SHOES_DESCRIPTION_SHORT,
-    priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
-    images: [
-      MAGIKID_SHOES_THUMBNAIL_URL,
-      "/products/slip-ons/InShot_20260405_203151152.jpg",
-      "/products/slip-ons/InShot_20260405_203425292.jpg",
-      "/products/slip-ons/InShot_20260405_203601045.jpg",
-      "/products/slip-ons/InShot_20260405_203736918.jpg",
-      "/products/slip-ons/InShot_20260405_203930832.jpg",
-      "/products/slip-ons/InShot_20260405_204113872.jpg",
-      "/products/slip-ons/InShot_20260405_204333303.jpg",
-      "/products/slip-ons/InShot_20260405_202911983.jpg",
     ],
   },
 ];
