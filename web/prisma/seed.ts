@@ -161,7 +161,7 @@ async function main() {
             "/products/dragonfly/InShot_20260212_155809942.jpg",
             "/products/dragonfly/InShot_20260212_160512335.jpg",
           ],
-          primaryColors: ["black", "white", "red", "#007FFF"],
+          primaryColors: ["black", "white", "red", "#007FFF", "pink"],
           secondaryColors: ["black", "white", "grey", "red", "#007FFF", "green", "blue", "maroon", "pink", "purple", "orange", "yellow", "navy", "teal"],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
           variants: {
@@ -170,6 +170,7 @@ async function main() {
               { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },  // Out of stock
               { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
               { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
+              { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 6500 },
             ],
           },
         },
@@ -196,7 +197,7 @@ async function main() {
             "/products/dragonfly/InShot_20260212_155809942.jpg",
             "/products/dragonfly/InShot_20260212_160512335.jpg",
           ],
-          primaryColors: ["black", "white", "red", "#007FFF"],
+          primaryColors: ["black", "white", "red", "#007FFF", "pink"],
           secondaryColors: ["black", "white", "grey", "red", "#007FFF", "green", "blue", "maroon", "pink", "purple", "orange", "yellow", "navy", "teal"],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
         },
@@ -208,6 +209,7 @@ async function main() {
         { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },
         { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
         { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
+        { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 6500 },
       ];
       for (const v of dfVariants) {
         await prisma.variant.upsert({
@@ -245,11 +247,11 @@ async function main() {
           slug: "slip-ons",
           name: "Slip Ons",
           description:
-            "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, or orange (white coming soon).",
+            "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
           priceCents: 6000,
           currency: "usd",
           images: slipOnImages,
-          primaryColors: ["black", "grey", "white", "orange"],
+          primaryColors: ["black", "grey", "white", "orange", "pink"],
           secondaryColors: [],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
           variants: {
@@ -258,6 +260,7 @@ async function main() {
               { color: "grey", sku: "SO-GRY", stock: 999 },
               { color: "white", sku: "SO-WHT", stock: 0 },
               { color: "orange", sku: "SO-ORG", stock: 999 },
+              { color: "pink", sku: "SO-PNK", stock: 999 },
             ],
           },
         },
@@ -271,10 +274,10 @@ async function main() {
         data: {
           name: "Slip Ons",
           description:
-            "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, or orange (white coming soon).",
+            "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
           priceCents: 6000,
           images: slipOnImages,
-          primaryColors: ["black", "grey", "white", "orange"],
+          primaryColors: ["black", "grey", "white", "orange", "pink"],
           secondaryColors: [],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
         },
@@ -284,6 +287,7 @@ async function main() {
         { color: "grey", sku: "SO-GRY", stock: 999 },
         { color: "white", sku: "SO-WHT", stock: 0 },
         { color: "orange", sku: "SO-ORG", stock: 999 },
+        { color: "pink", sku: "SO-PNK", stock: 999 },
       ];
       for (const v of soVariants) {
         await prisma.variant.upsert({
@@ -323,7 +327,7 @@ async function main() {
           priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
           currency: "usd",
           images: magikidShoesImages,
-          primaryColors: ["black", "grey", "white", "orange"],
+          primaryColors: ["black", "grey", "white", "orange", "pink"],
           secondaryColors: [],
           sizes: MAGIKID_SHOES_KIDS_SIZES,
           variants: {
@@ -332,6 +336,7 @@ async function main() {
               { color: "grey", sku: "MK-GRY", stock: 999 },
               { color: "white", sku: "MK-WHT", stock: 0 },
               { color: "orange", sku: "MK-ORG", stock: 0 },
+              { color: "pink", sku: "MK-PNK", stock: 999 },
             ],
           },
         },
@@ -347,7 +352,7 @@ async function main() {
           description: MAGIKID_SHOES_DESCRIPTION_SHORT,
           priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
           images: magikidShoesImages,
-          primaryColors: ["black", "grey", "white", "orange"],
+          primaryColors: ["black", "grey", "white", "orange", "pink"],
           secondaryColors: [],
           sizes: MAGIKID_SHOES_KIDS_SIZES,
         },
@@ -357,6 +362,7 @@ async function main() {
         { color: "grey", sku: "MK-GRY", stock: 999 },
         { color: "white", sku: "MK-WHT", stock: 0 },
         { color: "orange", sku: "MK-ORG", stock: 0 },
+        { color: "pink", sku: "MK-PNK", stock: 999 },
       ];
       for (const v of mkVariants) {
         await prisma.variant.upsert({

@@ -75,19 +75,21 @@ const FOOTWEAR_VARIANTS: Record<
     { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },
     { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
     { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
+    { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 6500 },
   ],
   "slip-ons": [
     { color: "black", sku: "SO-BLK", stock: 999 },
     { color: "grey", sku: "SO-GRY", stock: 999 },
     { color: "white", sku: "SO-WHT", stock: 0 },
     { color: "orange", sku: "SO-ORG", stock: 999 },
+    { color: "pink", sku: "SO-PNK", stock: 999 },
   ],
 };
 
 const FOOTWEAR_COLORS: Record<string, string[]> = {
   "v3-slides": ["black", "white", "grey", "green", "pink"],
-  dragonfly: ["black", "white", "red", "#007FFF"],
-  "slip-ons": ["black", "grey", "white", "orange"],
+  dragonfly: ["black", "white", "red", "#007FFF", "pink"],
+  "slip-ons": ["black", "grey", "white", "orange", "pink"],
 };
 
 const FOOTWEAR_SECONDARY: Record<string, string[]> = {
@@ -195,7 +197,10 @@ const MAGIKID_VARIANTS = [
   { color: "grey", sku: "MK-GRY", stock: 999 },
   { color: "white", sku: "MK-WHT", stock: 0 },
   { color: "orange", sku: "MK-ORG", stock: 0 },
+  { color: "pink", sku: "MK-PNK", stock: 999 },
 ] as const;
+
+const MAGIKID_PRIMARY_COLORS = ["black", "grey", "white", "orange", "pink"] as const;
 
 /** Keep footwear white OOS / pink in stock without requiring a manual seed run. */
 type FootwearStockVariant = {
@@ -226,6 +231,7 @@ const FOOTWEAR_STOCK_SYNC: Array<{
       { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },
       { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
       { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
+      { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 6500 },
     ],
   },
   {
@@ -235,6 +241,7 @@ const FOOTWEAR_STOCK_SYNC: Array<{
       { color: "grey", sku: "SO-GRY", stock: 999 },
       { color: "white", sku: "SO-WHT", stock: 0 },
       { color: "orange", sku: "SO-ORG", stock: 999 },
+      { color: "pink", sku: "SO-PNK", stock: 999 },
     ],
   },
 ];
@@ -277,7 +284,7 @@ export async function ensureMagikidShoes(): Promise<void> {
         currency: "usd",
         category: "footwear",
         images: MAGIKID_SHOES_IMAGES,
-        primaryColors: ["black", "grey", "white", "orange"],
+        primaryColors: [...MAGIKID_PRIMARY_COLORS],
         secondaryColors: [],
         sizes: MAGIKID_SHOES_KIDS_SIZES,
         variants: {
@@ -296,7 +303,7 @@ export async function ensureMagikidShoes(): Promise<void> {
       priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
       category: "footwear",
       images: MAGIKID_SHOES_IMAGES,
-      primaryColors: ["black", "grey", "white", "orange"],
+      primaryColors: [...MAGIKID_PRIMARY_COLORS],
       secondaryColors: [],
       sizes: MAGIKID_SHOES_KIDS_SIZES,
     },
@@ -657,14 +664,7 @@ export async function ensureFootwearCatalog(): Promise<void> {
       await ensureFootwearProducts();
       await ensureFootwearStock();
       await ensureGators();
-      // Hot path: only create Magikid if missing — never rewrite the whole catalog.
-      const existing = await prisma.product.findUnique({
-        where: { slug: "magikid-shoes" },
-        select: { id: true },
-      });
-      if (!existing) {
-        await ensureMagikidShoes();
-      }
+      await ensureMagikidShoes();
       footwearEnsureAt = Date.now();
     } catch (error) {
       console.error("ensureFootwearCatalog failed:", error);
