@@ -95,31 +95,43 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
   );
 
   useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+
     async function fetchProducts() {
       setLoading(true);
       try {
-        const url = searchQuery
-          ? `/api/search?q=${encodeURIComponent(searchQuery)}`
-          : "/api/search";
-        const response = await fetch(url);
+        const params = new URLSearchParams();
+        if (searchQuery) params.set("q", searchQuery);
+        // Server filters by category so All Footwear skips heavy catalog sync.
+        if (category !== "all") params.set("category", category);
+        const qs = params.toString();
+        const url = qs ? `/api/search?${qs}` : "/api/search";
+        const response = await fetch(url, { signal: controller.signal });
         if (response.ok) {
           const data = await response.json();
           let list: Product[] = data.products || [];
+          // Client-side filter remains as a safety net for cached/old responses.
           if (category === "footwear") list = filterFootwearProducts(list);
           else if (category === "accessories") list = filterAccessoryProducts(list);
           else if (category === "health") list = filterHealthProducts(list);
-          setProducts(list);
-        } else {
+          if (!cancelled) setProducts(list);
+        } else if (!cancelled) {
           setProducts([]);
         }
       } catch (error) {
+        if ((error as Error)?.name === "AbortError") return;
         console.error("Failed to fetch products:", error);
-        setProducts([]);
+        if (!cancelled) setProducts([]);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
     fetchProducts();
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
   }, [searchQuery, category]);
 
   const heading =
@@ -166,7 +178,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
             <div className="mt-6 h-px bg-neutral-200" />
           </div>
           <div className="flex min-h-[40vh] items-center justify-center py-16">
-            <LogoLoader size="lg" label="Loading" />
+            <LogoLoader size="lg" label="Loading" orbit />
           </div>
         </div>
       </div>

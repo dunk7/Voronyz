@@ -156,9 +156,86 @@ body {
   }
 }
 
+/* Fast orbit around “Voronyz Logo” wordmark */
+@keyframes logo-orbit-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes logo-orbit-bounce {
+  0%,
+  100% {
+    transform: translateX(var(--logo-orbit-radius, 42px)) translateY(0) scale(0.92);
+  }
+  35% {
+    transform: translateX(var(--logo-orbit-radius, 42px)) translateY(-10px) scale(1.08);
+  }
+  70% {
+    transform: translateX(var(--logo-orbit-radius, 42px)) translateY(6px) scale(0.96);
+  }
+}
+
+@keyframes logo-mark-twirl {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes logo-wordmark-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    letter-spacing: 0.28em;
+  }
+  50% {
+    opacity: 1;
+    letter-spacing: 0.34em;
+  }
+}
+
 .logo-loader-mark {
   animation: logo-mark-breathe 1.35s ease-in-out infinite;
   will-change: transform, opacity;
+}
+
+.logo-loader-stage {
+  isolation: isolate;
+}
+
+.logo-loader-wordmark {
+  animation: logo-wordmark-pulse 1.1s ease-in-out infinite;
+}
+
+.logo-loader-orbit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: logo-orbit-spin var(--logo-orbit-duration, 0.85s) linear infinite;
+  will-change: transform;
+}
+
+.logo-loader-orbit-reverse {
+  animation-direction: reverse;
+}
+
+.logo-loader-orbit-arm {
+  /* Sits on the orbit radius and bounces while the parent spins */
+  transform: translateX(var(--logo-orbit-radius, 42px));
+  animation: logo-orbit-bounce var(--logo-bounce-duration, 0.55s) ease-in-out infinite;
+  will-change: transform;
+}
+
+.logo-loader-mark-spin {
+  display: block;
+  animation: logo-mark-twirl 0.45s linear infinite;
+  will-change: transform;
 }
 
 .logo-loader-bar-fill {
@@ -167,14 +244,24 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .logo-loader-mark,
-  .logo-loader-bar-fill {
+  .logo-loader-bar-fill,
+  .logo-loader-orbit,
+  .logo-loader-orbit-arm,
+  .logo-loader-mark-spin,
+  .logo-loader-wordmark {
     animation: none;
     opacity: 1;
     transform: none;
+    letter-spacing: 0.28em;
   }
 
   .logo-loader-bar-fill {
     width: 55%;
     left: 22.5%;
+  }
+
+  /* Park the mark beside the wordmark when motion is reduced */
+  .logo-loader-orbit-arm {
+    transform: translateX(var(--logo-orbit-radius, 42px));
   }
 }
