@@ -34,6 +34,7 @@ import {
 } from "@/lib/trailMix";
 import { isAccessorySlug, isApparelSlug, isHealthSlug } from "@/lib/productCategories";
 import { getApparelItem, getApparelImages, getApparelSubcategory } from "@/lib/apparel";
+import LogoLoader from "@/components/ui/LogoLoader";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
 // This page is rendered on-demand.
@@ -297,7 +298,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         </div>
 
         {isGunHolster ? (
-          <Suspense fallback={<div className="h-[320px] bg-neutral-100 rounded-3xl animate-pulse" />}>
+          <Suspense fallback={
+            <div className="h-[320px] rounded-3xl bg-neutral-100 flex items-center justify-center">
+              <LogoLoader size="md" />
+            </div>
+          }>
             <GunHolsterPurchase
               variants={holsterVariants}
               primaryColors={holsterColors}
@@ -313,7 +318,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
           <div className="lg:col-span-5">
             <div className="lg:sticky lg:top-20 space-y-6">
-              <Suspense fallback={<div className="h-[48px] bg-gray-200 rounded-full animate-pulse" />}>
+              <Suspense fallback={
+                <div className="h-[48px] rounded-full bg-neutral-100 flex items-center justify-center">
+                  <LogoLoader size="sm" showBar={false} className="!gap-0 scale-75" />
+                </div>
+              }>
                 <AddToCart
                   variants={product.variants}
                   primaryColors={isTrailMix ? trailMixColors : (product.primaryColors as string[])}

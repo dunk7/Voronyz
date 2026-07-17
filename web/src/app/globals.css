@@ -128,3 +128,93 @@ body {
 .messenger-shell [role="slider"] {
   touch-action: manipulation;
 }
+
+/* Voronyz logo loader — center core + three satellite dots */
+@keyframes logo-dot-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.82);
+  }
+  45%,
+  55% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes logo-core-breathe {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes logo-bar-sweep {
+  0% {
+    transform: translateX(-110%);
+    width: 35%;
+  }
+  50% {
+    width: 55%;
+  }
+  100% {
+    transform: translateX(280%);
+    width: 35%;
+  }
+}
+
+.logo-loader-mark {
+  overflow: visible;
+}
+
+.logo-loader-dot {
+  transform-origin: center;
+  transform-box: fill-box;
+  will-change: transform, opacity;
+}
+
+.logo-loader-dot--core {
+  animation: logo-core-breathe 1.35s ease-in-out infinite;
+}
+
+.logo-loader-dot--a {
+  animation: logo-dot-pulse 1.35s ease-in-out infinite;
+  animation-delay: 0ms;
+}
+
+.logo-loader-dot--b {
+  animation: logo-dot-pulse 1.35s ease-in-out infinite;
+  animation-delay: 180ms;
+}
+
+.logo-loader-dot--c {
+  animation: logo-dot-pulse 1.35s ease-in-out infinite;
+  animation-delay: 360ms;
+}
+
+.logo-loader-bar-fill {
+  animation: logo-bar-sweep 1.4s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-loader-dot--core,
+  .logo-loader-dot--a,
+  .logo-loader-dot--b,
+  .logo-loader-dot--c,
+  .logo-loader-bar-fill {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .logo-loader-bar-fill {
+    width: 55%;
+    left: 22.5%;
+  }
+}

@@ -10,6 +10,7 @@ import {
 } from "@/lib/discountPricing";
 import Image from "next/image";
 import Link from "next/link";
+import LogoLoader from "@/components/ui/LogoLoader";
 
 interface CartItem {
   id: string;
@@ -153,7 +154,13 @@ export default function CartClient() {
     return sum + unitPriceForItem(it, discountCode) * it.quantity;
   }, 0);
 
-  if (isLoading) return <div className="text-neutral-900">Loading…</div>;
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[30vh] items-center justify-center py-12">
+        <LogoLoader size="md" label="Loading cart" />
+      </div>
+    );
+  }
   if (!items.length) return <div className="text-neutral-900">Your cart is empty.</div>;
 
   return (

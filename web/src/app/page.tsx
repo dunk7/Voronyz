@@ -4,6 +4,7 @@ import HeroParallax from "@/components/HeroParallax";
 import { ArrowRight } from "lucide-react";
 import { Suspense } from "react";
 import ProductsContent from "@/app/products/ProductsContent";
+import LogoLoader from "@/components/ui/LogoLoader";
 
 export default function Home() {
   return (
@@ -198,16 +199,8 @@ export default function Home() {
       {/* All Footwear — seamless continuation */}
       <Suspense fallback={
         <div className="bg-texture-white">
-          <div className="container py-16">
-            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="aspect-square w-full bg-neutral-100 rounded-2xl" />
-                  <div className="mt-4 h-5 bg-neutral-200 rounded w-32" />
-                  <div className="mt-2 h-3 bg-neutral-100 rounded w-48" />
-                </div>
-              ))}
-            </div>
+          <div className="container flex min-h-[40vh] items-center justify-center py-16">
+            <LogoLoader size="lg" label="Loading" />
           </div>
         </div>
       }>
