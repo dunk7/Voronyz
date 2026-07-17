@@ -148,7 +148,14 @@ export default function AddToCart({
       if (primaryParam && primaryColors.includes(primaryParam.toLowerCase())) {
         return primaryParam.toLowerCase();
       }
-      return primaryColors[0];
+      // Prefer first in-stock color (matches display order: available first)
+      const firstAvailable = primaryColors.find((color) => {
+        if (soldOut || preOrder) return true;
+        const variant = variants.find((v) => v.color === color);
+        const stock = variant ? variant.stock : 999;
+        return stock > 0;
+      });
+      return firstAvailable ?? primaryColors[0];
     }
   );
 
@@ -214,6 +221,27 @@ export default function AddToCart({
     const stock = getStockForPrimary(color);
     return stock > 0;
   };
+
+  // Available colors first; out-of-stock colors at the bottom
+  const sortedPrimaryColors = useMemo(() => {
+    const rank = (color: string) => {
+      if (soldOut || preOrder) return 0;
+      const variant = variants.find((v) => v.color === color);
+      const stock = variant ? variant.stock : 999;
+      return stock > 0 ? 0 : 1;
+    };
+    return [...primaryColors].sort((a, b) => rank(a) - rank(b));
+  }, [primaryColors, variants, soldOut, preOrder]);
+
+  const sortedFlavorOptions = useMemo(() => {
+    const rank = (color: string) => {
+      if (soldOut || preOrder) return 0;
+      const variant = variants.find((v) => v.color === color);
+      const stock = variant ? variant.stock : 999;
+      return stock > 0 ? 0 : 1;
+    };
+    return [...flavorOptions].sort((a, b) => rank(a.id) - rank(b.id));
+  }, [flavorOptions, variants, soldOut, preOrder]);
 
   const selectedVariant = useMemo(() => {
     if (!selectedPrimary) return null;
@@ -517,7 +545,7 @@ export default function AddToCart({
           <div className="grid gap-2">
             <label className="text-sm text-neutral-700">Flavor</label>
             <div className="grid gap-2">
-              {flavorOptions.map((flavor) => {
+              {sortedFlavorOptions.map((flavor) => {
                 const isSelected = selectedPrimary === flavor.id;
                 const available = isPrimaryAvailable(flavor.id);
                 return (
@@ -553,7 +581,7 @@ export default function AddToCart({
         <div className="grid gap-2">
           <label className="text-sm text-neutral-700">Primary Color</label>
           <div className="flex flex-wrap gap-2">
-            {primaryColors.map((color) => {
+            {sortedPrimaryColors.map((color) => {
               const isSelected = selectedPrimary === color;
               const available = isPrimaryAvailable(color);
               return (
