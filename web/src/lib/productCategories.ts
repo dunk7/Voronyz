@@ -5,6 +5,7 @@ import {
   isObsoleteApparelSlug,
   type ApparelSubcategoryId,
 } from "@/lib/apparel";
+import { FOOTWEAR_SLUGS } from "@/lib/footwear";
 
 /** Product slugs in Engineering (`/accessories`) — never apparel catalog items. */
 export const ACCESSORY_SLUGS = ["gun-holster"] as const;
@@ -39,7 +40,14 @@ export function isFootwearSlug(slug: string | null | undefined): boolean {
 }
 
 export function filterFootwearProducts<T extends { slug: string }>(products: T[]): T[] {
-  return products.filter((p) => isFootwearSlug(p.slug));
+  const order = new Map(FOOTWEAR_SLUGS.map((slug, index) => [slug, index]));
+  return products
+    .filter((p) => isFootwearSlug(p.slug))
+    .sort((a, b) => {
+      const aKey = a.slug.trim().toLowerCase();
+      const bKey = b.slug.trim().toLowerCase();
+      return (order.get(aKey) ?? Number.MAX_SAFE_INTEGER) - (order.get(bKey) ?? Number.MAX_SAFE_INTEGER);
+    });
 }
 
 /** Engineering grid only — never includes apparel clothing or apparel Accessories. */
