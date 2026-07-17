@@ -136,7 +136,7 @@ export function notifyPaidOrder(orderId: string): void {
 
 async function notifyPaidOrderAsync(orderId: string): Promise<void> {
   const order = await prisma.order.findUnique({ where: { id: orderId } });
-  if (!order || order.status !== "paid") return;
+  if (!order || (order.status !== "paid" && order.status !== "preorder")) return;
 
   const metadata = isRecord(order.metadata) ? order.metadata : {};
   if (typeof metadata.adminNotifySentAt === "string") return;
@@ -159,9 +159,12 @@ async function sendOrderPaidEmail(order: Order): Promise<boolean> {
   const parsed = parseOrderMetadata(order.metadata);
   const orderNumber = parsed.orderNumber ?? order.id.slice(0, 8);
   const adminUrl = `${siteBaseUrl()}/orders`;
+  const isPreOrder = order.status === "preorder" || parsed.hasPreOrder;
+  const orderKind = isPreOrder ? "pre-order" : "paid order";
 
   const itemLines = parsed.lineItems.map((item) => {
     const details = [
+      item.isPreOrder ? "[Pre-order]" : null,
       item.productName ?? item.name,
       item.variantName,
       item.size ? `size ${item.size}` : null,
@@ -181,7 +184,10 @@ async function sendOrderPaidEmail(order: Order): Promise<boolean> {
       : "Stripe";
 
   const lines = [
-    `New paid order ${orderNumber}`,
+    `New ${orderKind} ${orderNumber}`,
+    isPreOrder
+      ? "Customer paid now and joined the waitlist — ship when product arrives."
+      : null,
     ``,
     `Total: ${formatUsd(order.totalCents, order.currency)}`,
     `Payment: ${paymentLabel}`,
@@ -194,13 +200,18 @@ async function sendOrderPaidEmail(order: Order): Promise<boolean> {
     `View in admin: ${adminUrl}`,
   ].filter(Boolean) as string[];
 
-  const subject = `New order ${orderNumber} — ${formatUsd(order.totalCents, order.currency)}`;
+  const subject = `New ${orderKind} ${orderNumber} — ${formatUsd(order.totalCents, order.currency)}`;
   const text = lines.join("\n");
 
   const htmlItems = parsed.lineItems
     .map((item) => {
       const label = escapeHtml(
-        [item.productName ?? item.name, item.variantName, item.size ? `size ${item.size}` : null]
+        [
+          item.isPreOrder ? "[Pre-order]" : null,
+          item.productName ?? item.name,
+          item.variantName,
+          item.size ? `size ${item.size}` : null,
+        ]
           .filter(Boolean)
           .join(" · ")
       );
@@ -209,7 +220,10 @@ async function sendOrderPaidEmail(order: Order): Promise<boolean> {
     .join("");
 
   const html = [
-    `<p><strong>New paid order ${escapeHtml(orderNumber)}</strong></p>`,
+    `<p><strong>New ${escapeHtml(orderKind)} ${escapeHtml(orderNumber)}</strong></p>`,
+    isPreOrder
+      ? `<p>Customer paid now and joined the waitlist — ship when product arrives.</p>`
+      : "",
     `<p><strong>Total:</strong> ${escapeHtml(formatUsd(order.totalCents, order.currency))}<br>`,
     `<strong>Payment:</strong> ${escapeHtml(paymentLabel)}</p>`,
     parsed.customer?.name || parsed.customer?.email

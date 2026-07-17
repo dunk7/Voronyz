@@ -19,6 +19,7 @@ export interface OrderDetails {
       name: string;
       amount: number;
       quantity: number;
+      isPreOrder?: boolean;
     }>;
     shipping?: {
       name: string;
@@ -57,6 +58,11 @@ export function OrderSuccessContent({
     ? `${details.stripeId.slice(0, 8)}...${details.stripeId.slice(-6)}`
     : "Unavailable";
   const showRetry = Boolean(onRetry && isPending && canRetry);
+  const hasPreOrder = details.lineItems.some(
+    (item) =>
+      item.isPreOrder === true ||
+      item.name.toLowerCase().startsWith("pre-order")
+  );
 
   return (
     <div className="container py-12 text-black bg-white">
@@ -65,12 +71,18 @@ export function OrderSuccessContent({
           <span className="text-2xl">✓</span>
         </div>
         <h1 className="text-3xl font-bold text-black">
-          {isPending ? "Finalizing your order…" : "Thank you for your order!"}
+          {isPending
+            ? "Finalizing your order…"
+            : hasPreOrder
+              ? "You're on the waitlist!"
+              : "Thank you for your order!"}
         </h1>
         <p className="text-lg text-black">
           {isPending
             ? "Your payment is processing. This can take a moment — please keep this page open."
-            : `Your order ${orderNumber} has been placed successfully.`}
+            : hasPreOrder
+              ? `Order ${orderNumber} is paid and reserved. We'll ship when the product arrives — that could be a day or much longer.`
+              : `Your order ${orderNumber} has been placed successfully.`}
         </p>
         {details.email && (
           <p className="text-sm text-black">Confirmation sent to {details.email}</p>
@@ -101,7 +113,14 @@ export function OrderSuccessContent({
           <div className="space-y-3">
             {details.lineItems.map((item, idx) => (
               <div key={idx} className="flex items-start justify-between gap-4 text-sm">
-                <span>{item.name} × {item.quantity}</span>
+                <span>
+                  {item.isPreOrder && (
+                    <span className="mr-1.5 inline-flex rounded-full bg-neutral-900 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                      Pre-order
+                    </span>
+                  )}
+                  {item.name} × {item.quantity}
+                </span>
                 <span className="font-medium">
                   {formatCentsAsCurrency(item.amount * item.quantity)}
                 </span>
@@ -138,8 +157,9 @@ export function OrderSuccessContent({
 
         <div className="text-sm text-black space-y-2">
           <p>
-            We&apos;re getting your order ready. For custom orders, allow up to 7 business
-            days before shipping.
+            {hasPreOrder
+              ? "Pre-order items are paid waitlist reservations. We manufacture or source them when available, then ship to the address on file."
+              : "We're getting your order ready. For custom orders, allow up to 7 business days before shipping."}
           </p>
           <p>
             Order session: <span className="font-medium">{sessionDisplay}</span>

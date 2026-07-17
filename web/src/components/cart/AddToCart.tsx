@@ -59,8 +59,13 @@ type Props = {
   /** Replace color swatches with flavor choices (e.g. trail mix). */
   flavorOptions?: FlavorOption[];
   soldOut?: boolean;
-  /** Label when soldOut (e.g. "Coming Soon" for apparel). Defaults to "Sold Out". */
+  /** Label when soldOut (e.g. "Sold Out"). Defaults to "Sold Out". */
   soldOutLabel?: string;
+  /**
+   * Coming-soon waitlist: customer can configure + pay now; we ship later.
+   * Distinct from soldOut (which blocks purchase).
+   */
+  preOrder?: boolean;
 };
 
 const MENS_SIZES = ["6", "7", "8", "9", "10", "11", "12", "13"];
@@ -90,6 +95,8 @@ interface CartItem {
   productSlug?: string;
   studentName?: string;
   message?: string;
+  /** Pay-now waitlist item — ships when the product arrives. */
+  isPreOrder?: boolean;
 }
 
 interface CartData {
@@ -118,6 +125,7 @@ export default function AddToCart({
   flavorOptions = [],
   soldOut = false,
   soldOutLabel = "Sold Out",
+  preOrder = false,
 }: Props) {
   const hasSecondaryColors = secondaryColors.length > 0;
   const hasFulfillmentOptions = fulfillmentOptions.length > 0;
@@ -201,7 +209,8 @@ export default function AddToCart({
   // Check if primary is available
   const isPrimaryAvailable = (color: string) => {
     // Coming soon / sold-out catalog items stay browsable like regular products.
-    if (soldOut) return true;
+    // Pre-order items also stay selectable even though variant stock is 0.
+    if (soldOut || preOrder) return true;
     const stock = getStockForPrimary(color);
     return stock > 0;
   };
@@ -222,7 +231,7 @@ export default function AddToCart({
   const totalCents = priceCents * quantity;
   const formattedTotal = formatCentsAsCurrency(totalCents);
 
-  // Disable add if no selections or primary out of stock
+  // Disable add if no selections or primary out of stock (pre-orders stay allowed)
   const canAdd =
     !soldOut &&
     selectedPrimary &&
@@ -335,6 +344,7 @@ export default function AddToCart({
       // Check if item already exists (match variantId + attributes)
       const existingItemIndex = cart.findIndex(item => 
         item.variantId === selectedVariant.id && 
+        Boolean(item.isPreOrder) === Boolean(preOrder) &&
         (hasSecondaryColors ? item.attributes?.color === selectedSecondary : !item.attributes?.color) && 
         item.attributes?.size === selectedSize &&
         ((hideSizeSelector || hasCarryStyles || useCatalogSizes) ? true : item.attributes?.gender === gender) &&
@@ -370,6 +380,7 @@ export default function AddToCart({
           },
           productSlug,
           ...(normalizedStudentName && { studentName: normalizedStudentName }),
+          ...(preOrder && { isPreOrder: true }),
           message: ''
         };
         cart.push(newItem);
@@ -490,6 +501,14 @@ export default function AddToCart({
         {soldOut && (
           <div className="rounded-2xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white">
             {soldOutLabel}
+          </div>
+        )}
+        {preOrder && !soldOut && (
+          <div className="rounded-2xl bg-neutral-900 px-4 py-3 space-y-1">
+            <div className="text-sm font-semibold text-white">Pre-order — pay now, ship later</div>
+            <p className="text-xs leading-relaxed text-white/75">
+              Join the waitlist with a paid reservation. We&apos;ll make and ship your piece when this drop arrives — that could be a day or much longer.
+            </p>
           </div>
         )}
 
@@ -778,7 +797,13 @@ export default function AddToCart({
                     : "bg-black text-white hover:bg-neutral-800"
                 } flex items-center justify-center gap-2`}
               >
-                {loading ? "Adding…" : soldOut ? soldOutLabel : "Add to Cart"}
+                {loading
+                  ? "Adding…"
+                  : soldOut
+                    ? soldOutLabel
+                    : preOrder
+                      ? "Pre-order — Pay now"
+                      : "Add to Cart"}
               </button>
             )}
           </div>

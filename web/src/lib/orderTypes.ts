@@ -21,6 +21,8 @@ export type OrderLineItem = {
   amount: number;
   image?: string;
   studentName?: string;
+  /** Paid waitlist reservation — ships when product arrives. */
+  isPreOrder?: boolean;
 };
 
 export type OrderCustomer = {
@@ -48,6 +50,7 @@ export type AdminOrder = {
   lineItems: OrderLineItem[];
   paymentMethod?: string | null;
   discountCode?: string | null;
+  hasPreOrder?: boolean;
 };
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
@@ -191,6 +194,7 @@ export function parseOrderMetadata(metadata: unknown): {
   lineItems: OrderLineItem[];
   paymentMethod: string | null;
   discountCode: string | null;
+  hasPreOrder: boolean;
 } {
   if (!isRecord(metadata)) {
     return {
@@ -200,6 +204,7 @@ export function parseOrderMetadata(metadata: unknown): {
       lineItems: [],
       paymentMethod: null,
       discountCode: null,
+      hasPreOrder: false,
     };
   }
 
@@ -244,6 +249,7 @@ export function parseOrderMetadata(metadata: unknown): {
         image: typeof raw.image === "string" ? raw.image : undefined,
         studentName:
           typeof raw.studentName === "string" ? raw.studentName : undefined,
+        isPreOrder: raw.isPreOrder === true,
       });
     }
   }
@@ -255,7 +261,19 @@ export function parseOrderMetadata(metadata: unknown): {
     typeof metadata.discountCode === "string" ? metadata.discountCode.trim() : "";
   const discountCode = discountCodeRaw ? discountCodeRaw : null;
 
-  return { orderNumber, customer, shipping, lineItems, paymentMethod, discountCode };
+  const hasPreOrder =
+    metadata.hasPreOrder === true ||
+    lineItems.some((item) => item.isPreOrder);
+
+  return {
+    orderNumber,
+    customer,
+    shipping,
+    lineItems,
+    paymentMethod,
+    discountCode,
+    hasPreOrder,
+  };
 }
 
 export function formatShippingAddress(shipping: OrderShipping | null): string {

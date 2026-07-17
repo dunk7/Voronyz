@@ -56,6 +56,7 @@ export async function GET(request: NextRequest) {
       lineItems: parsed.lineItems.map(enrichLineItemImage),
       paymentMethod: parsed.paymentMethod,
       discountCode: parsed.discountCode,
+      hasPreOrder: parsed.hasPreOrder,
     };
   });
 

@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import Stripe from "stripe";
 import { notifyPaidOrder } from "@/lib/adminNotifyEmail";
 import { prisma } from "@/lib/prisma";
+import { paidStatusForCart, resolveIsPreOrder } from "@/lib/preorder";
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -108,6 +109,7 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
       image?: string;
       productSlug?: string;
       studentName?: string;
+      isPreOrder?: boolean;
     }> = [];
     
     try {
@@ -126,6 +128,10 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
     const lineItems = cartItems.length > 0
       ? cartItems.map((cartItem, index) => {
           const stripeItem = stripeLineItems[index];
+          const isPreOrder = resolveIsPreOrder({
+            isPreOrder: cartItem.isPreOrder,
+            productSlug: cartItem.productSlug,
+          });
           return {
             name: cartItem.productName || stripeItem?.description || 'Unknown Product',
             variantId: cartItem.variantId,
@@ -140,14 +146,29 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
             amount: cartItem.priceCents || stripeItem?.amount_total || 0,
             image: cartItem.image,
             studentName: cartItem.studentName,
+            isPreOrder,
           };
         })
       : stripeLineItems.map((stripeItem) => ({
           name: stripeItem.description || 'Unknown Product',
           quantity: stripeItem.quantity,
           amount: stripeItem.amount_total || 0,
+          isPreOrder: Boolean(
+            stripeItem.description?.toLowerCase().startsWith("pre-order")
+          ),
         }));
 
+    const hasPreOrder =
+      fullSession.metadata?.hasPreOrder === "true" ||
+      lineItems.some((item) => Boolean((item as { isPreOrder?: boolean }).isPreOrder));
+    const orderStatus = paidStatusForCart(
+      cartItems.length > 0
+        ? cartItems
+        : lineItems.map((item) => ({
+            isPreOrder: (item as { isPreOrder?: boolean }).isPreOrder,
+            productSlug: (item as { productSlug?: string }).productSlug,
+          }))
+    );
     const shippingDetails = fullSession.collected_information?.shipping_details ?? null;
 
     // Extract shipping information
@@ -207,18 +228,20 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
       where: { stripeId: session.id },
     });
     const preserveCompletedStatus = existingOrder?.status === "completed";
+    const nextStatus = preserveCompletedStatus ? undefined : orderStatus;
 
     // Create or update order in database with all information
     const order = await prisma.order.upsert({
       where: { stripeId: session.id },
       update: {
-        ...(preserveCompletedStatus ? {} : { status: "paid" }),
+        ...(nextStatus ? { status: nextStatus } : {}),
         totalCents,
         subtotalCents,
         currency,
         metadata: {
           orderNumber,
           lineItems,
+          hasPreOrder,
           shipping,
           billing,
           customer: {
@@ -244,13 +267,14 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
       },
       create: {
         stripeId: session.id,
-        status: "paid",
+        status: orderStatus,
         currency,
         totalCents,
         subtotalCents,
         metadata: {
           orderNumber,
           lineItems,
+          hasPreOrder,
           shipping,
           billing,
           customer: {
