@@ -129,29 +129,16 @@ body {
   touch-action: manipulation;
 }
 
-/* Voronyz logo loader — center core + three satellite dots */
-@keyframes logo-dot-pulse {
+/* Voronyz logo loader — site logo mark + progress bar */
+@keyframes logo-mark-breathe {
   0%,
   100% {
-    opacity: 0.35;
-    transform: scale(0.82);
-  }
-  45%,
-  55% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes logo-core-breathe {
-  0%,
-  100% {
-    opacity: 0.7;
-    transform: scale(0.92);
+    opacity: 0.72;
+    transform: scale(0.94);
   }
   50% {
     opacity: 1;
-    transform: scale(1.05);
+    transform: scale(1);
   }
 }
 
@@ -170,32 +157,8 @@ body {
 }
 
 .logo-loader-mark {
-  overflow: visible;
-}
-
-.logo-loader-dot {
-  transform-origin: center;
-  transform-box: fill-box;
+  animation: logo-mark-breathe 1.35s ease-in-out infinite;
   will-change: transform, opacity;
-}
-
-.logo-loader-dot--core {
-  animation: logo-core-breathe 1.35s ease-in-out infinite;
-}
-
-.logo-loader-dot--a {
-  animation: logo-dot-pulse 1.35s ease-in-out infinite;
-  animation-delay: 0ms;
-}
-
-.logo-loader-dot--b {
-  animation: logo-dot-pulse 1.35s ease-in-out infinite;
-  animation-delay: 180ms;
-}
-
-.logo-loader-dot--c {
-  animation: logo-dot-pulse 1.35s ease-in-out infinite;
-  animation-delay: 360ms;
 }
 
 .logo-loader-bar-fill {
@@ -203,10 +166,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .logo-loader-dot--core,
-  .logo-loader-dot--a,
-  .logo-loader-dot--b,
-  .logo-loader-dot--c,
+  .logo-loader-mark,
   .logo-loader-bar-fill {
     animation: none;
     opacity: 1;
