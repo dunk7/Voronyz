@@ -5,7 +5,7 @@ import { Suspense } from "react";
 export const metadata: Metadata = {
   title: "Collaborative – Voronyz",
   description:
-    "Shop the Collaborative collection, including Antioxidant Trail Mix in Wild Berry, Super Protein, and Chocolate.",
+    "Collaborative on Voronyz — helping the small businesses we support and stand for grow and be seen on our marketplace.",
 };
 
 export default function HealthPage() {

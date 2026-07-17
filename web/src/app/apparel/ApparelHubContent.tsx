@@ -158,7 +158,7 @@ export default function ApparelHubContent() {
                       />
                       <div className="absolute top-3 left-3 z-10">
                         <span className="rounded-full bg-neutral-900 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white shadow-sm">
-                          Coming Soon
+                          Pre-order
                         </span>
                       </div>
                       {isNavigating && (

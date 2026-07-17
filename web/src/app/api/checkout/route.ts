@@ -6,6 +6,7 @@ import {
   getDiscountedUnitPriceCents,
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
+import { cartHasPreOrder, resolveIsPreOrder } from "@/lib/preorder";
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -131,10 +132,15 @@ export async function POST(request: NextRequest) {
               : item.size || "OWB";
         const fulfillmentLabel = item.fulfillment === 'pickup' ? ' — Magikid Lab pickup' : '';
         const studentLabel = item.studentName?.trim() ? ` — Student: ${item.studentName.trim()}` : '';
+        const isPreOrder = resolveIsPreOrder({
+          isPreOrder: item.isPreOrder,
+          productSlug,
+        });
+        const preOrderLabel = isPreOrder ? "Pre-order: " : "";
         const productName = variant 
-          ? `${variant.product.name} - ${capitalize(variant.color)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''}${isGunHolster ? ` · ${carryLabel}` : ` size ${sizeLabel}`}${fulfillmentLabel}${studentLabel}`
+          ? `${preOrderLabel}${variant.product.name} - ${capitalize(variant.color)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''}${isGunHolster ? ` · ${carryLabel}` : ` size ${sizeLabel}`}${fulfillmentLabel}${studentLabel}`
           : (item.productName && item.variantName 
-            ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''}${isGunHolster ? ` · ${carryLabel}` : ` size ${sizeLabel}`}${fulfillmentLabel}${studentLabel}`
+            ? `${preOrderLabel}${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''}${isGunHolster ? ` · ${carryLabel}` : ` size ${sizeLabel}`}${fulfillmentLabel}${studentLabel}`
             : `Product Variant ${item.variantId || 'unknown'}`);
 
         console.log(`Generated line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);
@@ -154,6 +160,10 @@ export async function POST(request: NextRequest) {
             currency: 'usd',
             product_data: {
               name: productName,
+              ...(isPreOrder && {
+                description:
+                  "Pre-order / waitlist reservation. Ships when this product arrives.",
+              }),
               ...(stripeImages.length > 0 && { images: stripeImages }),
             },
             unit_amount: unitAmount,
@@ -187,8 +197,13 @@ export async function POST(request: NextRequest) {
               : item.size || "OWB";
         const fulfillmentLabel = item.fulfillment === 'pickup' ? ' — Magikid Lab pickup' : '';
         const studentLabel = item.studentName?.trim() ? ` — Student: ${item.studentName.trim()}` : '';
+        const isPreOrder = resolveIsPreOrder({
+          isPreOrder: item.isPreOrder,
+          productSlug: fallbackSlug,
+        });
+        const preOrderLabel = isPreOrder ? "Pre-order: " : "";
         const productName = item.productName && item.variantName
-          ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''}${isGunHolster ? ` · ${carryLabel}` : ` size ${sizeLabel}`}${fulfillmentLabel}${studentLabel}`
+          ? `${preOrderLabel}${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''}${isGunHolster ? ` · ${carryLabel}` : ` size ${sizeLabel}`}${fulfillmentLabel}${studentLabel}`
           : `Product Variant ${item.variantId || 'unknown'}`;
 
         console.log(`Fallback line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);
@@ -201,6 +216,10 @@ export async function POST(request: NextRequest) {
             currency: 'usd',
             product_data: {
               name: productName,
+              ...(isPreOrder && {
+                description:
+                  "Pre-order / waitlist reservation. Ships when this product arrives.",
+              }),
               ...(stripeImages.length > 0 && { images: stripeImages }),
             },
             unit_amount: unitAmount,
@@ -212,6 +231,7 @@ export async function POST(request: NextRequest) {
 
     console.log('Creating Stripe session with line items:', lineItems);
     const hasPickupOnly = items.every((item: { fulfillment?: string }) => item.fulfillment === 'pickup');
+    const hasPreOrder = cartHasPreOrder(items);
     const session = await stripe.checkout.sessions.create({
       // Use Dynamic Payment Methods — Stripe automatically shows all payment methods
       // enabled in your Stripe Dashboard (cards, crypto/USDC, Apple Pay, Google Pay, etc.).
@@ -233,7 +253,20 @@ export async function POST(request: NextRequest) {
         itemCount: items.length.toString(),
         ...(discountCode && { discountCode }),
         ...(hasPickupOnly && { fulfillment: 'pickup' }),
-        cartItems: JSON.stringify(items)
+        ...(hasPreOrder && { hasPreOrder: 'true' }),
+        cartItems: JSON.stringify(
+          items.map((item: {
+            isPreOrder?: boolean;
+            productSlug?: string;
+            [key: string]: unknown;
+          }) => ({
+            ...item,
+            isPreOrder: resolveIsPreOrder({
+              isPreOrder: item.isPreOrder,
+              productSlug: item.productSlug,
+            }),
+          }))
+        ),
       },
     });
 

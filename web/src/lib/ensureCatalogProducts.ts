@@ -115,6 +115,7 @@ const FOOTWEAR_SIZES = ["5", "6", "7", "8", "9", "10", "11", "12"];
 export async function ensureFootwearProducts(): Promise<void> {
   for (const item of FOOTWEAR_CATALOG) {
     if (item.slug === "magikid-shoes") continue; // handled by ensureMagikidShoes
+    if (item.slug === GATORS_SLUG) continue; // handled by ensureGators
 
     const variants = FOOTWEAR_VARIANTS[item.slug] ?? [];
     const primaryColors = FOOTWEAR_COLORS[item.slug] ?? ["black"];
@@ -492,7 +493,7 @@ export async function ensureGators(): Promise<void> {
   });
 }
 
-/** Idempotently upsert apparel catalog products (coming soon / stock 0). */
+/** Idempotently upsert apparel catalog products (coming soon / pre-order, stock 0). */
 export async function ensureApparelProducts(): Promise<void> {
   if (OBSOLETE_APPAREL_SLUGS.length > 0) {
     const obsolete = await prisma.product.findMany({

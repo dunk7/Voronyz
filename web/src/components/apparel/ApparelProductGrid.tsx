@@ -89,7 +89,7 @@ export default function ApparelProductGrid({
                   </span>
                 )}
                 <span className="rounded-full bg-neutral-900 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white shadow-sm">
-                  Coming Soon
+                  Pre-order
                 </span>
               </div>
               {isNavigating && (
@@ -112,7 +112,7 @@ export default function ApparelProductGrid({
               </p>
               <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
                 <span className="inline-flex items-center rounded-full bg-neutral-900 px-2.5 py-0.5 text-[11px] font-medium text-white">
-                  Coming Soon
+                  Pre-order
                 </span>
                 {product.colors.slice(0, 4).map((color) => (
                   <span

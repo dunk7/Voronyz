@@ -119,8 +119,11 @@ export type ApparelCatalogItem = {
   /** Full gallery; defaults to `[image]` when omitted. */
   images?: string[];
   skuPrefix: string;
-  /** Apparel drops are previewable but not purchasable yet. */
-  comingSoon: true;
+  /**
+   * Coming-soon items are pre-orderable: customers pay now and join the
+   * waitlist; we ship when the product lands (could be days or longer).
+   */
+  comingSoon: boolean;
 };
 
 export function getApparelImages(item: ApparelCatalogItem): string[] {

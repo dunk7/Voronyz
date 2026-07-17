@@ -13,7 +13,7 @@ type LogoLoaderProps = {
   /** Light mark on dark overlays vs dark mark on light backgrounds */
   tone?: "dark" | "light";
   /**
-   * Full stage: exact Voronyz mark orbits / bounces around “VORONYZ LOGO”.
+   * Full stage: dots mark orbits / bounces around the “VORONYZ” wordmark.
    * Default on for md/lg loaders; overlays can set false for a compact mark.
    */
   orbit?: boolean;
@@ -89,7 +89,7 @@ export default function LogoLoader({
           <p
             className={`logo-loader-wordmark pointer-events-none z-[1] select-none font-semibold tracking-[0.28em] uppercase ${dims.text} ${wordmarkColor}`}
           >
-            Voronyz Logo
+            Voronyz
           </p>
           <div
             className={`logo-loader-orbit absolute inset-0 ${orbitVars.reverse ? "logo-loader-orbit-reverse" : ""}`}

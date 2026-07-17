@@ -168,7 +168,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
     category === "accessories"
       ? "Engineered carry gear — carbon fiber nylon, made to order."
       : category === "health"
-      ? "Everyday products from the Collaborative collection."
+      ? "Helping the small businesses we support and stand for grow and be seen on the Voronyz marketplace."
       : "3D-printed, scan-calibrated footwear — engineered for comfort, built to last.";
   const emptyHref =
     category === "accessories"

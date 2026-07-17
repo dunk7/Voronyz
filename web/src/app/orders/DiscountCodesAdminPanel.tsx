@@ -44,6 +44,7 @@ function statusClass(status: string) {
   const styles: Record<string, string> = {
     paid: "bg-emerald-100 text-emerald-800",
     completed: "bg-blue-100 text-blue-800",
+    preorder: "bg-violet-100 text-violet-900",
     pending: "bg-amber-100 text-amber-800",
     pending_nano: "bg-sky-100 text-sky-800",
     expired: "bg-neutral-200 text-neutral-700",

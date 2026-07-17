@@ -25,7 +25,7 @@ interface CustomerInfo {
 }
 
 interface NanoPaymentDetails {
-  status: "pending" | "paid" | "expired" | "error";
+  status: "pending" | "paid" | "preorder" | "expired" | "error";
   orderId?: string;
   nanoAddress?: string;
   xnoAmount?: number;
@@ -107,7 +107,7 @@ export default function NanoCheckoutClient() {
         setFormSubmitted(true);
       }
 
-      if (data.status === "paid") {
+      if (data.status === "paid" || data.status === "preorder") {
         localStorage.removeItem("cart");
         window.dispatchEvent(new Event("cartUpdated"));
       }
@@ -271,8 +271,8 @@ export default function NanoCheckoutClient() {
   const hasNanoDiscount = (details.nanoDiscountCents ?? 0) > 0;
   const nanoDiscountPercent = ((details.nanoDiscountRate ?? 0.03) * 100).toFixed(0);
 
-  /* --- PAID ------------------------------------------------------- */
-  if (details.status === "paid") {
+  /* --- PAID / PREORDER -------------------------------------------- */
+  if (details.status === "paid" || details.status === "preorder") {
     return (
       <div className="container py-12">
         <div className="max-w-xl mx-auto text-center space-y-6">
@@ -281,7 +281,11 @@ export default function NanoCheckoutClient() {
           </div>
 
           <h1 className="text-3xl font-bold text-white">Payment Received!</h1>
-          <p className="text-lg text-neutral-300">Your Nano payment has been confirmed.</p>
+          <p className="text-lg text-neutral-300">
+            {details.status === "preorder"
+              ? "Your Nano pre-order payment is confirmed. You're on the waitlist — we'll ship when the product arrives."
+              : "Your Nano payment has been confirmed."}
+          </p>
 
           {details.blockHash && (
             <p className="text-xs text-neutral-400">
