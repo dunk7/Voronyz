@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import SoftImage from "@/components/ui/SoftImage";
 import {
   useState,
   useRef,
@@ -306,7 +307,7 @@ export default function V3Gallery({
   const renderMedia = (m: Media, index: number, isActive: boolean) => {
     if (m.type === "image") {
       return (
-        <Image
+        <SoftImage
           src={m.src}
           alt={m.alt || "Product image"}
           fill

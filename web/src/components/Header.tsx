@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { formatCentsAsCurrency } from "@/lib/money";
 import { getProductThumbnail } from "@/lib/productImages";
+import LogoLoader, { LogoMark } from "@/components/ui/LogoLoader";
 
 type SearchProductResult = {
   id: string;
@@ -270,12 +271,8 @@ export default function Header() {
     <>
       {routeLoading && (
         <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-neutral-900/90 border border-white/15 rounded-2xl px-5 py-4 shadow-2xl flex items-center gap-3 text-white">
-            <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" className="opacity-25"/>
-              <path fill="currentColor" className="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-            </svg>
-            <span className="text-sm">Loading…</span>
+          <div className="bg-neutral-900/90 border border-white/15 rounded-2xl px-8 py-6 shadow-2xl">
+            <LogoLoader size="md" tone="light" label="Loading" />
           </div>
         </div>
       )}
@@ -343,10 +340,7 @@ export default function Header() {
               >
                 <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/60" aria-hidden>
                   {searchLoading ? (
-                    <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" className="opacity-25"/>
-                      <path fill="currentColor" className="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                    </svg>
+                    <LogoMark size={16} tone="light" />
                   ) : (
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.5"/>
@@ -425,14 +419,8 @@ export default function Header() {
                       </button>
                     </div>
                   ) : searchLoading ? (
-                    <div className="px-4 py-8 text-center text-white/60">
-                      <div className="flex items-center justify-center gap-2">
-                        <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" className="opacity-25"/>
-                          <path fill="currentColor" className="opacity-75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                        </svg>
-                        <span className="text-sm">Searching...</span>
-                      </div>
+                    <div className="px-4 py-10 flex items-center justify-center">
+                      <LogoLoader size="sm" tone="light" label="Searching" />
                     </div>
                   ) : null}
                 </div>

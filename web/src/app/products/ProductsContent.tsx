@@ -1,12 +1,13 @@
 "use client";
 import { useSearchParams, useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { formatCentsAsCurrency } from "@/lib/money";
 import { MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
 import { filterAccessoryProducts, filterFootwearProducts, filterHealthProducts } from "@/lib/productCategories";
 import { useEffect, useState, useCallback } from "react";
 import { TRAIL_MIX_SLUG } from "@/lib/trailMix";
+import SoftImage from "@/components/ui/SoftImage";
+import LogoLoader from "@/components/ui/LogoLoader";
 
 interface Product {
   id: string;
@@ -148,27 +149,24 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
         ? "View Collaborative"
         : "View all products";
 
-  /* ── Loading skeleton ── */
+  /* ── Logo loader (never flash “0 products”) ── */
   if (loading) {
     return (
       <div className="bg-texture-white min-h-[80vh]">
         <div className="container py-16">
-          {/* Header skeleton */}
           <div className="mb-12">
-            <div className="h-8 w-48 bg-neutral-200 rounded-lg animate-pulse" />
-            <div className="h-4 w-72 bg-neutral-100 rounded mt-3 animate-pulse" />
+            <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
+              {heading}
+            </h1>
+            {!searchQuery && (
+              <p className="mt-2 text-sm text-neutral-500 max-w-md">
+                {subheading}
+              </p>
+            )}
+            <div className="mt-6 h-px bg-neutral-200" />
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="aspect-square w-full bg-neutral-100 rounded-2xl" />
-                <div className="mt-4 flex items-center justify-between">
-                  <div className="h-5 bg-neutral-200 rounded w-32" />
-                  <div className="h-5 bg-neutral-200 rounded w-16" />
-                </div>
-                <div className="h-3 bg-neutral-100 rounded w-48 mt-2" />
-              </div>
-            ))}
+          <div className="flex min-h-[40vh] items-center justify-center py-16">
+            <LogoLoader size="lg" label="Loading" />
           </div>
         </div>
       </div>
@@ -260,7 +258,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                     }`}
                   >
                     {/* Primary image */}
-                    <Image
+                    <SoftImage
                       src={cover}
                       alt={p.name}
                       fill
@@ -272,10 +270,11 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
 
                     {/* Hover alt image */}
                     {alt && (
-                      <Image
+                      <SoftImage
                         src={alt}
                         alt={`${p.name} – alternate view`}
                         fill
+                        showLogoPlaceholder={false}
                         className="object-cover opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
                         sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
                         loading="lazy"
@@ -320,7 +319,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                     {/* Loading overlay */}
                     {isNavigating && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px] rounded-2xl animate-in fade-in duration-200 z-20">
-                        <div className="h-8 w-8 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                        <LogoLoader size="sm" tone="light" showBar={false} className="!gap-0" />
                       </div>
                     )}
                   </div>

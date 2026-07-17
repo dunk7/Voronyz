@@ -1,16 +1,18 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatCentsAsCurrency } from "@/lib/money";
 import {
+  APPAREL_CATALOG,
   getApparelItem,
   getApparelSubcategory,
   type ApparelSubcategoryId,
 } from "@/lib/apparel";
 import { filterApparelProducts } from "@/lib/productCategories";
+import SoftImage from "@/components/ui/SoftImage";
+import LogoLoader from "@/components/ui/LogoLoader";
 
 type Product = {
   id: string;
@@ -25,6 +27,22 @@ type Product = {
   sizes?: string[];
 };
 
+/** Instant client seed from the static catalog — no empty / "0 items" flash. */
+function catalogSeed(): Product[] {
+  return APPAREL_CATALOG.map((item) => ({
+    id: `catalog-${item.slug}`,
+    slug: item.slug,
+    name: item.name,
+    description: item.description,
+    priceCents: item.priceCents,
+    currency: "usd",
+    images: item.images ?? [item.image],
+    thumbnail: item.image,
+    primaryColors: item.colors,
+    sizes: item.sizes,
+  }));
+}
+
 function colorSwatch(color: string) {
   const map: Record<string, string> = {
     black: "#111111",
@@ -38,29 +56,34 @@ function colorSwatch(color: string) {
 
 export default function ApparelContent() {
   const router = useRouter();
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>(() => catalogSeed());
   const [loading, setLoading] = useState(true);
   const [navigatingSlug, setNavigatingSlug] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function fetchProducts() {
       setLoading(true);
       try {
         const response = await fetch("/api/search");
-        if (!response.ok) {
-          setProducts([]);
-          return;
-        }
+        if (!response.ok) return;
         const data = await response.json();
-        setProducts(filterApparelProducts(data.products || []));
+        const fromApi = filterApparelProducts(data.products || []) as Product[];
+        if (!cancelled && fromApi.length > 0) {
+          setProducts(fromApi);
+        }
       } catch (error) {
         console.error("Failed to load apparel:", error);
-        setProducts([]);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
+
     fetchProducts();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const enriched = useMemo(() => {
@@ -108,30 +131,30 @@ export default function ApparelContent() {
                 Socks, hoodie, sweats, shirts, shorts, and accessories — coming soon, still viewable.
               </p>
             </div>
-            <span className="text-xs tabular-nums text-neutral-400">
-              {enriched.length} item{enriched.length === 1 ? "" : "s"}
+            <span className="text-xs tabular-nums text-neutral-400 min-h-[1rem]">
+              {enriched.length > 0
+                ? `${enriched.length} item${enriched.length === 1 ? "" : "s"}`
+                : loading
+                  ? ""
+                  : "0 items"}
             </span>
           </div>
           <div className="mt-6 h-px bg-neutral-200" />
         </div>
 
-        {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <div key={index} className="animate-pulse">
-                <div className="aspect-square rounded-2xl bg-neutral-100" />
-                <div className="mt-4 h-5 w-2/3 rounded bg-neutral-200" />
-                <div className="mt-2 h-4 w-1/2 rounded bg-neutral-100" />
-              </div>
-            ))}
-          </div>
-        ) : enriched.length === 0 ? (
-          <div className="rounded-3xl bg-white ring-1 ring-black/5 px-8 py-16 text-center">
-            <p className="text-lg font-medium text-neutral-900">No apparel yet</p>
-            <p className="mt-2 text-sm text-neutral-500">
-              Check back soon for the full lineup.
-            </p>
-          </div>
+        {enriched.length === 0 ? (
+          loading ? (
+            <div className="flex min-h-[40vh] items-center justify-center py-16">
+              <LogoLoader size="lg" label="Loading apparel" />
+            </div>
+          ) : (
+            <div className="rounded-3xl bg-white ring-1 ring-black/5 px-8 py-16 text-center">
+              <p className="text-lg font-medium text-neutral-900">No apparel yet</p>
+              <p className="mt-2 text-sm text-neutral-500">
+                Check back soon for the full lineup.
+              </p>
+            </div>
+          )
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             {enriched.map((product) => {
@@ -147,7 +170,7 @@ export default function ApparelContent() {
                   }`}
                 >
                   <div className="relative aspect-square overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/5 transition group-hover:shadow-xl group-hover:ring-black/10">
-                    <Image
+                    <SoftImage
                       src={product.cover}
                       alt={product.name}
                       fill
@@ -166,7 +189,7 @@ export default function ApparelContent() {
                     </div>
                     {isNavigating && (
                       <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
-                        <div className="h-8 w-8 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                        <LogoLoader size="sm" tone="light" showBar={false} className="!gap-0" />
                       </div>
                     )}
                   </div>
