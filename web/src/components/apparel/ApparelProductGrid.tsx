@@ -73,6 +73,7 @@ export default function ApparelProductGrid({
           >
             <div className="relative aspect-square overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/5 transition group-hover:shadow-xl group-hover:ring-black/10">
               <SoftImage
+                key={product.cover}
                 src={product.cover}
                 alt={product.name}
                 fill

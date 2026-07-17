@@ -39,9 +39,9 @@ async function main() {
           priceCents: 5500,
           currency: "usd",
           images: [
-            "/products/v3-slides/InShot_20260212_194215252.jpg",
-            "/products/v3-slides/InShot_20260212_193956953.jpg",
             "/products/v3-slides/InShot_20260212_194352014.jpg",
+            "/products/v3-slides/InShot_20260212_193956953.jpg",
+            "/products/v3-slides/InShot_20260212_194215252.jpg",
             "/products/v3-slides/InShot_20260212_194654595.jpg",
             "/products/v3-slides/InShot_20260212_194922422.jpg",
             "/products/v3-slides/InShot_20260212_195048118.jpg",
@@ -73,9 +73,9 @@ async function main() {
         data: {
           priceCents: 5500,
           images: [
-            "/products/v3-slides/InShot_20260212_194215252.jpg",
-            "/products/v3-slides/InShot_20260212_193956953.jpg",
             "/products/v3-slides/InShot_20260212_194352014.jpg",
+            "/products/v3-slides/InShot_20260212_193956953.jpg",
+            "/products/v3-slides/InShot_20260212_194215252.jpg",
             "/products/v3-slides/InShot_20260212_194654595.jpg",
             "/products/v3-slides/InShot_20260212_194922422.jpg",
             "/products/v3-slides/InShot_20260212_195048118.jpg",
