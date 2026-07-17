@@ -3,8 +3,9 @@ import ProductsContent from "@/app/products/ProductsContent";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
-  title: "Accessories – Voronyz",
-  description: "Shop Voronyz accessories including the Gun Holster.",
+  title: "Voronyz Engineering – Voronyz",
+  description:
+    "Shop Voronyz Engineering gear, including the Glock 43x carbon fiber nylon holster in OWB and IWB.",
 };
 
 export default function AccessoriesPage() {

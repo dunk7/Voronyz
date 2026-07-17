@@ -121,13 +121,20 @@ export async function POST(request: NextRequest) {
         const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
         const genderLabel = item.gender === "men" ? "Men's" : item.gender === "women" ? "Women's" : item.gender === "kids" ? "Kids'" : "";
+        const isGunHolster = productSlug === "gun-holster" || (item.productSlug || "") === "gun-holster";
         const sizeLabel = item.size ? `${item.size}${genderLabel ? ` (${genderLabel})` : ''}` : 'N/A';
+        const carryLabel =
+          item.size === "IWB"
+            ? "IWB — Inside the Waistband"
+            : item.size === "OWB"
+              ? "OWB — Outside the Waistband"
+              : item.size || "OWB";
         const fulfillmentLabel = item.fulfillment === 'pickup' ? ' — Magikid Lab pickup' : '';
         const studentLabel = item.studentName?.trim() ? ` — Student: ${item.studentName.trim()}` : '';
         const productName = variant 
-          ? `${variant.product.name} - ${capitalize(variant.color)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}${fulfillmentLabel}${studentLabel}`
+          ? `${variant.product.name} - ${capitalize(variant.color)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''}${isGunHolster ? ` · ${carryLabel}` : ` size ${sizeLabel}`}${fulfillmentLabel}${studentLabel}`
           : (item.productName && item.variantName 
-            ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}${fulfillmentLabel}${studentLabel}`
+            ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''}${isGunHolster ? ` · ${carryLabel}` : ` size ${sizeLabel}`}${fulfillmentLabel}${studentLabel}`
             : `Product Variant ${item.variantId || 'unknown'}`);
 
         console.log(`Generated line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);
@@ -170,11 +177,18 @@ export async function POST(request: NextRequest) {
         const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
         const genderLabel = item.gender === "men" ? "Men's" : item.gender === "women" ? "Women's" : item.gender === "kids" ? "Kids'" : "";
+        const isGunHolster = fallbackSlug === "gun-holster";
         const sizeLabel = item.size ? `${item.size}${genderLabel ? ` (${genderLabel})` : ''}` : 'N/A';
+        const carryLabel =
+          item.size === "IWB"
+            ? "IWB — Inside the Waistband"
+            : item.size === "OWB"
+              ? "OWB — Outside the Waistband"
+              : item.size || "OWB";
         const fulfillmentLabel = item.fulfillment === 'pickup' ? ' — Magikid Lab pickup' : '';
         const studentLabel = item.studentName?.trim() ? ` — Student: ${item.studentName.trim()}` : '';
         const productName = item.productName && item.variantName
-          ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}${fulfillmentLabel}${studentLabel}`
+          ? `${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''}${isGunHolster ? ` · ${carryLabel}` : ` size ${sizeLabel}`}${fulfillmentLabel}${studentLabel}`
           : `Product Variant ${item.variantId || 'unknown'}`;
 
         console.log(`Fallback line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);

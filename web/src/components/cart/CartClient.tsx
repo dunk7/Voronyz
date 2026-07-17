@@ -190,12 +190,22 @@ export default function CartClient() {
                   )}
                   {it.attributes?.size !== undefined && (
                     <span className="rounded-full bg-black/5 px-2 py-0.5">
-                      Size {String(it.attributes.size)}
-                      {it.attributes?.gender && (
-                        <span className="ml-1 text-neutral-600">
-                          ({it.attributes.gender === "men" ? "Men's" : it.attributes.gender === "women" ? "Women's" : "Kids'"})
-                        </span>
-                      )}
+                      {it.productSlug === "gun-holster"
+                        ? it.attributes.size === "IWB"
+                          ? "IWB — Inside the Waistband"
+                          : it.attributes.size === "OWB"
+                            ? "OWB — Outside the Waistband"
+                            : String(it.attributes.size)
+                        : (
+                          <>
+                            Size {String(it.attributes.size)}
+                            {it.attributes?.gender && (
+                              <span className="ml-1 text-neutral-600">
+                                ({it.attributes.gender === "men" ? "Men's" : it.attributes.gender === "women" ? "Women's" : "Kids'"})
+                              </span>
+                            )}
+                          </>
+                        )}
                     </span>
                   )}
                   {it.attributes?.color && (

@@ -20,6 +20,13 @@ type FulfillmentOption = {
   description?: string;
 };
 
+type CarryStyleOption = {
+  id: string;
+  label: string;
+  description: string;
+  image: string;
+};
+
 type Props = {
   variants: VariantProps[];
   primaryColors: string[];
@@ -37,6 +44,10 @@ type Props = {
   requireStudentName?: boolean;
   /** Skip footwear size/gender UI (e.g. accessories with One Size). */
   hideSizeSelector?: boolean;
+  /** Replace size UI with carry-style options (OWB / IWB). */
+  carryStyles?: CarryStyleOption[];
+  selectedCarryStyleId?: string;
+  onCarryStyleChange?: (id: string) => void;
 };
 
 const MENS_SIZES = ["6", "7", "8", "9", "10", "11", "12", "13"];
@@ -87,9 +98,13 @@ export default function AddToCart({
   defaultGender = "men",
   requireStudentName = false,
   hideSizeSelector = false,
+  carryStyles = [],
+  selectedCarryStyleId,
+  onCarryStyleChange,
 }: Props) {
   const hasSecondaryColors = secondaryColors.length > 0;
   const hasFulfillmentOptions = fulfillmentOptions.length > 0;
+  const hasCarryStyles = carryStyles.length > 0;
   const oneSizeLabel = sizes[0] || "One Size";
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -127,6 +142,13 @@ export default function AddToCart({
   });
 
   const [selectedSize, setSelectedSize] = useState<string | undefined>(() => {
+    if (hasCarryStyles) {
+      const sizeParam = searchParams.get("size");
+      if (sizeParam && carryStyles.some((style) => style.id === sizeParam)) {
+        return sizeParam;
+      }
+      return selectedCarryStyleId || carryStyles[0]?.id || oneSizeLabel;
+    }
     if (hideSizeSelector) return oneSizeLabel;
     const sizeParam = searchParams.get("size");
     const initialGender = parseGenderParam(searchParams.get("gender")) ?? defaultGender;
@@ -136,6 +158,10 @@ export default function AddToCart({
     }
     return initialSizes[0];
   });
+
+  const activeCarryStyleId = selectedCarryStyleId || selectedSize;
+  const resolvedCoverImage =
+    carryStyles.find((style) => style.id === activeCarryStyleId)?.image || coverImage;
 
   const [studentName, setStudentName] = useState("");
   const normalizedStudentName = requireStudentName ? normalizeStudentName(studentName) : null;
@@ -182,18 +208,31 @@ export default function AddToCart({
   // Get size label based on gender
   const sizeLabel = gender === "men" ? "Men's" : gender === "women" ? "Women's" : "Kids'";
 
+  // Keep controlled carry-style selection in sync with the parent gallery.
+  useEffect(() => {
+    if (!hasCarryStyles) return;
+    if (selectedCarryStyleId && selectedCarryStyleId !== selectedSize) {
+      setSelectedSize(selectedCarryStyleId);
+    }
+  }, [hasCarryStyles, selectedCarryStyleId, selectedSize]);
+
   // Reset selected size when gender changes if current size is not in new array
   useEffect(() => {
-    if (hideSizeSelector) return;
+    if (hideSizeSelector || hasCarryStyles) return;
     if (selectedSize && !displaySizes.includes(selectedSize)) {
       setSelectedSize(displaySizes[0]);
     }
-  }, [gender, displaySizes, selectedSize, hideSizeSelector]);
+  }, [gender, displaySizes, selectedSize, hideSizeSelector, hasCarryStyles]);
 
   // Reset added if selections change
   useEffect(() => {
     setAdded(false);
   }, [selectedPrimary, selectedSecondary, selectedSize, gender, selectedFulfillment, studentName]);
+
+  function selectCarryStyle(id: string) {
+    setSelectedSize(id);
+    onCarryStyleChange?.(id);
+  }
 
   // Human-readable color names for hex values
   const colorDisplayName = (color: string) => {
@@ -242,7 +281,7 @@ export default function AddToCart({
         item.variantId === selectedVariant.id && 
         (hasSecondaryColors ? item.attributes?.color === selectedSecondary : !item.attributes?.color) && 
         item.attributes?.size === selectedSize &&
-        (hideSizeSelector ? true : item.attributes?.gender === gender) &&
+        ((hideSizeSelector || hasCarryStyles) ? true : item.attributes?.gender === gender) &&
         (hasFulfillmentOptions ? item.attributes?.fulfillment === selectedFulfillment : !item.attributes?.fulfillment) &&
         (requireStudentName ? item.studentName === normalizedStudentName : !item.studentName)
       );
@@ -254,6 +293,7 @@ export default function AddToCart({
           ...existingItem, 
           quantity: existingItem.quantity + quantity,
           priceCents: priceCents,
+          image: resolvedCoverImage,
           message: existingItem.message || ''
         };
       } else {
@@ -261,7 +301,7 @@ export default function AddToCart({
         const newItem: CartItem = {
           id: `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           productName,
-          image: coverImage,
+          image: resolvedCoverImage,
           variantId: selectedVariant.id,
           quantity,
           priceCents,
@@ -269,7 +309,7 @@ export default function AddToCart({
           attributes: { 
             ...(selectedSecondary && { color: selectedSecondary }), 
             size: selectedSize,
-            ...(!hideSizeSelector && { gender }),
+            ...(!hideSizeSelector && !hasCarryStyles && { gender }),
             ...(hasFulfillmentOptions && { fulfillment: selectedFulfillment }),
           },
           productSlug,
@@ -483,8 +523,37 @@ export default function AddToCart({
           </div>
         )}
 
+        {/* Carry style (OWB / IWB) */}
+        {hasCarryStyles && (
+          <div className="grid gap-2">
+            <label className="text-sm text-neutral-700">Glock 43x</label>
+            <div className="grid gap-2">
+              {carryStyles.map((style) => {
+                const isSelected = activeCarryStyleId === style.id;
+                return (
+                  <button
+                    key={style.id}
+                    type="button"
+                    onClick={() => selectCarryStyle(style.id)}
+                    className={`flex flex-col items-start rounded-2xl px-4 py-3 text-left ring-1 transition ${
+                      isSelected
+                        ? "bg-black text-white ring-black"
+                        : "bg-white text-neutral-900 ring-black/10 hover:bg-black/5"
+                    }`}
+                  >
+                    <span className="text-sm font-semibold tracking-wide">{style.label}</span>
+                    <span className={`text-xs mt-0.5 ${isSelected ? "text-white/80" : "text-neutral-500"}`}>
+                      {style.description}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Size */}
-        {!hideSizeSelector && (
+        {!hideSizeSelector && !hasCarryStyles && (
         <div className="grid gap-2">
           <div className="flex items-center justify-between">
             <label className="text-sm text-neutral-700">

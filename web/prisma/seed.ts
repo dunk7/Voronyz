@@ -353,9 +353,9 @@ async function main() {
       console.log("Updated Magikid Shoes product and variants.");
     }
 
-    // ── Gun Holster (accessory — not footwear) ──
+    // ── Glock 43x Holster (Voronyz Engineering — not footwear) ──
     const existingGh = await prisma.product.findUnique({ where: { slug: GUN_HOLSTER_SLUG } });
-    console.log("Gun Holster product check:", existingGh ? "Found" : "Not found");
+    console.log("Glock 43x Holster product check:", existingGh ? "Found" : "Not found");
     if (!existingGh) {
       const ghProduct = await prisma.product.create({
         data: {
@@ -376,7 +376,7 @@ async function main() {
       });
       console.log("Seeded product:", ghProduct.slug);
     } else {
-      console.log("Updating existing Gun Holster product...");
+      console.log("Updating existing Glock 43x Holster product...");
       await prisma.product.update({
         where: { id: existingGh.id },
         data: {
@@ -392,7 +392,7 @@ async function main() {
       for (const v of GUN_HOLSTER_VARIANTS) {
         await prisma.variant.upsert({
           where: { sku: v.sku },
-          update: { stock: v.stock },
+          update: { stock: v.stock, color: v.color },
           create: {
             product: { connect: { id: existingGh.id } },
             color: v.color,
@@ -401,6 +401,13 @@ async function main() {
           },
         });
       }
+      const keepSkus = GUN_HOLSTER_VARIANTS.map((v) => v.sku);
+      await prisma.variant.deleteMany({
+        where: {
+          productId: existingGh.id,
+          sku: { notIn: [...keepSkus] },
+        },
+      });
       console.log("Updated Gun Holster product and variants.");
     }
 
