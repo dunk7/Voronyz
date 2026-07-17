@@ -1,9 +1,9 @@
 import { APPAREL_SLUGS, isApparelSlug } from "@/lib/apparel";
 
-/** Product slugs in Voronyz Engineering (not footwear). */
+/** Product slugs in Engineering (not footwear). */
 export const ACCESSORY_SLUGS = ["gun-holster"] as const;
 
-/** Product slugs in Voronyz Health (not footwear). */
+/** Product slugs in Collaborative (not footwear). */
 export const HEALTH_SLUGS = ["antioxidant-trail-mix"] as const;
 
 export type AccessorySlug = (typeof ACCESSORY_SLUGS)[number];

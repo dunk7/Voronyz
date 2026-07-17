@@ -186,9 +186,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         ? "/apparel"
         : "/products";
   const shopLabel = isAccessorySlug(slug)
-    ? "Back to Voronyz Engineering"
+    ? "Back to Engineering"
     : isHealthSlug(slug)
-      ? "Back to Voronyz Health"
+      ? "Back to Collaborative"
       : isApparelSlug(slug)
         ? "Back to Apparel"
         : "Back to Shop";
@@ -396,7 +396,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <div className="container pb-12">
         <div className="mt-10 overflow-hidden rounded-3xl ring-1 ring-black/5 bg-white">
           <div className="bg-black text-white px-6 py-4 text-sm font-medium">
-            {isDragonfly ? "Crafted for you" : isMagikidShoes ? "Magikid edition" : isSlipOns ? "Print + finish" : isGunHolster ? "Carbon fiber nylon" : isTrailMix ? "Voronyz Health" : isApparel ? "Apparel" : "How it's made"}
+            {isDragonfly ? "Crafted for you" : isMagikidShoes ? "Magikid edition" : isSlipOns ? "Print + finish" : isGunHolster ? "Carbon fiber nylon" : isTrailMix ? "Collaborative" : isApparel ? "Apparel" : "How it's made"}
           </div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed">
             {isDragonfly
@@ -445,7 +445,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "What flavors are available?", a: "Wild Berry, Super Protein, and Chocolate — all currently sold out." },
               { q: "Does it come in sizes?", a: "No sizes — choose a flavor instead." },
               { q: "How much does it cost?", a: "$60 per bag when back in stock." },
-              { q: "When will it restock?", a: "We're restocking the next batch soon. Check back on Voronyz Health." },
+              { q: "When will it restock?", a: "We're restocking the next batch soon. Check back on Collaborative." },
             ] : isApparel ? [
               { q: "What sizes are available?", a: "Most pieces run XS–XXL. Socks use S–XL." },
               { q: "How do I shop by type?", a: "Open Apparel and use Socks, Hoodies, Sweats, Shirts, Pants, or Outerwear filters." },
