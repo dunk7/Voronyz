@@ -181,7 +181,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
     const isV3 = slugKey === "v3-slides";
 
     const cover = isV3
-      ? "/products/v3-slides/InShot_20260212_194215252.jpg"
+      ? "/products/v3-slides/InShot_20260212_194352014.jpg"
       : (p.thumbnail || images[0]);
 
     const alt = meta?.altImage ?? (images[1] ? (
@@ -259,6 +259,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                   >
                     {/* Primary image */}
                     <SoftImage
+                      key={cover}
                       src={cover}
                       alt={p.name}
                       fill
@@ -271,6 +272,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                     {/* Hover alt image */}
                     {alt && (
                       <SoftImage
+                        key={alt}
                         src={alt}
                         alt={`${p.name} – alternate view`}
                         fill

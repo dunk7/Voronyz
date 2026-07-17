@@ -1,65 +1,89 @@
 export const APPAREL_SIZES = ["XS", "S", "M", "L", "XL", "XXL"] as const;
 export const APPAREL_ONE_SIZE = ["One Size"] as const;
 
+/**
+ * Apparel sub-sections.
+ * - `collection`: multi-product listing pages (shirts, sweaters, socks, …) —
+ *   add new designs to APPAREL_CATALOG with the matching subcategory.
+ * - `standalone`: individual products (hats, bottles, scarves) that are not
+ *   part of a multi-design collection.
+ */
 export type ApparelSubcategoryId =
-  | "socks"
-  | "hoodies"
-  | "sweats"
   | "shirts"
+  | "sweaters"
+  | "socks"
   | "shorts"
+  | "sweats"
   | "pants"
   | "outerwear"
   | "accessories";
+
+export type ApparelListingKind = "collection" | "standalone";
 
 export type ApparelSubcategory = {
   id: ApparelSubcategoryId;
   label: string;
   description: string;
+  /** collection = multi-product PLP; standalone = individual accessory products */
+  listing: ApparelListingKind;
 };
 
-/** Display order: Socks first, then core layers, shirts, bottoms, outerwear, accessories. */
+/** Display order for Apparel hub and nav. */
 export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
+  {
+    id: "shirts",
+    label: "Shirts",
+    description: "Nice shirts, oversized tees, and more designs to come",
+    listing: "collection",
+  },
+  {
+    id: "sweaters",
+    label: "Sweaters",
+    description: "Hoodies, knit layers, and sweater designs",
+    listing: "collection",
+  },
   {
     id: "socks",
     label: "Socks",
-    description: "Performance and everyday socks",
+    description: "Performance and everyday sock designs",
+    listing: "collection",
   },
   {
-    id: "hoodies",
-    label: "Hoodies",
-    description: "Layered comfort with a clean silhouette",
+    id: "shorts",
+    label: "Shorts",
+    description: "Everyday and training short designs",
+    listing: "collection",
   },
   {
     id: "sweats",
     label: "Sweats",
     description: "Sweatpants and lounge bottoms",
-  },
-  {
-    id: "shirts",
-    label: "Shirts",
-    description: "Nice shirts and oversized tees",
-  },
-  {
-    id: "shorts",
-    label: "Shorts",
-    description: "Everyday and training shorts",
+    listing: "collection",
   },
   {
     id: "pants",
     label: "Pants",
-    description: "Everyday and technical pants",
+    description: "Everyday and technical pant designs",
+    listing: "collection",
   },
   {
     id: "outerwear",
     label: "Outerwear",
     description: "Shells, jackets, and weather layers",
+    listing: "collection",
   },
   {
     id: "accessories",
     label: "Accessories",
-    description: "Scarves, UV hats, and bottles",
+    description: "Insoles, shades, jewelry, keychains, drone & RC gear",
+    listing: "standalone",
   },
 ];
+
+/** Multi-product apparel sub-sections only (excludes standalone accessories). */
+export const APPAREL_COLLECTION_SUBCATEGORIES = APPAREL_SUBCATEGORIES.filter(
+  (item) => item.listing === "collection",
+);
 
 export type ApparelCatalogItem = {
   slug: string;
@@ -86,7 +110,51 @@ export function getApparelImages(item: ApparelCatalogItem): string[] {
 /** Slugs removed from the live apparel catalog (cleaned up on ensure). */
 export const OBSOLETE_APPAREL_SLUGS = [] as const;
 
+/**
+ * Source of truth for apparel products.
+ * To add a new design: append an entry with the target subcategory
+ * (e.g. `shirts`). Collection subcategories are built for many products each.
+ */
 export const APPAREL_CATALOG: ApparelCatalogItem[] = [
+  // ── Shirts (multi-product) ──────────────────────────────────────────────
+  {
+    slug: "voronyz-nice-shirt",
+    subcategory: "shirts",
+    name: "Nice Shirt",
+    description: "Polished everyday shirt with a sharp collar and soft hand-feel.",
+    priceCents: 6800,
+    colors: ["black", "white", "grey"],
+    sizes: [...APPAREL_SIZES],
+    image: "/products/apparel/nice-shirt.jpg",
+    skuPrefix: "APP-NICE",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-oversized-tee",
+    subcategory: "shirts",
+    name: "Oversized Shirt",
+    description: "Relaxed oversized shirt with a soft hand-feel and clean drape.",
+    priceCents: 4800,
+    colors: ["black", "white", "grey"],
+    sizes: [...APPAREL_SIZES],
+    image: "/products/apparel/shirt.jpg",
+    skuPrefix: "APP-TEE",
+    comingSoon: true,
+  },
+  // ── Sweaters (multi-product) ────────────────────────────────────────────
+  {
+    slug: "voronyz-core-hoodie",
+    subcategory: "sweaters",
+    name: "Hoodie",
+    description: "Heavyweight fleece hoodie with a clean, modern cut.",
+    priceCents: 7800,
+    colors: ["black", "grey"],
+    sizes: [...APPAREL_SIZES],
+    image: "/products/apparel/hoodie.jpg",
+    skuPrefix: "APP-HOOD",
+    comingSoon: true,
+  },
+  // ── Socks (multi-product) ───────────────────────────────────────────────
   {
     slug: "voronyz-performance-socks",
     subcategory: "socks",
@@ -103,18 +171,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-SOCK",
     comingSoon: true,
   },
-  {
-    slug: "voronyz-scarf",
-    subcategory: "accessories",
-    name: "Scarf",
-    description: "Soft knit scarf with a clean drape for cool-weather layers.",
-    priceCents: 4200,
-    colors: ["black", "grey"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/scarf.jpg",
-    skuPrefix: "APP-SCRF",
-    comingSoon: true,
-  },
+  // ── Shorts (multi-product) ──────────────────────────────────────────────
   {
     slug: "voronyz-shorts",
     subcategory: "shorts",
@@ -127,30 +184,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-SHRT",
     comingSoon: true,
   },
-  {
-    slug: "voronyz-core-hoodie",
-    subcategory: "hoodies",
-    name: "Hoodie",
-    description: "Heavyweight fleece hoodie with a clean, modern cut.",
-    priceCents: 7800,
-    colors: ["black", "grey"],
-    sizes: [...APPAREL_SIZES],
-    image: "/products/apparel/hoodie.jpg",
-    skuPrefix: "APP-HOOD",
-    comingSoon: true,
-  },
-  {
-    slug: "voronyz-nice-shirt",
-    subcategory: "shirts",
-    name: "Nice Shirt",
-    description: "Polished everyday shirt with a sharp collar and soft hand-feel.",
-    priceCents: 6800,
-    colors: ["black", "white", "grey"],
-    sizes: [...APPAREL_SIZES],
-    image: "/products/apparel/nice-shirt.jpg",
-    skuPrefix: "APP-NICE",
-    comingSoon: true,
-  },
+  // ── Sweats (multi-product) ──────────────────────────────────────────────
   {
     slug: "voronyz-lounge-sweats",
     subcategory: "sweats",
@@ -163,18 +197,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-SWT",
     comingSoon: true,
   },
-  {
-    slug: "voronyz-oversized-tee",
-    subcategory: "shirts",
-    name: "Oversized Shirt",
-    description: "Relaxed oversized shirt with a soft hand-feel and clean drape.",
-    priceCents: 4800,
-    colors: ["black", "white", "grey"],
-    sizes: [...APPAREL_SIZES],
-    image: "/products/apparel/shirt.jpg",
-    skuPrefix: "APP-TEE",
-    comingSoon: true,
-  },
+  // ── Pants (multi-product) ───────────────────────────────────────────────
   {
     slug: "voronyz-technical-pants",
     subcategory: "pants",
@@ -187,6 +210,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-PNT",
     comingSoon: true,
   },
+  // ── Outerwear (multi-product) ───────────────────────────────────────────
   {
     slug: "voronyz-shell-jacket",
     subcategory: "outerwear",
@@ -197,6 +221,19 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/outerwear.jpg",
     skuPrefix: "APP-OUT",
+    comingSoon: true,
+  },
+  // ── Standalone accessories (not multi-product collections) ──────────────
+  {
+    slug: "voronyz-scarf",
+    subcategory: "accessories",
+    name: "Scarf",
+    description: "Soft knit scarf with a clean drape for cool-weather layers.",
+    priceCents: 4200,
+    colors: ["black", "grey"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/scarf.jpg",
+    skuPrefix: "APP-SCRF",
     comingSoon: true,
   },
   {
@@ -223,9 +260,131 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-BTTL",
     comingSoon: true,
   },
+  {
+    slug: "voronyz-lattice-insoles",
+    subcategory: "accessories",
+    name: "Lattice Insoles",
+    description: "3D-printed TPU lattice insoles for cushion, bounce, and all-day support.",
+    priceCents: 3200,
+    colors: ["black", "grey"],
+    sizes: ["S", "M", "L", "XL"],
+    image: "/products/apparel/lattice-insoles.jpg",
+    skuPrefix: "APP-INSL",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-cool-shades",
+    subcategory: "accessories",
+    name: "Cool Shades",
+    description: "Lightweight 3D-printed frames with a sharp geometric silhouette.",
+    priceCents: 4800,
+    colors: ["black", "white", "grey"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/cool-shades.jpg",
+    skuPrefix: "APP-SHDE",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-necklace",
+    subcategory: "accessories",
+    name: "Voronyz Necklace",
+    description: "Faceted Voronyz pendant on a clean chain — printed jewelry with everyday weight.",
+    priceCents: 5400,
+    colors: ["black", "gold", "silver"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/voronyz-necklace.jpg",
+    skuPrefix: "APP-NCKL",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-keychain",
+    subcategory: "accessories",
+    name: "Voronyz Keychain",
+    description: "Durable 3D-printed keychain mark — pocket-ready Voronyz branding.",
+    priceCents: 1800,
+    colors: ["black", "grey", "orange"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/voronyz-keychain.jpg",
+    skuPrefix: "APP-KEY",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-jewelry-collab",
+    subcategory: "accessories",
+    name: "Jewelry Collab",
+    description: "Limited jewelry collab drop — sculptural pieces from the Voronyz studio.",
+    priceCents: 7200,
+    colors: ["black", "gold"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/jewelry-collab.jpg",
+    skuPrefix: "APP-JLRY",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-drone-parts",
+    subcategory: "accessories",
+    name: "Drone Parts",
+    description: "Precision 3D-printed drone mounts, guards, and frame accessories.",
+    priceCents: 2800,
+    colors: ["black", "grey"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/drone-parts.jpg",
+    skuPrefix: "APP-DRNE",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-rc-car-stickers",
+    subcategory: "accessories",
+    name: "RC Car Stickers",
+    description: "Vinyl RC car sticker pack with Voronyz marks and lattice motifs.",
+    priceCents: 1200,
+    colors: ["black", "white", "orange"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/rc-car-stickers.jpg",
+    skuPrefix: "APP-RCST",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-lace-locks",
+    subcategory: "accessories",
+    name: "Lace Locks",
+    description: "3D-printed lace locks that keep your footwear dialed without retying.",
+    priceCents: 1600,
+    colors: ["black", "white", "grey"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/lace-locks.jpg",
+    skuPrefix: "APP-LACE",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-charm-bracelet",
+    subcategory: "accessories",
+    name: "Charm Bracelet",
+    description: "Modular charm bracelet with interchangeable Voronyz lattice charms.",
+    priceCents: 4600,
+    colors: ["black", "silver"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/charm-bracelet.jpg",
+    skuPrefix: "APP-CHAR",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-lattice-shoe-trees",
+    subcategory: "accessories",
+    name: "Lattice Shoe Trees",
+    description: "Breathable 3D-printed shoe trees that hold shape and air out your pairs.",
+    priceCents: 3400,
+    colors: ["black", "white"],
+    sizes: ["S", "M", "L"],
+    image: "/products/apparel/lattice-shoe-trees.jpg",
+    skuPrefix: "APP-TREE",
+    comingSoon: true,
+  },
 ];
 
 export const APPAREL_SLUGS = APPAREL_CATALOG.map((item) => item.slug);
+
+export const APPAREL_CATEGORY = "apparel" as const;
 
 export function isObsoleteApparelSlug(slug: string | null | undefined): boolean {
   const key = (slug || "").trim().toLowerCase();
@@ -244,6 +403,58 @@ export function getApparelItem(slug: string | null | undefined) {
 
 export function getApparelSubcategory(id: string | null | undefined) {
   return APPAREL_SUBCATEGORIES.find((item) => item.id === id) ?? null;
+}
+
+export function isApparelSubcategoryId(
+  id: string | null | undefined,
+): id is ApparelSubcategoryId {
+  return Boolean(getApparelSubcategory(id));
+}
+
+export function isCollectionSubcategory(id: string | null | undefined): boolean {
+  return getApparelSubcategory(id)?.listing === "collection";
+}
+
+export function isStandaloneSubcategory(id: string | null | undefined): boolean {
+  return getApparelSubcategory(id)?.listing === "standalone";
+}
+
+/** All catalog items in a subcategory (ordered as in APPAREL_CATALOG). */
+export function getApparelBySubcategory(id: ApparelSubcategoryId): ApparelCatalogItem[] {
+  return APPAREL_CATALOG.filter((item) => item.subcategory === id);
+}
+
+export function getStandaloneApparelItems(): ApparelCatalogItem[] {
+  return APPAREL_CATALOG.filter(
+    (item) => getApparelSubcategory(item.subcategory)?.listing === "standalone",
+  );
+}
+
+/** Cover image for a subcategory hub card (first product image). */
+export function getSubcategoryCover(id: ApparelSubcategoryId): string | null {
+  return getApparelBySubcategory(id)[0]?.image ?? null;
+}
+
+/** Listing URL for a subcategory (`/apparel/shirts`, `/apparel/accessories`, …). */
+export function apparelSubcategoryHref(id: ApparelSubcategoryId): string {
+  return `/apparel/${id}`;
+}
+
+/** Back-link target for a product detail page. */
+export function apparelProductShopHref(slug: string | null | undefined): string {
+  const item = getApparelItem(slug);
+  if (!item) return "/apparel";
+  return apparelSubcategoryHref(item.subcategory);
+}
+
+export function apparelProductShopLabel(slug: string | null | undefined): string {
+  const item = getApparelItem(slug);
+  if (!item) return "Back to Apparel";
+  const sub = getApparelSubcategory(item.subcategory);
+  if (!sub) return "Back to Apparel";
+  return sub.listing === "standalone"
+    ? "Back to Accessories"
+    : `Back to ${sub.label}`;
 }
 
 export function apparelSku(prefix: string, color: string) {

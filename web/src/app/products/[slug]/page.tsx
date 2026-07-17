@@ -33,7 +33,13 @@ import {
   TRAIL_MIX_THUMBNAIL_URL,
 } from "@/lib/trailMix";
 import { isAccessorySlug, isApparelSlug, isHealthSlug } from "@/lib/productCategories";
-import { getApparelItem, getApparelImages, getApparelSubcategory } from "@/lib/apparel";
+import {
+  apparelProductShopHref,
+  apparelProductShopLabel,
+  getApparelItem,
+  getApparelImages,
+  getApparelSubcategory,
+} from "@/lib/apparel";
 import LogoLoader from "@/components/ui/LogoLoader";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
@@ -104,10 +110,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   }
   if (!product) return <div className="container py-12 text-neutral-900">Not found.</div>;
 
+  // First and third gallery frames swapped so the preferred cover leads.
   const defaultImages = [
-    "/products/v3-slides/InShot_20260212_194215252.jpg",
-    "/products/v3-slides/InShot_20260212_193956953.jpg",
     "/products/v3-slides/InShot_20260212_194352014.jpg",
+    "/products/v3-slides/InShot_20260212_193956953.jpg",
+    "/products/v3-slides/InShot_20260212_194215252.jpg",
     "/products/v3-slides/InShot_20260212_194654595.jpg",
     "/products/v3-slides/InShot_20260212_194922422.jpg",
     "/products/v3-slides/InShot_20260212_195048118.jpg",
@@ -184,14 +191,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     : isHealthSlug(slug)
       ? "/health"
       : isApparelSlug(slug)
-        ? "/apparel"
+        ? apparelProductShopHref(slug)
         : "/products";
   const shopLabel = isAccessorySlug(slug)
     ? "Back to Engineering"
     : isHealthSlug(slug)
       ? "Back to Collaborative"
       : isApparelSlug(slug)
-        ? "Back to Apparel"
+        ? apparelProductShopLabel(slug)
         : "Back to Shop";
   const displayName = isGunHolster
     ? GUN_HOLSTER_NAME
@@ -456,8 +463,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "How much does it cost?", a: "$60 per bag when back in stock." },
               { q: "When will it restock?", a: "We're restocking the next batch soon. Check back on Collaborative." },
             ] : isApparel ? [
-              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Socks, scarf, UV hat, and water bottle are One Size." },
-              { q: "Where can I browse the lineup?", a: "Open Apparel to see the full grid of coming-soon pieces." },
+              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Socks, scarf, UV hat, water bottle, cool shades, jewelry, keychains, lace locks, drone parts, and RC stickers are One Size. Lattice Insoles and Lattice Shoe Trees use S–XL / S–L sizing." },
+              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, Socks, Shorts, and more. Accessories live under their own section." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : [
               { q: "What if my size doesn't fit?", a: "They're going to fit and also be extremely comfortable. Trust the process" },
@@ -554,7 +561,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     if (product) {
       const title = `${product.name} – Voronyz`;
       const description = product.description;
-      const images = (product.images as string[] | null) ?? ["/products/v3-slides/InShot_20260212_194215252.jpg"]; 
+      const images = (product.images as string[] | null) ?? ["/products/v3-slides/InShot_20260212_194352014.jpg"]; 
       return {
         title,
         description,
@@ -568,8 +575,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: fallbackTitle,
     description: fallbackDescription,
-    openGraph: { title: fallbackTitle, description: fallbackDescription, images: ["/products/v3-slides/InShot_20260212_194215252.jpg"] },
-    twitter: { card: "summary_large_image", title: fallbackTitle, description: fallbackDescription, images: ["/products/v3-slides/InShot_20260212_194215252.jpg"] },
+    openGraph: { title: fallbackTitle, description: fallbackDescription, images: ["/products/v3-slides/InShot_20260212_194352014.jpg"] },
+    twitter: { card: "summary_large_image", title: fallbackTitle, description: fallbackDescription, images: ["/products/v3-slides/InShot_20260212_194352014.jpg"] },
   };
 }
 

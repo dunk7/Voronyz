@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 type LogoLoaderProps = {
   /** Visual size of the logo mark */
   size?: "sm" | "md" | "lg";
@@ -18,7 +20,7 @@ const SIZE_MAP = {
   lg: { mark: 72, bar: 168 },
 } as const;
 
-/** Animated Voronyz mark: center dot + three surrounding dots, with a flowing progress bar. */
+/** Animated Voronyz logo (same mark as the header) with a flowing progress bar. */
 export default function LogoLoader({
   size = "md",
   label,
@@ -38,22 +40,15 @@ export default function LogoLoader({
       aria-live="polite"
       aria-label={label || "Loading"}
     >
-      <svg
+      <Image
+        src="/logo.png"
+        alt=""
         width={dims.mark}
         height={dims.mark}
-        viewBox="0 0 64 64"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
-        className="logo-loader-mark"
-      >
-        {/* Outer dots — triangular / Y arrangement around the core */}
-        <circle className="logo-loader-dot logo-loader-dot--a" cx="22" cy="18" r="5.5" fill={fill} />
-        <circle className="logo-loader-dot logo-loader-dot--b" cx="42" cy="18" r="5.5" fill={fill} />
-        <circle className="logo-loader-dot logo-loader-dot--c" cx="32" cy="46" r="5.5" fill={fill} />
-        {/* Center dot */}
-        <circle className="logo-loader-dot logo-loader-dot--core" cx="32" cy="30" r="9" fill={fill} />
-      </svg>
+        className="logo-loader-mark rounded-sm"
+        priority
+      />
 
       {showBar && (
         <div
@@ -88,25 +83,17 @@ type LogoMarkProps = {
 /** Compact static/pulsing logo mark for image placeholders and overlays. */
 export function LogoMark({
   size = 28,
-  tone = "dark",
   className = "",
   animate = true,
 }: LogoMarkProps) {
-  const fill = tone === "light" ? "#ffffff" : "#0e0e0e";
   return (
-    <svg
+    <Image
+      src="/logo.png"
+      alt=""
       width={size}
       height={size}
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
-      className={`${animate ? "logo-loader-mark" : ""} ${className}`}
-    >
-      <circle className={animate ? "logo-loader-dot logo-loader-dot--a" : undefined} cx="22" cy="18" r="5.5" fill={fill} />
-      <circle className={animate ? "logo-loader-dot logo-loader-dot--b" : undefined} cx="42" cy="18" r="5.5" fill={fill} />
-      <circle className={animate ? "logo-loader-dot logo-loader-dot--c" : undefined} cx="32" cy="46" r="5.5" fill={fill} />
-      <circle className={animate ? "logo-loader-dot logo-loader-dot--core" : undefined} cx="32" cy="30" r="9" fill={fill} />
-    </svg>
+      className={`rounded-sm ${animate ? "logo-loader-mark" : ""} ${className}`}
+    />
   );
 }

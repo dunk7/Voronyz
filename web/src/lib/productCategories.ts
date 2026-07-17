@@ -1,7 +1,9 @@
 import {
   APPAREL_SLUGS,
+  getApparelItem,
   isApparelSlug,
   isObsoleteApparelSlug,
+  type ApparelSubcategoryId,
 } from "@/lib/apparel";
 
 /** Product slugs in Engineering (not footwear). */
@@ -47,6 +49,29 @@ export function filterHealthProducts<T extends { slug: string }>(products: T[]):
   return products.filter((p) => isHealthSlug(p.slug));
 }
 
+/** Filter apparel products and keep catalog display order (stable across reloads). */
 export function filterApparelProducts<T extends { slug: string }>(products: T[]): T[] {
-  return products.filter((p) => isApparelSlug(p.slug));
+  const order = new Map(APPAREL_SLUGS.map((slug, index) => [slug, index]));
+  return products
+    .filter((p) => isApparelSlug(p.slug))
+    .sort((a, b) => {
+      const aKey = a.slug.trim().toLowerCase();
+      const bKey = b.slug.trim().toLowerCase();
+      return (order.get(aKey) ?? Number.MAX_SAFE_INTEGER) - (order.get(bKey) ?? Number.MAX_SAFE_INTEGER);
+    });
+}
+
+/** Filter apparel products to a single sub-section (shirts, socks, accessories, …). */
+export function filterApparelBySubcategory<T extends { slug: string }>(
+  products: T[],
+  subcategory: ApparelSubcategoryId,
+): T[] {
+  const order = new Map(APPAREL_SLUGS.map((slug, index) => [slug, index]));
+  return products
+    .filter((p) => getApparelItem(p.slug)?.subcategory === subcategory)
+    .sort((a, b) => {
+      const aKey = a.slug.trim().toLowerCase();
+      const bKey = b.slug.trim().toLowerCase();
+      return (order.get(aKey) ?? Number.MAX_SAFE_INTEGER) - (order.get(bKey) ?? Number.MAX_SAFE_INTEGER);
+    });
 }
