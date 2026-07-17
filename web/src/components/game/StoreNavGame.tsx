@@ -681,7 +681,7 @@ export default function StoreNavGame() {
         ctx.restore();
       }
 
-      // Brand corner (world-space, near map origin — also draw screen overlay below)
+      // Brand corner (world-space, near map origin)
       ctx.fillStyle = "rgba(45, 35, 55, 0.45)";
       ctx.font = "800 16px ui-rounded, system-ui, sans-serif";
       ctx.textAlign = "left";
@@ -689,26 +689,6 @@ export default function StoreNavGame() {
       ctx.fillText("VORONYZ STORE", 28, 42);
 
       ctx.restore();
-
-      // Mini-map (screen space)
-      const mmW = 110;
-      const mmH = Math.round((mmW * MAP_H) / MAP_W);
-      const mmX = vw - mmW - 14;
-      const mmY = 14;
-      const scaleX = mmW / MAP_W;
-      const scaleY = mmH / MAP_H;
-      ctx.fillStyle = "rgba(35, 25, 45, 0.72)";
-      drawRoundedRect(ctx, mmX - 4, mmY - 4, mmW + 8, mmH + 8, 10);
-      ctx.fill();
-      ctx.fillStyle = "rgba(255,245,235,0.9)";
-      ctx.fillRect(mmX, mmY, mmW, mmH);
-      ctx.strokeStyle = "rgba(255,107,107,0.85)";
-      ctx.lineWidth = 1.5;
-      ctx.strokeRect(mmX + cam.x * scaleX, mmY + cam.y * scaleY, vw * scaleX, vh * scaleY);
-      ctx.fillStyle = "#FF7675";
-      ctx.beginPath();
-      ctx.arc(mmX + player.x * scaleX, mmY + player.y * scaleY, 3.5, 0, Math.PI * 2);
-      ctx.fill();
 
       raf = requestAnimationFrame(tick);
     };
