@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { formatCentsAsCurrency } from "@/lib/money";
 import {
   APPAREL_CATALOG,
@@ -50,12 +50,18 @@ function colorSwatch(color: string) {
     gray: "#9ca3af",
     white: "#f5f5f5",
     beige: "#d6c6a8",
+    gold: "#d4af37",
+    silver: "#c0c0c0",
+    orange: "#f97316",
   };
   return map[color.toLowerCase()] ?? color;
 }
 
 export default function ApparelContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const typeFilter = (searchParams.get("type") || "").trim().toLowerCase();
+  const accessoriesOnly = typeFilter === "accessories";
   const [products, setProducts] = useState<Product[]>(() => catalogSeed());
   const [loading, setLoading] = useState(true);
   const [navigatingSlug, setNavigatingSlug] = useState<string | null>(null);
@@ -91,6 +97,7 @@ export default function ApparelContent() {
       .map((product) => {
         const meta = getApparelItem(product.slug);
         if (!meta) return null;
+        if (accessoriesOnly && meta.subcategory !== "accessories") return null;
         return {
           ...product,
           subcategory: meta.subcategory,
@@ -107,7 +114,7 @@ export default function ApparelContent() {
         cover: string;
       }
     >;
-  }, [products]);
+  }, [products, accessoriesOnly]);
 
   function handleCardClick(e: React.MouseEvent, slug: string) {
     e.preventDefault();
@@ -125,10 +132,12 @@ export default function ApparelContent() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
-                Apparel
+                {accessoriesOnly ? "Accessories" : "Apparel"}
               </h1>
               <p className="mt-2 text-sm text-neutral-500 max-w-xl">
-                Socks, hoodie, sweats, shirts, shorts, and accessories — coming soon, still viewable.
+                {accessoriesOnly
+                  ? "Insoles, cool shades, jewelry, keychains, drone parts, and RC stickers — coming soon, still viewable."
+                  : "Socks, hoodie, sweats, shirts, shorts, and accessories — coming soon, still viewable."}
               </p>
             </div>
             <span className="text-xs tabular-nums text-neutral-400 min-h-[1rem]">
@@ -149,7 +158,9 @@ export default function ApparelContent() {
             </div>
           ) : (
             <div className="rounded-3xl bg-white ring-1 ring-black/5 px-8 py-16 text-center">
-              <p className="text-lg font-medium text-neutral-900">No apparel yet</p>
+              <p className="text-lg font-medium text-neutral-900">
+                {accessoriesOnly ? "No accessories yet" : "No apparel yet"}
+              </p>
               <p className="mt-2 text-sm text-neutral-500">
                 Check back soon for the full lineup.
               </p>

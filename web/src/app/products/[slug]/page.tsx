@@ -456,7 +456,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "How much does it cost?", a: "$60 per bag when back in stock." },
               { q: "When will it restock?", a: "We're restocking the next batch soon. Check back on Collaborative." },
             ] : isApparel ? [
-              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Socks, scarf, UV hat, and water bottle are One Size." },
+              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Socks, scarf, UV hat, water bottle, cool shades, jewelry, keychains, lace locks, drone parts, and RC stickers are One Size. Lattice Insoles and Lattice Shoe Trees use S–XL / S–L sizing." },
               { q: "Where can I browse the lineup?", a: "Open Apparel to see the full grid of coming-soon pieces." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : [
