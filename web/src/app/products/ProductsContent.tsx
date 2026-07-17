@@ -6,7 +6,7 @@ import { MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
 import { filterAccessoryProducts, filterFootwearProducts, filterHealthProducts } from "@/lib/productCategories";
 import { getFootwearCatalogSeed, type FootwearListProduct } from "@/lib/footwear";
 import { useEffect, useState, useCallback } from "react";
-import { TRAIL_MIX_SLUG } from "@/lib/trailMix";
+import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 import { GATORS_SLUG } from "@/lib/gators";
@@ -74,12 +74,18 @@ type ProductsContentProps = {
   category?: "footwear" | "accessories" | "health" | "all";
 };
 
+function categorySeed(category: ProductsContentProps["category"]): Product[] {
+  if (category === "footwear") return getFootwearCatalogSeed();
+  if (category === "health") return getHealthCatalogSeed();
+  return [];
+}
+
 export default function ProductsContent({ category = "footwear" }: ProductsContentProps) {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q");
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>(() =>
-    category === "footwear" && !searchQuery ? getFootwearCatalogSeed() : [],
+    !searchQuery ? categorySeed(category) : [],
   );
   const [loading, setLoading] = useState(true);
   const [navigatingSlug, setNavigatingSlug] = useState<string | null>(null);
@@ -98,9 +104,10 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
     const controller = new AbortController();
 
     async function fetchProducts() {
-      // Seed footwear immediately so the grid never goes empty behind the logo loader.
-      if (category === "footwear" && !searchQuery) {
-        setProducts(getFootwearCatalogSeed());
+      // Seed footwear / Collaborative immediately so the grid never goes empty behind the logo loader.
+      if (!searchQuery) {
+        const seed = categorySeed(category);
+        if (seed.length > 0) setProducts(seed);
       }
       setLoading(true);
       try {
@@ -119,31 +126,24 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
           else if (category === "accessories") list = filterAccessoryProducts(list);
           else if (category === "health") list = filterHealthProducts(list);
           if (!cancelled) {
-            // Keep static footwear seed if the API returned nothing (DB outage / schema lag).
+            // Keep static seed if the API returned nothing (DB outage / schema lag).
             if (list.length > 0) {
               setProducts(list);
-            } else if (category === "footwear" && !searchQuery) {
-              setProducts(getFootwearCatalogSeed());
             } else {
-              setProducts([]);
+              const seed = !searchQuery ? categorySeed(category) : [];
+              setProducts(seed);
             }
           }
         } else if (!cancelled) {
-          if (category === "footwear" && !searchQuery) {
-            setProducts(getFootwearCatalogSeed());
-          } else {
-            setProducts([]);
-          }
+          const seed = !searchQuery ? categorySeed(category) : [];
+          setProducts(seed);
         }
       } catch (error) {
         if ((error as Error)?.name === "AbortError") return;
         console.error("Failed to fetch products:", error);
         if (!cancelled) {
-          if (category === "footwear" && !searchQuery) {
-            setProducts(getFootwearCatalogSeed());
-          } else {
-            setProducts([]);
-          }
+          const seed = !searchQuery ? categorySeed(category) : [];
+          setProducts(seed);
         }
       } finally {
         if (!cancelled) setLoading(false);

@@ -55,3 +55,35 @@ export const TRAIL_MIX_VARIANTS = [
 export function trailMixFlavorLabel(id: string | null | undefined): string {
   return TRAIL_MIX_FLAVORS.find((f) => f.id === id)?.label ?? id ?? "";
 }
+
+export type HealthListProduct = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  priceCents: number;
+  currency: string;
+  images: string[] | null;
+  thumbnail?: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+};
+
+/** Instant Collaborative seed so Trail Mix never flashes empty while the API loads. */
+export function getHealthCatalogSeed(): HealthListProduct[] {
+  const now = new Date().toISOString();
+  return [
+    {
+      id: `catalog-${TRAIL_MIX_SLUG}`,
+      slug: TRAIL_MIX_SLUG,
+      name: TRAIL_MIX_NAME,
+      description: TRAIL_MIX_DESCRIPTION_SHORT,
+      priceCents: TRAIL_MIX_PRICE_CENTS,
+      currency: "usd",
+      images: [...TRAIL_MIX_IMAGES],
+      thumbnail: TRAIL_MIX_THUMBNAIL_URL,
+      createdAt: now,
+      updatedAt: now,
+    },
+  ];
+}
