@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
+import {
+  getDiscountedUnitPriceCents,
+  normalizeDiscountCode,
+} from "@/lib/discountPricing";
 
 const NANO_RECEIVE_ADDRESS = process.env.NANO_RECEIVE_ADDRESS;
 const NANO_DISCOUNT_RATE = 0.03;
@@ -19,12 +23,6 @@ export async function POST(request: NextRequest) {
     }
 
     const { items, discountCode } = await request.json();
-
-    const isSlidesProduct = (productSlug?: string, productName?: string) => {
-      const slug = (productSlug || "").toLowerCase();
-      const name = (productName || "").toLowerCase();
-      return slug === "v3-slides" || slug.includes("slide") || name.includes("slide");
-    };
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "No items provided" }, { status: 400 });
@@ -45,11 +43,11 @@ export async function POST(request: NextRequest) {
       unitCents: number;
       image?: string;
     }> = [];
+    const normalizedDiscountCode = normalizeDiscountCode(discountCode);
 
     for (const item of items) {
-      const lowerCode = discountCode ? discountCode.toLowerCase().trim() : "";
       const productSlug = item.productSlug || "";
-      let unitAmount: number;
+      let unitAmount = 7500;
 
       try {
         const variant = await prisma.variant.findUnique({
@@ -63,32 +61,15 @@ export async function POST(request: NextRequest) {
 
         const slug = variant?.product?.slug || productSlug;
         const productNameForDiscount = variant?.product?.name || item.productName || "";
-
-        if (lowerCode === "emptyaus" && slug === "dragonfly") {
-          unitAmount = 2000;
-        } else if (lowerCode === "aryan10" && isSlidesProduct(slug, productNameForDiscount)) {
-          unitAmount = 1000;
-        } else if (lowerCode === "fam45") {
-          unitAmount = 5000;
-        } else if (lowerCode === "superdeal35") {
-          unitAmount = 3500;
-        } else if (lowerCode === "maximus27") {
-          unitAmount = 3200;
-        } else if (lowerCode === "super20") {
-          unitAmount = 2000;
-        } else if (lowerCode === "chud25") {
-          unitAmount = 5000;
-        } else if (lowerCode === "pedro30") {
-          unitAmount = 3000;
-        } else if (lowerCode === "nicole50") {
-          unitAmount = 5000;
-        } else if (typeof item.priceCents === "number" && item.priceCents > 0) {
-          unitAmount = item.priceCents;
-        } else {
-          unitAmount = variant
-            ? (variant.priceCents || variant.product.priceCents || 0)
+        const baseUnitAmount = variant
+          ? (variant.priceCents || variant.product.priceCents || 0)
+          : typeof item.priceCents === "number" && item.priceCents > 0
+            ? item.priceCents
             : 7500;
-        }
+        unitAmount = getDiscountedUnitPriceCents(baseUnitAmount, normalizedDiscountCode, {
+          productSlug: slug,
+          productName: productNameForDiscount,
+        });
 
         lineItems.push({
           name: variant?.product?.name || item.productName || "Product",
@@ -99,29 +80,14 @@ export async function POST(request: NextRequest) {
         });
       } catch {
         // Fallback pricing when DB is unavailable
-        if (lowerCode === "emptyaus" && productSlug === "dragonfly") {
-          unitAmount = 2000;
-        } else if (lowerCode === "aryan10" && isSlidesProduct(productSlug, item.productName || "")) {
-          unitAmount = 1000;
-        } else if (lowerCode === "fam45") {
-          unitAmount = 5000;
-        } else if (lowerCode === "superdeal35") {
-          unitAmount = 3500;
-        } else if (lowerCode === "maximus27") {
-          unitAmount = 3200;
-        } else if (lowerCode === "super20") {
-          unitAmount = 2000;
-        } else if (lowerCode === "chud25") {
-          unitAmount = 5000;
-        } else if (lowerCode === "pedro30") {
-          unitAmount = 3000;
-        } else if (lowerCode === "nicole50") {
-          unitAmount = 5000;
-        } else if (typeof item.priceCents === "number" && item.priceCents > 0) {
-          unitAmount = item.priceCents;
-        } else {
-          unitAmount = 7500;
-        }
+        unitAmount = getDiscountedUnitPriceCents(
+          typeof item.priceCents === "number" && item.priceCents > 0 ? item.priceCents : 7500,
+          normalizedDiscountCode,
+          {
+            productSlug,
+            productName: item.productName || "",
+          }
+        );
 
         lineItems.push({
           name: item.productName || "Product",

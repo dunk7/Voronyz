@@ -2,6 +2,12 @@
 import { useState, useEffect } from "react";
 import { formatCentsAsCurrency } from "@/lib/money";
 import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
+import {
+  getDiscountedUnitPriceCents,
+  isValidDiscountCode,
+  KNOWN_DISCOUNTED_UNIT_PRICES,
+  normalizeDiscountCode,
+} from "@/lib/discountPricing";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -34,44 +40,15 @@ export default function CartClient() {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [isNanoCheckingOut, setIsNanoCheckingOut] = useState(false);
 
-  const normalizeDiscountCode = (code: string | null | undefined) => {
-    const trimmed = (code ?? "").trim();
-    return trimmed ? trimmed.toLowerCase() : null;
-  };
-
-  const isValidDiscountCode = (code: string | null) => {
-    if (!code) return false;
-    return code === "fam45" || code === "superdeal35" || code === "maximus27" || code === "emptyaus" || code === "aryan10" || code === "super20" || code === "chud25" || code === "pedro30" || code === "nicole50";
-  };
-
   const getBaseUnitPriceCents = (it: CartItem) => {
     return typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
   };
 
-  const isSlidesProduct = (productSlug?: string, productName?: string) => {
-    const slug = (productSlug || "").toLowerCase();
-    const name = (productName || "").toLowerCase();
-    return slug === "v3-slides" || slug.includes("slide") || name.includes("slide");
-  };
-
-  const getDiscountedUnitPriceCents = (
-    baseUnitPriceCents: number,
-    code: string | null,
-    productSlug?: string,
-    productName?: string
-  ) => {
-    const lower = normalizeDiscountCode(code);
-    if (lower === "emptyaus" && productSlug === "dragonfly") return 2000;
-    if (lower === "aryan10" && isSlidesProduct(productSlug, productName)) return 1000;
-    if (lower === "fam45") return 4500;
-    if (lower === "superdeal35") return 3500;
-    if (lower === "maximus27") return 3200;
-    if (lower === "super20") return 2000;
-    if (lower === "chud25") return 5000;
-    if (lower === "pedro30") return 3000;
-    if (lower === "nicole50") return 5000;
-    return baseUnitPriceCents;
-  };
+  const unitPriceForItem = (it: CartItem, code: string | null) =>
+    getDiscountedUnitPriceCents(getBaseUnitPriceCents(it), code, {
+      productSlug: it.productSlug,
+      productName: it.productName,
+    });
 
   useEffect(() => {
     // Load cart from localStorage
@@ -95,7 +72,7 @@ export default function CartClient() {
             // Heuristic: older carts used to overwrite `priceCents` when a coupon was applied.
             // If we have a coupon and the stored "base" looks like one of the coupon prices,
             // restore the typical base price so clearing the coupon works as expected.
-            const looksLikeCouponPrice = base === 4500 || base === 5000 || base === 3500 || base === 3200 || base === 3000 || base === 1000 || base === 2000;
+            const looksLikeCouponPrice = KNOWN_DISCOUNTED_UNIT_PRICES.has(base);
             const repairedBase =
               normalizedCode && isValidDiscountCode(normalizedCode) && looksLikeCouponPrice ? 7500 : base;
 
@@ -173,9 +150,7 @@ export default function CartClient() {
   }
 
   const subtotal = items.reduce((sum, it) => {
-    const base = getBaseUnitPriceCents(it);
-    const unit = getDiscountedUnitPriceCents(base, discountCode, it.productSlug, it.productName);
-    return sum + unit * it.quantity;
+    return sum + unitPriceForItem(it, discountCode) * it.quantity;
   }, 0);
 
   if (isLoading) return <div className="text-neutral-900">Loading…</div>;
@@ -294,7 +269,7 @@ export default function CartClient() {
               <div className="flex items-center gap-2 lg:gap-4 flex-1 lg:flex-none justify-end min-w-0 lg:min-w-[5rem]">
                 <div className="text-base font-semibold text-neutral-900 text-right flex-1 lg:flex-none">
                   {formatCentsAsCurrency(
-                    getDiscountedUnitPriceCents(getBaseUnitPriceCents(it), discountCode, it.productSlug, it.productName) * it.quantity
+                    unitPriceForItem(it, discountCode) * it.quantity
                   )}
                 </div>
               </div>
@@ -366,7 +341,7 @@ export default function CartClient() {
                 gender: item.attributes?.gender,
                 fulfillment: item.attributes?.fulfillment,
                 quantity: item.quantity,
-                priceCents: getDiscountedUnitPriceCents(getBaseUnitPriceCents(item), discountCode, item.productSlug, item.productName),
+                priceCents: unitPriceForItem(item, discountCode),
                 image: item.image,
                 productSlug: item.productSlug,
                 studentName: item.studentName,
@@ -446,7 +421,7 @@ export default function CartClient() {
                 gender: item.attributes?.gender,
                 fulfillment: item.attributes?.fulfillment,
                 quantity: item.quantity,
-                priceCents: getDiscountedUnitPriceCents(getBaseUnitPriceCents(item), discountCode, item.productSlug, item.productName),
+                priceCents: unitPriceForItem(item, discountCode),
                 image: item.image,
                 productSlug: item.productSlug,
                 studentName: item.studentName,
