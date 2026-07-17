@@ -200,6 +200,8 @@ export default function AddToCart({
     const names: Record<string, string> = {
       "#007FFF": "Azure Blue",
       "#007fff": "Azure Blue",
+      "#C6FF00": "Neon Green",
+      "#c6ff00": "Neon Green",
     };
     return names[color] || color;
   };
