@@ -13,7 +13,6 @@ export type ApparelSubcategoryId =
   | "sweaters"
   | "socks"
   | "shorts"
-  | "sweats"
   | "pants"
   | "outerwear"
   | "hats"
@@ -58,15 +57,9 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
     listing: "collection",
   },
   {
-    id: "sweats",
-    label: "Sweats",
-    description: "Sweatpants and lounge bottoms",
-    listing: "collection",
-  },
-  {
     id: "pants",
     label: "Pants",
-    description: "Everyday and technical pant designs",
+    description: "Sweats, technical pants, and everyday bottoms",
     listing: "collection",
   },
   {
@@ -208,10 +201,10 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-SHRT",
     comingSoon: true,
   },
-  // ── Sweats (multi-product) ──────────────────────────────────────────────
+  // ── Pants (multi-product: sweats + technical) ────────────────────────────
   {
     slug: "voronyz-lounge-sweats",
-    subcategory: "sweats",
+    subcategory: "pants",
     name: "Sweats",
     description: "Tapered sweatpants for training days and downtime.",
     priceCents: 7200,
@@ -221,7 +214,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-SWT",
     comingSoon: true,
   },
-  // ── Pants (multi-product) ───────────────────────────────────────────────
   {
     slug: "voronyz-technical-pants",
     subcategory: "pants",
