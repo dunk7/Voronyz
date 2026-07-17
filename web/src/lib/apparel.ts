@@ -1,12 +1,13 @@
 export const APPAREL_SIZES = ["XS", "S", "M", "L", "XL", "XXL"] as const;
+export const APPAREL_ONE_SIZE = ["One Size"] as const;
 
 export type ApparelSubcategoryId =
   | "socks"
   | "hoodies"
   | "sweats"
   | "shirts"
-  | "pants"
-  | "outerwear";
+  | "shorts"
+  | "accessories";
 
 export type ApparelSubcategory = {
   id: ApparelSubcategoryId;
@@ -14,7 +15,7 @@ export type ApparelSubcategory = {
   description: string;
 };
 
-/** Display order: Socks first, then Hoodies, Sweats, Shirts, Pants, Outerwear. */
+/** Display order: Socks first, then core layers, shirts, shorts, accessories. */
 export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "socks",
@@ -29,22 +30,22 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "sweats",
     label: "Sweats",
-    description: "Sweatpants, sweatshirts, and lounge sets",
+    description: "Sweatpants and lounge bottoms",
   },
   {
     id: "shirts",
     label: "Shirts",
-    description: "Tees and oversized shirts",
+    description: "Nice shirts and oversized tees",
   },
   {
-    id: "pants",
-    label: "Pants",
-    description: "Everyday and technical pants",
+    id: "shorts",
+    label: "Shorts",
+    description: "Everyday and training shorts",
   },
   {
-    id: "outerwear",
-    label: "Outerwear",
-    description: "Shells, jackets, and weather layers",
+    id: "accessories",
+    label: "Accessories",
+    description: "Scarves, UV hats, and bottles",
   },
 ];
 
@@ -58,74 +59,124 @@ export type ApparelCatalogItem = {
   sizes: string[];
   image: string;
   skuPrefix: string;
+  /** Apparel drops are previewable but not purchasable yet. */
+  comingSoon: true;
 };
+
+/** Slugs removed from the live apparel catalog (cleaned up on ensure). */
+export const OBSOLETE_APPAREL_SLUGS = [
+  "voronyz-technical-pants",
+  "voronyz-shell-jacket",
+] as const;
 
 export const APPAREL_CATALOG: ApparelCatalogItem[] = [
   {
     slug: "voronyz-performance-socks",
     subcategory: "socks",
-    name: "Performance Socks",
+    name: "Socks",
     description: "Cushioned crew socks built for all-day wear and recovery.",
     priceCents: 2800,
     colors: ["black", "grey", "white"],
     sizes: ["S", "M", "L", "XL"],
     image: "/products/apparel/socks.jpg",
     skuPrefix: "APP-SOCK",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-scarf",
+    subcategory: "accessories",
+    name: "Scarf",
+    description: "Soft knit scarf with a clean drape for cool-weather layers.",
+    priceCents: 4200,
+    colors: ["black", "grey"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/scarf.jpg",
+    skuPrefix: "APP-SCRF",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-shorts",
+    subcategory: "shorts",
+    name: "Shorts",
+    description: "Lightweight shorts with a relaxed athletic fit.",
+    priceCents: 5800,
+    colors: ["black", "grey"],
+    sizes: [...APPAREL_SIZES],
+    image: "/products/apparel/shorts.jpg",
+    skuPrefix: "APP-SHRT",
+    comingSoon: true,
   },
   {
     slug: "voronyz-core-hoodie",
     subcategory: "hoodies",
-    name: "Core Hoodie",
+    name: "Hoodie",
     description: "Heavyweight fleece hoodie with a clean, modern cut.",
     priceCents: 7800,
     colors: ["black", "grey"],
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/hoodie.jpg",
     skuPrefix: "APP-HOOD",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-nice-shirt",
+    subcategory: "shirts",
+    name: "Nice Shirt",
+    description: "Polished everyday shirt with a sharp collar and soft hand-feel.",
+    priceCents: 6800,
+    colors: ["black", "white", "grey"],
+    sizes: [...APPAREL_SIZES],
+    image: "/products/apparel/nice-shirt.jpg",
+    skuPrefix: "APP-NICE",
+    comingSoon: true,
   },
   {
     slug: "voronyz-lounge-sweats",
     subcategory: "sweats",
-    name: "Lounge Sweats",
+    name: "Sweats",
     description: "Tapered sweatpants for training days and downtime.",
     priceCents: 7200,
     colors: ["black", "grey"],
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/sweats.jpg",
     skuPrefix: "APP-SWT",
+    comingSoon: true,
   },
   {
     slug: "voronyz-oversized-tee",
     subcategory: "shirts",
-    name: "Oversized Tee",
+    name: "Oversized Shirt",
     description: "Relaxed oversized shirt with a soft hand-feel and clean drape.",
     priceCents: 4800,
     colors: ["black", "white", "grey"],
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/shirt.jpg",
     skuPrefix: "APP-TEE",
+    comingSoon: true,
   },
   {
-    slug: "voronyz-technical-pants",
-    subcategory: "pants",
-    name: "Technical Pants",
-    description: "Streamlined pants with a sharp taper and everyday stretch.",
-    priceCents: 8800,
-    colors: ["black", "grey"],
-    sizes: [...APPAREL_SIZES],
-    image: "/products/apparel/pants.jpg",
-    skuPrefix: "APP-PNT",
+    slug: "voronyz-uv-hat",
+    subcategory: "accessories",
+    name: "UV Hat",
+    description: "Wide-brim UV hat for sun coverage on long outdoor days.",
+    priceCents: 3800,
+    colors: ["black", "beige"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/uv-hat.jpg",
+    skuPrefix: "APP-UVHT",
+    comingSoon: true,
   },
   {
-    slug: "voronyz-shell-jacket",
-    subcategory: "outerwear",
-    name: "Shell Jacket",
-    description: "Lightweight outerwear shell for commuting and cool weather.",
-    priceCents: 12800,
-    colors: ["black", "grey"],
-    sizes: [...APPAREL_SIZES],
-    image: "/products/apparel/outerwear.jpg",
-    skuPrefix: "APP-OUT",
+    slug: "voronyz-water-bottle",
+    subcategory: "accessories",
+    name: "Water Bottle",
+    description: "Insulated stainless bottle with a clean Voronyz finish.",
+    priceCents: 3600,
+    colors: ["black", "white"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/water-bottle.jpg",
+    skuPrefix: "APP-BTTL",
+    comingSoon: true,
   },
 ];
 
