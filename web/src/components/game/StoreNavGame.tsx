@@ -66,8 +66,8 @@ function resolveCollision(pos: Vec, r: number, shelves: Rect[]): Vec {
     if (!circleRectCollision(x, y, r, shelf)) continue;
     const nearestX = Math.max(shelf.x, Math.min(x, shelf.x + shelf.w));
     const nearestY = Math.max(shelf.y, Math.min(y, shelf.y + shelf.h));
-    let dx = x - nearestX;
-    let dy = y - nearestY;
+    const dx = x - nearestX;
+    const dy = y - nearestY;
     const dist = Math.hypot(dx, dy) || 0.001;
     const overlap = r - dist + 0.5;
     if (overlap > 0) {
