@@ -157,6 +157,149 @@ function isPortraitViewport() {
   return window.innerHeight > window.innerWidth;
 }
 
+/** Top-down happy little robot — face follows movement direction. */
+function drawCuteRobot(
+  ctx: CanvasRenderingContext2D,
+  px: number,
+  py: number,
+  facing: number,
+  bob: number
+) {
+  const r = PLAYER_R;
+  const bodyY = py + bob * 0.35;
+
+  // Soft ground shadow
+  ctx.beginPath();
+  ctx.ellipse(px, py + r - 1, r * 0.95, 5.5, 0, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(40, 20, 40, 0.18)";
+  ctx.fill();
+
+  ctx.save();
+  ctx.translate(px, bodyY);
+  ctx.rotate(facing + Math.PI / 2);
+
+  // Side treads / little feet (top-down)
+  ctx.fillStyle = "#5a6a7a";
+  drawRoundedRect(ctx, -r - 3, -r * 0.55, 5, r * 1.1, 2.5);
+  ctx.fill();
+  drawRoundedRect(ctx, r - 2, -r * 0.55, 5, r * 1.1, 2.5);
+  ctx.fill();
+  // Tread notches
+  ctx.fillStyle = "#3d4a56";
+  for (let i = -2; i <= 2; i++) {
+    ctx.fillRect(-r - 2.2, i * 4.2 - 1, 3.2, 1.6);
+    ctx.fillRect(r - 1, i * 4.2 - 1, 3.2, 1.6);
+  }
+
+  // Main chassis (rounded square body)
+  const bodyGrad = ctx.createLinearGradient(-r, -r, r, r);
+  bodyGrad.addColorStop(0, "#E8FBFF");
+  bodyGrad.addColorStop(0.45, "#7ED6DF");
+  bodyGrad.addColorStop(1, "#54A0FF");
+  drawRoundedRect(ctx, -r + 1, -r + 1, r * 2 - 2, r * 2 - 2, 7);
+  ctx.fillStyle = bodyGrad;
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,0.85)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Chest panel / belly plate
+  drawRoundedRect(ctx, -r * 0.55, -r * 0.15, r * 1.1, r * 0.85, 5);
+  ctx.fillStyle = "rgba(255,255,255,0.45)";
+  ctx.fill();
+
+  // Tiny heart LED on chest
+  ctx.beginPath();
+  ctx.arc(-2.2, r * 0.22, 2.4, 0, Math.PI * 2);
+  ctx.arc(2.2, r * 0.22, 2.4, 0, Math.PI * 2);
+  ctx.fillStyle = "#FF7675";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(-4.4, r * 0.28);
+  ctx.lineTo(0, r * 0.55);
+  ctx.lineTo(4.4, r * 0.28);
+  ctx.closePath();
+  ctx.fill();
+
+  // Face plate (top half — happy robot face)
+  drawRoundedRect(ctx, -r * 0.72, -r * 0.78, r * 1.44, r * 0.95, 6);
+  ctx.fillStyle = "#F8FFFE";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(84, 160, 255, 0.35)";
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+
+  // Big cute eyes
+  const eyeY = -r * 0.38;
+  const eyeSpread = 5.2;
+  // Eye whites
+  ctx.fillStyle = "#fff";
+  ctx.beginPath();
+  ctx.ellipse(-eyeSpread, eyeY, 4.2, 4.6, 0, 0, Math.PI * 2);
+  ctx.ellipse(eyeSpread, eyeY, 4.2, 4.6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Pupils
+  ctx.fillStyle = "#2d3436";
+  ctx.beginPath();
+  ctx.arc(-eyeSpread + 0.4, eyeY + 0.3, 2.4, 0, Math.PI * 2);
+  ctx.arc(eyeSpread + 0.4, eyeY + 0.3, 2.4, 0, Math.PI * 2);
+  ctx.fill();
+  // Shine dots
+  ctx.fillStyle = "#fff";
+  ctx.beginPath();
+  ctx.arc(-eyeSpread - 0.8, eyeY - 1.2, 1.1, 0, Math.PI * 2);
+  ctx.arc(eyeSpread - 0.8, eyeY - 1.2, 1.1, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Happy smile
+  ctx.beginPath();
+  ctx.arc(0, -r * 0.08, 5.5, 0.2, Math.PI - 0.2);
+  ctx.strokeStyle = "#2d3436";
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = "round";
+  ctx.stroke();
+
+  // Cheek blush
+  ctx.fillStyle = "rgba(255, 118, 117, 0.45)";
+  ctx.beginPath();
+  ctx.ellipse(-9.5, -r * 0.12, 2.8, 1.6, 0, 0, Math.PI * 2);
+  ctx.ellipse(9.5, -r * 0.12, 2.8, 1.6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Antenna stalk + bobbing tip
+  ctx.strokeStyle = "#74B9FF";
+  ctx.lineWidth = 2;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(0, -r + 2);
+  ctx.lineTo(0, -r - 7 + bob * 0.4);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(0, -r - 9 + bob * 0.4, 3.2, 0, Math.PI * 2);
+  const tipGrad = ctx.createRadialGradient(-1, -r - 10 + bob * 0.4, 0.5, 0, -r - 9 + bob * 0.4, 3.2);
+  tipGrad.addColorStop(0, "#FFEAA7");
+  tipGrad.addColorStop(1, "#FF7675");
+  ctx.fillStyle = tipGrad;
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,0.7)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Tiny side arms
+  ctx.fillStyle = "#54A0FF";
+  drawRoundedRect(ctx, -r - 5, -2, 5, 7, 2.5);
+  ctx.fill();
+  drawRoundedRect(ctx, r, -2, 5, 7, 2.5);
+  ctx.fill();
+  ctx.fillStyle = "#FFEAA7";
+  ctx.beginPath();
+  ctx.arc(-r - 2.5, 5.5, 2.6, 0, Math.PI * 2);
+  ctx.arc(r + 2.5, 5.5, 2.6, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
 export default function StoreNavGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -175,7 +318,7 @@ export default function StoreNavGame() {
   const forceLandscapeRef = useRef(false);
 
   const [score, setScore] = useState(0);
-  const [hint, setHint] = useState("Tap anywhere to walk around the store!");
+  const [hint, setHint] = useState("Tap anywhere to walk your little robot around the store!");
   const [won, setWon] = useState(false);
   const [activeZone, setActiveZone] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -274,7 +417,7 @@ export default function StoreNavGame() {
     setScore(0);
     setWon(false);
     setActiveZone(null);
-    setHint("Tap anywhere to walk around the store!");
+    setHint("Tap anywhere to walk your little robot around the store!");
   }, [syncCamera]);
 
   const screenToMap = useCallback((clientX: number, clientY: number): Vec | null => {
@@ -620,46 +763,11 @@ export default function StoreNavGame() {
         ctx.fill();
       }
 
-      // Player (drawn in world space — camera keeps them near center)
+      // Cute top-down robot (camera keeps them near center)
       const bob = Math.sin(bobRef.current) * 2;
       const px = player.x;
-      const py = player.y + bob;
-
-      ctx.beginPath();
-      ctx.ellipse(player.x, player.y + PLAYER_R - 2, PLAYER_R * 0.85, 6, 0, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(40, 20, 40, 0.18)";
-      ctx.fill();
-
-      const bodyGrad = ctx.createRadialGradient(px - 4, py - 6, 2, px, py, PLAYER_R + 2);
-      bodyGrad.addColorStop(0, "#FFEAA7");
-      bodyGrad.addColorStop(1, "#FF7675");
-      ctx.beginPath();
-      ctx.arc(px, py, PLAYER_R, 0, Math.PI * 2);
-      ctx.fillStyle = bodyGrad;
-      ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,0.7)";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      const faceAngle = facingRef.current;
-      const eyeOx = Math.cos(faceAngle) * 3;
-      const eyeOy = Math.sin(faceAngle) * 3;
-      ctx.fillStyle = "#2d3436";
-      ctx.beginPath();
-      ctx.arc(px - 5 + eyeOx, py - 3 + eyeOy, 2.2, 0, Math.PI * 2);
-      ctx.arc(px + 5 + eyeOx, py - 3 + eyeOy, 2.2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(px + eyeOx * 0.5, py + 3 + eyeOy * 0.5, 5, 0.15, Math.PI - 0.15);
-      ctx.strokeStyle = "#2d3436";
-      ctx.lineWidth = 1.6;
-      ctx.stroke();
-
-      ctx.fillStyle = "#2d3436";
-      ctx.beginPath();
-      ctx.ellipse(px - 7, py + PLAYER_R - 2, 5, 2.5, -0.2, 0, Math.PI * 2);
-      ctx.ellipse(px + 7, py + PLAYER_R - 2, 5, 2.5, 0.2, 0, Math.PI * 2);
-      ctx.fill();
+      const py = player.y;
+      drawCuteRobot(ctx, px, py, facingRef.current, bob);
 
       if (popupRef.current) {
         const pop = popupRef.current;
@@ -671,7 +779,7 @@ export default function StoreNavGame() {
         const text = pop.text;
         const tw = ctx.measureText(text).width;
         const bx = px;
-        const by = py - PLAYER_R - 28;
+        const by = py + bob * 0.35 - PLAYER_R - 28;
         drawRoundedRect(ctx, bx - tw / 2 - 14, by - 16, tw + 28, 32, 16);
         ctx.fillStyle = "rgba(35, 25, 45, 0.88)";
         ctx.fill();
@@ -705,9 +813,15 @@ export default function StoreNavGame() {
       ctx.strokeStyle = "rgba(255,107,107,0.85)";
       ctx.lineWidth = 1.5;
       ctx.strokeRect(mmX + cam.x * scaleX, mmY + cam.y * scaleY, vw * scaleX, vh * scaleY);
+      // Mini-map robot blip
+      const mmPx = mmX + player.x * scaleX;
+      const mmPy = mmY + player.y * scaleY;
+      ctx.fillStyle = "#54A0FF";
+      drawRoundedRect(ctx, mmPx - 3, mmPy - 3, 6, 6, 1.5);
+      ctx.fill();
       ctx.fillStyle = "#FF7675";
       ctx.beginPath();
-      ctx.arc(mmX + player.x * scaleX, mmY + player.y * scaleY, 3.5, 0, Math.PI * 2);
+      ctx.arc(mmPx, mmPy - 4.5, 1.6, 0, Math.PI * 2);
       ctx.fill();
 
       raf = requestAnimationFrame(tick);
@@ -851,7 +965,7 @@ export default function StoreNavGame() {
               if (e.buttons > 0) e.preventDefault();
             }}
             role="img"
-            aria-label="Top-down Voronyz store map. Tap to move your character. You stay centered while the map moves."
+            aria-label="Top-down Voronyz store map. Tap to move your cute little robot. You stay centered while the map moves."
           />
 
           {isFullscreen && hud}
@@ -867,7 +981,7 @@ export default function StoreNavGame() {
               <div className="mx-4 max-w-sm rounded-3xl bg-white/95 p-6 text-center shadow-xl ring-1 ring-rose-100">
                 <p className="text-2xl font-bold text-neutral-900">You explored the whole store!</p>
                 <p className="mt-2 text-sm text-neutral-600">
-                  Cute stroll complete. Tap reset for another lap, or hop over to shop for real.
+                  Your little robot explored it all. Tap reset for another lap, or hop over to shop for real.
                 </p>
                 <div className="mt-5 flex flex-wrap justify-center gap-2">
                   <button
