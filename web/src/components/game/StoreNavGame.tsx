@@ -175,9 +175,7 @@ export default function StoreNavGame() {
   const forceLandscapeRef = useRef(false);
 
   const [score, setScore] = useState(0);
-  const [hint, setHint] = useState("Tap anywhere to walk around the store!");
   const [won, setWon] = useState(false);
-  const [activeZone, setActiveZone] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [forceLandscape, setForceLandscape] = useState(false);
 
@@ -273,8 +271,6 @@ export default function StoreNavGame() {
     syncCamera(START_POS);
     setScore(0);
     setWon(false);
-    setActiveZone(null);
-    setHint("Tap anywhere to walk around the store!");
   }, [syncCamera]);
 
   const screenToMap = useCallback((clientX: number, clientY: number): Vec | null => {
@@ -322,7 +318,6 @@ export default function StoreNavGame() {
 
       targetRef.current = dest;
       rippleRef.current = { x: dest.x, y: dest.y, t: 0 };
-      setHint("On the way…");
     },
     [screenToMap, won]
   );
@@ -431,7 +426,6 @@ export default function StoreNavGame() {
           player.x = target.x;
           player.y = target.y;
           targetRef.current = null;
-          setHint("Tap another spot to keep exploring!");
         } else {
           facingRef.current = Math.atan2(dy, dx);
           const step = SPEED * dt;
@@ -464,7 +458,6 @@ export default function StoreNavGame() {
           const next = s + collectedNow;
           if (next >= INITIAL_COLLECTIBLES.length) {
             setWon(true);
-            setHint("You found everything in the store!");
             popupRef.current = { text: "Store explorer complete! 🎉", t: 3 };
           }
           return next;
@@ -488,7 +481,6 @@ export default function StoreNavGame() {
       }
       if (activeZoneRef.current !== zoneName) {
         activeZoneRef.current = zoneName;
-        setActiveZone(zoneName);
       }
 
       if (rippleRef.current) {
@@ -719,26 +711,12 @@ export default function StoreNavGame() {
 
   const hud = (
     <div
-      className={`flex flex-wrap items-center justify-between gap-3 ${
-        isFullscreen ? "absolute left-0 right-0 top-0 z-20 px-3 py-2 sm:px-4" : ""
-      }`}
-      style={
-        isFullscreen
-          ? {
-              background: "linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0))",
-              pointerEvents: "none",
-            }
-          : undefined
-      }
+      className="absolute left-0 right-0 top-0 z-20 flex flex-wrap items-center justify-end gap-3 px-3 py-2 sm:px-4"
+      style={{
+        background: "linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0))",
+        pointerEvents: "none",
+      }}
     >
-      <div className="space-y-1" style={{ pointerEvents: "auto" }}>
-        <p className={`text-sm ${isFullscreen ? "text-neutral-800" : "text-neutral-600"}`}>{hint}</p>
-        {activeZone && (
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-rose-500">
-            Now in: {activeZone}
-          </p>
-        )}
-      </div>
       <div className="flex items-center gap-2 sm:gap-3" style={{ pointerEvents: "auto" }}>
         <div className="rounded-full bg-gradient-to-r from-rose-400 to-amber-300 px-3 py-1.5 text-sm font-semibold text-white shadow-sm sm:px-4">
           Finds {score}/{INITIAL_COLLECTIBLES.length}
@@ -762,19 +740,12 @@ export default function StoreNavGame() {
     </div>
   );
 
-  const tip = (
-    <p className="text-center text-xs text-neutral-500">
-      Tip: you stay in the center while the big store map scrolls under you. Use Full screen on phone
-      for landscape play without tilting.
-    </p>
-  );
-
   return (
     <div
       className={
         isFullscreen
           ? "fixed inset-0 z-[200] bg-black"
-          : "space-y-5"
+          : undefined
       }
       style={
         isFullscreen
@@ -785,8 +756,6 @@ export default function StoreNavGame() {
           : undefined
       }
     >
-      {!isFullscreen && hud}
-
       <div
         className={isFullscreen ? "bg-[#fff5eb]" : undefined}
         style={
@@ -854,7 +823,7 @@ export default function StoreNavGame() {
             aria-label="Top-down Voronyz store map. Tap to move your character. You stay centered while the map moves."
           />
 
-          {isFullscreen && hud}
+          {hud}
 
           {isFullscreen && forceLandscape && (
             <p className="pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/45 px-3 py-1 text-[11px] font-medium text-white">
@@ -889,8 +858,6 @@ export default function StoreNavGame() {
           )}
         </div>
       </div>
-
-      {!isFullscreen && tip}
     </div>
   );
 }
