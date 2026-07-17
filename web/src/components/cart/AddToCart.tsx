@@ -50,6 +50,8 @@ type Props = {
   requireStudentName?: boolean;
   /** Skip footwear size/gender UI (e.g. accessories with One Size). */
   hideSizeSelector?: boolean;
+  /** Use the product `sizes` list directly (apparel XS–XXL) instead of footwear gender sizes. */
+  useCatalogSizes?: boolean;
   /** Replace size UI with carry-style options (OWB / IWB). */
   carryStyles?: CarryStyleOption[];
   selectedCarryStyleId?: string;
@@ -107,6 +109,7 @@ export default function AddToCart({
   defaultGender = "men",
   requireStudentName = false,
   hideSizeSelector = false,
+  useCatalogSizes = false,
   carryStyles = [],
   selectedCarryStyleId,
   onCarryStyleChange,
@@ -118,6 +121,10 @@ export default function AddToCart({
   const hasCarryStyles = carryStyles.length > 0;
   const hasFlavorOptions = flavorOptions.length > 0;
   const oneSizeLabel = sizes[0] || "One Size";
+  const catalogSizes = useMemo(
+    () => (sizes.length > 0 ? sizes : ["S", "M", "L", "XL"]),
+    [sizes]
+  );
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState(false);
@@ -163,6 +170,10 @@ export default function AddToCart({
     }
     if (hideSizeSelector) return oneSizeLabel;
     const sizeParam = searchParams.get("size");
+    if (useCatalogSizes) {
+      if (sizeParam && catalogSizes.includes(sizeParam)) return sizeParam;
+      return catalogSizes[0];
+    }
     const initialGender = parseGenderParam(searchParams.get("gender")) ?? defaultGender;
     const initialSizes = sizesForGender(initialGender);
     if (sizeParam && initialSizes.includes(sizeParam)) {
@@ -216,10 +227,19 @@ export default function AddToCart({
     (!requireStudentName || Boolean(normalizedStudentName));
 
   // Get display sizes based on gender
-  const displaySizes = useMemo(() => sizesForGender(gender), [gender]);
+  const displaySizes = useMemo(
+    () => (useCatalogSizes ? catalogSizes : sizesForGender(gender)),
+    [useCatalogSizes, catalogSizes, gender]
+  );
 
   // Get size label based on gender
-  const sizeLabel = gender === "men" ? "Men's" : gender === "women" ? "Women's" : "Kids'";
+  const sizeLabel = useCatalogSizes
+    ? "Size"
+    : gender === "men"
+      ? "Men's"
+      : gender === "women"
+        ? "Women's"
+        : "Kids'";
 
   // Keep controlled carry-style selection in sync with the parent gallery.
   useEffect(() => {
@@ -297,7 +317,7 @@ export default function AddToCart({
         item.variantId === selectedVariant.id && 
         (hasSecondaryColors ? item.attributes?.color === selectedSecondary : !item.attributes?.color) && 
         item.attributes?.size === selectedSize &&
-        ((hideSizeSelector || hasCarryStyles) ? true : item.attributes?.gender === gender) &&
+        ((hideSizeSelector || hasCarryStyles || useCatalogSizes) ? true : item.attributes?.gender === gender) &&
         (hasFulfillmentOptions ? item.attributes?.fulfillment === selectedFulfillment : !item.attributes?.fulfillment) &&
         (requireStudentName ? item.studentName === normalizedStudentName : !item.studentName)
       );
@@ -325,7 +345,7 @@ export default function AddToCart({
           attributes: { 
             ...(selectedSecondary && { color: selectedSecondary }), 
             size: selectedSize,
-            ...(!hideSizeSelector && !hasCarryStyles && { gender }),
+            ...(!hideSizeSelector && !hasCarryStyles && !useCatalogSizes && { gender }),
             ...(hasFulfillmentOptions && { fulfillment: selectedFulfillment }),
           },
           productSlug,
@@ -617,8 +637,9 @@ export default function AddToCart({
         <div className="grid gap-2">
           <div className="flex items-center justify-between">
             <label className="text-sm text-neutral-700">
-              Size (US {sizeLabel})
+              {useCatalogSizes ? "Size" : `Size (US ${sizeLabel})`}
             </label>
+            {!useCatalogSizes && (
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setGender("men")}
@@ -651,13 +672,14 @@ export default function AddToCart({
                 Kids&apos;
               </button>
             </div>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
             {displaySizes.map((displaySize) => {
               const isSelected = selectedSize === displaySize;
               return (
                 <button
-                  key={`size-${displaySize}-${gender}`}
+                  key={`size-${displaySize}-${useCatalogSizes ? "catalog" : gender}`}
                   onClick={() => {
                     setSelectedSize(displaySize);
                   }}
