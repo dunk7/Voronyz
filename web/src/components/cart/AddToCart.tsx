@@ -35,6 +35,8 @@ type Props = {
   fulfillmentOptions?: FulfillmentOption[];
   defaultGender?: "men" | "women" | "kids";
   requireStudentName?: boolean;
+  /** Skip footwear size/gender UI (e.g. accessories with One Size). */
+  hideSizeSelector?: boolean;
 };
 
 const MENS_SIZES = ["6", "7", "8", "9", "10", "11", "12", "13"];
@@ -84,9 +86,11 @@ export default function AddToCart({
   fulfillmentOptions = [],
   defaultGender = "men",
   requireStudentName = false,
+  hideSizeSelector = false,
 }: Props) {
   const hasSecondaryColors = secondaryColors.length > 0;
   const hasFulfillmentOptions = fulfillmentOptions.length > 0;
+  const oneSizeLabel = sizes[0] || "One Size";
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [added, setAdded] = useState(false);
@@ -123,6 +127,7 @@ export default function AddToCart({
   });
 
   const [selectedSize, setSelectedSize] = useState<string | undefined>(() => {
+    if (hideSizeSelector) return oneSizeLabel;
     const sizeParam = searchParams.get("size");
     const initialGender = parseGenderParam(searchParams.get("gender")) ?? defaultGender;
     const initialSizes = sizesForGender(initialGender);
@@ -179,10 +184,11 @@ export default function AddToCart({
 
   // Reset selected size when gender changes if current size is not in new array
   useEffect(() => {
+    if (hideSizeSelector) return;
     if (selectedSize && !displaySizes.includes(selectedSize)) {
       setSelectedSize(displaySizes[0]);
     }
-  }, [gender, displaySizes, selectedSize]);
+  }, [gender, displaySizes, selectedSize, hideSizeSelector]);
 
   // Reset added if selections change
   useEffect(() => {
@@ -234,7 +240,7 @@ export default function AddToCart({
         item.variantId === selectedVariant.id && 
         (hasSecondaryColors ? item.attributes?.color === selectedSecondary : !item.attributes?.color) && 
         item.attributes?.size === selectedSize &&
-        item.attributes?.gender === gender &&
+        (hideSizeSelector ? true : item.attributes?.gender === gender) &&
         (hasFulfillmentOptions ? item.attributes?.fulfillment === selectedFulfillment : !item.attributes?.fulfillment) &&
         (requireStudentName ? item.studentName === normalizedStudentName : !item.studentName)
       );
@@ -261,7 +267,7 @@ export default function AddToCart({
           attributes: { 
             ...(selectedSecondary && { color: selectedSecondary }), 
             size: selectedSize,
-            gender,
+            ...(!hideSizeSelector && { gender }),
             ...(hasFulfillmentOptions && { fulfillment: selectedFulfillment }),
           },
           productSlug,
@@ -476,6 +482,7 @@ export default function AddToCart({
         )}
 
         {/* Size */}
+        {!hideSizeSelector && (
         <div className="grid gap-2">
           <div className="flex items-center justify-between">
             <label className="text-sm text-neutral-700">
@@ -535,6 +542,7 @@ export default function AddToCart({
             })}
           </div>
         </div>
+        )}
 
         {requireStudentName && (
           <div className="grid gap-2">

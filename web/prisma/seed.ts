@@ -1,5 +1,15 @@
 import { PrismaClient } from "@prisma/client";
 import { MAGIKID_SHOES_THUMBNAIL_URL, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT, MAGIKID_SHOES_BASE_PRICE_CENTS } from "../src/lib/magikidShoesThumbnail";
+import {
+  GUN_HOLSTER_DESCRIPTION_SHORT,
+  GUN_HOLSTER_IMAGES,
+  GUN_HOLSTER_NAME,
+  GUN_HOLSTER_PRICE_CENTS,
+  GUN_HOLSTER_PRIMARY_COLORS,
+  GUN_HOLSTER_SIZES,
+  GUN_HOLSTER_SLUG,
+  GUN_HOLSTER_VARIANTS,
+} from "../src/lib/gunHolster";
 
 const prisma = new PrismaClient();
 
@@ -341,6 +351,57 @@ async function main() {
         });
       }
       console.log("Updated Magikid Shoes product and variants.");
+    }
+
+    // ── Gun Holster (accessory — not footwear) ──
+    const existingGh = await prisma.product.findUnique({ where: { slug: GUN_HOLSTER_SLUG } });
+    console.log("Gun Holster product check:", existingGh ? "Found" : "Not found");
+    if (!existingGh) {
+      const ghProduct = await prisma.product.create({
+        data: {
+          slug: GUN_HOLSTER_SLUG,
+          name: GUN_HOLSTER_NAME,
+          description: GUN_HOLSTER_DESCRIPTION_SHORT,
+          priceCents: GUN_HOLSTER_PRICE_CENTS,
+          currency: "usd",
+          images: [...GUN_HOLSTER_IMAGES],
+          primaryColors: [...GUN_HOLSTER_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...GUN_HOLSTER_SIZES],
+          variants: {
+            create: GUN_HOLSTER_VARIANTS.map((v) => ({ ...v })),
+          },
+        },
+        include: { variants: true },
+      });
+      console.log("Seeded product:", ghProduct.slug);
+    } else {
+      console.log("Updating existing Gun Holster product...");
+      await prisma.product.update({
+        where: { id: existingGh.id },
+        data: {
+          name: GUN_HOLSTER_NAME,
+          description: GUN_HOLSTER_DESCRIPTION_SHORT,
+          priceCents: GUN_HOLSTER_PRICE_CENTS,
+          images: [...GUN_HOLSTER_IMAGES],
+          primaryColors: [...GUN_HOLSTER_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...GUN_HOLSTER_SIZES],
+        },
+      });
+      for (const v of GUN_HOLSTER_VARIANTS) {
+        await prisma.variant.upsert({
+          where: { sku: v.sku },
+          update: { stock: v.stock },
+          create: {
+            product: { connect: { id: existingGh.id } },
+            color: v.color,
+            sku: v.sku,
+            stock: v.stock,
+          },
+        });
+      }
+      console.log("Updated Gun Holster product and variants.");
     }
 
     console.log('Seed script completed successfully.');

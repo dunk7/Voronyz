@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatCentsAsCurrency } from "@/lib/money";
 import { MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
+import { filterAccessoryProducts, filterFootwearProducts } from "@/lib/productCategories";
 import { useEffect, useState, useCallback } from "react";
 
 interface Product {
@@ -41,6 +42,9 @@ const productMeta: Record<string, {
     tag: "Slip-ons",
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
+  "gun-holster": {
+    tag: "Accessories",
+  },
 };
 
 function cardMetaForSlug(slug: string) {
@@ -54,12 +58,19 @@ function cardMetaForSlug(slug: string) {
       return productMeta["slip-ons"];
     case "magikid-shoes":
       return productMeta["magikid-shoes"];
+    case "gun-holster":
+      return productMeta["gun-holster"];
     default:
       return productMeta[s] as (typeof productMeta)["v3-slides"] | undefined;
   }
 }
 
-export default function ProductsContent() {
+type ProductsContentProps = {
+  /** Default "footwear" keeps accessories out of the All Footwear grid. */
+  category?: "footwear" | "accessories" | "all";
+};
+
+export default function ProductsContent({ category = "footwear" }: ProductsContentProps) {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q");
   const router = useRouter();
@@ -86,7 +97,10 @@ export default function ProductsContent() {
         const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
-          setProducts(data.products || []);
+          let list: Product[] = data.products || [];
+          if (category === "footwear") list = filterFootwearProducts(list);
+          else if (category === "accessories") list = filterAccessoryProducts(list);
+          setProducts(list);
         } else {
           setProducts([]);
         }
@@ -98,7 +112,20 @@ export default function ProductsContent() {
       }
     }
     fetchProducts();
-  }, [searchQuery]);
+  }, [searchQuery, category]);
+
+  const heading =
+    searchQuery
+      ? `Results for "${searchQuery}"`
+      : category === "accessories"
+      ? "Accessories"
+      : "All Footwear";
+  const subheading =
+    category === "accessories"
+      ? "Gear and carry accessories — 3D-printed and made to order."
+      : "3D-printed, scan-calibrated footwear — engineered for comfort, built to last.";
+  const emptyHref = category === "accessories" ? "/accessories" : "/products";
+  const emptyLabel = category === "accessories" ? "View all accessories" : "View all products";
 
   /* ── Loading skeleton ── */
   if (loading) {
@@ -153,11 +180,11 @@ export default function ProductsContent() {
           <div className="flex items-end justify-between gap-4">
             <div>
               <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
-                {searchQuery ? `Results for "${searchQuery}"` : "All Footwear"}
+                {heading}
               </h1>
               {!searchQuery && (
                 <p className="mt-2 text-sm text-neutral-500 max-w-md">
-                  3D-printed, scan-calibrated footwear — engineered for comfort, built to last.
+                  {subheading}
                 </p>
               )}
             </div>
@@ -181,10 +208,10 @@ export default function ProductsContent() {
               We couldn&apos;t find anything matching &quot;{searchQuery}&quot;
             </p>
             <Link
-              href="/products"
+              href={emptyHref}
               className="inline-flex items-center gap-2 rounded-full bg-black text-white px-6 py-2.5 text-sm font-medium hover:bg-neutral-800 transition-colors"
             >
-              View all products
+              {emptyLabel}
             </Link>
           </div>
         ) : (
