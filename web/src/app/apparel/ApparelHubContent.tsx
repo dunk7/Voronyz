@@ -37,8 +37,7 @@ export default function ApparelHubContent() {
                 Apparel
               </h1>
               <p className="mt-2 text-sm text-neutral-500 max-w-xl">
-                Browse by type — each section holds multiple designs you can expand over time.
-                Accessories stay as individual pieces.
+                Built different people need built different apparel.
               </p>
             </div>
             <span className="text-xs tabular-nums text-neutral-400">
