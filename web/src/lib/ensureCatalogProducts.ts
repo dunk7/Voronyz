@@ -121,7 +121,7 @@ export async function ensureGunHolster(): Promise<void> {
   for (const v of GUN_HOLSTER_VARIANTS) {
     await prisma.variant.upsert({
       where: { sku: v.sku },
-      update: { stock: v.stock },
+      update: { stock: v.stock, color: v.color },
       create: {
         product: { connect: { id: existing.id } },
         color: v.color,
@@ -130,6 +130,14 @@ export async function ensureGunHolster(): Promise<void> {
       },
     });
   }
+
+  const keepSkus = GUN_HOLSTER_VARIANTS.map((v) => v.sku);
+  await prisma.variant.deleteMany({
+    where: {
+      productId: existing.id,
+      sku: { notIn: [...keepSkus] },
+    },
+  });
 }
 
 export async function ensureCatalogProducts(): Promise<void> {

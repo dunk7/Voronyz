@@ -1,4 +1,4 @@
-/** Product slugs that are accessories (not footwear). */
+/** Product slugs in Voronyz Engineering (not footwear). */
 export const ACCESSORY_SLUGS = ["gun-holster"] as const;
 
 export type AccessorySlug = (typeof ACCESSORY_SLUGS)[number];

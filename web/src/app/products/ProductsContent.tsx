@@ -43,7 +43,7 @@ const productMeta: Record<string, {
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
   "gun-holster": {
-    tag: "Accessories",
+    tag: "Voronyz Engineering",
   },
 };
 
@@ -66,7 +66,7 @@ function cardMetaForSlug(slug: string) {
 }
 
 type ProductsContentProps = {
-  /** Default "footwear" keeps accessories out of the All Footwear grid. */
+  /** Default "footwear" keeps Voronyz Engineering products out of the All Footwear grid. */
   category?: "footwear" | "accessories" | "all";
 };
 
@@ -118,14 +118,14 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
     searchQuery
       ? `Results for "${searchQuery}"`
       : category === "accessories"
-      ? "Accessories"
+      ? "Voronyz Engineering"
       : "All Footwear";
   const subheading =
     category === "accessories"
-      ? "Gear and carry accessories — 3D-printed and made to order."
+      ? "Engineered carry gear — carbon fiber nylon, made to order."
       : "3D-printed, scan-calibrated footwear — engineered for comfort, built to last.";
   const emptyHref = category === "accessories" ? "/accessories" : "/products";
-  const emptyLabel = category === "accessories" ? "View all accessories" : "View all products";
+  const emptyLabel = category === "accessories" ? "View Voronyz Engineering" : "View all products";
 
   /* ── Loading skeleton ── */
   if (loading) {

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import AddToCart from "@/components/cart/AddToCart";
+import GunHolsterPurchase from "@/components/GunHolsterPurchase";
 import V3Gallery from "@/components/V3Gallery";
 import FAQ from "@/components/FAQ";
 import { Suspense } from "react";
@@ -16,8 +17,11 @@ import {
 } from "@/lib/magikidShoesThumbnail";
 import {
   GUN_HOLSTER_DESCRIPTION,
+  GUN_HOLSTER_HOW_ITS_MADE,
   GUN_HOLSTER_IMAGES,
+  GUN_HOLSTER_NAME,
   GUN_HOLSTER_SLUG,
+  GUN_HOLSTER_THUMBNAIL_URL,
 } from "@/lib/gunHolster";
 import { isAccessorySlug } from "@/lib/productCategories";
 
@@ -158,7 +162,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isMagikidShoes = slug === "magikid-shoes";
   const isGunHolster = slug === GUN_HOLSTER_SLUG;
   const shopHref = isAccessorySlug(slug) ? "/accessories" : "/products";
-  const shopLabel = isAccessorySlug(slug) ? "Back to Accessories" : "Back to Shop";
+  const shopLabel = isAccessorySlug(slug)
+    ? "Back to Voronyz Engineering"
+    : "Back to Shop";
+  const displayName = isGunHolster ? GUN_HOLSTER_NAME : product.name;
 
   // Product-specific descriptions
   const displayDescription = slug === "v3-slides" 
@@ -173,6 +180,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? GUN_HOLSTER_DESCRIPTION
     : product.description;
 
+  const holsterVariants = isGunHolster
+    ? product.variants.filter((variant) => variant.color.toLowerCase() === "black")
+    : product.variants;
+  const holsterColors = isGunHolster ? ["black"] : (product.primaryColors as string[]);
+
   return (
     <div className="bg-texture-white">
       <div className="container pt-4 pb-12">
@@ -183,7 +195,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             </svg>
           </Link>
           <span className="w-px h-5 bg-neutral-200" aria-hidden="true" />
-          <h1 className="text-xl font-semibold text-neutral-900 tracking-tight">{product.name}</h1>
+          <h1 className="text-xl font-semibold text-neutral-900 tracking-tight">{displayName}</h1>
         </div>
         
         <div className="mb-8 space-y-4">
@@ -202,7 +214,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
             )}
             {isGunHolster && (
-              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">One size</span>
+              <>
+                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Glock 43x</span>
+                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Carbon fiber nylon</span>
+                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">OWB &amp; IWB</span>
+              </>
             )}
             {isDragonfly && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Custom lace colors</span>
@@ -216,6 +232,17 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
 
+        {isGunHolster ? (
+          <Suspense fallback={<div className="h-[320px] bg-neutral-100 rounded-3xl animate-pulse" />}>
+            <GunHolsterPurchase
+              variants={holsterVariants}
+              primaryColors={holsterColors}
+              productPriceCents={product.priceCents}
+              productName={displayName}
+              productSlug={slug}
+            />
+          </Suspense>
+        ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           <div className="lg:col-span-7">
             <V3Gallery media={galleryMedia} />
@@ -249,9 +276,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                       },
                     ],
                   })}
-                  {...(isGunHolster && {
-                    hideSizeSelector: true,
-                  })}
                   sizes={product.sizes as string[]}
                   productName={product.name}
                   coverImage={(images[0] as string) || defaultImages[0]}
@@ -272,12 +296,25 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             </div>
           </div>
         </div>
+        )}
+
+        {isGunHolster && (
+          <div className="mt-6 flex items-center gap-4 text-xs text-neutral-500">
+            <Link href={shopHref} className="underline hover:no-underline">← {shopLabel}</Link>
+            <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Free US shipping
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="container pb-12">
         <div className="mt-10 overflow-hidden rounded-3xl ring-1 ring-black/5 bg-white">
           <div className="bg-black text-white px-6 py-4 text-sm font-medium">
-            {isDragonfly ? "Crafted for you" : isMagikidShoes ? "Magikid edition" : isSlipOns ? "Print + finish" : isGunHolster ? "Built for carry" : "How it's made"}
+            {isDragonfly ? "Crafted for you" : isMagikidShoes ? "Magikid edition" : isSlipOns ? "Print + finish" : isGunHolster ? "Carbon fiber nylon" : "How it's made"}
           </div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed">
             {isDragonfly
@@ -287,7 +324,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               : isSlipOns
               ? "Slip Ons are printed in one piece per colorway for a seamless look, then finished for flex and daily wear. There is no secondary accent color — the shade you choose is the full shoe."
               : isGunHolster
-              ? "Each holster is 3D-printed to order from a durable polymer blend, then finished for a smooth, consistent carry profile. One size fits standard everyday carry setups — pick your color and we print."
+              ? GUN_HOLSTER_HOW_ITS_MADE
               : "Each pair takes a full day to print using our proprietary TPU blend. Following printing, we perform heat-treated post-processing to ensure exceptional quality, comfort, and durability."}
           </div>
         </div>
@@ -312,8 +349,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Are they true to size?", a: "Use the Men's / Women's / Kids' toggles on the product page to pick your usual US size." },
               { q: "How long does production take?", a: "About 1–2 days to print, then we ship the next business day." },
             ] : isGunHolster ? [
-              { q: "What colors are available?", a: "Black, grey, and tan." },
-              { q: "Does it come in multiple sizes?", a: "One size — designed for a standard everyday carry setup." },
+              { q: "What firearm does it fit?", a: "Molded specifically for the Glock 43x." },
+              { q: "What material is it?", a: "Carbon fiber nylon — stiff, lightweight, and built to keep a solid carry profile day after day." },
+              { q: "What's the difference between OWB and IWB?", a: "OWB rides outside the waistband for faster access. IWB tucks inside the waistband for a lower-profile carry. Same Glock 43x shell family — pick the mount that matches how you carry." },
+              { q: "What color is available?", a: "Black only." },
               { q: "How long does production take?", a: "Printed to order in about 1–2 days, then ships the next business day." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : [
@@ -370,9 +409,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   if (slug === GUN_HOLSTER_SLUG) {
-    const title = "Gun Holster – Voronyz";
+    const title = `${GUN_HOLSTER_NAME} – Voronyz`;
     const description = GUN_HOLSTER_DESCRIPTION;
-    const images = [...GUN_HOLSTER_IMAGES];
+    const images = [GUN_HOLSTER_THUMBNAIL_URL, ...GUN_HOLSTER_IMAGES];
     return {
       title,
       description,

@@ -1,24 +1,62 @@
 export const GUN_HOLSTER_SLUG = "gun-holster";
-export const GUN_HOLSTER_NAME = "Gun Holster";
+export const GUN_HOLSTER_NAME = "Glock 43x Holster";
 export const GUN_HOLSTER_PRICE_CENTS = 3000; // $30
-export const GUN_HOLSTER_THUMBNAIL_URL = "/products/gun-holster/gun-holster.jpg";
+
+export const GUN_HOLSTER_OWB_IMAGE = "/products/gun-holster/gun-holster-owb.jpg";
+export const GUN_HOLSTER_IWB_IMAGE = "/products/gun-holster/gun-holster-iwb.jpg";
+export const GUN_HOLSTER_THUMBNAIL_URL = GUN_HOLSTER_OWB_IMAGE;
+
 export const GUN_HOLSTER_DESCRIPTION_SHORT =
-  "3D-printed gun holster — durable, lightweight, and built for everyday carry.";
+  "Glock 43x holster in carbon fiber nylon — rigid, lightweight, and built for clean everyday carry.";
+
 export const GUN_HOLSTER_DESCRIPTION =
-  "A precision 3D-printed gun holster designed for secure everyday carry. Lightweight, durable, and made to order.";
-export const GUN_HOLSTER_IMAGES = [GUN_HOLSTER_THUMBNAIL_URL];
-export const GUN_HOLSTER_NEON_GREEN = "#C6FF00";
-export const GUN_HOLSTER_PRIMARY_COLORS = [
-  GUN_HOLSTER_NEON_GREEN,
-  "black",
-  "grey",
-  "tan",
+  "Precision-molded for the Glock 43x from high-strength carbon fiber nylon. The shell is stiff where you need retention, light on the belt, and finished with a low-poly geometry that looks as sharp as it carries. Choose OWB for open outside-the-waistband carry or IWB for a lower-profile inside-the-waistband setup — same holster family, two mounting styles.";
+
+export const GUN_HOLSTER_HOW_ITS_MADE =
+  "Each Glock 43x holster is printed to order in carbon fiber nylon — a tough, lightweight composite that holds its shape under daily draw pressure without feeling bulky. The faceted shell is tuned for a confident click-in retention and a smooth draw, then finished for a clean, consistent carry profile. Black only. Pick OWB or IWB and we print your mount style.";
+
+export const GUN_HOLSTER_IMAGES = [
+  GUN_HOLSTER_OWB_IMAGE,
+  GUN_HOLSTER_IWB_IMAGE,
 ] as const;
-export const GUN_HOLSTER_SIZES = ["One Size"] as const;
+
+export type GunHolsterCarryStyleId = "OWB" | "IWB";
+
+export type GunHolsterCarryStyle = {
+  id: GunHolsterCarryStyleId;
+  label: string;
+  description: string;
+  image: string;
+};
+
+export const GUN_HOLSTER_CARRY_STYLES: GunHolsterCarryStyle[] = [
+  {
+    id: "OWB",
+    label: "OWB",
+    description: "Outside the Waistband",
+    image: GUN_HOLSTER_OWB_IMAGE,
+  },
+  {
+    id: "IWB",
+    label: "IWB",
+    description: "Inside the Waistband",
+    image: GUN_HOLSTER_IWB_IMAGE,
+  },
+];
+
+export function getGunHolsterCarryStyle(
+  id: string | null | undefined
+): GunHolsterCarryStyle {
+  return (
+    GUN_HOLSTER_CARRY_STYLES.find((style) => style.id === id) ??
+    GUN_HOLSTER_CARRY_STYLES[0]
+  );
+}
+
+export const GUN_HOLSTER_PRIMARY_COLORS = ["black"] as const;
+/** Stored for catalog compatibility; buy UI uses OWB / IWB instead of footwear sizes. */
+export const GUN_HOLSTER_SIZES = ["OWB", "IWB"] as const;
 
 export const GUN_HOLSTER_VARIANTS = [
-  { color: GUN_HOLSTER_NEON_GREEN, sku: "GH-NEON", stock: 999 },
   { color: "black", sku: "GH-BLK", stock: 999 },
-  { color: "grey", sku: "GH-GRY", stock: 999 },
-  { color: "tan", sku: "GH-TAN", stock: 999 },
 ] as const;

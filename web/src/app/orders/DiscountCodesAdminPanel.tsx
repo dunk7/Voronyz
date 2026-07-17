@@ -27,7 +27,11 @@ function formatDate(iso: string) {
 
 function itemDetails(item: OrderLineItem) {
   const parts: string[] = [];
-  if (item.size) parts.push(`Size ${item.size}`);
+  if (item.size) {
+    if (item.size === "OWB") parts.push("OWB — Outside the Waistband");
+    else if (item.size === "IWB") parts.push("IWB — Inside the Waistband");
+    else parts.push(`Size ${item.size}`);
+  }
   if (item.gender) parts.push(item.gender);
   if (item.baseColor) parts.push(item.baseColor);
   if (item.secondaryColor) parts.push(`+ ${item.secondaryColor}`);
