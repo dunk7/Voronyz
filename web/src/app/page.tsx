@@ -200,7 +200,7 @@ export default function Home() {
       <Suspense fallback={
         <div className="bg-texture-white">
           <div className="container flex min-h-[40vh] items-center justify-center py-16">
-            <LogoLoader size="lg" label="Loading" />
+            <LogoLoader size="lg" label="Loading" orbit />
           </div>
         </div>
       }>

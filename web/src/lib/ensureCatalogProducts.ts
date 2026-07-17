@@ -453,17 +453,73 @@ export async function ensureApparelProducts(): Promise<void> {
   }
 }
 
-export async function ensureCatalogProducts(): Promise<void> {
-  // Schema heal must not be swallowed — without these columns every product query 500s.
-  await ensureProductCategoryColumns();
+/** Skip repeat catalog upserts within this TTL (hot path: /api/search). */
+const ENSURE_TTL_MS = 5 * 60 * 1000;
 
-  try {
-    await ensureFootwearProducts();
-    await ensureMagikidShoes();
-    await ensureGunHolster();
-    await ensureTrailMix();
-    await ensureApparelProducts();
-  } catch (error) {
-    console.error("ensureCatalogProducts failed:", error);
-  }
+let lastEnsureAt = 0;
+let ensureInFlight: Promise<void> | null = null;
+
+/**
+ * Idempotently sync catalog products. Cached + deduped so listing pages
+ * (All Footwear) are not blocked by heavy apparel upserts on every request.
+ */
+export async function ensureCatalogProducts(): Promise<void> {
+  const now = Date.now();
+  if (ensureInFlight) return ensureInFlight;
+  if (now - lastEnsureAt < ENSURE_TTL_MS) return;
+
+  ensureInFlight = (async () => {
+    try {
+      // Schema heal must not be swallowed — without these columns every product query 500s.
+      await ensureProductCategoryColumns();
+      // Parallelize independent upserts — apparel is the slow path.
+      await Promise.all([
+        ensureFootwearProducts(),
+        ensureMagikidShoes(),
+        ensureGunHolster(),
+        ensureTrailMix(),
+        ensureApparelProducts(),
+      ]);
+      lastEnsureAt = Date.now();
+    } catch (error) {
+      console.error("ensureCatalogProducts failed:", error);
+    } finally {
+      ensureInFlight = null;
+    }
+  })();
+
+  return ensureInFlight;
+}
+
+/** Footwear-only ensure — skips apparel/accessories for fast All Footwear loads. */
+let footwearEnsureAt = 0;
+let footwearEnsureInFlight: Promise<void> | null = null;
+const FOOTWEAR_ENSURE_TTL_MS = 10 * 60 * 1000;
+
+export async function ensureFootwearCatalog(): Promise<void> {
+  const now = Date.now();
+  if (footwearEnsureInFlight) return footwearEnsureInFlight;
+  if (now - footwearEnsureAt < FOOTWEAR_ENSURE_TTL_MS) return;
+
+  footwearEnsureInFlight = (async () => {
+    try {
+      await ensureProductCategoryColumns();
+      await ensureFootwearProducts();
+      // Hot path: only create Magikid if missing — never rewrite the whole catalog.
+      const existing = await prisma.product.findUnique({
+        where: { slug: "magikid-shoes" },
+        select: { id: true },
+      });
+      if (!existing) {
+        await ensureMagikidShoes();
+      }
+      footwearEnsureAt = Date.now();
+    } catch (error) {
+      console.error("ensureFootwearCatalog failed:", error);
+    } finally {
+      footwearEnsureInFlight = null;
+    }
+  })();
+
+  return footwearEnsureInFlight;
 }

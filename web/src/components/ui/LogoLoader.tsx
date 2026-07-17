@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useState, type CSSProperties } from "react";
 
 type LogoLoaderProps = {
   /** Visual size of the logo mark */
@@ -11,13 +12,18 @@ type LogoLoaderProps = {
   showBar?: boolean;
   /** Light mark on dark overlays vs dark mark on light backgrounds */
   tone?: "dark" | "light";
+  /**
+   * Full stage: exact Voronyz mark orbits / bounces around “VORONYZ LOGO”.
+   * Default on for md/lg loaders; overlays can set false for a compact mark.
+   */
+  orbit?: boolean;
   className?: string;
 };
 
 const SIZE_MAP = {
-  sm: { mark: 36, bar: 88 },
-  md: { mark: 56, bar: 132 },
-  lg: { mark: 72, bar: 168 },
+  sm: { mark: 36, bar: 88, stage: 120, text: "text-[10px]" },
+  md: { mark: 48, bar: 132, stage: 168, text: "text-xs" },
+  lg: { mark: 56, bar: 168, stage: 200, text: "text-sm" },
 } as const;
 
 /** Animated Voronyz logo (same mark as the header) with a flowing progress bar. */
@@ -26,12 +32,47 @@ export default function LogoLoader({
   label,
   showBar = true,
   tone = "dark",
+  orbit,
   className = "",
 }: LogoLoaderProps) {
   const dims = SIZE_MAP[size];
   const fill = tone === "light" ? "#ffffff" : "#0e0e0e";
   const barTrack = tone === "light" ? "rgba(255,255,255,0.18)" : "rgba(14,14,14,0.1)";
   const labelColor = tone === "light" ? "text-white/70" : "text-neutral-500";
+  const wordmarkColor = tone === "light" ? "text-white/85" : "text-neutral-800";
+  // Compact overlays stay as a simple mark; page loaders get the orbit stage.
+  const useOrbit = orbit ?? size !== "sm";
+
+  // Randomize orbit speed / direction slightly so each load feels lively.
+  const [orbitVars, setOrbitVars] = useState({
+    duration: 0.85,
+    bounce: 0.55,
+    reverse: false,
+    radius: 42,
+  });
+
+  useEffect(() => {
+    if (!useOrbit) return;
+
+    const roll = () => {
+      setOrbitVars({
+        duration: 0.55 + Math.random() * 0.55,
+        bounce: 0.35 + Math.random() * 0.45,
+        reverse: Math.random() > 0.5,
+        radius: 34 + Math.random() * 18,
+      });
+    };
+
+    roll();
+    const id = window.setInterval(roll, 900 + Math.random() * 700);
+    return () => window.clearInterval(id);
+  }, [useOrbit]);
+
+  const orbitStyle = {
+    "--logo-orbit-duration": `${orbitVars.duration}s`,
+    "--logo-bounce-duration": `${orbitVars.bounce}s`,
+    "--logo-orbit-radius": `${orbitVars.radius}px`,
+  } as CSSProperties;
 
   return (
     <div
@@ -40,15 +81,45 @@ export default function LogoLoader({
       aria-live="polite"
       aria-label={label || "Loading"}
     >
-      <Image
-        src="/logo.png"
-        alt=""
-        width={dims.mark}
-        height={dims.mark}
-        aria-hidden="true"
-        className="logo-loader-mark rounded-sm"
-        priority
-      />
+      {useOrbit ? (
+        <div
+          className="logo-loader-stage relative flex items-center justify-center"
+          style={{ width: dims.stage, height: dims.stage }}
+        >
+          <p
+            className={`logo-loader-wordmark pointer-events-none z-[1] select-none font-semibold tracking-[0.28em] uppercase ${dims.text} ${wordmarkColor}`}
+          >
+            Voronyz Logo
+          </p>
+          <div
+            className={`logo-loader-orbit absolute inset-0 ${orbitVars.reverse ? "logo-loader-orbit-reverse" : ""}`}
+            style={orbitStyle}
+            aria-hidden="true"
+          >
+            {/* Radius + bounce live on this wrapper so the mark can spin freely */}
+            <div className="logo-loader-orbit-arm">
+              <Image
+                src="/logo.png"
+                alt=""
+                width={dims.mark}
+                height={dims.mark}
+                className="logo-loader-mark-spin rounded-sm"
+                priority
+              />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <Image
+          src="/logo.png"
+          alt=""
+          width={dims.mark}
+          height={dims.mark}
+          aria-hidden="true"
+          className="logo-loader-mark rounded-sm"
+          priority
+        />
+      )}
 
       {showBar && (
         <div
