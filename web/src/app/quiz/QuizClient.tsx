@@ -57,20 +57,22 @@ type CartItem = {
 type CartData = {
   items: CartItem[];
   discountCode?: string | null;
+  shippingInsurance?: boolean;
 };
 
 function loadCart(): CartData {
   try {
     const raw = localStorage.getItem("cart");
-    if (!raw) return { items: [], discountCode: null };
+    if (!raw) return { items: [], discountCode: null, shippingInsurance: false };
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) return { items: parsed, discountCode: null };
+    if (Array.isArray(parsed)) return { items: parsed, discountCode: null, shippingInsurance: false };
     return {
       items: Array.isArray(parsed.items) ? parsed.items : [],
       discountCode: parsed.discountCode ?? null,
+      shippingInsurance: Boolean(parsed.shippingInsurance),
     };
   } catch {
-    return { items: [], discountCode: null };
+    return { items: [], discountCode: null, shippingInsurance: false };
   }
 }
 

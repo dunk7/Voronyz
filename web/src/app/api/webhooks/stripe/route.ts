@@ -4,6 +4,11 @@ import Stripe from "stripe";
 import { notifyPaidOrder } from "@/lib/adminNotifyEmail";
 import { prisma } from "@/lib/prisma";
 import { paidStatusForCart, resolveIsPreOrder } from "@/lib/preorder";
+import {
+  buildShippingInsuranceLineItem,
+  isShippingInsuranceRequested,
+  SHIPPING_INSURANCE_PRODUCT_NAME,
+} from "@/lib/shippingInsurance";
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -158,6 +163,30 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
           ),
         }));
 
+    const shippingInsurance = isShippingInsuranceRequested(
+      fullSession.metadata?.shippingInsurance
+    );
+    const shippingInsuranceQuantity = Number(
+      fullSession.metadata?.shippingInsuranceQuantity || 0
+    );
+    const shippingInsuranceCents = Number(
+      fullSession.metadata?.shippingInsuranceCents || 0
+    );
+    if (
+      shippingInsurance &&
+      shippingInsuranceQuantity > 0 &&
+      cartItems.length > 0 &&
+      !lineItems.some((item) => item.name === SHIPPING_INSURANCE_PRODUCT_NAME)
+    ) {
+      const insuranceLine = buildShippingInsuranceLineItem(shippingInsuranceQuantity);
+      lineItems.push({
+        name: insuranceLine.name,
+        quantity: insuranceLine.quantity,
+        amount: insuranceLine.unitCents,
+        isPreOrder: false,
+      });
+    }
+
     const hasPreOrder =
       fullSession.metadata?.hasPreOrder === "true" ||
       lineItems.some((item) => Boolean((item as { isPreOrder?: boolean }).isPreOrder));
@@ -242,6 +271,9 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
           orderNumber,
           lineItems,
           hasPreOrder,
+          shippingInsurance,
+          shippingInsuranceCents,
+          shippingInsuranceQuantity,
           shipping,
           billing,
           customer: {
@@ -275,6 +307,9 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
           orderNumber,
           lineItems,
           hasPreOrder,
+          shippingInsurance,
+          shippingInsuranceCents,
+          shippingInsuranceQuantity,
           shipping,
           billing,
           customer: {

@@ -9,6 +9,13 @@ import {
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
 import { resolveIsPreOrder } from "@/lib/preorder";
+import {
+  cartHasInsurableItems,
+  getShippingInsuranceCents,
+  isShippingInsuranceRequested,
+  SHIPPING_INSURANCE_CENTS_PER_ITEM,
+  SHIPPING_INSURANCE_DESCRIPTION,
+} from "@/lib/shippingInsurance";
 import Image from "next/image";
 import Link from "next/link";
 import LogoLoader from "@/components/ui/LogoLoader";
@@ -33,11 +40,13 @@ interface CartItem {
 interface CartData {
   items: CartItem[];
   discountCode: string | null;
+  shippingInsurance?: boolean;
 }
 
 export default function CartClient() {
   const [items, setItems] = useState<CartItem[]>([]);
   const [discountCode, setDiscountCode] = useState<string | null>(null);
+  const [shippingInsurance, setShippingInsurance] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -66,9 +75,11 @@ export default function CartClient() {
           loadedItems = parsed.map((item: unknown) => ({ ...(item as CartItem) }));
           setItems(loadedItems);
           setDiscountCode(null);
-          saveCart({ items: loadedItems, discountCode: null });
+          setShippingInsurance(false);
+          saveCart({ items: loadedItems, discountCode: null, shippingInsurance: false });
         } else {
           const normalizedCode = normalizeDiscountCode(parsed.discountCode);
+          const loadedInsurance = isShippingInsuranceRequested(parsed.shippingInsurance);
           loadedItems = (parsed.items || []).map((it) => {
             // Migrate to always have a base unit price.
             const base = typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
@@ -88,8 +99,13 @@ export default function CartClient() {
           });
           setItems(loadedItems);
           setDiscountCode(normalizedCode);
+          setShippingInsurance(loadedInsurance);
           // Persist the normalized/migrated shape so pricing stays consistent.
-          saveCart({ items: loadedItems, discountCode: normalizedCode });
+          saveCart({
+            items: loadedItems,
+            discountCode: normalizedCode,
+            shippingInsurance: loadedInsurance,
+          });
         }
       }
     } catch (error) {
@@ -103,6 +119,7 @@ export default function CartClient() {
   const saveCart = (cartData: CartData) => {
     setItems(cartData.items);
     setDiscountCode(cartData.discountCode);
+    setShippingInsurance(Boolean(cartData.shippingInsurance));
     try {
       localStorage.setItem("cart", JSON.stringify(cartData));
       // Dispatch event to update cart count in header
@@ -121,7 +138,7 @@ export default function CartClient() {
         const base = getBaseUnitPriceCents(it);
         return { ...it, basePriceCents: base, priceCents: base };
       });
-      saveCart({ items: migratedItems, discountCode: normalized });
+      saveCart({ items: migratedItems, discountCode: normalized, shippingInsurance });
       setInputValue("");
       setMessage("Discount applied successfully!");
       setTimeout(clearMessage, 3000);
@@ -136,7 +153,7 @@ export default function CartClient() {
       const base = getBaseUnitPriceCents(it);
       return { ...it, basePriceCents: base, priceCents: base };
     });
-    saveCart({ items: migratedItems, discountCode: null });
+    saveCart({ items: migratedItems, discountCode: null, shippingInsurance });
     setInputValue("");
     setMessage("Discount removed.");
     setTimeout(clearMessage, 3000);
@@ -144,18 +161,27 @@ export default function CartClient() {
 
   function remove(itemId: string) {
     const newItems = items.filter(item => item.id !== itemId);
-    saveCart({ items: newItems, discountCode });
+    const nextInsurance = cartHasInsurableItems(newItems) ? shippingInsurance : false;
+    saveCart({ items: newItems, discountCode, shippingInsurance: nextInsurance });
   }
 
   function updateQuantity(itemId: string, nextQty: number) {
     const qty = Math.min(99, Math.max(1, Number(nextQty) || 1));
     const newItems = items.map((it) => (it.id === itemId ? { ...it, quantity: qty } : it));
-    saveCart({ items: newItems, discountCode });
+    saveCart({ items: newItems, discountCode, shippingInsurance });
+  }
+
+  function toggleShippingInsurance(next: boolean) {
+    saveCart({ items, discountCode, shippingInsurance: next });
   }
 
   const subtotal = items.reduce((sum, it) => {
     return sum + unitPriceForItem(it, discountCode) * it.quantity;
   }, 0);
+  const canOfferShippingInsurance = cartHasInsurableItems(items);
+  const insuranceEnabled = canOfferShippingInsurance && shippingInsurance;
+  const insuranceCents = insuranceEnabled ? getShippingInsuranceCents(items) : 0;
+  const orderTotal = subtotal + insuranceCents;
   const hasPreOrderItems = items.some((it) =>
     resolveIsPreOrder({ isPreOrder: it.isPreOrder, productSlug: it.productSlug })
   );
@@ -335,6 +361,31 @@ export default function CartClient() {
             you pay now to reserve your spot. Pre-order items ship when we receive them — timing can range from a day to much longer.
           </div>
         )}
+        {canOfferShippingInsurance && (
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-black/10 bg-white p-4 hover:bg-neutral-50 transition-colors">
+            <input
+              type="checkbox"
+              checked={shippingInsurance}
+              onChange={(e) => toggleShippingInsurance(e.target.checked)}
+              className="mt-1 h-4 w-4 rounded border-black/20 text-neutral-900 focus:ring-black/20"
+              aria-describedby="shipping-insurance-help"
+            />
+            <span className="min-w-0 flex-1">
+              <span className="flex items-start justify-between gap-3">
+                <span className="text-sm font-medium text-neutral-900">Add shipping insurance</span>
+                <span className="shrink-0 text-sm font-semibold text-neutral-900">
+                  {formatCentsAsCurrency(
+                    getShippingInsuranceCents(items) || SHIPPING_INSURANCE_CENTS_PER_ITEM
+                  )}
+                </span>
+              </span>
+              <span id="shipping-insurance-help" className="mt-1 block text-xs text-neutral-600">
+                {SHIPPING_INSURANCE_DESCRIPTION}{" "}
+                {formatCentsAsCurrency(SHIPPING_INSURANCE_CENTS_PER_ITEM)} per item.
+              </span>
+            </span>
+          </label>
+        )}
         {/* Combined Discount and Subtotal Section */}
         <div className="rounded-xl border border-black/10 p-4 space-y-4 bg-white">
           {/* Discount Input */}
@@ -370,10 +421,26 @@ export default function CartClient() {
               </div>
             )}
           </div>
-          {/* Subtotal */}
-          <div className="flex items-center justify-between text-sm pt-2 border-t border-black/10">
-            <div className="text-neutral-700">Subtotal</div>
-            <div className="font-bold text-neutral-900">{formatCentsAsCurrency(subtotal)}</div>
+          {/* Totals */}
+          <div className="space-y-2 pt-2 border-t border-black/10 text-sm">
+            <div className="flex items-center justify-between">
+              <div className="text-neutral-700">Subtotal</div>
+              <div className="font-medium text-neutral-900">{formatCentsAsCurrency(subtotal)}</div>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="text-neutral-700">Shipping</div>
+              <div className="font-medium text-emerald-700">Free</div>
+            </div>
+            {insuranceEnabled && (
+              <div className="flex items-center justify-between">
+                <div className="text-neutral-700">Shipping insurance</div>
+                <div className="font-medium text-neutral-900">{formatCentsAsCurrency(insuranceCents)}</div>
+              </div>
+            )}
+            <div className="flex items-center justify-between pt-2 border-t border-black/10">
+              <div className="font-semibold text-neutral-900">Total</div>
+              <div className="font-bold text-neutral-900">{formatCentsAsCurrency(orderTotal)}</div>
+            </div>
           </div>
         </div>
         <form
@@ -416,6 +483,7 @@ export default function CartClient() {
                 body: JSON.stringify({
                   items: checkoutItems,
                   discountCode: discountCode || '',
+                  shippingInsurance: insuranceEnabled,
                   successUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/success`,
                   cancelUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/cancel`,
                 }),
@@ -498,6 +566,7 @@ export default function CartClient() {
                 body: JSON.stringify({
                   items: checkoutItems,
                   discountCode: discountCode || '',
+                  shippingInsurance: insuranceEnabled,
                 }),
               });
 
