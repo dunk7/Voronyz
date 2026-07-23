@@ -60,3 +60,35 @@ export const GUN_HOLSTER_SIZES = ["OWB", "IWB"] as const;
 export const GUN_HOLSTER_VARIANTS = [
   { color: "black", sku: "GH-BLK", stock: 999 },
 ] as const;
+
+export type AccessoryListProduct = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  priceCents: number;
+  currency: string;
+  images: string[] | null;
+  thumbnail?: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+};
+
+/** Instant Engineering seed so the holster never flashes empty while the API loads. */
+export function getAccessoryCatalogSeed(): AccessoryListProduct[] {
+  const now = new Date().toISOString();
+  return [
+    {
+      id: `catalog-${GUN_HOLSTER_SLUG}`,
+      slug: GUN_HOLSTER_SLUG,
+      name: GUN_HOLSTER_NAME,
+      description: GUN_HOLSTER_DESCRIPTION_SHORT,
+      priceCents: GUN_HOLSTER_PRICE_CENTS,
+      currency: "usd",
+      images: [...GUN_HOLSTER_IMAGES],
+      thumbnail: GUN_HOLSTER_THUMBNAIL_URL,
+      createdAt: now,
+      updatedAt: now,
+    },
+  ];
+}
