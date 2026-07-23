@@ -309,10 +309,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 </span>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">1kg spool</span>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU-90A</span>
-                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">$30</span>
-                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
-                  Code Young → $20
-                </span>
               </>
             )}
             {!isTrailMix && !isApparel && !isFilament && (
