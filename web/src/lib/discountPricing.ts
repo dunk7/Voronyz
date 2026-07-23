@@ -14,7 +14,6 @@ export const VALID_DISCOUNT_CODES = [
   "pedro30",
   "nicole50",
   "andy50",
-  "young",
 ] as const;
 
 const validDiscountCodeSet = new Set<string>(VALID_DISCOUNT_CODES);
@@ -58,13 +57,6 @@ export function getDiscountedUnitPriceCents(
 
   if (normalizedCode === "emptyaus" && productSlug === "dragonfly") return 2000;
   if (normalizedCode === "aryan10" && isSlidesProduct(productSlug, productName)) return 1000;
-  // Young: $20/spool on TPU-90A Filament (1kg spools).
-  if (
-    normalizedCode === "young" &&
-    (productSlug === "tpu-90a-filament" || productName.toLowerCase().includes("tpu-90a"))
-  ) {
-    return 2000;
-  }
   if (normalizedCode === "fam45") return 5000;
   if (normalizedCode === "superdeal35") return 3500;
   if (normalizedCode === "maximus27") return 3200;

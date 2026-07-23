@@ -508,6 +508,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
 
+        {!isFilament && (
         <div className="mt-12">
           <h2 className="text-lg font-semibold text-neutral-900 mb-4">FAQs</h2>
           <FAQ
@@ -552,11 +553,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Are they true to size?", a: "Yes — use Men's, Women's, or Kids' sizing and pick your usual US size for a comfortable clog fit." },
               { q: "How long does production take?", a: "Printed to order in about 1–2 days, then ships the next business day." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
-            ] : isFilament ? [
-              { q: "What is TPU-90A Filament?", a: "Flexible thermoplastic polyurethane at 90 Shore A — the same material we use to make Voronyz footwear. Great for printing footwear, flexible parts, and anything that needs to bend without breaking." },
-              { q: "What colors are available?", a: "Pink, black, grey, and white. All 1kg spools." },
-              { q: "What print settings should I use?", a: "Print temperature 220°C. Bed temperature 0 — no heated bed needed. Diameter is 1.75mm." },
-              { q: "Is shipping free?", a: "Yes — free shipping on every spool for domestic US orders." },
             ] : [
               { q: "What if my size doesn't fit?", a: "They're going to fit and also be extremely comfortable. Trust the process" },
               { q: "Are they waterproof?", a: "Yes. 100% waterproof. Throw them in your washer to clean!" },
@@ -564,6 +560,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             ]}
           />
         </div>
+        )}
       </div>
     </div>
   );
