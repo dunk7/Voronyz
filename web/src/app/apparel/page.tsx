@@ -5,7 +5,7 @@ import ApparelHubContent from "./ApparelHubContent";
 export const metadata: Metadata = {
   title: "Apparel – Voronyz",
   description:
-    "Shop Voronyz Apparel by type: shirts, sweaters, socks, shorts, sweats, pants, outerwear, hats, scarves, bottles — plus accessories like cool shades, lattice insoles, jewelry, and more.",
+    "Shop Voronyz Apparel by type: shirts, sweaters, socks, shorts, pants, outerwear, hats, scarves, bottles — plus accessories like cool shades, lattice insoles, jewelry, and more.",
 };
 
 type PageProps = {
