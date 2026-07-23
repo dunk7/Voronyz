@@ -6,6 +6,7 @@ import { MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
 import { filterAccessoryProducts, filterFootwearProducts, filterHealthProducts } from "@/lib/productCategories";
 import { getFootwearCatalogSeed, type FootwearListProduct } from "@/lib/footwear";
 import { useEffect, useState, useCallback } from "react";
+import { getAccessoryCatalogSeed } from "@/lib/gunHolster";
 import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
@@ -84,6 +85,7 @@ type ProductsContentProps = {
 
 function categorySeed(category: ProductsContentProps["category"]): Product[] {
   if (category === "footwear") return getFootwearCatalogSeed();
+  if (category === "accessories") return getAccessoryCatalogSeed();
   if (category === "health") return getHealthCatalogSeed();
   if (category === "accessories") return getAccessoryCatalogSeed();
   return [];
@@ -113,7 +115,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
     const controller = new AbortController();
 
     async function fetchProducts() {
-      // Seed footwear / Collaborative immediately so the grid never goes empty behind the logo loader.
+      // Seed footwear / Engineering / Collaborative immediately so the grid never goes empty behind the logo loader.
       if (!searchQuery) {
         const seed = categorySeed(category);
         if (seed.length > 0) setProducts(seed);
