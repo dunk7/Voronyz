@@ -237,11 +237,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const displayDescription = slug === "v3-slides" 
     ? "World-class FDM printed slides with TPU 90A lattice lowers and breathable uppers. Engineered from precision 3D scans."
     : slug === "dragonfly"
-    ? "Lightweight, breathable 3D-printed sneakers featuring a custom lattice sole for unmatched cushioning and style. Available in four stunning colorways with fully customizable lace colors."
+    ? "Lightweight, breathable 3D-printed sneakers featuring a custom lattice sole for unmatched cushioning and style. Available in five stunning colorways with fully customizable lace colors."
     : isMagikidShoes
     ? MAGIKID_SHOES_DESCRIPTION
     : isSlipOns
-    ? "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — black, grey, orange in stock; white temporarily unavailable."
+    ? "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — black, grey, orange, and pink in stock; white temporarily unavailable."
     : isGunHolster
     ? GUN_HOLSTER_DESCRIPTION
     : isTrailMix
@@ -521,18 +521,18 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <h2 className="text-lg font-semibold text-neutral-900 mb-4">FAQs</h2>
           <FAQ
             items={isDragonfly ? [
-              { q: "What colors are available?", a: "The Dragonfly's come in Black, White, Red, and Azure Blue — white is currently out of stock. Black is $5 less at $60. Laces can be any color you want!" },
+              { q: "What colors are available?", a: "The Dragonfly's come in Black, White, Red, Azure Blue, and Pink — white is currently out of stock. Black is $5 less at $60. Laces can be any color you want!" },
               { q: "Are they true to size?", a: "Yes — we offer Men's, Women's, and Kids' sizing. They're designed for a comfortable, snug fit right out of the box." },
               { q: "How long does production take?", a: "Each pair is 3D-printed to order. Production takes about 1-2 days, then ships out next business day." },
               { q: "Is shipping really free?", a: "Yes! We offer free shipping on all domestic US orders. No minimum purchase required. We currently only ship within the US." },
               { q: "Can I wash them?", a: "Absolutely. The lattice sole and upper are fully washable — toss them in the washer on a gentle cycle." },
             ] : isMagikidShoes ? [
-              { q: "What colors can I order?", a: "Black and grey are in stock. White and orange are listed but currently out of stock." },
+              { q: "What colors can I order?", a: "Black, grey, and pink are in stock. White and orange are listed but currently out of stock." },
               { q: "How does Magikid Lab pickup work?", a: "Choose pickup at checkout — you pay $30 for the shoes with no shipping fee. We'll email you when your pair is ready to collect in person at Magikid Lab." },
               { q: "How does shipping work?", a: "The shoes are $30. Shipping is an extra $7. Pickup at Magikid Lab is $30 with no shipping fee." },
               { q: "How long does production take?", a: "Made to order in under 7 days, then we ship or hold for pickup." },
             ] : isSlipOns ? [
-              { q: "What colors can I order?", a: "Black, grey, white, and orange are listed — white is currently out of stock. Each pair is one solid body color (no two-tone option)." },
+              { q: "What colors can I order?", a: "Black, grey, orange, and pink are in stock — white is currently out of stock. Each pair is one solid body color (no two-tone option)." },
               { q: "Why is white unavailable?", a: "We're temporarily out of white material runs. Select another color or check back — inventory updates when we restock." },
               { q: "Are they true to size?", a: "Use the Men's / Women's / Kids' toggles on the product page to pick your usual US size." },
               { q: "How long does production take?", a: "About 1–2 days to print, then we ship the next business day." },
@@ -598,7 +598,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug === "slip-ons") {
     const title = "Slip Ons – Voronyz";
     const description =
-      "Minimal 3D-printed slip-ons with a flexible lattice sole. $60. Black, grey, and orange in stock; white temporarily unavailable.";
+      "Minimal 3D-printed slip-ons with a flexible lattice sole. $60. Black, grey, orange, and pink in stock; white temporarily unavailable.";
     const images = ["/products/slip-ons/InShot_20260405_203151152.jpg"];
     return {
       title,
