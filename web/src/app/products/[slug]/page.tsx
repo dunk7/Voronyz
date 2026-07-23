@@ -478,17 +478,23 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <div className="container pb-12">
         <div className="mt-10 overflow-hidden rounded-3xl ring-1 ring-black/5 bg-white">
           <div className="bg-black text-white px-6 py-4 text-sm font-medium">
-            {isGunHolster
-              ? "Carbon fiber nylon"
-              : isTrailMix
-                ? "Collaborative"
-                : isApparel
-                  ? "Apparel"
-                  : isGators
-                    ? "Comfort clog"
-                    : isFilament
-                      ? "TPU-90A filament"
-                      : "How it's made"}
+            {isDragonfly
+              ? "Crafted for you"
+              : isMagikidShoes
+                ? "Magikid edition"
+                : isSlipOns
+                  ? "Print + finish"
+                  : isGunHolster
+                    ? "Carbon fiber nylon"
+                    : isTrailMix
+                      ? "Collaborative"
+                      : isApparel
+                        ? "Apparel"
+                        : isGators
+                          ? "Comfort clog"
+                          : isFilament
+                            ? "TPU-90A filament"
+                            : "How it's made"}
           </div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed">
             {isDragonfly
