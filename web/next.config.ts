@@ -13,6 +13,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/uploads", destination: "/upload", permanent: true },
       { source: "/uploads/:path*", destination: "/upload", permanent: true },
+      { source: "/apparel/sweats", destination: "/apparel/joggers", permanent: true },
+      { source: "/apparel/pants", destination: "/apparel/joggers", permanent: true },
     ];
   },
 };

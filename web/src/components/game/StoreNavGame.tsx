@@ -27,7 +27,7 @@ const SHELVES: Rect[] = [
   { x: 280, y: 320, w: 70, h: 280, color: "#2EC4B6", label: "Hoodies", labelColor: "#fff" },
   { x: 440, y: 320, w: 70, h: 280, color: "#FF9FF3", label: "Shirts", labelColor: "#5a1a4d" },
   { x: 600, y: 320, w: 70, h: 280, color: "#54A0FF", label: "Shorts", labelColor: "#fff" },
-  { x: 760, y: 320, w: 70, h: 280, color: "#FF6B6B", label: "Pants", labelColor: "#fff" },
+  { x: 760, y: 320, w: 70, h: 280, color: "#FF6B6B", label: "Joggers", labelColor: "#fff" },
   { x: 920, y: 320, w: 80, h: 280, color: "#10AC84", label: "Gear", labelColor: "#fff" },
 
   { x: 1180, y: 320, w: 70, h: 280, color: "#FDCB6E", label: "Hats", labelColor: "#5a4200" },
