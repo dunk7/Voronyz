@@ -33,7 +33,7 @@ const productMeta: Record<string, {
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
   "magikid-shoes": {
-    tag: "Slip-ons",
+    tag: "Kids",
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
   "gun-holster": {
