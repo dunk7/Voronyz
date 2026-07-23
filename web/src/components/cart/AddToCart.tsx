@@ -102,6 +102,7 @@ interface CartItem {
 interface CartData {
   items: CartItem[];
   discountCode?: string | null;
+  shippingInsurance?: boolean;
 }
 
 export default function AddToCart({ 

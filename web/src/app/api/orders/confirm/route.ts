@@ -6,6 +6,11 @@ import { notifyPaidOrder } from "@/lib/adminNotifyEmail";
 import { preferNonEmptyShipping } from "@/lib/orderTypes";
 import { shippingFromStripeSession } from "@/lib/stripeShipping";
 import { paidStatusForCart, resolveIsPreOrder } from "@/lib/preorder";
+import {
+  buildShippingInsuranceLineItem,
+  isShippingInsuranceRequested,
+  SHIPPING_INSURANCE_PRODUCT_NAME,
+} from "@/lib/shippingInsurance";
 
 type CheckoutSession = {
   id: string;
@@ -207,6 +212,30 @@ export async function POST(request: NextRequest) {
           ),
         }));
 
+    const shippingInsurance = isShippingInsuranceRequested(
+      actualSession.metadata?.shippingInsurance
+    );
+    const shippingInsuranceQuantity = Number(
+      actualSession.metadata?.shippingInsuranceQuantity || 0
+    );
+    const shippingInsuranceCents = Number(
+      actualSession.metadata?.shippingInsuranceCents || 0
+    );
+    if (
+      shippingInsurance &&
+      shippingInsuranceQuantity > 0 &&
+      cartItems.length > 0 &&
+      !lineItems.some((item) => item.name === SHIPPING_INSURANCE_PRODUCT_NAME)
+    ) {
+      const insuranceLine = buildShippingInsuranceLineItem(shippingInsuranceQuantity);
+      lineItems.push({
+        name: insuranceLine.name,
+        quantity: insuranceLine.quantity,
+        amount: insuranceLine.unitCents,
+        isPreOrder: false,
+      });
+    }
+
     const hasPreOrder =
       actualSession.metadata?.hasPreOrder === "true" ||
       lineItems.some((item) => Boolean((item as { isPreOrder?: boolean }).isPreOrder));
@@ -250,6 +279,9 @@ export async function POST(request: NextRequest) {
         orderNumber: finalOrderNumber,
         lineItems,
         hasPreOrder,
+        shippingInsurance,
+        shippingInsuranceCents,
+        shippingInsuranceQuantity,
         shipping,
         billing,
         customer: {
