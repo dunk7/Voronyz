@@ -1,6 +1,8 @@
 export const FILAMENT_SLUG = "tpu-90a-filament";
 export const FILAMENT_NAME = "TPU-90A Filament";
 export const FILAMENT_PRICE_CENTS = 3000; // $30 per 1kg spool
+/** Checkout-only via code Young — do not show on PDP/marketing. */
+export const FILAMENT_YOUNG_PRICE_CENTS = 2000;
 /** Cache-busted filenames so CDN/Next Image drop AI stand-in photos. */
 export const FILAMENT_THUMBNAIL_URL =
   "/products/tpu-90a-filament/pink-tpu-90a-spool-labeled.jpg";

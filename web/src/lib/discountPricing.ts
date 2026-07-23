@@ -1,3 +1,9 @@
+import {
+  FILAMENT_NAME,
+  FILAMENT_SLUG,
+  FILAMENT_YOUNG_PRICE_CENTS,
+} from "@/lib/filament";
+
 type DiscountPricingContext = {
   productSlug?: string;
   productName?: string;
@@ -14,6 +20,7 @@ export const VALID_DISCOUNT_CODES = [
   "pedro30",
   "nicole50",
   "andy50",
+  "young",
 ] as const;
 
 const validDiscountCodeSet = new Set<string>(VALID_DISCOUNT_CODES);
@@ -57,6 +64,13 @@ export function getDiscountedUnitPriceCents(
 
   if (normalizedCode === "emptyaus" && productSlug === "dragonfly") return 2000;
   if (normalizedCode === "aryan10" && isSlidesProduct(productSlug, productName)) return 1000;
+  // Young: $20/spool on TPU-90A Filament — checkout-only; never advertise on the site.
+  if (
+    normalizedCode === "young" &&
+    (productSlug === FILAMENT_SLUG || productName.toLowerCase().includes("tpu-90a"))
+  ) {
+    return FILAMENT_YOUNG_PRICE_CENTS;
+  }
   if (normalizedCode === "fam45") return 5000;
   if (normalizedCode === "superdeal35") return 3500;
   if (normalizedCode === "maximus27") return 3200;
