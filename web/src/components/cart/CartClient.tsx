@@ -231,6 +231,8 @@ export default function CartClient() {
                           : it.attributes.size === "OWB"
                             ? "OWB — Outside the Waistband"
                             : String(it.attributes.size)
+                        : it.productSlug === "tpu-90a-filament"
+                          ? "1kg spool"
                         : (
                           <>
                             Size {String(it.attributes.size)}

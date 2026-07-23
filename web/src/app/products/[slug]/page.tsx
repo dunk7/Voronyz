@@ -40,6 +40,15 @@ import {
   GATORS_SLUG,
   GATORS_THUMBNAIL_URL,
 } from "@/lib/gators";
+import {
+  FILAMENT_DESCRIPTION,
+  FILAMENT_HOW_ITS_MADE,
+  FILAMENT_IMAGES,
+  FILAMENT_NAME,
+  FILAMENT_SLUG,
+  FILAMENT_THUMBNAIL_URL,
+  FILAMENT_YOUNG_PRICE_CENTS,
+} from "@/lib/filament";
 import { isAccessorySlug, isApparelSlug, isHealthSlug } from "@/lib/productCategories";
 import {
   apparelProductShopHref,
@@ -177,6 +186,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? [...TRAIL_MIX_IMAGES]
     : slug === GATORS_SLUG
     ? [...GATORS_IMAGES]
+    : slug === FILAMENT_SLUG
+    ? [...FILAMENT_IMAGES]
     : getApparelItem(slug)
     ? getApparelImages(getApparelItem(slug)!)
     : ((product.images as string[] | null) ?? defaultImages);
@@ -195,6 +206,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isGunHolster = slug === GUN_HOLSTER_SLUG;
   const isTrailMix = slug === TRAIL_MIX_SLUG;
   const isGators = slug === GATORS_SLUG;
+  const isFilament = slug === FILAMENT_SLUG;
   const apparelItem = getApparelItem(slug);
   const isApparel = Boolean(apparelItem);
   const shopHref = isAccessorySlug(slug)
@@ -217,7 +229,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       ? TRAIL_MIX_NAME
       : isGators
         ? GATORS_NAME
-        : product.name;
+        : isFilament
+          ? FILAMENT_NAME
+          : product.name;
 
   // Product-specific descriptions
   const displayDescription = slug === "v3-slides" 
@@ -234,6 +248,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? TRAIL_MIX_DESCRIPTION
     : isGators
     ? GATORS_DESCRIPTION
+    : isFilament
+    ? FILAMENT_DESCRIPTION
     : product.description;
 
   const holsterVariants = isGunHolster
@@ -286,12 +302,25 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 </span>
               </>
             )}
-            {!isTrailMix && !isApparel && (
+            {isFilament && (
+              <>
+                <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
+                  New Listing
+                </span>
+                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">1kg spool</span>
+                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU-90A</span>
+                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">$30</span>
+                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
+                  Code Young → $20
+                </span>
+              </>
+            )}
+            {!isTrailMix && !isApparel && !isFilament && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
                 {isMagikidShoes ? "Made to order in <7 days" : "Made to order in <2 days"}
               </span>
             )}
-            {!isMagikidShoes && !isGunHolster && !isTrailMix && !isApparel && (
+            {!isMagikidShoes && !isGunHolster && !isTrailMix && !isApparel && !isFilament && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
             )}
             {isApparel && apparelItem && (
@@ -392,6 +421,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     soldOut: true,
                     flavorOptions: TRAIL_MIX_FLAVORS,
                   })}
+                  {...(isFilament && {
+                    hideSizeSelector: true,
+                  })}
                   {...(isApparel && {
                     useCatalogSizes: true,
                     preOrder: true,
@@ -401,7 +433,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   productName={displayName}
                   coverImage={(images[0] as string) || defaultImages[0]}
                   productSlug={slug}
-                  promoHint={undefined}
+                  promoHint={
+                    isFilament
+                      ? { code: "Young", promoPrice: FILAMENT_YOUNG_PRICE_CENTS / 100 }
+                      : undefined
+                  }
                 />
               </Suspense>
 
@@ -442,7 +478,17 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <div className="container pb-12">
         <div className="mt-10 overflow-hidden rounded-3xl ring-1 ring-black/5 bg-white">
           <div className="bg-black text-white px-6 py-4 text-sm font-medium">
-            {isDragonfly ? "Crafted for you" : isMagikidShoes ? "Magikid edition" : isSlipOns ? "Print + finish" : isGunHolster ? "Carbon fiber nylon" : isTrailMix ? "Collaborative" : isApparel ? "Apparel" : isGators ? "Comfort clog" : "How it's made"}
+            {isGunHolster
+              ? "Carbon fiber nylon"
+              : isTrailMix
+                ? "Collaborative"
+                : isApparel
+                  ? "Apparel"
+                  : isGators
+                    ? "Comfort clog"
+                    : isFilament
+                      ? "TPU-90A filament"
+                      : "How it's made"}
           </div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed">
             {isDragonfly
@@ -459,6 +505,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? "Voronyz Apparel is designed for a clean modern fit — consistent fabrics, considered proportions, and colorways that work across the full lineup. These pieces are available for pre-order: pay now to join the waitlist, and we'll ship when the drop arrives."
               : isGators
               ? GATORS_HOW_ITS_MADE
+              : isFilament
+              ? FILAMENT_HOW_ITS_MADE
               : "Each pair takes a full day to print using our proprietary TPU blend. Following printing, we perform heat-treated post-processing to ensure exceptional quality, comfort, and durability."}
           </div>
         </div>
@@ -507,6 +555,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Are they true to size?", a: "Yes — use Men's, Women's, or Kids' sizing and pick your usual US size for a comfortable clog fit." },
               { q: "How long does production take?", a: "Printed to order in about 1–2 days, then ships the next business day." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
+            ] : isFilament ? [
+              { q: "What is TPU-90A Filament?", a: "Flexible thermoplastic polyurethane at 90 Shore A — the same material we use to make Voronyz footwear. Great for printing footwear, flexible parts, and anything that needs to bend without breaking." },
+              { q: "What colors and stock do you have?", a: "Pink (70 spools), black (10), grey (10), and white (10). All 1kg spools." },
+              { q: "How much does it cost?", a: "$30 per 1kg spool. Use discount code Young at checkout to bring it down to $20 a spool." },
+              { q: "What print settings should I use?", a: "Print temperature 200–230°C, bed temperature 60–80°C. Diameter is 1.75mm." },
+              { q: "Is shipping free?", a: "Yes — free shipping on every spool for domestic US orders." },
             ] : [
               { q: "What if my size doesn't fit?", a: "They're going to fit and also be extremely comfortable. Trust the process" },
               { q: "Are they waterproof?", a: "Yes. 100% waterproof. Throw them in your washer to clean!" },
@@ -588,6 +642,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const title = `${GATORS_NAME} – Voronyz`;
     const description = GATORS_DESCRIPTION;
     const images = [GATORS_THUMBNAIL_URL];
+    return {
+      title,
+      description,
+      openGraph: { title, description, images },
+      twitter: { card: "summary_large_image", title, description, images },
+    };
+  }
+
+  if (slug === FILAMENT_SLUG) {
+    const title = `${FILAMENT_NAME} – Voronyz`;
+    const description = FILAMENT_DESCRIPTION;
+    const images = [FILAMENT_THUMBNAIL_URL, ...FILAMENT_IMAGES];
     return {
       title,
       description,

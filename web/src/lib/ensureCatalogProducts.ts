@@ -31,6 +31,16 @@ import {
   GATORS_VARIANTS,
 } from "@/lib/gators";
 import {
+  FILAMENT_DESCRIPTION_SHORT,
+  FILAMENT_IMAGES,
+  FILAMENT_NAME,
+  FILAMENT_PRICE_CENTS,
+  FILAMENT_PRIMARY_COLORS,
+  FILAMENT_SIZES,
+  FILAMENT_SLUG,
+  FILAMENT_VARIANTS,
+} from "@/lib/filament";
+import {
   APPAREL_CATALOG,
   APPAREL_CATEGORY,
   OBSOLETE_APPAREL_SLUGS,
@@ -499,6 +509,70 @@ export async function ensureGators(): Promise<void> {
   });
 }
 
+/** Idempotently upsert TPU-90A Filament so the Engineering listing appears without a manual seed. */
+export async function ensureFilament(): Promise<void> {
+  let existing = await prisma.product.findUnique({ where: { slug: FILAMENT_SLUG } });
+
+  if (!existing) {
+    try {
+      await prisma.product.create({
+        data: {
+          slug: FILAMENT_SLUG,
+          name: FILAMENT_NAME,
+          description: FILAMENT_DESCRIPTION_SHORT,
+          priceCents: FILAMENT_PRICE_CENTS,
+          currency: "usd",
+          images: [...FILAMENT_IMAGES],
+          primaryColors: [...FILAMENT_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...FILAMENT_SIZES],
+          variants: {
+            create: FILAMENT_VARIANTS.map((v) => ({ ...v })),
+          },
+        },
+      });
+      return;
+    } catch (error) {
+      existing = await prisma.product.findUnique({ where: { slug: FILAMENT_SLUG } });
+      if (!existing) throw error;
+    }
+  }
+
+  await prisma.product.update({
+    where: { id: existing.id },
+    data: {
+      name: FILAMENT_NAME,
+      description: FILAMENT_DESCRIPTION_SHORT,
+      priceCents: FILAMENT_PRICE_CENTS,
+      images: [...FILAMENT_IMAGES],
+      primaryColors: [...FILAMENT_PRIMARY_COLORS],
+      secondaryColors: [],
+      sizes: [...FILAMENT_SIZES],
+    },
+  });
+
+  for (const v of FILAMENT_VARIANTS) {
+    await prisma.variant.upsert({
+      where: { sku: v.sku },
+      update: { stock: v.stock, color: v.color },
+      create: {
+        product: { connect: { id: existing.id } },
+        color: v.color,
+        sku: v.sku,
+        stock: v.stock,
+      },
+    });
+  }
+
+  const keepSkus = FILAMENT_VARIANTS.map((v) => v.sku);
+  await prisma.variant.deleteMany({
+    where: {
+      productId: existing.id,
+      sku: { notIn: [...keepSkus] },
+    },
+  });
+}
+
 /** Idempotently upsert apparel catalog products (coming soon / pre-order, stock 0). */
 export async function ensureApparelProducts(): Promise<void> {
   if (OBSOLETE_APPAREL_SLUGS.length > 0) {
@@ -621,6 +695,7 @@ export async function ensureCatalogProducts(): Promise<void> {
         ensureMagikidShoes(),
         ensureGators(),
         ensureGunHolster(),
+        ensureFilament(),
         ensureTrailMix(),
         ensureApparelProducts(),
       ]);
