@@ -2,8 +2,11 @@ export const FILAMENT_SLUG = "tpu-90a-filament";
 export const FILAMENT_NAME = "TPU-90A Filament";
 export const FILAMENT_PRICE_CENTS = 3000; // $30 per 1kg spool
 export const FILAMENT_YOUNG_PRICE_CENTS = 2000; // $20 with code Young
-export const FILAMENT_THUMBNAIL_URL = "/products/tpu-90a-filament/tpu-90a-filament.jpg";
-export const FILAMENT_ALT_IMAGE_URL = "/products/tpu-90a-filament/tpu-90a-filament-alt.jpg";
+/** Cache-busted filenames so CDN/Next Image drop AI stand-in photos. */
+export const FILAMENT_THUMBNAIL_URL =
+  "/products/tpu-90a-filament/pink-tpu-90a-spool-labeled.jpg";
+export const FILAMENT_ALT_IMAGE_URL =
+  "/products/tpu-90a-filament/pink-tpu-90a-spool-angle.jpg";
 
 export const FILAMENT_DESCRIPTION_SHORT =
   "1kg TPU-90A filament spools — the same flexible material we print our footwear with. Pink, black, grey, and white in stock. Free US shipping.";

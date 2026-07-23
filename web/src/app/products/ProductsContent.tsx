@@ -41,7 +41,7 @@ const productMeta: Record<string, {
   },
   "tpu-90a-filament": {
     tag: "Filament",
-    altImage: "/products/tpu-90a-filament/tpu-90a-filament-alt.jpg",
+    altImage: "/products/tpu-90a-filament/pink-tpu-90a-spool-angle.jpg",
   },
   "antioxidant-trail-mix": {
     tag: "Collaborative",
