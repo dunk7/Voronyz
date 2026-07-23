@@ -16,7 +16,7 @@ function srcToKey(src: ImageProps["src"]): string {
 }
 
 /**
- * Instant-feel image: neutral placeholder with the Voronyz mark,
+ * Instant-feel image: soft Voronyz mark while decoding (no opaque block),
  * then a fast fade-in once the image is ready. Does not delay fetch.
  *
  * Resets load state whenever `src` changes so reused instances
@@ -49,13 +49,13 @@ export default function SoftImage({
     <>
       {manageFade && !loaded && (
         <div
-          className="absolute inset-0 z-[1] flex items-center justify-center bg-neutral-100"
+          className="absolute inset-0 z-[1] flex items-center justify-center pointer-events-none"
           aria-hidden="true"
         >
           <LogoMark
             size={36}
             tone={placeholderTone}
-            className="opacity-25"
+            className="opacity-20"
           />
         </div>
       )}
