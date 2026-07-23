@@ -428,7 +428,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   productName={displayName}
                   coverImage={(images[0] as string) || defaultImages[0]}
                   productSlug={slug}
-                  promoHint={undefined}
                 />
               </Suspense>
 
