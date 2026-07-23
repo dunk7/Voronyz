@@ -1,5 +1,4 @@
 import {
-  FILAMENT_NAME,
   FILAMENT_SLUG,
   FILAMENT_YOUNG_PRICE_CENTS,
 } from "@/lib/filament";
