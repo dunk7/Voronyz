@@ -9,8 +9,8 @@ export const metadata = {
 
 export default function TinkercadDownloadPage() {
   return (
-    <main className="mx-auto max-w-xl px-4 py-16">
-      <h1 className="text-2xl font-semibold tracking-tight">Tinkercad import</h1>
+    <main className="mx-auto max-w-xl px-4 py-16 bg-texture-white min-h-[70vh]">
+      <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Tinkercad import</h1>
       <p className="mt-3 text-neutral-600">
         In Tinkercad choose <strong>Import</strong> → <strong>URL</strong>, then paste the
         link below. The path must end in <code className="rounded bg-neutral-100 px-1">.stl</code>{" "}
