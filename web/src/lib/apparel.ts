@@ -3,10 +3,10 @@ export const APPAREL_ONE_SIZE = ["One Size"] as const;
 
 /**
  * Apparel sub-sections.
- * - `collection`: multi-product listing pages (shirts, hats, scarves, bottles, …) —
+ * - `collection`: multi-product listing pages (shirts, scarves, sweaters, …) —
  *   add new designs to APPAREL_CATALOG with the matching subcategory.
- * - `standalone`: Accessories only (insoles, shades, jewelry, …) — never mixed
- *   into clothing collections, and never shown on Engineering `/accessories`.
+ * - `standalone`: Accessories only (hats, bottles, insoles, shades, jewelry, …) —
+ *   never mixed into clothing collections, and never shown on Engineering `/accessories`.
  */
 export type ApparelSubcategoryId =
   | "shirts"
@@ -16,10 +16,11 @@ export type ApparelSubcategoryId =
   | "sweats"
   | "pants"
   | "outerwear"
-  | "hats"
   | "scarves"
-  | "bottles"
   | "accessories";
+
+/** Legacy apparel collection paths that now live under Accessories. */
+export const LEGACY_APPAREL_ACCESSORY_SUBCATEGORIES = ["hats", "bottles"] as const;
 
 export type ApparelListingKind = "collection" | "standalone";
 
@@ -76,27 +77,15 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
     listing: "collection",
   },
   {
-    id: "hats",
-    label: "Hats",
-    description: "UV hats and headwear designs",
-    listing: "collection",
-  },
-  {
     id: "scarves",
     label: "Scarves",
     description: "Knit scarves and cool-weather neck layers",
     listing: "collection",
   },
   {
-    id: "bottles",
-    label: "Bottles",
-    description: "Insulated bottles and everyday drinkware",
-    listing: "collection",
-  },
-  {
     id: "accessories",
     label: "Accessories",
-    description: "Insoles, shades, jewelry, keychains, drone & RC gear",
+    description: "Hats, bottles, insoles, shades, jewelry, keychains, drone & RC gear",
     listing: "standalone",
   },
 ];
@@ -247,19 +236,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-OUT",
     comingSoon: true,
   },
-  // ── Hats (multi-product) ────────────────────────────────────────────────
-  {
-    slug: "voronyz-uv-hat",
-    subcategory: "hats",
-    name: "UV Hat",
-    description: "Wide-brim UV hat for sun coverage on long outdoor days.",
-    priceCents: 3800,
-    colors: ["black", "beige"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/uv-hat.jpg",
-    skuPrefix: "APP-UVHT",
-    comingSoon: true,
-  },
   // ── Scarves (multi-product) ─────────────────────────────────────────────
   {
     slug: "voronyz-scarf",
@@ -273,10 +249,22 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-SCRF",
     comingSoon: true,
   },
-  // ── Bottles (multi-product) ─────────────────────────────────────────────
+  // ── Accessories only (never mixed into clothing collections) ────────────
+  {
+    slug: "voronyz-uv-hat",
+    subcategory: "accessories",
+    name: "UV Hat",
+    description: "Wide-brim UV hat for sun coverage on long outdoor days.",
+    priceCents: 3800,
+    colors: ["black", "beige"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/uv-hat.jpg",
+    skuPrefix: "APP-UVHT",
+    comingSoon: true,
+  },
   {
     slug: "voronyz-water-bottle",
-    subcategory: "bottles",
+    subcategory: "accessories",
     name: "Water Bottle",
     description: "Insulated stainless bottle with a clean Voronyz finish.",
     priceCents: 3600,
@@ -286,7 +274,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-BTTL",
     comingSoon: true,
   },
-  // ── Accessories only (never mixed into clothing collections) ────────────
   {
     slug: "voronyz-lattice-insoles",
     subcategory: "accessories",
@@ -436,6 +423,13 @@ export function isApparelSubcategoryId(
   id: string | null | undefined,
 ): id is ApparelSubcategoryId {
   return Boolean(getApparelSubcategory(id));
+}
+
+export function isLegacyApparelAccessorySubcategory(
+  id: string | null | undefined,
+): boolean {
+  const key = (id || "").trim().toLowerCase();
+  return (LEGACY_APPAREL_ACCESSORY_SUBCATEGORIES as readonly string[]).includes(key);
 }
 
 export function isCollectionSubcategory(id: string | null | undefined): boolean {

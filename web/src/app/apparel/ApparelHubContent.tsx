@@ -122,7 +122,7 @@ export default function ApparelHubContent() {
                   Individual pieces
                 </h2>
                 <p className="mt-2 text-sm text-neutral-500 max-w-lg">
-                  Insoles, shades, jewelry, and other accessory pieces — separate from clothing collections.
+                  Insoles, hats, bottles, shades, jewelry, and other accessory pieces — separate from clothing collections.
                 </p>
               </div>
               <Link
