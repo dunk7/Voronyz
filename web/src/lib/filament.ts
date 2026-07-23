@@ -9,13 +9,13 @@ export const FILAMENT_ALT_IMAGE_URL =
   "/products/tpu-90a-filament/pink-tpu-90a-spool-angle.jpg";
 
 export const FILAMENT_DESCRIPTION_SHORT =
-  "1kg TPU-90A filament spools — the same flexible material we print our footwear with. Pink, black, grey, and white in stock. Free US shipping.";
+  "1kg TPU-90A filament spools — the same flexible material we print our footwear with. Pink, black, grey, and white. Free US shipping.";
 
 export const FILAMENT_DESCRIPTION =
   "TPU-90A Filament — the same flexible TPU we use to make Voronyz footwear. Each 1kg spool is dialed for soft, durable prints: great for making footwear, flexible parts, and anything that needs to bend without breaking. Free US shipping on every spool.";
 
 export const FILAMENT_HOW_ITS_MADE =
-  "This is TPU-90A — a soft, flexible thermoplastic polyurethane at 90 Shore A, the same material family we print Voronyz footwear with. Spools are 1kg of 1.75mm filament, ready for FDM printers. Print around 200–230°C with a heated bed at 60–80°C for best results. Stock on hand: pink 70, black 10, grey 10, white 10.";
+  "This is TPU-90A — a soft, flexible thermoplastic polyurethane at 90 Shore A, the same material family we print Voronyz footwear with. Spools are 1kg of 1.75mm filament, ready for FDM printers. Print at 220°C — no heated bed needed (bed temperature 0).";
 
 export const FILAMENT_IMAGES = [FILAMENT_THUMBNAIL_URL, FILAMENT_ALT_IMAGE_URL] as const;
 

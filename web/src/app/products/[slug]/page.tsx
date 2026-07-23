@@ -47,7 +47,6 @@ import {
   FILAMENT_NAME,
   FILAMENT_SLUG,
   FILAMENT_THUMBNAIL_URL,
-  FILAMENT_YOUNG_PRICE_CENTS,
 } from "@/lib/filament";
 import { isAccessorySlug, isApparelSlug, isHealthSlug } from "@/lib/productCategories";
 import {
@@ -429,11 +428,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   productName={displayName}
                   coverImage={(images[0] as string) || defaultImages[0]}
                   productSlug={slug}
-                  promoHint={
-                    isFilament
-                      ? { code: "Young", promoPrice: FILAMENT_YOUNG_PRICE_CENTS / 100 }
-                      : undefined
-                  }
+                  promoHint={undefined}
                 />
               </Suspense>
 
@@ -559,9 +554,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isFilament ? [
               { q: "What is TPU-90A Filament?", a: "Flexible thermoplastic polyurethane at 90 Shore A — the same material we use to make Voronyz footwear. Great for printing footwear, flexible parts, and anything that needs to bend without breaking." },
-              { q: "What colors and stock do you have?", a: "Pink (70 spools), black (10), grey (10), and white (10). All 1kg spools." },
-              { q: "How much does it cost?", a: "$30 per 1kg spool. Use discount code Young at checkout to bring it down to $20 a spool." },
-              { q: "What print settings should I use?", a: "Print temperature 200–230°C, bed temperature 60–80°C. Diameter is 1.75mm." },
+              { q: "What colors are available?", a: "Pink, black, grey, and white. All 1kg spools." },
+              { q: "What print settings should I use?", a: "Print temperature 220°C. Bed temperature 0 — no heated bed needed. Diameter is 1.75mm." },
               { q: "Is shipping free?", a: "Yes — free shipping on every spool for domestic US orders." },
             ] : [
               { q: "What if my size doesn't fit?", a: "They're going to fit and also be extremely comfortable. Trust the process" },
