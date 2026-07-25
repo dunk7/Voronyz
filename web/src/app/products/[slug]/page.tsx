@@ -33,14 +33,6 @@ import {
   TRAIL_MIX_THUMBNAIL_URL,
 } from "@/lib/trailMix";
 import {
-  GATORS_DESCRIPTION,
-  GATORS_HOW_ITS_MADE,
-  GATORS_IMAGES,
-  GATORS_NAME,
-  GATORS_SLUG,
-  GATORS_THUMBNAIL_URL,
-} from "@/lib/gators";
-import {
   FILAMENT_DESCRIPTION,
   FILAMENT_HOW_ITS_MADE,
   FILAMENT_IMAGES,
@@ -183,8 +175,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? [...GUN_HOLSTER_IMAGES]
     : slug === TRAIL_MIX_SLUG
     ? [...TRAIL_MIX_IMAGES]
-    : slug === GATORS_SLUG
-    ? [...GATORS_IMAGES]
     : slug === FILAMENT_SLUG
     ? [...FILAMENT_IMAGES]
     : getApparelItem(slug)
@@ -204,7 +194,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isMagikidShoes = slug === "magikid-shoes";
   const isGunHolster = slug === GUN_HOLSTER_SLUG;
   const isTrailMix = slug === TRAIL_MIX_SLUG;
-  const isGators = slug === GATORS_SLUG;
   const isFilament = slug === FILAMENT_SLUG;
   const apparelItem = getApparelItem(slug);
   const isApparel = Boolean(apparelItem);
@@ -226,11 +215,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? GUN_HOLSTER_NAME
     : isTrailMix
       ? TRAIL_MIX_NAME
-      : isGators
-        ? GATORS_NAME
-        : isFilament
-          ? FILAMENT_NAME
-          : product.name;
+      : isFilament
+        ? FILAMENT_NAME
+        : product.name;
 
   // Product-specific descriptions
   const displayDescription = slug === "v3-slides" 
@@ -245,8 +232,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? GUN_HOLSTER_DESCRIPTION
     : isTrailMix
     ? TRAIL_MIX_DESCRIPTION
-    : isGators
-    ? GATORS_DESCRIPTION
     : isFilament
     ? FILAMENT_DESCRIPTION
     : product.description;
@@ -291,16 +276,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
               </span>
             )}
-            {isGators && (
-              <>
-                <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
-                  New Listing
-                </span>
-                <span className="rounded-full bg-amber-600 px-3 py-1 text-xs font-semibold text-white">
-                  Low Stock
-                </span>
-              </>
-            )}
             {isFilament && (
               <>
                 <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
@@ -339,12 +314,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">$60</span>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">3 flavors</span>
-              </>
-            )}
-            {isGators && (
-              <>
-                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Comfort clog</span>
-                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">$85</span>
               </>
             )}
             {isDragonfly && (
@@ -480,11 +449,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                       ? "Collaborative"
                       : isApparel
                         ? "Apparel"
-                        : isGators
-                          ? "Comfort clog"
-                          : isFilament
-                            ? "TPU-90A filament"
-                            : "How it's made"}
+                        : isFilament
+                          ? "TPU-90A filament"
+                          : "How it's made"}
           </div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed">
             {isDragonfly
@@ -499,8 +466,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? TRAIL_MIX_HOW_ITS_MADE
               : isApparel
               ? "Voronyz Apparel is designed for a clean modern fit — consistent fabrics, considered proportions, and colorways that work across the full lineup. These pieces are available for pre-order: pay now to join the waitlist, and we'll ship when the drop arrives."
-              : isGators
-              ? GATORS_HOW_ITS_MADE
               : isFilament
               ? FILAMENT_HOW_ITS_MADE
               : "Each pair takes a full day to print using our proprietary TPU blend. Following printing, we perform heat-treated post-processing to ensure exceptional quality, comfort, and durability."}
@@ -545,13 +510,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "When will my pre-order ship?", a: "As soon as we receive the product. You'll get updates by email. Pre-orders are paid reservations, not instant ship." },
               { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Hats, Scarves, Bottles, and more. Accessories (insoles, shades, jewelry) live under their own Apparel section. Engineering is separate." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders once your pre-order ships." },
-            ] : isGators ? [
-              { q: "What is The Gators?", a: "A comfort clog named for the alligator 🐊 — closed toe, open back, thick cushioned platform, and easy slip-on wear for all-day comfort." },
-              { q: "What colors are available?", a: "Black, pink, grey, and skin-tone tan. This is a new listing with low stock, so grab your size while pairs last." },
-              { q: "How much do they cost?", a: "$85 per pair." },
-              { q: "Are they true to size?", a: "Yes — use Men's, Women's, or Kids' sizing and pick your usual US size for a comfortable clog fit." },
-              { q: "How long does production take?", a: "Printed to order in about 1–2 days, then ships the next business day." },
-              { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : [
               { q: "What if my size doesn't fit?", a: "They're going to fit and also be extremely comfortable. Trust the process" },
               { q: "Are they waterproof?", a: "Yes. 100% waterproof. Throw them in your washer to clean!" },
@@ -622,18 +580,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const title = `${TRAIL_MIX_NAME} – Voronyz`;
     const description = TRAIL_MIX_DESCRIPTION;
     const images = [TRAIL_MIX_THUMBNAIL_URL];
-    return {
-      title,
-      description,
-      openGraph: { title, description, images },
-      twitter: { card: "summary_large_image", title, description, images },
-    };
-  }
-
-  if (slug === GATORS_SLUG) {
-    const title = `${GATORS_NAME} – Voronyz`;
-    const description = GATORS_DESCRIPTION;
-    const images = [GATORS_THUMBNAIL_URL];
     return {
       title,
       description,
