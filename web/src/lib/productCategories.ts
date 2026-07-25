@@ -5,7 +5,7 @@ import {
   isObsoleteApparelSlug,
   type ApparelSubcategoryId,
 } from "@/lib/apparel";
-import { FOOTWEAR_SLUGS } from "@/lib/footwear";
+import { FOOTWEAR_SLUGS, isObsoleteFootwearSlug } from "@/lib/footwear";
 
 /** Product slugs in Engineering (`/accessories`) — never apparel catalog items. */
 export const ACCESSORY_SLUGS = ["gun-holster", "tpu-90a-filament"] as const;
@@ -30,12 +30,13 @@ export function isHealthSlug(slug: string | null | undefined): boolean {
 export { isApparelSlug, APPAREL_SLUGS };
 
 export function isFootwearSlug(slug: string | null | undefined): boolean {
-  // Apparel (live or obsolete leftovers) must never land in footwear grids.
+  // Apparel / retired footwear leftovers must never land in footwear grids.
   return (
     !isAccessorySlug(slug) &&
     !isHealthSlug(slug) &&
     !isApparelSlug(slug) &&
-    !isObsoleteApparelSlug(slug)
+    !isObsoleteApparelSlug(slug) &&
+    !isObsoleteFootwearSlug(slug)
   );
 }
 

@@ -21,16 +21,6 @@ import {
   TRAIL_MIX_VARIANTS,
 } from "@/lib/trailMix";
 import {
-  GATORS_DESCRIPTION_SHORT,
-  GATORS_IMAGES,
-  GATORS_NAME,
-  GATORS_PRICE_CENTS,
-  GATORS_PRIMARY_COLORS,
-  GATORS_SIZES,
-  GATORS_SLUG,
-  GATORS_VARIANTS,
-} from "@/lib/gators";
-import {
   FILAMENT_DESCRIPTION_SHORT,
   FILAMENT_IMAGES,
   FILAMENT_NAME,
@@ -47,7 +37,7 @@ import {
   apparelSku,
   getApparelImages,
 } from "@/lib/apparel";
-import { FOOTWEAR_CATALOG } from "@/lib/footwear";
+import { FOOTWEAR_CATALOG, OBSOLETE_FOOTWEAR_SLUGS } from "@/lib/footwear";
 
 /**
  * Self-heal Product.category / Product.subcategory when the apparel migration
@@ -125,7 +115,6 @@ const FOOTWEAR_SIZES = ["5", "6", "7", "8", "9", "10", "11", "12"];
 export async function ensureFootwearProducts(): Promise<void> {
   for (const item of FOOTWEAR_CATALOG) {
     if (item.slug === "magikid-shoes") continue; // handled by ensureMagikidShoes
-    if (item.slug === GATORS_SLUG) continue; // handled by ensureGators
 
     const variants = FOOTWEAR_VARIANTS[item.slug] ?? [];
     const primaryColors = FOOTWEAR_COLORS[item.slug] ?? ["black"];
@@ -450,62 +439,33 @@ export async function ensureTrailMix(): Promise<void> {
   });
 }
 
-/** Idempotently upsert The Gators so the new listing appears without a manual seed run. */
-export async function ensureGators(): Promise<void> {
-  const existing = await prisma.product.findUnique({ where: { slug: GATORS_SLUG } });
+/** Idempotently delete retired footwear (e.g. The Gators) so they leave listings/PDPs. */
+export async function removeObsoleteFootwear(): Promise<void> {
+  const obsoleteSlugs = [...OBSOLETE_FOOTWEAR_SLUGS];
+  if (obsoleteSlugs.length === 0) return;
 
-  if (!existing) {
-    await prisma.product.create({
-      data: {
-        slug: GATORS_SLUG,
-        name: GATORS_NAME,
-        description: GATORS_DESCRIPTION_SHORT,
-        priceCents: GATORS_PRICE_CENTS,
-        currency: "usd",
-        images: [...GATORS_IMAGES],
-        primaryColors: [...GATORS_PRIMARY_COLORS],
-        secondaryColors: [],
-        sizes: [...GATORS_SIZES],
-        variants: {
-          create: GATORS_VARIANTS.map((v) => ({ ...v })),
-        },
-      },
-    });
-    return;
-  }
-
-  await prisma.product.update({
-    where: { id: existing.id },
-    data: {
-      name: GATORS_NAME,
-      description: GATORS_DESCRIPTION_SHORT,
-      priceCents: GATORS_PRICE_CENTS,
-      images: [...GATORS_IMAGES],
-      primaryColors: [...GATORS_PRIMARY_COLORS],
-      secondaryColors: [],
-      sizes: [...GATORS_SIZES],
-    },
+  const obsolete = await prisma.product.findMany({
+    where: { slug: { in: obsoleteSlugs } },
+    select: { id: true },
   });
+  const obsoleteIds = obsolete.map((product) => product.id);
+  if (obsoleteIds.length === 0) return;
 
-  for (const v of GATORS_VARIANTS) {
-    await prisma.variant.upsert({
-      where: { sku: v.sku },
-      update: { stock: v.stock, color: v.color },
-      create: {
-        product: { connect: { id: existing.id } },
-        color: v.color,
-        sku: v.sku,
-        stock: v.stock,
-      },
+  const variants = await prisma.variant.findMany({
+    where: { productId: { in: obsoleteIds } },
+    select: { id: true },
+  });
+  const variantIds = variants.map((variant) => variant.id);
+  if (variantIds.length > 0) {
+    await prisma.cartItem.deleteMany({
+      where: { variantId: { in: variantIds } },
+    });
+    await prisma.variant.deleteMany({
+      where: { id: { in: variantIds } },
     });
   }
-
-  const keepSkus = GATORS_VARIANTS.map((v) => v.sku);
-  await prisma.variant.deleteMany({
-    where: {
-      productId: existing.id,
-      sku: { notIn: [...keepSkus] },
-    },
+  await prisma.product.deleteMany({
+    where: { id: { in: obsoleteIds } },
   });
 }
 
@@ -693,7 +653,7 @@ export async function ensureCatalogProducts(): Promise<void> {
         ensureFootwearProducts(),
         ensureFootwearStock(),
         ensureMagikidShoes(),
-        ensureGators(),
+        removeObsoleteFootwear(),
         ensureGunHolster(),
         ensureFilament(),
         ensureTrailMix(),
@@ -731,7 +691,7 @@ export async function ensureFootwearCatalog(): Promise<void> {
       await ensureProductCategoryColumns();
       await ensureFootwearProducts();
       await ensureFootwearStock();
-      await ensureGators();
+      await removeObsoleteFootwear();
       // Hot path: only create Magikid if missing — never rewrite the whole catalog.
       const existing = await prisma.product.findUnique({
         where: { slug: "magikid-shoes" },

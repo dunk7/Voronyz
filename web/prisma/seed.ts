@@ -21,16 +21,6 @@ import {
   TRAIL_MIX_VARIANTS,
 } from "../src/lib/trailMix";
 import {
-  GATORS_DESCRIPTION_SHORT,
-  GATORS_IMAGES,
-  GATORS_NAME,
-  GATORS_PRICE_CENTS,
-  GATORS_PRIMARY_COLORS,
-  GATORS_SIZES,
-  GATORS_SLUG,
-  GATORS_VARIANTS,
-} from "../src/lib/gators";
-import {
   FILAMENT_DESCRIPTION_SHORT,
   FILAMENT_IMAGES,
   FILAMENT_NAME,
@@ -40,6 +30,7 @@ import {
   FILAMENT_SLUG,
   FILAMENT_VARIANTS,
 } from "../src/lib/filament";
+import { OBSOLETE_FOOTWEAR_SLUGS } from "../src/lib/footwear";
 
 const prisma = new PrismaClient();
 
@@ -557,62 +548,32 @@ async function main() {
       console.log("Updated Antioxidant Trail Mix product and variants.");
     }
 
-    // ── The Gators (comfort clog footwear) ──
-    const existingGators = await prisma.product.findUnique({ where: { slug: GATORS_SLUG } });
-    console.log("The Gators product check:", existingGators ? "Found" : "Not found");
-    if (!existingGators) {
-      const gatorsProduct = await prisma.product.create({
-        data: {
-          slug: GATORS_SLUG,
-          name: GATORS_NAME,
-          description: GATORS_DESCRIPTION_SHORT,
-          priceCents: GATORS_PRICE_CENTS,
-          currency: "usd",
-          images: [...GATORS_IMAGES],
-          primaryColors: [...GATORS_PRIMARY_COLORS],
-          secondaryColors: [],
-          sizes: [...GATORS_SIZES],
-          variants: {
-            create: GATORS_VARIANTS.map((v) => ({ ...v })),
-          },
-        },
-        include: { variants: true },
+    // ── Remove retired footwear (The Gators) ──
+    const obsoleteFootwearSlugs = [...OBSOLETE_FOOTWEAR_SLUGS];
+    if (obsoleteFootwearSlugs.length > 0) {
+      const obsolete = await prisma.product.findMany({
+        where: { slug: { in: obsoleteFootwearSlugs } },
+        select: { id: true, slug: true },
       });
-      console.log("Seeded product:", gatorsProduct.slug);
-    } else {
-      console.log("Updating existing The Gators product...");
-      await prisma.product.update({
-        where: { id: existingGators.id },
-        data: {
-          name: GATORS_NAME,
-          description: GATORS_DESCRIPTION_SHORT,
-          priceCents: GATORS_PRICE_CENTS,
-          images: [...GATORS_IMAGES],
-          primaryColors: [...GATORS_PRIMARY_COLORS],
-          secondaryColors: [],
-          sizes: [...GATORS_SIZES],
-        },
-      });
-      for (const v of GATORS_VARIANTS) {
-        await prisma.variant.upsert({
-          where: { sku: v.sku },
-          update: { stock: v.stock, color: v.color },
-          create: {
-            product: { connect: { id: existingGators.id } },
-            color: v.color,
-            sku: v.sku,
-            stock: v.stock,
-          },
+      if (obsolete.length > 0) {
+        const obsoleteIds = obsolete.map((product) => product.id);
+        const variants = await prisma.variant.findMany({
+          where: { productId: { in: obsoleteIds } },
+          select: { id: true },
         });
+        const variantIds = variants.map((variant) => variant.id);
+        if (variantIds.length > 0) {
+          await prisma.cartItem.deleteMany({ where: { variantId: { in: variantIds } } });
+          await prisma.variant.deleteMany({ where: { id: { in: variantIds } } });
+        }
+        await prisma.product.deleteMany({ where: { id: { in: obsoleteIds } } });
+        console.log(
+          "Removed obsolete footwear:",
+          obsolete.map((product) => product.slug).join(", "),
+        );
+      } else {
+        console.log("No obsolete footwear products to remove.");
       }
-      const keepGatorSkus = GATORS_VARIANTS.map((v) => v.sku);
-      await prisma.variant.deleteMany({
-        where: {
-          productId: existingGators.id,
-          sku: { notIn: [...keepGatorSkus] },
-        },
-      });
-      console.log("Updated The Gators product and variants.");
     }
 
     console.log('Seed script completed successfully.');

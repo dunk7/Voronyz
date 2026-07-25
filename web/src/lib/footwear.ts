@@ -3,13 +3,6 @@ import {
   MAGIKID_SHOES_DESCRIPTION_SHORT,
   MAGIKID_SHOES_THUMBNAIL_URL,
 } from "@/lib/magikidShoesThumbnail";
-import {
-  GATORS_DESCRIPTION_SHORT,
-  GATORS_IMAGES,
-  GATORS_NAME,
-  GATORS_PRICE_CENTS,
-  GATORS_SLUG,
-} from "@/lib/gators";
 import { getProductThumbnail } from "@/lib/productImages";
 
 /** Core footwear catalog — used as an immediate client seed when /api/search is slow or down. */
@@ -23,8 +16,7 @@ export type FootwearCatalogItem = {
 
 /**
  * Display order for All Footwear:
- * Magikid → Slides → Gators → Slip Ons → Sneakers (Dragonfly last).
- * Gators stays in the grid — just not first.
+ * Magikid → Slides → Slip Ons → Sneakers (Dragonfly last).
  */
 export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
   {
@@ -64,13 +56,6 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     ],
   },
   {
-    slug: GATORS_SLUG,
-    name: GATORS_NAME,
-    description: GATORS_DESCRIPTION_SHORT,
-    priceCents: GATORS_PRICE_CENTS,
-    images: [...GATORS_IMAGES],
-  },
-  {
     slug: "slip-ons",
     name: "Slip Ons",
     description:
@@ -106,6 +91,14 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     ],
   },
 ];
+
+/** Retired footwear listings — deleted from DB on catalog ensure so they leave the shop. */
+export const OBSOLETE_FOOTWEAR_SLUGS = ["gators"] as const;
+
+export function isObsoleteFootwearSlug(slug: string | null | undefined): boolean {
+  const key = (slug || "").trim().toLowerCase();
+  return (OBSOLETE_FOOTWEAR_SLUGS as readonly string[]).includes(key);
+}
 
 export const FOOTWEAR_SLUGS = FOOTWEAR_CATALOG.map((item) => item.slug);
 
