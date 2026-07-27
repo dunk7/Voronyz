@@ -42,7 +42,9 @@ export default function CartClient() {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [isCardCheckingOut, setIsCardCheckingOut] = useState(false);
   const [isNanoCheckingOut, setIsNanoCheckingOut] = useState(false);
+  const stripeBusy = isCheckingOut || isCardCheckingOut;
 
   const getBaseUnitPriceCents = (it: CartItem) => {
     return typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
@@ -159,6 +161,73 @@ export default function CartClient() {
   const hasPreOrderItems = items.some((it) =>
     resolveIsPreOrder({ isPreOrder: it.isPreOrder, productSlug: it.productSlug })
   );
+
+  const buildCheckoutItems = () =>
+    items.map((item) => ({
+      variantId: item.variantId,
+      productName: item.productName,
+      variantName: item.variant?.name,
+      secondaryColor: item.attributes?.color,
+      size: item.attributes?.size,
+      gender: item.attributes?.gender,
+      fulfillment: item.attributes?.fulfillment,
+      quantity: item.quantity,
+      priceCents: unitPriceForItem(item, discountCode),
+      image: item.image,
+      productSlug: item.productSlug,
+      studentName: item.studentName,
+      isPreOrder: resolveIsPreOrder({
+        isPreOrder: item.isPreOrder,
+        productSlug: item.productSlug,
+      }),
+    }));
+
+  const startStripeCheckout = async (method: "ach" | "card") => {
+    if (stripeBusy || isNanoCheckingOut) return;
+    const setBusy = method === "ach" ? setIsCheckingOut : setIsCardCheckingOut;
+    setBusy(true);
+    try {
+      const checkoutItems = buildCheckoutItems();
+      const validationError = validateMagikidCheckoutItems(checkoutItems);
+      if (validationError) {
+        setMessage(validationError);
+        setBusy(false);
+        return;
+      }
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: checkoutItems,
+          discountCode: discountCode || "",
+          paymentMethod: method,
+          successUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/success`,
+          cancelUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/cancel`,
+        }),
+      });
+
+      if (!response.ok) {
+        const rawText = await response.text();
+        console.error("Checkout API error - Status:", response.status, "Raw response:", rawText);
+        let errorData: { error?: string } = {};
+        try {
+          errorData = JSON.parse(rawText);
+        } catch {
+          // Not JSON
+        }
+        throw new Error(
+          `Failed to create checkout session: ${errorData.error || rawText || "Unknown error"}`
+        );
+      }
+
+      const { url } = await response.json();
+      window.location.href = url;
+    } catch (error) {
+      console.error("Checkout failed:", error);
+      setBusy(false);
+      alert("Checkout failed. Please try again.");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -378,81 +447,31 @@ export default function CartClient() {
             <div className="font-bold text-neutral-900">{formatCentsAsCurrency(subtotal)}</div>
           </div>
         </div>
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            if (isCheckingOut) return;
-
-            setIsCheckingOut(true);
-            try {
-              const checkoutItems = items.map(item => ({
-                variantId: item.variantId,
-                productName: item.productName,
-                variantName: item.variant?.name,
-                secondaryColor: item.attributes?.color,
-                size: item.attributes?.size,
-                gender: item.attributes?.gender,
-                fulfillment: item.attributes?.fulfillment,
-                quantity: item.quantity,
-                priceCents: unitPriceForItem(item, discountCode),
-                image: item.image,
-                productSlug: item.productSlug,
-                studentName: item.studentName,
-                isPreOrder: resolveIsPreOrder({
-                  isPreOrder: item.isPreOrder,
-                  productSlug: item.productSlug,
-                }),
-              }));
-              const validationError = validateMagikidCheckoutItems(checkoutItems);
-              if (validationError) {
-                setMessage(validationError);
-                setIsCheckingOut(false);
-                return;
-              }
-              console.log('Sending checkout items:', checkoutItems); // Add this log
-              const response = await fetch('/api/checkout', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  items: checkoutItems,
-                  discountCode: discountCode || '',
-                  successUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/success`,
-                  cancelUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/cancel`,
-                }),
-              });
-
-              if (!response.ok) {
-                const rawText = await response.text();
-                console.error('Checkout API error - Status:', response.status, 'Raw response:', rawText);
-                let errorData: { error?: string } = {};
-                try {
-                  errorData = JSON.parse(rawText);
-                } catch {
-                  // Not JSON, use raw text as message
-                }
-                throw new Error(`Failed to create checkout session: ${errorData.error || rawText || 'Unknown error'}`);
-              }
-
-              const { url } = await response.json();
-              window.location.href = url;
-            } catch (error) {
-              console.error('Checkout failed:', error);
-              setIsCheckingOut(false);
-              alert('Checkout failed. Please try again.');
-            }
-          }}
+        <button
+          type="button"
+          disabled={stripeBusy || isNanoCheckingOut}
+          className="w-full rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Pay with ACH bank transfer"
+          onClick={() => startStripeCheckout("ach")}
         >
-          <button
-            type="submit"
-            disabled={isCheckingOut || isNanoCheckingOut}
-            className="w-full rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Proceed to checkout"
-          >
-            {isCheckingOut ? "Processing..." : hasPreOrderItems ? "Pre-order checkout" : "Checkout"}
-          </button>
-        </form>
+          {isCheckingOut
+            ? "Processing..."
+            : hasPreOrderItems
+              ? "Pre-order with ACH"
+              : "Pay with ACH"}
+        </button>
+        <p className="text-center text-xs text-neutral-500 -mt-1">
+          Bank transfer · usually lower fees than card
+        </p>
+        <button
+          type="button"
+          disabled={stripeBusy || isNanoCheckingOut}
+          className="mx-auto block text-sm text-neutral-500 underline underline-offset-2 hover:text-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Pay with card"
+          onClick={() => startStripeCheckout("card")}
+        >
+          {isCardCheckingOut ? "Processing…" : "Pay with card"}
+        </button>
 
         {/* Nano (XNO) payment option */}
         <div className="relative flex items-center gap-2">
@@ -462,31 +481,14 @@ export default function CartClient() {
         </div>
         <button
           type="button"
-          disabled={isCheckingOut || isNanoCheckingOut}
+          disabled={stripeBusy || isNanoCheckingOut}
           className="w-full rounded-full bg-[#209CE9] text-white px-6 py-3 text-sm font-medium hover:bg-[#1a88cc] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           aria-label="Pay with Nano cryptocurrency"
           onClick={async () => {
             if (isNanoCheckingOut) return;
             setIsNanoCheckingOut(true);
             try {
-              const checkoutItems = items.map(item => ({
-                variantId: item.variantId,
-                productName: item.productName,
-                variantName: item.variant?.name,
-                secondaryColor: item.attributes?.color,
-                size: item.attributes?.size,
-                gender: item.attributes?.gender,
-                fulfillment: item.attributes?.fulfillment,
-                quantity: item.quantity,
-                priceCents: unitPriceForItem(item, discountCode),
-                image: item.image,
-                productSlug: item.productSlug,
-                studentName: item.studentName,
-                isPreOrder: resolveIsPreOrder({
-                  isPreOrder: item.isPreOrder,
-                  productSlug: item.productSlug,
-                }),
-              }));
+              const checkoutItems = buildCheckoutItems();
               const validationError = validateMagikidCheckoutItems(checkoutItems);
               if (validationError) {
                 setMessage(validationError);
