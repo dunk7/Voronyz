@@ -7,7 +7,10 @@ import {
   getMessageUserId,
   unauthorizedMessageResponse,
 } from "@/lib/messageAuth";
-import { canonicalParticipantIds } from "@/lib/messageConversation";
+import {
+  MESSAGE_BODY_MAX_LENGTH,
+  canonicalParticipantIds,
+} from "@/lib/messageConversation";
 import { serializeConversationPreview } from "@/lib/messageSerialize";
 import { messageDisabledResponse } from "@/lib/messageApiGuard";
 import { normalizeUsername } from "@/lib/messageUsername";
@@ -76,16 +79,9 @@ async function createDirectConversation(
 
   const currentUser = await prisma.messengerUser.findUnique({
     where: { id: userId },
-    select: { username: true },
+    select: { id: true },
   });
   if (!currentUser) return unauthorizedMessageResponse();
-
-  if (recipientUsername === currentUser.username) {
-    return NextResponse.json(
-      { error: "You cannot message yourself." },
-      { status: 400 }
-    );
-  }
 
   const recipient = await prisma.messengerUser.findUnique({
     where: { username: recipientUsername },
@@ -102,10 +98,10 @@ async function createDirectConversation(
   let conversation = await findDirectConversation(userId, recipient.id);
 
   if (!conversation) {
-    const [participantAId, participantBId] = canonicalParticipantIds(
-      userId,
-      recipient.id
-    );
+    const isSelf = userId === recipient.id;
+    const [participantAId, participantBId] = isSelf
+      ? [userId, userId]
+      : canonicalParticipantIds(userId, recipient.id);
 
     conversation = await prisma.conversation.create({
       data: {
@@ -113,7 +109,10 @@ async function createDirectConversation(
         participantAId,
         participantBId,
         members: {
-          create: [{ userId: participantAId }, { userId: participantBId }],
+          // Self-DM has a single membership row (unique on conversationId+userId).
+          create: isSelf
+            ? [{ userId }]
+            : [{ userId: participantAId }, { userId: participantBId }],
         },
       },
       include: {
@@ -134,9 +133,11 @@ async function createDirectConversation(
   }
 
   if (messageBody) {
-    if (messageBody.length > 4000) {
+    if (messageBody.length > MESSAGE_BODY_MAX_LENGTH) {
       return NextResponse.json(
-        { error: "Message must be at most 4000 characters." },
+        {
+          error: `Message must be at most ${MESSAGE_BODY_MAX_LENGTH} characters.`,
+        },
         { status: 400 }
       );
     }
@@ -260,9 +261,11 @@ async function createGroupConversation(
   });
 
   if (messageBody) {
-    if (messageBody.length > 4000) {
+    if (messageBody.length > MESSAGE_BODY_MAX_LENGTH) {
       return NextResponse.json(
-        { error: "Message must be at most 4000 characters." },
+        {
+          error: `Message must be at most ${MESSAGE_BODY_MAX_LENGTH} characters.`,
+        },
         { status: 400 }
       );
     }
