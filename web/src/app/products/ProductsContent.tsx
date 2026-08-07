@@ -6,12 +6,11 @@ import { MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
 import { filterAccessoryProducts, filterFootwearProducts, filterHealthProducts } from "@/lib/productCategories";
 import { getFootwearCatalogSeed, type FootwearListProduct } from "@/lib/footwear";
 import { useEffect, useState, useCallback } from "react";
-import { getAccessoryCatalogSeed } from "@/lib/gunHolster";
-import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 import { GATORS_SLUG } from "@/lib/gators";
 import { FILAMENT_SLUG, getAccessoryCatalogSeed } from "@/lib/filament";
+import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 
 type Product = FootwearListProduct;
 
@@ -80,7 +79,6 @@ function categorySeed(category: ProductsContentProps["category"]): Product[] {
   if (category === "footwear") return getFootwearCatalogSeed();
   if (category === "accessories") return getAccessoryCatalogSeed();
   if (category === "health") return getHealthCatalogSeed();
-  if (category === "accessories") return getAccessoryCatalogSeed();
   return [];
 }
 
