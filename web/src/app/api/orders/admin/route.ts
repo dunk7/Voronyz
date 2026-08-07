@@ -57,6 +57,7 @@ export async function GET(request: NextRequest) {
       paymentMethod: parsed.paymentMethod,
       discountCode: parsed.discountCode,
       hasPreOrder: parsed.hasPreOrder,
+      adminNotes: parsed.adminNotes,
     };
   });
 
