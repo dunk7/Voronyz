@@ -74,7 +74,7 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     slug: "slip-ons",
     name: "Slip Ons",
     description:
-      "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, or orange (white coming soon).",
+      "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
     priceCents: 6000,
     images: [
       "/products/slip-ons/InShot_20260405_203151152.jpg",
