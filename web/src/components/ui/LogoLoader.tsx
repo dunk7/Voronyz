@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import Image from "next/image";
 
 type LogoLoaderProps = {
   /** Visual size of the logo mark */
@@ -12,162 +12,59 @@ type LogoLoaderProps = {
   /** Light mark on dark overlays vs dark mark on light backgrounds */
   tone?: "dark" | "light";
   /**
-   * Full stage: dots mark orbits / bounces around the “VORONYZ” wordmark.
-   * Default on for md/lg loaders; overlays can set false for a compact mark.
+   * Kept for call-site compatibility. Orbit stage was removed — loaders
+   * always use the real /logo.png mark so it matches the header.
    */
   orbit?: boolean;
   className?: string;
 };
 
 const SIZE_MAP = {
-  sm: { mark: 36, bar: 88, stage: 120, text: "text-[10px]" },
-  md: { mark: 48, bar: 132, stage: 168, text: "text-xs" },
-  lg: { mark: 56, bar: 168, stage: 200, text: "text-sm" },
+  sm: { mark: 36, bar: 88, text: "text-[10px]" },
+  md: { mark: 56, bar: 132, text: "text-xs" },
+  lg: { mark: 72, bar: 168, text: "text-sm" },
 } as const;
 
-/** Four-dot Voronyz mark that respects tone (no PNG / black square frame). */
-function VoronyzMark({
-  size,
-  fill,
-  className = "",
-  animateDots = false,
-}: {
-  size: number;
-  fill: string;
-  className?: string;
-  animateDots?: boolean;
-}) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-      className={className}
-      style={{ background: "transparent", display: "block" }}
-    >
-      <circle
-        className={animateDots ? "logo-loader-dot logo-loader-dot--a" : undefined}
-        cx="22"
-        cy="18"
-        r="5.5"
-        fill={fill}
-      />
-      <circle
-        className={animateDots ? "logo-loader-dot logo-loader-dot--b" : undefined}
-        cx="42"
-        cy="18"
-        r="5.5"
-        fill={fill}
-      />
-      <circle
-        className={animateDots ? "logo-loader-dot logo-loader-dot--c" : undefined}
-        cx="32"
-        cy="46"
-        r="5.5"
-        fill={fill}
-      />
-      <circle
-        className={animateDots ? "logo-loader-dot logo-loader-dot--core" : undefined}
-        cx="32"
-        cy="30"
-        r="9"
-        fill={fill}
-      />
-    </svg>
-  );
+/** Site logo asset — white dots on transparent (no black square). */
+const LOGO_LIGHT = "/logo.png";
+/** Dark dots on transparent for light backgrounds. */
+const LOGO_DARK = "/logo-dark.png";
+
+function logoSrc(tone: "dark" | "light") {
+  return tone === "light" ? LOGO_LIGHT : LOGO_DARK;
 }
 
-/** Animated Voronyz logo mark with a flowing progress bar. */
+/** Animated Voronyz logo (same /logo.png as the header) with a flowing progress bar. */
 export default function LogoLoader({
   size = "md",
   label,
   showBar = true,
   tone = "dark",
-  orbit,
   className = "",
 }: LogoLoaderProps) {
   const dims = SIZE_MAP[size];
   const fill = tone === "light" ? "#ffffff" : "#0e0e0e";
   const barTrack = tone === "light" ? "rgba(255,255,255,0.18)" : "rgba(14,14,14,0.1)";
   const labelColor = tone === "light" ? "text-white/70" : "text-neutral-500";
-  const wordmarkColor = tone === "light" ? "text-white/85" : "text-neutral-800";
-  // Compact overlays stay as a simple mark; page loaders get the orbit stage.
-  const useOrbit = orbit ?? size !== "sm";
-
-  // Randomize orbit speed / direction slightly so each load feels lively.
-  const [orbitVars, setOrbitVars] = useState({
-    duration: 0.85,
-    bounce: 0.55,
-    reverse: false,
-    radius: 42,
-  });
-
-  useEffect(() => {
-    if (!useOrbit) return;
-
-    const roll = () => {
-      setOrbitVars({
-        duration: 0.55 + Math.random() * 0.55,
-        bounce: 0.35 + Math.random() * 0.45,
-        reverse: Math.random() > 0.5,
-        radius: 34 + Math.random() * 18,
-      });
-    };
-
-    roll();
-    const id = window.setInterval(roll, 900 + Math.random() * 700);
-    return () => window.clearInterval(id);
-  }, [useOrbit]);
-
-  const orbitStyle = {
-    "--logo-orbit-duration": `${orbitVars.duration}s`,
-    "--logo-bounce-duration": `${orbitVars.bounce}s`,
-    "--logo-orbit-radius": `${orbitVars.radius}px`,
-  } as CSSProperties;
 
   return (
     <div
-      className={`flex flex-col items-center justify-center gap-4 ${className}`}
+      className={`flex flex-col items-center justify-center gap-4 bg-transparent ${className}`}
       role="status"
       aria-live="polite"
       aria-label={label || "Loading"}
+      style={{ background: "transparent" }}
     >
-      {useOrbit ? (
-        <div
-          className="logo-loader-stage relative flex items-center justify-center bg-transparent"
-          style={{ width: dims.stage, height: dims.stage, background: "transparent" }}
-        >
-          <p
-            className={`logo-loader-wordmark pointer-events-none z-[1] select-none font-semibold tracking-[0.28em] uppercase ${dims.text} ${wordmarkColor}`}
-          >
-            Voronyz
-          </p>
-          <div
-            className={`logo-loader-orbit absolute inset-0 ${orbitVars.reverse ? "logo-loader-orbit-reverse" : ""}`}
-            style={orbitStyle}
-            aria-hidden="true"
-          >
-            {/* Radius + bounce live on this wrapper so the mark can spin freely */}
-            <div className="logo-loader-orbit-arm">
-              <VoronyzMark
-                size={dims.mark}
-                fill={fill}
-                className="logo-loader-mark-spin"
-              />
-            </div>
-          </div>
-        </div>
-      ) : (
-        <VoronyzMark
-          size={dims.mark}
-          fill={fill}
-          className="logo-loader-mark"
-          animateDots
-        />
-      )}
+      <Image
+        src={logoSrc(tone)}
+        alt=""
+        width={dims.mark}
+        height={dims.mark}
+        aria-hidden="true"
+        className="logo-loader-mark bg-transparent"
+        style={{ background: "transparent", display: "block" }}
+        priority
+      />
 
       {showBar && (
         <div
@@ -197,22 +94,27 @@ type LogoMarkProps = {
   className?: string;
   /** Soft pulse for image placeholders */
   animate?: boolean;
+  priority?: boolean;
 };
 
-/** Compact static/pulsing logo mark for image placeholders and overlays. */
+/** Compact site logo mark for header, placeholders, and overlays. */
 export function LogoMark({
   size = 28,
   tone = "dark",
   className = "",
   animate = true,
+  priority = false,
 }: LogoMarkProps) {
-  const fill = tone === "light" ? "#ffffff" : "#0e0e0e";
   return (
-    <VoronyzMark
-      size={size}
-      fill={fill}
-      className={`${animate ? "logo-loader-mark" : ""} ${className}`}
-      animateDots={animate}
+    <Image
+      src={logoSrc(tone)}
+      alt=""
+      width={size}
+      height={size}
+      aria-hidden="true"
+      priority={priority}
+      className={`bg-transparent ${animate ? "logo-loader-mark" : ""} ${className}`}
+      style={{ background: "transparent", display: "block" }}
     />
   );
 }
