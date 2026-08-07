@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { OrderDetails, OrderSuccessContent } from "@/app/checkout/success/OrderSuccessContent";
 
@@ -137,8 +138,12 @@ export default function ClientSuccess() {
               Please contact support with your session ID above, and we&apos;ll help you confirm your order.
             </p>
             <div className="flex gap-4 justify-center">
-              <a href="/cart" className="underline text-neutral-700 hover:text-neutral-900">Go back to cart</a>
-              <a href="/contact" className="underline text-neutral-700 hover:text-neutral-900">Contact support</a>
+              <Link href="/cart" className="underline text-neutral-700 hover:text-neutral-900">
+                Go back to cart
+              </Link>
+              <Link href="/contact" className="underline text-neutral-700 hover:text-neutral-900">
+                Contact support
+              </Link>
               {canRetry && (
                 <button
                   type="button"
@@ -154,8 +159,6 @@ export default function ClientSuccess() {
       </div>
     );
   }
-
-  const { order: details } = order;
 
   return (
     <OrderSuccessContent
