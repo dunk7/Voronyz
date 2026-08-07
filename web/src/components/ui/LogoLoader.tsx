@@ -25,7 +25,7 @@ const SIZE_MAP = {
   lg: { mark: 56, bar: 168, stage: 200, text: "text-sm" },
 } as const;
 
-/** Four-dot Voronyz mark that respects tone (no white-on-white PNG square). */
+/** Four-dot Voronyz mark that respects tone (no PNG square frame). */
 function VoronyzMark({
   size,
   fill,
