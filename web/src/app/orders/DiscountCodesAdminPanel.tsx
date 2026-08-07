@@ -15,6 +15,7 @@ import {
 } from "@/lib/orderTypes";
 import {
   buildInfluencerDiscountUrl,
+  getInfluencerLinkForCode,
   INFLUENCER_DISCOUNT_LINKS,
 } from "@/lib/influencerLinks";
 
@@ -28,6 +29,8 @@ type DiscountLinkMeta = {
   code: string;
   clicks: number;
   autoApplyUrl: string | null;
+  influencerSlug?: string | null;
+  influencerLabel?: string | null;
 };
 
 function formatDate(iso: string) {
@@ -75,12 +78,20 @@ type DiscountGroup = {
   totalCents: number;
   clicks: number;
   autoApplyUrl: string | null;
+  influencerSlug: string | null;
+  influencerLabel: string | null;
 };
 
 function fallbackAutoApplyUrl(code: string): string {
+  const influencer = getInfluencerLinkForCode(code);
+  if (influencer) return buildInfluencerDiscountUrl(influencer.slug);
   const origin =
     typeof window !== "undefined" ? window.location.origin : "https://voronyz.com";
   return `${origin.replace(/\/$/, "")}/${code}`;
+}
+
+function usesLabel(count: number): string {
+  return count === 0 ? "0 used" : `${count} used`;
 }
 
 function CopyLinkButton({ text, label }: { text: string; label?: string }) {
@@ -136,6 +147,7 @@ function InfluencerLinksPanel() {
             <tr className="border-b border-black/10 text-xs uppercase tracking-[0.14em] text-neutral-500">
               <th className="py-2 pr-4 font-medium">Influencer</th>
               <th className="py-2 pr-4 font-medium">Code</th>
+              <th className="py-2 pr-4 font-medium">Status</th>
               <th className="py-2 pr-4 font-medium">Bio link</th>
               <th className="py-2 font-medium">Copy</th>
             </tr>
@@ -154,6 +166,11 @@ function InfluencerLinksPanel() {
                   <td className="py-3 pr-4">
                     <span className="inline-flex rounded-md bg-neutral-100 px-2 py-1 font-mono text-xs font-semibold uppercase tracking-wide text-neutral-800">
                       {link.code}
+                    </span>
+                  </td>
+                  <td className="py-3 pr-4">
+                    <span className="inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800 ring-1 ring-emerald-200">
+                      Live
                     </span>
                   </td>
                   <td className="py-3 pr-4">
@@ -216,10 +233,13 @@ export default function DiscountCodesAdminPanel({
       // Fall back to known codes with zero clicks so the admin can still copy links.
       const next: Record<string, DiscountLinkMeta> = {};
       for (const code of VALID_DISCOUNT_CODES) {
+        const influencer = getInfluencerLinkForCode(code);
         next[code] = {
           code,
           clicks: 0,
           autoApplyUrl: fallbackAutoApplyUrl(code),
+          influencerSlug: influencer?.slug ?? null,
+          influencerLabel: influencer?.label ?? null,
         };
       }
       setLinkMetaByCode(next);
@@ -248,6 +268,7 @@ export default function DiscountCodesAdminPanel({
 
     for (const code of VALID_DISCOUNT_CODES) {
       const meta = linkMetaByCode[code];
+      const influencer = getInfluencerLinkForCode(code);
       map.set(code, {
         code,
         description: getDiscountCodeDescription(code),
@@ -256,6 +277,8 @@ export default function DiscountCodesAdminPanel({
         totalCents: 0,
         clicks: meta?.clicks ?? 0,
         autoApplyUrl: meta?.autoApplyUrl ?? fallbackAutoApplyUrl(code),
+        influencerSlug: meta?.influencerSlug ?? influencer?.slug ?? null,
+        influencerLabel: meta?.influencerLabel ?? influencer?.label ?? null,
       });
     }
 
@@ -266,6 +289,7 @@ export default function DiscountCodesAdminPanel({
       const existing = map.get(code);
       const itemCount = order.lineItems.reduce((sum, item) => sum + item.quantity, 0);
       const meta = linkMetaByCode[code];
+      const influencer = getInfluencerLinkForCode(code);
 
       if (existing) {
         existing.orders.push(order);
@@ -280,6 +304,8 @@ export default function DiscountCodesAdminPanel({
           totalCents: order.totalCents,
           clicks: meta?.clicks ?? 0,
           autoApplyUrl: meta?.autoApplyUrl ?? fallbackAutoApplyUrl(code),
+          influencerSlug: meta?.influencerSlug ?? influencer?.slug ?? null,
+          influencerLabel: meta?.influencerLabel ?? influencer?.label ?? null,
         });
       }
     }
@@ -290,10 +316,24 @@ export default function DiscountCodesAdminPanel({
       if (meta) {
         group.clicks = meta.clicks;
         group.autoApplyUrl = meta.autoApplyUrl ?? group.autoApplyUrl;
+        if (meta.influencerSlug !== undefined) {
+          group.influencerSlug = meta.influencerSlug ?? group.influencerSlug;
+        }
+        if (meta.influencerLabel !== undefined) {
+          group.influencerLabel = meta.influencerLabel ?? group.influencerLabel;
+        }
       }
     }
 
-    return Array.from(map.values()).sort((a, b) => a.code.localeCompare(b.code));
+    // Prefer influencer codes (Aryan first), then alphabetical — unused codes stay visible.
+    return Array.from(map.values()).sort((a, b) => {
+      if (a.code === "aryan50") return -1;
+      if (b.code === "aryan50") return 1;
+      const aInf = a.influencerSlug ? 0 : 1;
+      const bInf = b.influencerSlug ? 0 : 1;
+      if (aInf !== bInf) return aInf - bInf;
+      return a.code.localeCompare(b.code);
+    });
   }, [discountedOrders, linkMetaByCode]);
 
   const selectedGroup = useMemo(
@@ -371,8 +411,9 @@ export default function DiscountCodesAdminPanel({
           <div>
             <h2 className="text-base font-semibold">Discount codes</h2>
             <p className="text-sm text-neutral-500">
-              Click a code to copy its auto-apply link for influencer bios. Uses still
-              track from paid orders.
+              Every live code is listed here — including ones with{" "}
+              <span className="font-medium text-neutral-700">0 used</span>. Click a
+              code to copy its influencer short link.
             </p>
           </div>
           <div className="relative w-full sm:w-72">
@@ -438,7 +479,7 @@ export default function DiscountCodesAdminPanel({
                     : "bg-white text-neutral-600"
                 }`}
               >
-                {group.orders.length}
+                {usesLabel(group.orders.length)}
               </span>
             </button>
           ))}
@@ -449,8 +490,13 @@ export default function DiscountCodesAdminPanel({
             <div className="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 space-y-2">
               <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-amber-950">
                 <Link2 className="h-4 w-4 shrink-0" />
-                Auto-apply link for{" "}
+                {selectedGroup.influencerSlug
+                  ? `Influencer short link for `
+                  : `Auto-apply link for `}
                 <span className="font-mono">{selectedGroup.code}</span>
+                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800">
+                  Live
+                </span>
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
@@ -484,23 +530,29 @@ export default function DiscountCodesAdminPanel({
                 </button>
               </div>
               <p className="text-xs text-amber-900/80">
-                Send this to the influencer for their bio. Visiting it auto-applies the
-                code and opens the store.
+                {selectedGroup.orders.length === 0
+                  ? "This code is live with 0 used so far — share the link now. Orders will show up here when someone checks out with it."
+                  : "Send this to the influencer for their bio. Visiting it auto-applies the code and opens the store."}
               </p>
             </div>
 
             <div className="flex flex-wrap gap-4 text-sm text-neutral-600">
               <p>
+                <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-800 ring-1 ring-emerald-200">
+                  Live
+                </span>
+              </p>
+              <p>
                 <span className="font-medium text-neutral-800">Deal:</span>{" "}
                 {selectedGroup.description}
               </p>
               <p>
-                <span className="font-medium text-neutral-800">Clicks:</span>{" "}
-                {selectedGroup.clicks}
+                <span className="font-medium text-neutral-800">Uses:</span>{" "}
+                {usesLabel(selectedGroup.orders.length)}
               </p>
               <p>
-                <span className="font-medium text-neutral-800">Orders (uses):</span>{" "}
-                {selectedGroup.orders.length}
+                <span className="font-medium text-neutral-800">Clicks:</span>{" "}
+                {selectedGroup.clicks}
               </p>
               <p>
                 <span className="font-medium text-neutral-800">Items:</span>{" "}
@@ -510,6 +562,15 @@ export default function DiscountCodesAdminPanel({
                 <span className="font-medium text-neutral-800">Revenue:</span>{" "}
                 {formatCentsAsCurrency(selectedGroup.totalCents, "usd")}
               </p>
+              {selectedGroup.influencerSlug ? (
+                <p>
+                  <span className="font-medium text-neutral-800">Bio path:</span>{" "}
+                  /{selectedGroup.influencerSlug}
+                  {selectedGroup.influencerLabel
+                    ? ` · ${selectedGroup.influencerLabel}`
+                    : ""}
+                </p>
+              ) : null}
             </div>
           </div>
         ) : (
@@ -524,11 +585,16 @@ export default function DiscountCodesAdminPanel({
                 }}
                 className="rounded-xl border border-black/5 bg-neutral-50 px-4 py-3 text-left hover:bg-neutral-100 transition-colors"
               >
-                <p className="font-mono text-sm font-semibold">{group.code}</p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-mono text-sm font-semibold">{group.code}</p>
+                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800 ring-1 ring-emerald-200">
+                    Live
+                  </span>
+                </div>
                 <p className="text-xs text-neutral-600 mt-1">{group.description}</p>
                 <p className="text-xs text-neutral-500 mt-1">
-                  {group.clicks} click{group.clicks === 1 ? "" : "s"} ·{" "}
-                  {group.orders.length} order{group.orders.length === 1 ? "" : "s"} ·{" "}
+                  {usesLabel(group.orders.length)} · {group.clicks} click
+                  {group.clicks === 1 ? "" : "s"} ·{" "}
                   {formatCentsAsCurrency(group.totalCents, "usd")}
                 </p>
                 <p className="text-[11px] text-neutral-400 mt-1 truncate font-mono">
@@ -547,8 +613,21 @@ export default function DiscountCodesAdminPanel({
             <>
               <p className="font-medium text-neutral-700">No discount code orders yet</p>
               <p className="text-sm mt-1">
-                All active codes (including aryan50) are listed above. Click a code to
-                copy its auto-apply link. Orders that use a code will show up here.
+                Codes are live even at{" "}
+                <span className="font-medium text-neutral-800">0 used</span>. Open{" "}
+                <span className="font-mono text-neutral-800">aryan50</span> above to
+                copy Aryan&apos;s short link (
+                <span className="font-mono text-neutral-800">voronyz.com/aryan</span>).
+              </p>
+            </>
+          ) : selectedCode !== "all" && selectedGroup && selectedGroup.orders.length === 0 ? (
+            <>
+              <p className="font-medium text-neutral-700">
+                <span className="font-mono">{selectedGroup.code}</span> is live · 0 used
+              </p>
+              <p className="text-sm mt-1">
+                No orders have used this code yet. The short link above is ready to
+                share with the influencer.
               </p>
             </>
           ) : (
