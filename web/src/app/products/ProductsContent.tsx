@@ -5,13 +5,21 @@ import { formatCentsAsCurrency } from "@/lib/money";
 import { MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
 import { filterAccessoryProducts, filterFootwearProducts, filterHealthProducts } from "@/lib/productCategories";
 import { getFootwearCatalogSeed, type FootwearListProduct } from "@/lib/footwear";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 import { GATORS_SLUG } from "@/lib/gators";
 import { FILAMENT_SLUG, getAccessoryCatalogSeed } from "@/lib/filament";
 import { LATTICE_INSOLES_SLUG } from "@/lib/latticeInsoles";
+import {
+  APPAREL_CATALOG,
+  APPAREL_COLLECTION_SUBCATEGORIES,
+  getStandaloneApparelItems,
+} from "@/lib/apparel";
+import ApparelProductGrid, {
+  type ApparelGridProduct,
+} from "@/components/apparel/ApparelProductGrid";
 
 type Product = FootwearListProduct;
 
@@ -185,6 +193,28 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
       : category === "health"
         ? "View Collaborative"
         : "View all products";
+
+  const showApparelContinuation = category === "footwear" && !searchQuery;
+
+  const apparelContinuationProducts = useMemo((): ApparelGridProduct[] => {
+    if (!showApparelContinuation) return [];
+    const collections = APPAREL_CATALOG.filter((item) =>
+      APPAREL_COLLECTION_SUBCATEGORIES.some((sub) => sub.id === item.subcategory),
+    );
+    const accessories = getStandaloneApparelItems();
+    return [...collections, ...accessories].map((item) => ({
+      id: `catalog-${item.slug}`,
+      slug: item.slug,
+      name: item.name,
+      description: item.description,
+      priceCents: item.priceCents,
+      currency: "usd",
+      cover: item.image,
+      colors: item.colors,
+      sizes: item.sizes,
+      subcategory: item.subcategory,
+    }));
+  }, [showApparelContinuation]);
 
   /* ── Logo loader only when we have nothing to show yet ── */
   if (loading && products.length === 0) {
@@ -431,6 +461,41 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
               );
             })}
           </div>
+        )}
+
+        {/* ── Continues into Apparel after footwear ── */}
+        {showApparelContinuation && apparelContinuationProducts.length > 0 && (
+          <section
+            id="apparel"
+            aria-labelledby="footwear-apparel-heading"
+            className="mt-24 sm:mt-32 lg:mt-40"
+          >
+            <div className="mb-10 sm:mb-14 border-t border-neutral-200 pt-16 sm:pt-20 lg:pt-24">
+              <p className="text-[11px] sm:text-xs uppercase tracking-[0.4em] text-neutral-400 mb-4 sm:mb-6">
+                Next section
+              </p>
+              <h2
+                id="footwear-apparel-heading"
+                className="text-6xl sm:text-8xl lg:text-[7.5rem] xl:text-[9rem] font-semibold tracking-[-0.04em] leading-[0.85] text-neutral-900"
+              >
+                Apparel
+              </h2>
+              <div className="mt-6 sm:mt-8 flex flex-wrap items-end justify-between gap-4">
+                <p className="max-w-lg text-sm sm:text-base text-neutral-500 leading-relaxed">
+                  Built different people need built different apparel — shirts, layers,
+                  and accessories continue below.
+                </p>
+                <Link
+                  href="/apparel"
+                  className="text-sm font-medium text-neutral-900 underline underline-offset-4 hover:no-underline shrink-0"
+                >
+                  Browse full Apparel →
+                </Link>
+              </div>
+            </div>
+
+            <ApparelProductGrid products={apparelContinuationProducts} />
+          </section>
         )}
       </div>
     </div>
