@@ -1,6 +1,6 @@
-/** Optional shipping insurance: $25 per shipped item. */
+/** Optional shipping insurance: $20 per shipped item. */
 
-export const SHIPPING_INSURANCE_CENTS_PER_ITEM = 2500;
+export const SHIPPING_INSURANCE_CENTS_PER_ITEM = 2000;
 
 export const SHIPPING_INSURANCE_PRODUCT_NAME = "Shipping Insurance";
 
@@ -35,7 +35,7 @@ export function cartHasInsurableItems(items: InsurableCartItem[]): boolean {
   return getInsurableItemQuantity(items) > 0;
 }
 
-/** Cost in cents when insurance is selected ($25 × insurable quantity). */
+/** Cost in cents when insurance is selected ($20 × insurable quantity). */
 export function getShippingInsuranceCents(items: InsurableCartItem[]): number {
   return getInsurableItemQuantity(items) * SHIPPING_INSURANCE_CENTS_PER_ITEM;
 }
