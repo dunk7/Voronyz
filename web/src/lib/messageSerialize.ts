@@ -82,7 +82,11 @@ export function serializeConversationPreview(
     };
   }
 
-  const other = otherMembers[0];
+  // Self-DM (notes to self): only the current user is a member.
+  const self = row.members
+    .map((m) => m.user)
+    .find((u) => u.id === currentUserId);
+  const other = otherMembers[0] ?? self;
   return {
     id: row.id,
     isGroup: false as const,

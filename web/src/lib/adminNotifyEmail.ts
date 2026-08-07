@@ -181,7 +181,11 @@ async function sendOrderPaidEmail(order: Order): Promise<boolean> {
     parsed.paymentMethod === "nano" ||
     order.stripeId?.startsWith("nano_")
       ? "Nano (XNO)"
-      : "Stripe";
+      : parsed.paymentMethod === "ach"
+        ? "ACH (bank transfer)"
+        : parsed.paymentMethod === "card"
+          ? "Card"
+          : "Stripe";
 
   const lines = [
     `New ${orderKind} ${orderNumber}`,
