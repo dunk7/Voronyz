@@ -7,6 +7,14 @@ import {
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
 import { cartHasPreOrder, resolveIsPreOrder } from "@/lib/preorder";
+import {
+  buildShippingInsuranceLineItem,
+  getInsurableItemQuantity,
+  getShippingInsuranceCents,
+  isShippingInsuranceRequested,
+  SHIPPING_INSURANCE_DESCRIPTION,
+  SHIPPING_INSURANCE_PRODUCT_NAME,
+} from "@/lib/shippingInsurance";
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -27,8 +35,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { items, discountCode, successUrl, cancelUrl, paymentMethod: rawPaymentMethod } =
-    requestBody;
+  const {
+    items,
+    discountCode,
+    shippingInsurance,
+    successUrl,
+    cancelUrl,
+    paymentMethod: rawPaymentMethod,
+  } = requestBody;
   // ACH is the default / expected method; card is an opt-in alternate.
   const paymentMethod =
     rawPaymentMethod === "card" || rawPaymentMethod === "ach"
@@ -128,14 +142,7 @@ export async function POST(request: NextRequest) {
         const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
         const genderLabel = item.gender === "men" ? "Men's" : item.gender === "women" ? "Women's" : item.gender === "kids" ? "Kids'" : "";
-        const isGunHolster = productSlug === "gun-holster" || (item.productSlug || "") === "gun-holster";
         const sizeLabel = item.size ? `${item.size}${genderLabel ? ` (${genderLabel})` : ''}` : 'N/A';
-        const carryLabel =
-          item.size === "IWB"
-            ? "IWB — Inside the Waistband"
-            : item.size === "OWB"
-              ? "OWB — Outside the Waistband"
-              : item.size || "OWB";
         const fulfillmentLabel = item.fulfillment === 'pickup' ? ' — Magikid Lab pickup' : '';
         const studentLabel = item.studentName?.trim() ? ` — Student: ${item.studentName.trim()}` : '';
         const isPreOrder = resolveIsPreOrder({
@@ -144,9 +151,9 @@ export async function POST(request: NextRequest) {
         });
         const preOrderLabel = isPreOrder ? "Pre-order: " : "";
         const productName = variant 
-          ? `${preOrderLabel}${variant.product.name} - ${capitalize(variant.color)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''}${isGunHolster ? ` · ${carryLabel}` : ` size ${sizeLabel}`}${fulfillmentLabel}${studentLabel}`
+          ? `${preOrderLabel}${variant.product.name} - ${capitalize(variant.color)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}${fulfillmentLabel}${studentLabel}`
           : (item.productName && item.variantName 
-            ? `${preOrderLabel}${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''}${isGunHolster ? ` · ${carryLabel}` : ` size ${sizeLabel}`}${fulfillmentLabel}${studentLabel}`
+            ? `${preOrderLabel}${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}${fulfillmentLabel}${studentLabel}`
             : `Product Variant ${item.variantId || 'unknown'}`);
 
         console.log(`Generated line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);
@@ -193,14 +200,7 @@ export async function POST(request: NextRequest) {
         const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
         const genderLabel = item.gender === "men" ? "Men's" : item.gender === "women" ? "Women's" : item.gender === "kids" ? "Kids'" : "";
-        const isGunHolster = fallbackSlug === "gun-holster";
         const sizeLabel = item.size ? `${item.size}${genderLabel ? ` (${genderLabel})` : ''}` : 'N/A';
-        const carryLabel =
-          item.size === "IWB"
-            ? "IWB — Inside the Waistband"
-            : item.size === "OWB"
-              ? "OWB — Outside the Waistband"
-              : item.size || "OWB";
         const fulfillmentLabel = item.fulfillment === 'pickup' ? ' — Magikid Lab pickup' : '';
         const studentLabel = item.studentName?.trim() ? ` — Student: ${item.studentName.trim()}` : '';
         const isPreOrder = resolveIsPreOrder({
@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
         });
         const preOrderLabel = isPreOrder ? "Pre-order: " : "";
         const productName = item.productName && item.variantName
-          ? `${preOrderLabel}${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''}${isGunHolster ? ` · ${carryLabel}` : ` size ${sizeLabel}`}${fulfillmentLabel}${studentLabel}`
+          ? `${preOrderLabel}${item.productName} - ${capitalize(item.variantName)}${item.secondaryColor ? ` with ${capitalize(item.secondaryColor)}` : ''} size ${sizeLabel}${fulfillmentLabel}${studentLabel}`
           : `Product Variant ${item.variantId || 'unknown'}`;
 
         console.log(`Fallback line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);
@@ -238,6 +238,25 @@ export async function POST(request: NextRequest) {
     console.log('Creating Stripe session with line items:', lineItems);
     const hasPickupOnly = items.every((item: { fulfillment?: string }) => item.fulfillment === 'pickup');
     const hasPreOrder = cartHasPreOrder(items);
+    const insuranceQty = getInsurableItemQuantity(items);
+    const wantsInsurance =
+      isShippingInsuranceRequested(shippingInsurance) && insuranceQty > 0;
+    const insuranceCents = wantsInsurance ? getShippingInsuranceCents(items) : 0;
+
+    if (wantsInsurance) {
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: SHIPPING_INSURANCE_PRODUCT_NAME,
+            description: SHIPPING_INSURANCE_DESCRIPTION,
+          },
+          unit_amount: buildShippingInsuranceLineItem(1).unitCents,
+        },
+        quantity: insuranceQty,
+      });
+    }
+
     const isAch = paymentMethod === "ach";
     const session = await stripe.checkout.sessions.create({
       // Explicit method types so cart can lead with ACH and offer card as a secondary path.
@@ -274,6 +293,11 @@ export async function POST(request: NextRequest) {
         ...(discountCode && { discountCode }),
         ...(hasPickupOnly && { fulfillment: 'pickup' }),
         ...(hasPreOrder && { hasPreOrder: 'true' }),
+        ...(wantsInsurance && {
+          shippingInsurance: 'true',
+          shippingInsuranceCents: String(insuranceCents),
+          shippingInsuranceQuantity: String(insuranceQty),
+        }),
         cartItems: JSON.stringify(
           items.map((item: {
             isPreOrder?: boolean;

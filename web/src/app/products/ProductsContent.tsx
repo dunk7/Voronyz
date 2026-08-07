@@ -9,7 +9,9 @@ import { useEffect, useState, useCallback } from "react";
 import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
+import { GATORS_SLUG } from "@/lib/gators";
 import { FILAMENT_SLUG, getAccessoryCatalogSeed } from "@/lib/filament";
+import { LATTICE_INSOLES_SLUG } from "@/lib/latticeInsoles";
 
 type Product = FootwearListProduct;
 
@@ -24,7 +26,6 @@ const productMeta: Record<string, {
     altImage: "/products/v3-slides/InShot_20260212_193956953.jpg",
   },
   dragonfly: {
-    tag: "Sneakers",
     altImage: "/products/dragonfly/InShot_20260212_153903491.jpg",
   },
   "slip-ons": {
@@ -32,11 +33,8 @@ const productMeta: Record<string, {
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
   "magikid-shoes": {
-    tag: "Slip-ons",
+    tag: "Kids",
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
-  },
-  "gun-holster": {
-    tag: "Engineering",
   },
   "tpu-90a-filament": {
     tag: "Filament",
@@ -44,6 +42,9 @@ const productMeta: Record<string, {
   },
   "antioxidant-trail-mix": {
     tag: "Collaborative",
+  },
+  [LATTICE_INSOLES_SLUG]: {
+    tag: "Insoles",
   },
 };
 
@@ -58,13 +59,13 @@ function cardMetaForSlug(slug: string) {
       return productMeta["slip-ons"];
     case "magikid-shoes":
       return productMeta["magikid-shoes"];
-    case "gun-holster":
-      return productMeta["gun-holster"];
     case FILAMENT_SLUG:
     case "tpu-90a-filament":
       return productMeta["tpu-90a-filament"];
     case "antioxidant-trail-mix":
       return productMeta["antioxidant-trail-mix"];
+    case LATTICE_INSOLES_SLUG:
+      return productMeta[LATTICE_INSOLES_SLUG];
     default:
       return productMeta[s] as (typeof productMeta)["v3-slides"] | undefined;
   }
@@ -77,8 +78,8 @@ type ProductsContentProps = {
 
 function categorySeed(category: ProductsContentProps["category"]): Product[] {
   if (category === "footwear") return getFootwearCatalogSeed();
-  if (category === "health") return getHealthCatalogSeed();
   if (category === "accessories") return getAccessoryCatalogSeed();
+  if (category === "health") return getHealthCatalogSeed();
   return [];
 }
 
@@ -106,7 +107,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
     const controller = new AbortController();
 
     async function fetchProducts() {
-      // Seed footwear / Collaborative immediately so the grid never goes empty behind the logo loader.
+      // Seed footwear / Engineering / Collaborative immediately so the grid never goes empty behind the logo loader.
       if (!searchQuery) {
         const seed = categorySeed(category);
         if (seed.length > 0) setProducts(seed);
@@ -168,7 +169,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
       : "All Footwear";
   const subheading =
     category === "accessories"
-      ? "Engineered gear and materials — holsters, filament, made for makers."
+      ? "Engineered materials — TPU-90A filament, made for makers."
       : category === "health"
       ? "Helping the small businesses we support and stand for grow and be seen on the Voronyz marketplace."
       : "3D-printed, scan-calibrated footwear — engineered for comfort, built to last.";
@@ -331,7 +332,17 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                           New
                         </span>
                       )}
+                      {slugKey === GATORS_SLUG && (
+                        <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
+                          New Listing
+                        </span>
+                      )}
                       {slugKey === FILAMENT_SLUG && (
+                        <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
+                          New Listing
+                        </span>
+                      )}
+                      {slugKey === LATTICE_INSOLES_SLUG && (
                         <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
                           New Listing
                         </span>
@@ -393,6 +404,10 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                       ) : slugKey === FILAMENT_SLUG ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-0.5 text-[11px] text-neutral-500">
                           1kg spool · in stock
+                        </span>
+                      ) : slugKey === LATTICE_INSOLES_SLUG ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-0.5 text-[11px] text-neutral-500">
+                          S–XL · in stock
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-0.5 text-[11px] text-neutral-500">

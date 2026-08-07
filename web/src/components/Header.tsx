@@ -271,9 +271,7 @@ export default function Header() {
     <>
       {routeLoading && (
         <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-neutral-900/90 border border-white/15 rounded-2xl px-8 py-6 shadow-2xl">
-            <LogoLoader size="md" tone="light" label="Loading" />
-          </div>
+          <LogoLoader size="md" tone="light" label="Loading" />
         </div>
       )}
       <header className={`sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/70 bg-neutral-950/80 border-b border-white/10 transition-transform duration-300 ${hide ? "-translate-y-full" : "translate-y-0"}`}>
@@ -326,6 +324,13 @@ export default function Header() {
               >
                 <span>About</span>
                 <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname === "/about" ? "opacity-100" : "opacity-0"}`} aria-hidden />
+              </Link>
+              <Link
+                href="/quiz"
+                className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/quiz") ? "text-white" : "text-white/70"}`}
+              >
+                <span>Take the Quiz</span>
+                <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/quiz") ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
             </nav>
           </div>
@@ -573,6 +578,20 @@ export default function Header() {
                     <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
                   )}
                   About
+                </Link>
+                <Link
+                  href="/quiz"
+                  className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
+                    pathname?.startsWith("/quiz")
+                      ? "text-white bg-white/10"
+                      : "text-white/70 hover:text-white hover:bg-white/[.06]"
+                  }`}
+                  onClick={() => setOpen(false)}
+                >
+                  {pathname?.startsWith("/quiz") && (
+                    <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
+                  )}
+                  Take the Quiz
                 </Link>
                 <div className="my-2 h-px bg-white/10" />
                 <Link
