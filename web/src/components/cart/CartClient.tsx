@@ -439,29 +439,58 @@ export default function CartClient() {
           </div>
         )}
         {canOfferShippingInsurance && (
-          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-black/10 bg-white p-4 hover:bg-neutral-50 transition-colors">
-            <input
-              type="checkbox"
-              checked={shippingInsurance}
-              onChange={(e) => toggleShippingInsurance(e.target.checked)}
-              className="mt-1 h-4 w-4 rounded border-black/20 text-neutral-900 focus:ring-black/20"
-              aria-describedby="shipping-insurance-help"
-            />
-            <span className="min-w-0 flex-1">
-              <span className="flex items-start justify-between gap-3">
-                <span className="text-sm font-medium text-neutral-900">Add shipping insurance</span>
-                <span className="shrink-0 text-sm font-semibold text-neutral-900">
+          <button
+            type="button"
+            onClick={() => toggleShippingInsurance(!shippingInsurance)}
+            aria-pressed={shippingInsurance}
+            aria-describedby="shipping-insurance-help"
+            className={`w-full rounded-2xl border-2 px-5 py-5 text-left transition-all active:scale-[0.99] ${
+              shippingInsurance
+                ? "border-neutral-900 bg-neutral-900 text-white shadow-md"
+                : "border-neutral-900/15 bg-white text-neutral-900 hover:border-neutral-900/40 hover:bg-neutral-50"
+            }`}
+          >
+            <span className="flex items-center justify-between gap-4">
+              <span className="min-w-0">
+                <span className="block text-lg font-semibold tracking-tight sm:text-xl">
+                  {shippingInsurance ? "Shipping insurance added" : "Add shipping insurance"}
+                </span>
+                <span
+                  id="shipping-insurance-help"
+                  className={`mt-1.5 block text-sm leading-snug sm:text-base ${
+                    shippingInsurance ? "text-white/75" : "text-neutral-600"
+                  }`}
+                >
+                  {SHIPPING_INSURANCE_DESCRIPTION}
+                </span>
+              </span>
+              <span className="shrink-0 text-right">
+                <span className="block text-2xl font-bold tabular-nums sm:text-3xl">
                   {formatCentsAsCurrency(
                     getShippingInsuranceCents(items) || SHIPPING_INSURANCE_CENTS_PER_ITEM
                   )}
                 </span>
-              </span>
-              <span id="shipping-insurance-help" className="mt-1 block text-xs text-neutral-600">
-                {SHIPPING_INSURANCE_DESCRIPTION}{" "}
-                {formatCentsAsCurrency(SHIPPING_INSURANCE_CENTS_PER_ITEM)} per item.
+                <span
+                  className={`mt-1 block text-xs font-medium uppercase tracking-[0.14em] ${
+                    shippingInsurance ? "text-white/60" : "text-neutral-500"
+                  }`}
+                >
+                  {formatCentsAsCurrency(SHIPPING_INSURANCE_CENTS_PER_ITEM)} / item
+                </span>
               </span>
             </span>
-          </label>
+            <span
+              className={`mt-4 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-semibold ${
+                shippingInsurance
+                  ? "bg-white text-neutral-900"
+                  : "bg-neutral-900 text-white"
+              }`}
+            >
+              {shippingInsurance
+                ? "Tap to remove"
+                : `Tap to add · ${formatCentsAsCurrency(SHIPPING_INSURANCE_CENTS_PER_ITEM)}`}
+            </span>
+          </button>
         )}
         {/* Combined Discount and Subtotal Section */}
         <div className="rounded-xl border border-black/10 p-4 space-y-4 bg-white">
