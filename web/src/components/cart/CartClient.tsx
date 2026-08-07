@@ -9,6 +9,13 @@ import {
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
 import { resolveIsPreOrder } from "@/lib/preorder";
+import {
+  cartHasInsurableItems,
+  getShippingInsuranceCents,
+  isShippingInsuranceRequested,
+  SHIPPING_INSURANCE_CENTS_PER_ITEM,
+  SHIPPING_INSURANCE_DESCRIPTION,
+} from "@/lib/shippingInsurance";
 import Image from "next/image";
 import Link from "next/link";
 import LogoLoader from "@/components/ui/LogoLoader";
@@ -33,16 +40,20 @@ interface CartItem {
 interface CartData {
   items: CartItem[];
   discountCode: string | null;
+  shippingInsurance?: boolean;
 }
 
 export default function CartClient() {
   const [items, setItems] = useState<CartItem[]>([]);
   const [discountCode, setDiscountCode] = useState<string | null>(null);
+  const [shippingInsurance, setShippingInsurance] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [isCardCheckingOut, setIsCardCheckingOut] = useState(false);
   const [isNanoCheckingOut, setIsNanoCheckingOut] = useState(false);
+  const stripeBusy = isCheckingOut || isCardCheckingOut;
 
   const getBaseUnitPriceCents = (it: CartItem) => {
     return typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
@@ -66,9 +77,11 @@ export default function CartClient() {
           loadedItems = parsed.map((item: unknown) => ({ ...(item as CartItem) }));
           setItems(loadedItems);
           setDiscountCode(null);
-          saveCart({ items: loadedItems, discountCode: null });
+          setShippingInsurance(false);
+          saveCart({ items: loadedItems, discountCode: null, shippingInsurance: false });
         } else {
           const normalizedCode = normalizeDiscountCode(parsed.discountCode);
+          const loadedInsurance = isShippingInsuranceRequested(parsed.shippingInsurance);
           loadedItems = (parsed.items || []).map((it) => {
             // Migrate to always have a base unit price.
             const base = typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
@@ -88,8 +101,13 @@ export default function CartClient() {
           });
           setItems(loadedItems);
           setDiscountCode(normalizedCode);
+          setShippingInsurance(loadedInsurance);
           // Persist the normalized/migrated shape so pricing stays consistent.
-          saveCart({ items: loadedItems, discountCode: normalizedCode });
+          saveCart({
+            items: loadedItems,
+            discountCode: normalizedCode,
+            shippingInsurance: loadedInsurance,
+          });
         }
       }
     } catch (error) {
@@ -103,6 +121,7 @@ export default function CartClient() {
   const saveCart = (cartData: CartData) => {
     setItems(cartData.items);
     setDiscountCode(cartData.discountCode);
+    setShippingInsurance(Boolean(cartData.shippingInsurance));
     try {
       localStorage.setItem("cart", JSON.stringify(cartData));
       // Dispatch event to update cart count in header
@@ -121,7 +140,7 @@ export default function CartClient() {
         const base = getBaseUnitPriceCents(it);
         return { ...it, basePriceCents: base, priceCents: base };
       });
-      saveCart({ items: migratedItems, discountCode: normalized });
+      saveCart({ items: migratedItems, discountCode: normalized, shippingInsurance });
       setInputValue("");
       setMessage("Discount applied successfully!");
       setTimeout(clearMessage, 3000);
@@ -136,7 +155,7 @@ export default function CartClient() {
       const base = getBaseUnitPriceCents(it);
       return { ...it, basePriceCents: base, priceCents: base };
     });
-    saveCart({ items: migratedItems, discountCode: null });
+    saveCart({ items: migratedItems, discountCode: null, shippingInsurance });
     setInputValue("");
     setMessage("Discount removed.");
     setTimeout(clearMessage, 3000);
@@ -144,21 +163,98 @@ export default function CartClient() {
 
   function remove(itemId: string) {
     const newItems = items.filter(item => item.id !== itemId);
-    saveCart({ items: newItems, discountCode });
+    const nextInsurance = cartHasInsurableItems(newItems) ? shippingInsurance : false;
+    saveCart({ items: newItems, discountCode, shippingInsurance: nextInsurance });
   }
 
   function updateQuantity(itemId: string, nextQty: number) {
     const qty = Math.min(99, Math.max(1, Number(nextQty) || 1));
     const newItems = items.map((it) => (it.id === itemId ? { ...it, quantity: qty } : it));
-    saveCart({ items: newItems, discountCode });
+    saveCart({ items: newItems, discountCode, shippingInsurance });
+  }
+
+  function toggleShippingInsurance(next: boolean) {
+    saveCart({ items, discountCode, shippingInsurance: next });
   }
 
   const subtotal = items.reduce((sum, it) => {
     return sum + unitPriceForItem(it, discountCode) * it.quantity;
   }, 0);
+  const canOfferShippingInsurance = cartHasInsurableItems(items);
+  const insuranceEnabled = canOfferShippingInsurance && shippingInsurance;
+  const insuranceCents = insuranceEnabled ? getShippingInsuranceCents(items) : 0;
+  const orderTotal = subtotal + insuranceCents;
   const hasPreOrderItems = items.some((it) =>
     resolveIsPreOrder({ isPreOrder: it.isPreOrder, productSlug: it.productSlug })
   );
+
+  const buildCheckoutItems = () =>
+    items.map((item) => ({
+      variantId: item.variantId,
+      productName: item.productName,
+      variantName: item.variant?.name,
+      secondaryColor: item.attributes?.color,
+      size: item.attributes?.size,
+      gender: item.attributes?.gender,
+      fulfillment: item.attributes?.fulfillment,
+      quantity: item.quantity,
+      priceCents: unitPriceForItem(item, discountCode),
+      image: item.image,
+      productSlug: item.productSlug,
+      studentName: item.studentName,
+      isPreOrder: resolveIsPreOrder({
+        isPreOrder: item.isPreOrder,
+        productSlug: item.productSlug,
+      }),
+    }));
+
+  const startStripeCheckout = async (method: "ach" | "card") => {
+    if (stripeBusy || isNanoCheckingOut) return;
+    const setBusy = method === "ach" ? setIsCheckingOut : setIsCardCheckingOut;
+    setBusy(true);
+    try {
+      const checkoutItems = buildCheckoutItems();
+      const validationError = validateMagikidCheckoutItems(checkoutItems);
+      if (validationError) {
+        setMessage(validationError);
+        setBusy(false);
+        return;
+      }
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: checkoutItems,
+          discountCode: discountCode || "",
+          paymentMethod: method,
+          shippingInsurance: insuranceEnabled,
+          successUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/success`,
+          cancelUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/cancel`,
+        }),
+      });
+
+      if (!response.ok) {
+        const rawText = await response.text();
+        console.error("Checkout API error - Status:", response.status, "Raw response:", rawText);
+        let errorData: { error?: string } = {};
+        try {
+          errorData = JSON.parse(rawText);
+        } catch {
+          // Not JSON
+        }
+        throw new Error(
+          `Failed to create checkout session: ${errorData.error || rawText || "Unknown error"}`
+        );
+      }
+
+      const { url } = await response.json();
+      window.location.href = url;
+    } catch (error) {
+      console.error("Checkout failed:", error);
+      setBusy(false);
+      alert("Checkout failed. Please try again.");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -231,6 +327,8 @@ export default function CartClient() {
                           : it.attributes.size === "OWB"
                             ? "OWB — Outside the Waistband"
                             : String(it.attributes.size)
+                        : it.productSlug === "tpu-90a-filament"
+                          ? "1kg spool"
                         : (
                           <>
                             Size {String(it.attributes.size)}
@@ -335,6 +433,31 @@ export default function CartClient() {
             you pay now to reserve your spot. Pre-order items ship when we receive them — timing can range from a day to much longer.
           </div>
         )}
+        {canOfferShippingInsurance && (
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-black/10 bg-white p-4 hover:bg-neutral-50 transition-colors">
+            <input
+              type="checkbox"
+              checked={shippingInsurance}
+              onChange={(e) => toggleShippingInsurance(e.target.checked)}
+              className="mt-1 h-4 w-4 rounded border-black/20 text-neutral-900 focus:ring-black/20"
+              aria-describedby="shipping-insurance-help"
+            />
+            <span className="min-w-0 flex-1">
+              <span className="flex items-start justify-between gap-3">
+                <span className="text-sm font-medium text-neutral-900">Add shipping insurance</span>
+                <span className="shrink-0 text-sm font-semibold text-neutral-900">
+                  {formatCentsAsCurrency(
+                    getShippingInsuranceCents(items) || SHIPPING_INSURANCE_CENTS_PER_ITEM
+                  )}
+                </span>
+              </span>
+              <span id="shipping-insurance-help" className="mt-1 block text-xs text-neutral-600">
+                {SHIPPING_INSURANCE_DESCRIPTION}{" "}
+                {formatCentsAsCurrency(SHIPPING_INSURANCE_CENTS_PER_ITEM)} per item.
+              </span>
+            </span>
+          </label>
+        )}
         {/* Combined Discount and Subtotal Section */}
         <div className="rounded-xl border border-black/10 p-4 space-y-4 bg-white">
           {/* Discount Input */}
@@ -370,87 +493,53 @@ export default function CartClient() {
               </div>
             )}
           </div>
-          {/* Subtotal */}
-          <div className="flex items-center justify-between text-sm pt-2 border-t border-black/10">
-            <div className="text-neutral-700">Subtotal</div>
-            <div className="font-bold text-neutral-900">{formatCentsAsCurrency(subtotal)}</div>
+          {/* Totals */}
+          <div className="space-y-2 pt-2 border-t border-black/10 text-sm">
+            <div className="flex items-center justify-between">
+              <div className="text-neutral-700">Subtotal</div>
+              <div className="font-medium text-neutral-900">{formatCentsAsCurrency(subtotal)}</div>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="text-neutral-700">Shipping</div>
+              <div className="font-medium text-emerald-700">Free</div>
+            </div>
+            {insuranceEnabled && (
+              <div className="flex items-center justify-between">
+                <div className="text-neutral-700">Shipping insurance</div>
+                <div className="font-medium text-neutral-900">{formatCentsAsCurrency(insuranceCents)}</div>
+              </div>
+            )}
+            <div className="flex items-center justify-between pt-2 border-t border-black/10">
+              <div className="font-semibold text-neutral-900">Total</div>
+              <div className="font-bold text-neutral-900">{formatCentsAsCurrency(orderTotal)}</div>
+            </div>
           </div>
         </div>
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            if (isCheckingOut) return;
-
-            setIsCheckingOut(true);
-            try {
-              const checkoutItems = items.map(item => ({
-                variantId: item.variantId,
-                productName: item.productName,
-                variantName: item.variant?.name,
-                secondaryColor: item.attributes?.color,
-                size: item.attributes?.size,
-                gender: item.attributes?.gender,
-                fulfillment: item.attributes?.fulfillment,
-                quantity: item.quantity,
-                priceCents: unitPriceForItem(item, discountCode),
-                image: item.image,
-                productSlug: item.productSlug,
-                studentName: item.studentName,
-                isPreOrder: resolveIsPreOrder({
-                  isPreOrder: item.isPreOrder,
-                  productSlug: item.productSlug,
-                }),
-              }));
-              const validationError = validateMagikidCheckoutItems(checkoutItems);
-              if (validationError) {
-                setMessage(validationError);
-                setIsCheckingOut(false);
-                return;
-              }
-              console.log('Sending checkout items:', checkoutItems); // Add this log
-              const response = await fetch('/api/checkout', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  items: checkoutItems,
-                  discountCode: discountCode || '',
-                  successUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/success`,
-                  cancelUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/cancel`,
-                }),
-              });
-
-              if (!response.ok) {
-                const rawText = await response.text();
-                console.error('Checkout API error - Status:', response.status, 'Raw response:', rawText);
-                let errorData: { error?: string } = {};
-                try {
-                  errorData = JSON.parse(rawText);
-                } catch {
-                  // Not JSON, use raw text as message
-                }
-                throw new Error(`Failed to create checkout session: ${errorData.error || rawText || 'Unknown error'}`);
-              }
-
-              const { url } = await response.json();
-              window.location.href = url;
-            } catch (error) {
-              console.error('Checkout failed:', error);
-              setIsCheckingOut(false);
-              alert('Checkout failed. Please try again.');
-            }
-          }}
+        <button
+          type="button"
+          disabled={stripeBusy || isNanoCheckingOut}
+          className="w-full rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Pay with ACH bank transfer"
+          onClick={() => startStripeCheckout("ach")}
         >
-          <button
-            type="submit"
-            disabled={isCheckingOut || isNanoCheckingOut}
-            className="w-full rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Proceed to checkout"
-          >
-            {isCheckingOut ? "Processing..." : hasPreOrderItems ? "Pre-order checkout" : "Checkout"}
-          </button>
-        </form>
+          {isCheckingOut
+            ? "Processing..."
+            : hasPreOrderItems
+              ? "Pre-order with ACH"
+              : "Pay with ACH"}
+        </button>
+        <p className="text-center text-xs text-neutral-500 -mt-1">
+          Bank transfer · usually lower fees than card
+        </p>
+        <button
+          type="button"
+          disabled={stripeBusy || isNanoCheckingOut}
+          className="mx-auto block text-sm text-neutral-500 underline underline-offset-2 hover:text-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Pay with card"
+          onClick={() => startStripeCheckout("card")}
+        >
+          {isCardCheckingOut ? "Processing…" : "Pay with card"}
+        </button>
 
         {/* Nano (XNO) payment option */}
         <div className="relative flex items-center gap-2">
@@ -460,31 +549,14 @@ export default function CartClient() {
         </div>
         <button
           type="button"
-          disabled={isCheckingOut || isNanoCheckingOut}
+          disabled={stripeBusy || isNanoCheckingOut}
           className="w-full rounded-full bg-[#209CE9] text-white px-6 py-3 text-sm font-medium hover:bg-[#1a88cc] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           aria-label="Pay with Nano cryptocurrency"
           onClick={async () => {
             if (isNanoCheckingOut) return;
             setIsNanoCheckingOut(true);
             try {
-              const checkoutItems = items.map(item => ({
-                variantId: item.variantId,
-                productName: item.productName,
-                variantName: item.variant?.name,
-                secondaryColor: item.attributes?.color,
-                size: item.attributes?.size,
-                gender: item.attributes?.gender,
-                fulfillment: item.attributes?.fulfillment,
-                quantity: item.quantity,
-                priceCents: unitPriceForItem(item, discountCode),
-                image: item.image,
-                productSlug: item.productSlug,
-                studentName: item.studentName,
-                isPreOrder: resolveIsPreOrder({
-                  isPreOrder: item.isPreOrder,
-                  productSlug: item.productSlug,
-                }),
-              }));
+              const checkoutItems = buildCheckoutItems();
               const validationError = validateMagikidCheckoutItems(checkoutItems);
               if (validationError) {
                 setMessage(validationError);
@@ -498,6 +570,7 @@ export default function CartClient() {
                 body: JSON.stringify({
                   items: checkoutItems,
                   discountCode: discountCode || '',
+                  shippingInsurance: insuranceEnabled,
                 }),
               });
 

@@ -8,7 +8,7 @@ import {
 import { FOOTWEAR_SLUGS } from "@/lib/footwear";
 
 /** Product slugs in Engineering (`/accessories`) — never apparel catalog items. */
-export const ACCESSORY_SLUGS = ["gun-holster"] as const;
+export const ACCESSORY_SLUGS = ["gun-holster", "tpu-90a-filament"] as const;
 
 /** Product slugs in Collaborative (not footwear). */
 export const HEALTH_SLUGS = ["antioxidant-trail-mix"] as const;
@@ -72,7 +72,7 @@ export function filterApparelProducts<T extends { slug: string }>(products: T[])
 }
 
 /**
- * Filter apparel products to a single sub-section (shirts, hats, scarves, bottles, accessories, …).
+ * Filter apparel products to a single sub-section (shirts, scarves, accessories, …).
  * Clothing collections and Accessories are mutually exclusive by subcategory.
  */
 export function filterApparelBySubcategory<T extends { slug: string }>(
