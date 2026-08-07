@@ -58,6 +58,7 @@ export default function ContactPage() {
                   <option>General Inquiry</option>
                   <option>Product Questions</option>
                   <option>Partnership Opportunities</option>
+                  <option>Affiliate / Influencer Application</option>
                   <option>Media Inquiry</option>
                   <option>Career Opportunity</option>
                   <option>Technical Support</option>

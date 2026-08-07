@@ -18,12 +18,14 @@ import {
   Tag,
   TrendingUp,
   Upload,
+  Users,
 } from "lucide-react";
 import MagikidThumbnailPanel from "./MagikidThumbnailPanel";
 import DiscountCodesAdminPanel from "./DiscountCodesAdminPanel";
 import OrdersStatsPanel from "./OrdersStatsPanel";
 import UploadsAdminPanel from "./UploadsAdminPanel";
 import QuizResultsAdminPanel from "./QuizResultsAdminPanel";
+import AffiliatesAdminPanel from "./AffiliatesAdminPanel";
 import { formatCentsAsCurrency } from "@/lib/money";
 import { VALID_DISCOUNT_CODES } from "@/lib/discountPricing";
 import {
@@ -34,7 +36,7 @@ import {
 
 type SortKey = "date" | "price" | "name" | "status";
 type SortDir = "asc" | "desc";
-type AdminTab = "orders" | "stats" | "discounts" | "uploads" | "quiz";
+type AdminTab = "orders" | "stats" | "discounts" | "uploads" | "quiz" | "affiliates";
 type OrdersView = "open" | "completed" | "all";
 
 const MAX_ADMIN_NOTES_LENGTH = 4000;
@@ -247,6 +249,7 @@ export default function OrdersAdminClient() {
   const [tab, setTab] = useState<AdminTab>("orders");
   const [uploadsRefresh, setUploadsRefresh] = useState(0);
   const [quizRefresh, setQuizRefresh] = useState(0);
+  const [affiliatesRefresh, setAffiliatesRefresh] = useState(0);
   const [discountsRefresh, setDiscountsRefresh] = useState(0);
   const [messageEnabled, setMessageEnabled] = useState<boolean | null>(null);
   const [messageToggleSaving, setMessageToggleSaving] = useState(false);
@@ -351,6 +354,7 @@ export default function OrdersAdminClient() {
       loadOrders();
       setDiscountsRefresh((n) => n + 1);
     } else if (tab === "quiz") setQuizRefresh((n) => n + 1);
+    else if (tab === "affiliates") setAffiliatesRefresh((n) => n + 1);
     else setUploadsRefresh((n) => n + 1);
     loadMessageSetting();
   }
@@ -718,6 +722,18 @@ export default function OrdersAdminClient() {
               <BarChart3 className="h-4 w-4" />
               Quiz results
             </button>
+            <button
+              type="button"
+              onClick={() => setTab("affiliates")}
+              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
+                tab === "affiliates"
+                  ? "bg-black text-white"
+                  : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
+              }`}
+            >
+              <Users className="h-4 w-4" />
+              Affiliates
+            </button>
           </div>
         </nav>
       </header>
@@ -741,6 +757,13 @@ export default function OrdersAdminClient() {
         {tab === "quiz" ? (
           <QuizResultsAdminPanel
             refreshToken={quizRefresh}
+            onAuthLost={() => setAuthenticated(false)}
+          />
+        ) : null}
+
+        {tab === "affiliates" ? (
+          <AffiliatesAdminPanel
+            refreshToken={affiliatesRefresh}
             onAuthLost={() => setAuthenticated(false)}
           />
         ) : null}

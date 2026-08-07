@@ -1,4 +1,4 @@
-import type { Order, StlSubmission } from "@prisma/client";
+import type { AffiliateApplication, Order, StlSubmission } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
   formatShippingAddress,
@@ -120,6 +120,75 @@ async function notifyNewUploadAsync(submission: StlSubmission): Promise<void> {
     `<li><strong>ID:</strong> ${escapeHtml(submission.id)}</li>`,
     `</ul>`,
     `<p><a href="${escapeHtml(adminUrl)}">Open orders &amp; uploads admin</a></p>`,
+  ]
+    .filter(Boolean)
+    .join("");
+
+  await sendAdminEmail(subject, text, html);
+}
+
+/** Fire-and-forget affiliate application email. */
+export function notifyAffiliateApplication(application: AffiliateApplication): void {
+  void notifyAffiliateApplicationAsync(application).catch((err) => {
+    console.error("Admin notify affiliate failed:", err);
+  });
+}
+
+async function notifyAffiliateApplicationAsync(
+  application: AffiliateApplication
+): Promise<void> {
+  const adminUrl = `${siteBaseUrl()}/orders`;
+  const name = `${application.firstName} ${application.lastName}`.trim();
+
+  const lines = [
+    `New affiliate application on voronyz.com/affiliates`,
+    ``,
+    `Name: ${name}`,
+    `Email: ${application.email}`,
+    application.phone ? `Phone: ${application.phone}` : null,
+    `Platform: ${application.platform}`,
+    `Handle / URL: ${application.handleOrUrl}`,
+    `Audience: ${application.audienceSize}`,
+    application.preferredSlug
+      ? `Preferred short link: voronyz.com/${application.preferredSlug}`
+      : null,
+    application.preferredCode
+      ? `Preferred code: ${application.preferredCode}`
+      : null,
+    ``,
+    `Niche:`,
+    application.niche,
+    ``,
+    `Pitch:`,
+    application.pitch,
+    ``,
+    `Application ID: ${application.id}`,
+    `View in admin: ${adminUrl}`,
+  ].filter(Boolean) as string[];
+
+  const subject = `Affiliate application: ${name} (${application.platform})`;
+  const text = lines.join("\n");
+  const html = [
+    `<p><strong>New affiliate application</strong> on <a href="${escapeHtml(siteBaseUrl())}/affiliates">voronyz.com/affiliates</a></p>`,
+    `<ul>`,
+    `<li><strong>Name:</strong> ${escapeHtml(name)}</li>`,
+    `<li><strong>Email:</strong> <a href="mailto:${escapeHtml(application.email)}">${escapeHtml(application.email)}</a></li>`,
+    application.phone
+      ? `<li><strong>Phone:</strong> ${escapeHtml(application.phone)}</li>`
+      : "",
+    `<li><strong>Platform:</strong> ${escapeHtml(application.platform)}</li>`,
+    `<li><strong>Handle / URL:</strong> ${escapeHtml(application.handleOrUrl)}</li>`,
+    `<li><strong>Audience:</strong> ${escapeHtml(application.audienceSize)}</li>`,
+    application.preferredSlug
+      ? `<li><strong>Preferred short link:</strong> voronyz.com/${escapeHtml(application.preferredSlug)}</li>`
+      : "",
+    application.preferredCode
+      ? `<li><strong>Preferred code:</strong> ${escapeHtml(application.preferredCode)}</li>`
+      : "",
+    `</ul>`,
+    `<p><strong>Niche</strong><br>${escapeHtml(application.niche).replace(/\n/g, "<br>")}</p>`,
+    `<p><strong>Pitch</strong><br>${escapeHtml(application.pitch).replace(/\n/g, "<br>")}</p>`,
+    `<p><a href="${escapeHtml(adminUrl)}">Open orders admin</a> · ID ${escapeHtml(application.id)}</p>`,
   ]
     .filter(Boolean)
     .join("");
