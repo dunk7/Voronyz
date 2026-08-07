@@ -18,8 +18,6 @@ const nextConfig: NextConfig = {
       { source: "/uploads/:path*", destination: "/upload", permanent: true },
       { source: "/apparel/sweats", destination: "/apparel/joggers", permanent: true },
       { source: "/apparel/pants", destination: "/apparel/joggers", permanent: true },
-<<<<<<< HEAD
-=======
       // Removed pants / sweats products — only joggers remains.
       {
         source: "/products/voronyz-technical-pants",
@@ -31,8 +29,6 @@ const nextConfig: NextConfig = {
         destination: "/products/voronyz-joggers",
         permanent: true,
       },
-      ...influencerCaseRedirects,
->>>>>>> origin/cursor/remove-pants-listing-bc2e
     ];
   },
 };
