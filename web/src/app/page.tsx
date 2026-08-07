@@ -8,17 +8,17 @@ import LogoLoader from "@/components/ui/LogoLoader";
 
 export default function Home() {
   return (
-    <div className="relative isolate">
+    <div className="relative">
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-black" />
         <div
-          className="absolute inset-0 -z-10 opacity-10"
+          className="absolute inset-0 -z-10 opacity-[0.28]"
           style={{
             backgroundImage: "url('/hero-bg.jpg')",
             backgroundSize: "cover",
             backgroundPosition: "center bottom",
             backgroundRepeat: "no-repeat",
-            filter: "brightness(0.4)"
+            filter: "brightness(0.65)",
           }}
         />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(900px_500px_at_50%_25%,rgba(255,255,255,0.06),transparent)]" />
@@ -136,14 +136,14 @@ export default function Home() {
             {/* Image / Parallax Column */}
             <div className="lg:col-span-8 order-1 lg:order-2 hero-stagger-image">
               <HeroParallax>
-                <div className="relative w-full rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-[4/3] lg:h-full xl:h-full 2xl:h-full">
+                <div className="relative w-full overflow-visible aspect-[4/3] sm:aspect-[4/3] lg:h-full xl:h-full 2xl:h-full bg-transparent">
                   <Image
                     src="/products/v3-slides/side-render-of-both.jpg"
                     alt="Voronyz V3 Slides"
                     fill
                     priority
                     sizes="(max-width: 1024px) 100vw, 66vw"
-                    className="object-contain object-[60%_50%]"
+                    className="object-contain object-[60%_50%] bg-transparent"
                   />
                 </div>
               </HeroParallax>
