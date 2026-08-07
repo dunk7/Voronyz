@@ -25,6 +25,7 @@ import OrdersStatsPanel from "./OrdersStatsPanel";
 import UploadsAdminPanel from "./UploadsAdminPanel";
 import QuizResultsAdminPanel from "./QuizResultsAdminPanel";
 import { formatCentsAsCurrency } from "@/lib/money";
+import { VALID_DISCOUNT_CODES } from "@/lib/discountPricing";
 import {
   formatShippingAddress,
   type AdminOrder,
@@ -580,7 +581,7 @@ export default function OrdersAdminClient() {
                 : tab === "stats"
                   ? "Revenue and order performance"
                   : tab === "discounts"
-                  ? `Active codes + ${discountOrdersCount} order${discountOrdersCount === 1 ? "" : "s"} that used one`
+                  ? `${VALID_DISCOUNT_CODES.length} live codes · ${discountOrdersCount} used on orders`
                   : tab === "quiz"
                     ? "Take the Quiz poll results"
                     : "Customer file uploads"}
