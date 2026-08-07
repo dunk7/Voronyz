@@ -35,7 +35,7 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "shirts",
     label: "Shirts",
-    description: "Nice shirts, oversized tees, and more designs to come",
+    description: "Oversized tees, nice shirts, and more designs to come",
     listing: "collection",
   },
   {
@@ -137,18 +137,7 @@ export const OBSOLETE_APPAREL_SLUGS = [
  */
 export const APPAREL_CATALOG: ApparelCatalogItem[] = [
   // ── Shirts (multi-product) ──────────────────────────────────────────────
-  {
-    slug: "voronyz-nice-shirt",
-    subcategory: "shirts",
-    name: "Nice Shirt",
-    description: "Polished everyday shirt with a sharp collar and soft hand-feel.",
-    priceCents: 6800,
-    colors: ["black", "white", "grey"],
-    sizes: [...APPAREL_SIZES],
-    image: "/products/apparel/nice-shirt.jpg",
-    skuPrefix: "APP-NICE",
-    comingSoon: true,
-  },
+  // Oversized first: Apparel hub cover + shirts listing order follow catalog order.
   {
     slug: "voronyz-oversized-tee",
     subcategory: "shirts",
@@ -159,6 +148,18 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/shirt.jpg",
     skuPrefix: "APP-TEE",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-nice-shirt",
+    subcategory: "shirts",
+    name: "Nice Shirt",
+    description: "Polished everyday shirt with a sharp collar and soft hand-feel.",
+    priceCents: 6800,
+    colors: ["black", "white", "grey"],
+    sizes: [...APPAREL_SIZES],
+    image: "/products/apparel/nice-shirt.jpg",
+    skuPrefix: "APP-NICE",
     comingSoon: true,
   },
   // ── Sweaters (multi-product) ────────────────────────────────────────────
