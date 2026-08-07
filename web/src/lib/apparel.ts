@@ -13,7 +13,7 @@ export type ApparelSubcategoryId =
   | "sweaters"
   | "socks"
   | "shorts"
-  | "pants"
+  | "joggers"
   | "outerwear"
   | "hats"
   | "scarves"
@@ -57,9 +57,9 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
     listing: "collection",
   },
   {
-    id: "pants",
-    label: "Pants",
-    description: "Sweats, technical pants, and everyday bottoms",
+    id: "joggers",
+    label: "Joggers",
+    description: "Tapered joggers for training days and downtime",
     listing: "collection",
   },
   {
@@ -125,7 +125,10 @@ export function getApparelImages(item: ApparelCatalogItem): string[] {
 }
 
 /** Slugs removed from the live apparel catalog (cleaned up on ensure). */
-export const OBSOLETE_APPAREL_SLUGS = [] as const;
+export const OBSOLETE_APPAREL_SLUGS = [
+  "voronyz-technical-pants",
+  "voronyz-lounge-sweats",
+] as const;
 
 /**
  * Source of truth for apparel products.
@@ -201,29 +204,17 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-SHRT",
     comingSoon: true,
   },
-  // ── Pants (multi-product: sweats + technical) ────────────────────────────
+  // ── Joggers (multi-product) ─────────────────────────────────────────────
   {
-    slug: "voronyz-lounge-sweats",
-    subcategory: "pants",
-    name: "Sweats",
-    description: "Tapered sweatpants for training days and downtime.",
+    slug: "voronyz-joggers",
+    subcategory: "joggers",
+    name: "Joggers",
+    description: "Tapered joggers for training days and downtime.",
     priceCents: 7200,
     colors: ["black", "grey"],
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/sweats.jpg",
-    skuPrefix: "APP-SWT",
-    comingSoon: true,
-  },
-  {
-    slug: "voronyz-technical-pants",
-    subcategory: "pants",
-    name: "Technical Pants",
-    description: "Streamlined pants with a sharp taper and everyday stretch.",
-    priceCents: 8800,
-    colors: ["black", "grey"],
-    sizes: [...APPAREL_SIZES],
-    image: "/products/apparel/pants.jpg",
-    skuPrefix: "APP-PNT",
+    skuPrefix: "APP-JGR",
     comingSoon: true,
   },
   // ── Outerwear (multi-product) ───────────────────────────────────────────
