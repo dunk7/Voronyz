@@ -580,7 +580,7 @@ export default function OrdersAdminClient() {
                 : tab === "stats"
                   ? "Revenue and order performance"
                   : tab === "discounts"
-                  ? `${discountOrdersCount} order${discountOrdersCount === 1 ? "" : "s"} with discount codes`
+                  ? `Active codes + ${discountOrdersCount} order${discountOrdersCount === 1 ? "" : "s"} that used one`
                   : tab === "quiz"
                     ? "Take the Quiz poll results"
                     : "Customer file uploads"}

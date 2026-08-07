@@ -4,7 +4,10 @@ import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Check, Copy, Link2, Package, Search, Tag } from "lucide-react";
 import { formatCentsAsCurrency } from "@/lib/money";
-import { VALID_DISCOUNT_CODES } from "@/lib/discountPricing";
+import {
+  VALID_DISCOUNT_CODES,
+  getDiscountCodeDescription,
+} from "@/lib/discountPricing";
 import {
   formatShippingAddress,
   type AdminOrder,
@@ -66,6 +69,7 @@ function statusClass(status: string) {
 
 type DiscountGroup = {
   code: string;
+  description: string;
   orders: AdminOrder[];
   itemCount: number;
   totalCents: number;
@@ -246,6 +250,7 @@ export default function DiscountCodesAdminPanel({
       const meta = linkMetaByCode[code];
       map.set(code, {
         code,
+        description: getDiscountCodeDescription(code),
         orders: [],
         itemCount: 0,
         totalCents: 0,
@@ -269,6 +274,7 @@ export default function DiscountCodesAdminPanel({
       } else {
         map.set(code, {
           code,
+          description: getDiscountCodeDescription(code),
           orders: [order],
           itemCount,
           totalCents: order.totalCents,
@@ -485,6 +491,10 @@ export default function DiscountCodesAdminPanel({
 
             <div className="flex flex-wrap gap-4 text-sm text-neutral-600">
               <p>
+                <span className="font-medium text-neutral-800">Deal:</span>{" "}
+                {selectedGroup.description}
+              </p>
+              <p>
                 <span className="font-medium text-neutral-800">Clicks:</span>{" "}
                 {selectedGroup.clicks}
               </p>
@@ -515,6 +525,7 @@ export default function DiscountCodesAdminPanel({
                 className="rounded-xl border border-black/5 bg-neutral-50 px-4 py-3 text-left hover:bg-neutral-100 transition-colors"
               >
                 <p className="font-mono text-sm font-semibold">{group.code}</p>
+                <p className="text-xs text-neutral-600 mt-1">{group.description}</p>
                 <p className="text-xs text-neutral-500 mt-1">
                   {group.clicks} click{group.clicks === 1 ? "" : "s"} ·{" "}
                   {group.orders.length} order{group.orders.length === 1 ? "" : "s"} ·{" "}
@@ -536,8 +547,8 @@ export default function DiscountCodesAdminPanel({
             <>
               <p className="font-medium text-neutral-700">No discount code orders yet</p>
               <p className="text-sm mt-1">
-                Click any code above to copy its auto-apply link. Orders that use a code
-                will show up here.
+                All active codes (including aryan50) are listed above. Click a code to
+                copy its auto-apply link. Orders that use a code will show up here.
               </p>
             </>
           ) : (
