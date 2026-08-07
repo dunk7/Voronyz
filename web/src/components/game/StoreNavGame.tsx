@@ -329,13 +329,11 @@ export default function StoreNavGame() {
     if (!canvas || !wrapper) return;
 
     const dpr = Math.min(2, window.devicePixelRatio || 1);
-    let cssW: number;
-    let cssH: number;
 
     const rect = wrapper.getBoundingClientRect();
-    cssW = Math.max(280, Math.floor(rect.width));
+    const cssW = Math.max(280, Math.floor(rect.width));
     // Keep a playable landscape-ish playfield in the page layout
-    cssH = Math.max(240, Math.min(Math.round(cssW * 0.62), Math.round(window.innerHeight * 0.55)));
+    const cssH = Math.max(240, Math.min(Math.round(cssW * 0.62), Math.round(window.innerHeight * 0.55)));
 
     viewportRef.current = { w: cssW, h: cssH };
     canvas.style.width = `${cssW}px`;

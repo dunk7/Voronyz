@@ -117,12 +117,18 @@ export default function Header() {
     let lastY = window.scrollY;
     const onScroll = () => {
       const y = window.scrollY;
+      // Keep the bar visible while the hamburger menu is open.
+      if (open) {
+        setHide(false);
+        lastY = y;
+        return;
+      }
       setHide(y > lastY && y > 24);
       lastY = y;
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [open]);
 
   // Allow body scroll even when mobile menu is open (no scroll lock)
   useEffect(() => {
@@ -319,18 +325,25 @@ export default function Header() {
                 <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/health") ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
               <Link
-                href="/about"
-                className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname === "/about" ? "text-white" : "text-white/70"}`}
-              >
-                <span>About</span>
-                <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname === "/about" ? "opacity-100" : "opacity-0"}`} aria-hidden />
-              </Link>
-              <Link
                 href="/quiz"
                 className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/quiz") ? "text-white" : "text-white/70"}`}
               >
                 <span>Take the Quiz</span>
                 <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/quiz") ? "opacity-100" : "opacity-0"}`} aria-hidden />
+              </Link>
+              <Link
+                href="/gallery"
+                className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/gallery") ? "text-white" : "text-white/70"}`}
+              >
+                <span>Gallery</span>
+                <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/gallery") ? "opacity-100" : "opacity-0"}`} aria-hidden />
+              </Link>
+              <Link
+                href="/about"
+                className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname === "/about" ? "text-white" : "text-white/70"}`}
+              >
+                <span>About</span>
+                <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname === "/about" ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
             </nav>
           </div>
@@ -478,7 +491,7 @@ export default function Header() {
 
       {/* Mobile Menu Overlay */}
       <div
-        className={`fixed inset-0 z-40 xl:hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`fixed inset-0 z-[60] xl:hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           open ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
         }`}
       >
@@ -488,8 +501,8 @@ export default function Header() {
           onClick={() => setOpen(false)}
         />
 
-        {/* Menu Content */}
-        <div className={`absolute top-20 left-0 right-0 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        {/* Menu Content — scrollable so Take the Quiz stays reachable on short screens */}
+        <div className={`absolute top-20 left-0 right-0 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           open ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
         }`}>
           <div className="bg-neutral-950/90 backdrop-blur-xl border-b border-white/10 shadow-2xl text-white">
@@ -566,20 +579,6 @@ export default function Header() {
                   Collaborative
                 </Link>
                 <Link
-                  href="/about"
-                  className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
-                    pathname === "/about"
-                      ? "text-white bg-white/10"
-                      : "text-white/70 hover:text-white hover:bg-white/[.06]"
-                  }`}
-                  onClick={() => setOpen(false)}
-                >
-                  {pathname === "/about" && (
-                    <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
-                  )}
-                  About
-                </Link>
-                <Link
                   href="/quiz"
                   className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
                     pathname?.startsWith("/quiz")
@@ -592,6 +591,34 @@ export default function Header() {
                     <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
                   )}
                   Take the Quiz
+                </Link>
+                <Link
+                  href="/gallery"
+                  className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
+                    pathname?.startsWith("/gallery")
+                      ? "text-white bg-white/10"
+                      : "text-white/70 hover:text-white hover:bg-white/[.06]"
+                  }`}
+                  onClick={() => setOpen(false)}
+                >
+                  {pathname?.startsWith("/gallery") && (
+                    <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
+                  )}
+                  Gallery
+                </Link>
+                <Link
+                  href="/about"
+                  className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
+                    pathname === "/about"
+                      ? "text-white bg-white/10"
+                      : "text-white/70 hover:text-white hover:bg-white/[.06]"
+                  }`}
+                  onClick={() => setOpen(false)}
+                >
+                  {pathname === "/about" && (
+                    <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
+                  )}
+                  About
                 </Link>
                 <div className="my-2 h-px bg-white/10" />
                 <Link
