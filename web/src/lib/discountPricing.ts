@@ -80,6 +80,41 @@ export function getDiscountCodeDescription(
   }
 }
 
+/**
+ * Shopper-facing copy for urgency banners — what the code actually does.
+ * Keep this marketing-friendly; admin copy stays in getDiscountCodeDescription.
+ */
+export function getDiscountCodeShopperDescription(
+  code: string | null | undefined
+): string {
+  const normalized = normalizeDiscountCode(code);
+  switch (normalized) {
+    case "fam45":
+    case "chud25":
+    case "nicole50":
+    case "andy50":
+      return "All items just $50 each";
+    case "superdeal35":
+      return "All items just $35 each";
+    case "maximus27":
+      return "All items just $32 each";
+    case "pedro30":
+      return "All items just $30 each";
+    case "super20":
+      return "All items just $20 each";
+    case "aryan50":
+      return "$5 off every item";
+    case "emptyaus":
+      return "Dragonfly for only $20";
+    case "aryan10":
+      return "V3 Slides for only $10";
+    case "young":
+      return "TPU-90A filament $20/spool";
+    default:
+      return "Your discount is locked in";
+  }
+}
+
 function isSlidesProduct(productSlug?: string, productName?: string): boolean {
   const slug = (productSlug || "").toLowerCase();
   const name = (productName || "").toLowerCase();

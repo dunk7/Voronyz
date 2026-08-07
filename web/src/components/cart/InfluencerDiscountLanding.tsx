@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { applyDiscountCodeToCartStorage } from "@/lib/applyDiscountToCart";
+import { getDiscountCodeShopperDescription } from "@/lib/discountPricing";
 import LogoLoader from "@/components/ui/LogoLoader";
 
 type InfluencerDiscountLandingProps = {
@@ -14,7 +15,7 @@ type InfluencerDiscountLandingProps = {
 
 /**
  * Bio-link landing: stash the influencer discount in the cart, then send
- * shoppers to the cart so they see the code already applied.
+ * first-time shoppers to the home page (cart would be empty) with the code active.
  */
 export default function InfluencerDiscountLanding({
   slug,
@@ -23,6 +24,7 @@ export default function InfluencerDiscountLanding({
 }: InfluencerDiscountLandingProps) {
   const router = useRouter();
   const [status, setStatus] = useState<"applying" | "done" | "error">("applying");
+  const benefit = getDiscountCodeShopperDescription(code);
 
   useEffect(() => {
     const applied = applyDiscountCodeToCartStorage(code);
@@ -32,7 +34,7 @@ export default function InfluencerDiscountLanding({
     }
     setStatus("done");
     const timer = window.setTimeout(() => {
-      router.replace(`/cart?discount=${encodeURIComponent(applied)}`);
+      router.replace("/");
     }, 400);
     return () => window.clearTimeout(timer);
   }, [code, router]);
@@ -63,7 +65,7 @@ export default function InfluencerDiscountLanding({
             </p>
             <p className="mt-2 text-sm text-neutral-500">
               Code <span className="font-mono font-medium text-neutral-800">{code}</span>{" "}
-              from <span className="font-mono">/{slug}</span> will be ready in your cart.
+              from <span className="font-mono">/{slug}</span> — {benefit}. Taking you to the shop.
             </p>
           </>
         )}
