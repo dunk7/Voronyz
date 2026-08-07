@@ -5,6 +5,10 @@ import { useMemo, useState } from "react";
 import { Package, Search, Tag } from "lucide-react";
 import { formatCentsAsCurrency } from "@/lib/money";
 import {
+  VALID_DISCOUNT_CODES,
+  getDiscountCodeDescription,
+} from "@/lib/discountPricing";
+import {
   formatShippingAddress,
   type AdminOrder,
   type OrderLineItem,
@@ -54,6 +58,7 @@ function statusClass(status: string) {
 
 type DiscountGroup = {
   code: string;
+  description: string;
   orders: AdminOrder[];
   itemCount: number;
   totalCents: number;
@@ -80,6 +85,17 @@ export default function DiscountCodesAdminPanel({
   const groups = useMemo(() => {
     const map = new Map<string, DiscountGroup>();
 
+    // Always seed every configured code so unused codes (e.g. aryan50) still appear.
+    for (const code of VALID_DISCOUNT_CODES) {
+      map.set(code, {
+        code,
+        description: getDiscountCodeDescription(code),
+        orders: [],
+        itemCount: 0,
+        totalCents: 0,
+      });
+    }
+
     for (const order of discountedOrders) {
       const code = (order.discountCode || "").trim().toLowerCase();
       if (!code) continue;
@@ -92,8 +108,10 @@ export default function DiscountCodesAdminPanel({
         existing.itemCount += itemCount;
         existing.totalCents += order.totalCents;
       } else {
+        // Legacy / unknown code that still appears on an order.
         map.set(code, {
           code,
+          description: getDiscountCodeDescription(code),
           orders: [order],
           itemCount,
           totalCents: order.totalCents,
@@ -148,19 +166,7 @@ export default function DiscountCodesAdminPanel({
   if (loading && orders.length === 0) {
     return (
       <div className="flex justify-center py-20 text-neutral-400 text-sm">
-        Loading discount code orders…
-      </div>
-    );
-  }
-
-  if (discountedOrders.length === 0) {
-    return (
-      <div className="rounded-2xl bg-white p-12 text-center text-neutral-500 ring-1 ring-black/5">
-        <Tag className="h-8 w-8 mx-auto mb-3 text-neutral-300" />
-        <p className="font-medium text-neutral-700">No discount code orders yet</p>
-        <p className="text-sm mt-1">
-          Orders that use an influencer discount code will show up here.
-        </p>
+        Loading discount codes…
       </div>
     );
   }
@@ -170,11 +176,11 @@ export default function DiscountCodesAdminPanel({
       <div className="rounded-2xl bg-white p-4 ring-1 ring-black/5 space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-base font-semibold">Discount code orders</h2>
+            <h2 className="text-base font-semibold">Discount codes</h2>
             <p className="text-sm text-neutral-500">
-              {visibleOrders.length} order{visibleOrders.length === 1 ? "" : "s"} ·{" "}
-              {visibleItemCount} item{visibleItemCount === 1 ? "" : "s"} · scroll to
-              review every purchase
+              {groups.length} active code{groups.length === 1 ? "" : "s"} ·{" "}
+              {discountedOrders.length} order
+              {discountedOrders.length === 1 ? "" : "s"} with a code applied
             </p>
           </div>
           <div className="relative w-full sm:w-72">
@@ -213,7 +219,7 @@ export default function DiscountCodesAdminPanel({
                   : "bg-white text-neutral-600"
               }`}
             >
-              {discountedOrders.length}
+              {groups.length}
             </span>
           </button>
           {groups.map((group) => (
@@ -255,6 +261,10 @@ export default function DiscountCodesAdminPanel({
                     <span className="font-mono">{group.code}</span>
                   </p>
                   <p>
+                    <span className="font-medium text-neutral-800">Deal:</span>{" "}
+                    {group.description}
+                  </p>
+                  <p>
                     <span className="font-medium text-neutral-800">Orders:</span>{" "}
                     {group.orders.length}
                   </p>
@@ -280,6 +290,7 @@ export default function DiscountCodesAdminPanel({
                 className="rounded-xl border border-black/5 bg-neutral-50 px-4 py-3 text-left hover:bg-neutral-100 transition-colors"
               >
                 <p className="font-mono text-sm font-semibold">{group.code}</p>
+                <p className="text-xs text-neutral-600 mt-1">{group.description}</p>
                 <p className="text-xs text-neutral-500 mt-1">
                   {group.orders.length} order{group.orders.length === 1 ? "" : "s"} ·{" "}
                   {group.itemCount} item{group.itemCount === 1 ? "" : "s"} ·{" "}
@@ -293,11 +304,34 @@ export default function DiscountCodesAdminPanel({
 
       {visibleOrders.length === 0 ? (
         <div className="rounded-2xl bg-white p-12 text-center text-neutral-500 ring-1 ring-black/5">
-          No orders match this filter.
+          <Tag className="h-8 w-8 mx-auto mb-3 text-neutral-300" />
+          {selectedCode === "all" && discountedOrders.length === 0 ? (
+            <>
+              <p className="font-medium text-neutral-700">No discount code orders yet</p>
+              <p className="text-sm mt-1">
+                All active codes are listed above. Orders that use a code will show up
+                here.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-medium text-neutral-700">No orders for this filter</p>
+              <p className="text-sm mt-1">
+                {selectedCode !== "all"
+                  ? `“${selectedCode}” is active on the site — uses appear here after checkout.`
+                  : "Try a different search."}
+              </p>
+            </>
+          )}
         </div>
       ) : (
-        <div className="max-h-[70vh] overflow-y-auto space-y-4 pr-1 scroll-smooth">
-          {visibleOrders.map((order) => {
+        <div className="space-y-3">
+          <p className="text-sm text-neutral-500 px-1">
+            {visibleOrders.length} order{visibleOrders.length === 1 ? "" : "s"} ·{" "}
+            {visibleItemCount} item{visibleItemCount === 1 ? "" : "s"}
+          </p>
+          <div className="max-h-[70vh] overflow-y-auto space-y-4 pr-1 scroll-smooth">
+            {visibleOrders.map((order) => {
             const shipName = order.shipping?.name || order.customer?.name || "—";
             const addressText = formatShippingAddress(order.shipping);
             const code = (order.discountCode || "").trim();
@@ -395,6 +429,7 @@ export default function DiscountCodesAdminPanel({
               </article>
             );
           })}
+          </div>
         </div>
       )}
     </div>

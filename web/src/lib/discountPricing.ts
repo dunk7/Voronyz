@@ -45,6 +45,41 @@ export function isValidDiscountCode(code: string | null | undefined): boolean {
   return normalized ? validDiscountCodeSet.has(normalized) : false;
 }
 
+/** Short admin-facing summary of what a configured discount code does. */
+export function getDiscountCodeDescription(
+  code: string | null | undefined
+): string {
+  const normalized = normalizeDiscountCode(code);
+  switch (normalized) {
+    case "fam45":
+      return "$50 fixed unit price";
+    case "superdeal35":
+      return "$35 fixed unit price";
+    case "maximus27":
+      return "$32 fixed unit price";
+    case "emptyaus":
+      return "$20 on Dragonfly";
+    case "aryan10":
+      return "$10 on V3 slides";
+    case "aryan50":
+      return "$5 off any item";
+    case "super20":
+      return "$20 fixed unit price";
+    case "chud25":
+      return "$50 fixed unit price";
+    case "pedro30":
+      return "$30 fixed unit price";
+    case "nicole50":
+      return "$50 fixed unit price";
+    case "andy50":
+      return "$50 fixed unit price";
+    case "young":
+      return "$20/spool TPU-90A (checkout-only)";
+    default:
+      return "Active discount code";
+  }
+}
+
 function isSlidesProduct(productSlug?: string, productName?: string): boolean {
   const slug = (productSlug || "").toLowerCase();
   const name = (productName || "").toLowerCase();
