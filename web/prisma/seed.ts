@@ -552,12 +552,22 @@ async function main() {
         });
       }
       const keepSkus = LATTICE_INSOLES_VARIANTS.map((v) => v.sku);
-      await prisma.variant.deleteMany({
+      const obsoleteVariants = await prisma.variant.findMany({
         where: {
           productId: existingInsoles.id,
           sku: { notIn: [...keepSkus] },
         },
+        select: { id: true },
       });
+      const obsoleteIds = obsoleteVariants.map((variant) => variant.id);
+      if (obsoleteIds.length > 0) {
+        await prisma.cartItem.deleteMany({
+          where: { variantId: { in: obsoleteIds } },
+        });
+        await prisma.variant.deleteMany({
+          where: { id: { in: obsoleteIds } },
+        });
+      }
       console.log("Updated Lattice Insoles product and variants.");
     }
 
