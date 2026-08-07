@@ -51,6 +51,8 @@ export type AdminOrder = {
   paymentMethod?: string | null;
   discountCode?: string | null;
   hasPreOrder?: boolean;
+  /** Internal admin-only notes (not shown to customers). */
+  adminNotes?: string | null;
 };
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
@@ -195,6 +197,7 @@ export function parseOrderMetadata(metadata: unknown): {
   paymentMethod: string | null;
   discountCode: string | null;
   hasPreOrder: boolean;
+  adminNotes: string | null;
 } {
   if (!isRecord(metadata)) {
     return {
@@ -205,6 +208,7 @@ export function parseOrderMetadata(metadata: unknown): {
       paymentMethod: null,
       discountCode: null,
       hasPreOrder: false,
+      adminNotes: null,
     };
   }
 
@@ -265,6 +269,10 @@ export function parseOrderMetadata(metadata: unknown): {
     metadata.hasPreOrder === true ||
     lineItems.some((item) => item.isPreOrder);
 
+  const adminNotesRaw =
+    typeof metadata.adminNotes === "string" ? metadata.adminNotes : "";
+  const adminNotes = adminNotesRaw.trim() ? adminNotesRaw : null;
+
   return {
     orderNumber,
     customer,
@@ -273,6 +281,7 @@ export function parseOrderMetadata(metadata: unknown): {
     paymentMethod,
     discountCode,
     hasPreOrder,
+    adminNotes,
   };
 }
 

@@ -4,7 +4,7 @@ import StoreNavGame from "@/components/game/StoreNavGame";
 export const metadata: Metadata = {
   title: "Game – Voronyz Store",
   description:
-    "Tap to stroll a cute top-down Voronyz store. Explore aisles, collect sparkles, and find your way around.",
+    "Tap to stroll a cute top-down Voronyz store as a happy little robot. Explore aisles, collect sparkles, and find your way around.",
 };
 
 export default function GamePage() {
@@ -27,9 +27,6 @@ export default function GamePage() {
           >
             Store Stroll
           </h1>
-          <p className="text-neutral-600 text-base md:text-lg leading-relaxed">
-            Tap where you want to go — you stay centered while the big store map moves. On phone, tap the logo for tall full screen, and hold-drag to keep walking.
-          </p>
         </div>
 
         <div className="max-w-4xl mx-auto">

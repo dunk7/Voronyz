@@ -13,7 +13,6 @@ export type ApparelSubcategoryId =
   | "sweaters"
   | "socks"
   | "shorts"
-  | "sweats"
   | "pants"
   | "outerwear"
   | "hats"
@@ -58,15 +57,9 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
     listing: "collection",
   },
   {
-    id: "sweats",
-    label: "Sweats",
-    description: "Sweatpants and lounge bottoms",
-    listing: "collection",
-  },
-  {
     id: "pants",
     label: "Pants",
-    description: "Everyday and technical pant designs",
+    description: "Sweats, technical pants, and everyday bottoms",
     listing: "collection",
   },
   {
@@ -90,7 +83,7 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "bottles",
     label: "Bottles",
-    description: "Insulated bottles and everyday drinkware",
+    description: "Insulated bottles, lock squirt bottles, and everyday drinkware",
     listing: "collection",
   },
   {
@@ -208,10 +201,10 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-SHRT",
     comingSoon: true,
   },
-  // ── Sweats (multi-product) ──────────────────────────────────────────────
+  // ── Pants (multi-product: sweats + technical) ────────────────────────────
   {
     slug: "voronyz-lounge-sweats",
-    subcategory: "sweats",
+    subcategory: "pants",
     name: "Sweats",
     description: "Tapered sweatpants for training days and downtime.",
     priceCents: 7200,
@@ -221,7 +214,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-SWT",
     comingSoon: true,
   },
-  // ── Pants (multi-product) ───────────────────────────────────────────────
   {
     slug: "voronyz-technical-pants",
     subcategory: "pants",
@@ -269,7 +261,11 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     priceCents: 4200,
     colors: ["black", "grey"],
     sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/scarf.jpg",
+    image: "/products/apparel/scarf-features.jpg",
+    images: [
+      "/products/apparel/scarf-features.jpg",
+      "/products/apparel/scarf.jpg",
+    ],
     skuPrefix: "APP-SCRF",
     comingSoon: true,
   },
@@ -277,13 +273,26 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
   {
     slug: "voronyz-water-bottle",
     subcategory: "bottles",
-    name: "Water Bottle",
+    name: "Stainless Water Bottle",
     description: "Insulated stainless bottle with a clean Voronyz finish.",
     priceCents: 3600,
     colors: ["black", "white"],
     sizes: [...APPAREL_ONE_SIZE],
     image: "/products/apparel/water-bottle.jpg",
     skuPrefix: "APP-BTTL",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-lock-squirt-bottle",
+    subcategory: "bottles",
+    name: "Lock Squirt Bottle",
+    description:
+      "750ml BPA-free cycling squirt bottle with twist-to-lock leak-proof cap, quick flow, and lightweight adventure-ready build.",
+    priceCents: 2800,
+    colors: ["black"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/lock-squirt-bottle.jpg",
+    skuPrefix: "APP-SQRT",
     comingSoon: true,
   },
   // ── Accessories only (never mixed into clothing collections) ────────────

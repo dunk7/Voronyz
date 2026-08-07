@@ -21,6 +21,16 @@ import {
   TRAIL_MIX_VARIANTS,
 } from "../src/lib/trailMix";
 import {
+  FILAMENT_DESCRIPTION_SHORT,
+  FILAMENT_IMAGES,
+  FILAMENT_NAME,
+  FILAMENT_PRICE_CENTS,
+  FILAMENT_PRIMARY_COLORS,
+  FILAMENT_SIZES,
+  FILAMENT_SLUG,
+  FILAMENT_VARIANTS,
+} from "../src/lib/filament";
+import {
   GATORS_DESCRIPTION_SHORT,
   GATORS_IMAGES,
   GATORS_NAME,
@@ -46,7 +56,7 @@ async function main() {
           name: "V3 Slides",
           description:
             "World-class FDM printed slides with TPU lattice lowers and breathable uppers. Engineered from precision 3D scans.",
-          priceCents: 5500,
+          priceCents: 7500,
           currency: "usd",
           images: [
             "/products/v3-slides/InShot_20260212_194352014.jpg",
@@ -81,7 +91,7 @@ async function main() {
       await prisma.product.update({
         where: { id: existing.id },
         data: {
-          priceCents: 5500,
+          priceCents: 7500,
           images: [
             "/products/v3-slides/InShot_20260212_194352014.jpg",
             "/products/v3-slides/InShot_20260212_193956953.jpg",
@@ -161,7 +171,7 @@ async function main() {
             "/products/dragonfly/InShot_20260212_155809942.jpg",
             "/products/dragonfly/InShot_20260212_160512335.jpg",
           ],
-          primaryColors: ["black", "white", "red", "#007FFF"],
+          primaryColors: ["black", "white", "red", "#007FFF", "pink"],
           secondaryColors: ["black", "white", "grey", "red", "#007FFF", "green", "blue", "maroon", "pink", "purple", "orange", "yellow", "navy", "teal"],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
           variants: {
@@ -170,6 +180,7 @@ async function main() {
               { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },  // Out of stock
               { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
               { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
+              { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 6500 },
             ],
           },
         },
@@ -196,7 +207,7 @@ async function main() {
             "/products/dragonfly/InShot_20260212_155809942.jpg",
             "/products/dragonfly/InShot_20260212_160512335.jpg",
           ],
-          primaryColors: ["black", "white", "red", "#007FFF"],
+          primaryColors: ["black", "white", "red", "#007FFF", "pink"],
           secondaryColors: ["black", "white", "grey", "red", "#007FFF", "green", "blue", "maroon", "pink", "purple", "orange", "yellow", "navy", "teal"],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
         },
@@ -208,6 +219,7 @@ async function main() {
         { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },
         { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
         { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
+        { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 6500 },
       ];
       for (const v of dfVariants) {
         await prisma.variant.upsert({
@@ -245,11 +257,11 @@ async function main() {
           slug: "slip-ons",
           name: "Slip Ons",
           description:
-            "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, or orange (white coming soon).",
+            "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
           priceCents: 6000,
           currency: "usd",
           images: slipOnImages,
-          primaryColors: ["black", "grey", "white", "orange"],
+          primaryColors: ["black", "grey", "white", "orange", "pink"],
           secondaryColors: [],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
           variants: {
@@ -258,6 +270,7 @@ async function main() {
               { color: "grey", sku: "SO-GRY", stock: 999 },
               { color: "white", sku: "SO-WHT", stock: 0 },
               { color: "orange", sku: "SO-ORG", stock: 999 },
+              { color: "pink", sku: "SO-PNK", stock: 999 },
             ],
           },
         },
@@ -271,10 +284,10 @@ async function main() {
         data: {
           name: "Slip Ons",
           description:
-            "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, or orange (white coming soon).",
+            "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
           priceCents: 6000,
           images: slipOnImages,
-          primaryColors: ["black", "grey", "white", "orange"],
+          primaryColors: ["black", "grey", "white", "orange", "pink"],
           secondaryColors: [],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
         },
@@ -284,6 +297,7 @@ async function main() {
         { color: "grey", sku: "SO-GRY", stock: 999 },
         { color: "white", sku: "SO-WHT", stock: 0 },
         { color: "orange", sku: "SO-ORG", stock: 999 },
+        { color: "pink", sku: "SO-PNK", stock: 999 },
       ];
       for (const v of soVariants) {
         await prisma.variant.upsert({
@@ -323,7 +337,7 @@ async function main() {
           priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
           currency: "usd",
           images: magikidShoesImages,
-          primaryColors: ["black", "grey", "white", "orange"],
+          primaryColors: ["black", "grey", "white", "orange", "pink"],
           secondaryColors: [],
           sizes: MAGIKID_SHOES_KIDS_SIZES,
           variants: {
@@ -332,6 +346,7 @@ async function main() {
               { color: "grey", sku: "MK-GRY", stock: 999 },
               { color: "white", sku: "MK-WHT", stock: 0 },
               { color: "orange", sku: "MK-ORG", stock: 0 },
+              { color: "pink", sku: "MK-PNK", stock: 999 },
             ],
           },
         },
@@ -347,7 +362,7 @@ async function main() {
           description: MAGIKID_SHOES_DESCRIPTION_SHORT,
           priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
           images: magikidShoesImages,
-          primaryColors: ["black", "grey", "white", "orange"],
+          primaryColors: ["black", "grey", "white", "orange", "pink"],
           secondaryColors: [],
           sizes: MAGIKID_SHOES_KIDS_SIZES,
         },
@@ -357,6 +372,7 @@ async function main() {
         { color: "grey", sku: "MK-GRY", stock: 999 },
         { color: "white", sku: "MK-WHT", stock: 0 },
         { color: "orange", sku: "MK-ORG", stock: 0 },
+        { color: "pink", sku: "MK-PNK", stock: 999 },
       ];
       for (const v of mkVariants) {
         await prisma.variant.upsert({
@@ -429,6 +445,64 @@ async function main() {
         },
       });
       console.log("Updated Gun Holster product and variants.");
+    }
+
+    // ── TPU-90A Filament (Voronyz Engineering — not footwear) ──
+    const existingFilament = await prisma.product.findUnique({ where: { slug: FILAMENT_SLUG } });
+    console.log("TPU-90A Filament product check:", existingFilament ? "Found" : "Not found");
+    if (!existingFilament) {
+      const filamentProduct = await prisma.product.create({
+        data: {
+          slug: FILAMENT_SLUG,
+          name: FILAMENT_NAME,
+          description: FILAMENT_DESCRIPTION_SHORT,
+          priceCents: FILAMENT_PRICE_CENTS,
+          currency: "usd",
+          images: [...FILAMENT_IMAGES],
+          primaryColors: [...FILAMENT_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...FILAMENT_SIZES],
+          variants: {
+            create: FILAMENT_VARIANTS.map((v) => ({ ...v })),
+          },
+        },
+        include: { variants: true },
+      });
+      console.log("Seeded product:", filamentProduct.slug);
+    } else {
+      console.log("Updating existing TPU-90A Filament product...");
+      await prisma.product.update({
+        where: { id: existingFilament.id },
+        data: {
+          name: FILAMENT_NAME,
+          description: FILAMENT_DESCRIPTION_SHORT,
+          priceCents: FILAMENT_PRICE_CENTS,
+          images: [...FILAMENT_IMAGES],
+          primaryColors: [...FILAMENT_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...FILAMENT_SIZES],
+        },
+      });
+      for (const v of FILAMENT_VARIANTS) {
+        await prisma.variant.upsert({
+          where: { sku: v.sku },
+          update: { stock: v.stock, color: v.color },
+          create: {
+            product: { connect: { id: existingFilament.id } },
+            color: v.color,
+            sku: v.sku,
+            stock: v.stock,
+          },
+        });
+      }
+      const keepSkus = FILAMENT_VARIANTS.map((v) => v.sku);
+      await prisma.variant.deleteMany({
+        where: {
+          productId: existingFilament.id,
+          sku: { notIn: [...keepSkus] },
+        },
+      });
+      console.log("Updated TPU-90A Filament product and variants.");
     }
 
     // ── Antioxidant Trail Mix (Voronyz Health — not footwear) ──
