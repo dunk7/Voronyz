@@ -251,14 +251,13 @@ video {
 
 .logo-loader-mark {
   overflow: visible;
+  background: transparent;
   animation: logo-mark-breathe 1.35s ease-in-out infinite;
-  will-change: transform, opacity;
 }
 
 .logo-loader-dot {
   transform-origin: center;
   transform-box: fill-box;
-  will-change: transform, opacity;
 }
 
 .logo-loader-dot--core {
@@ -280,8 +279,22 @@ video {
   animation-delay: 360ms;
 }
 
+/*
+  Keep the orbit stage fully transparent. Avoid isolation/will-change layer
+  promotion — Chrome cold-starts (e.g. opening from Google) can paint those
+  promoted layers as an opaque black square over the page background.
+*/
+.logo-loader-stage,
+.logo-loader-orbit,
+.logo-loader-orbit-arm {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  outline: none;
+}
+
 .logo-loader-stage {
-  isolation: isolate;
+  overflow: visible;
 }
 
 .logo-loader-wordmark {
@@ -293,7 +306,6 @@ video {
   align-items: center;
   justify-content: center;
   animation: logo-orbit-spin var(--logo-orbit-duration, 0.85s) linear infinite;
-  will-change: transform;
 }
 
 .logo-loader-orbit-reverse {
@@ -304,13 +316,12 @@ video {
   /* Sits on the orbit radius and bounces while the parent spins */
   transform: translateX(var(--logo-orbit-radius, 42px));
   animation: logo-orbit-bounce var(--logo-bounce-duration, 0.55s) ease-in-out infinite;
-  will-change: transform;
 }
 
 .logo-loader-mark-spin {
   display: block;
+  background: transparent;
   animation: logo-mark-twirl 0.45s linear infinite;
-  will-change: transform;
 }
 
 .logo-loader-bar-fill {
