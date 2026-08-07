@@ -30,7 +30,16 @@ import {
   FILAMENT_SLUG,
   FILAMENT_VARIANTS,
 } from "../src/lib/filament";
-import { OBSOLETE_FOOTWEAR_SLUGS } from "../src/lib/footwear";
+import {
+  GATORS_DESCRIPTION_SHORT,
+  GATORS_IMAGES,
+  GATORS_NAME,
+  GATORS_PRICE_CENTS,
+  GATORS_PRIMARY_COLORS,
+  GATORS_SIZES,
+  GATORS_SLUG,
+  GATORS_VARIANTS,
+} from "../src/lib/gators";
 
 const prisma = new PrismaClient();
 
@@ -47,7 +56,7 @@ async function main() {
           name: "V3 Slides",
           description:
             "World-class FDM printed slides with TPU lattice lowers and breathable uppers. Engineered from precision 3D scans.",
-          priceCents: 5500,
+          priceCents: 7500,
           currency: "usd",
           images: [
             "/products/v3-slides/InShot_20260212_194352014.jpg",
@@ -82,7 +91,7 @@ async function main() {
       await prisma.product.update({
         where: { id: existing.id },
         data: {
-          priceCents: 5500,
+          priceCents: 7500,
           images: [
             "/products/v3-slides/InShot_20260212_194352014.jpg",
             "/products/v3-slides/InShot_20260212_193956953.jpg",
@@ -162,7 +171,7 @@ async function main() {
             "/products/dragonfly/InShot_20260212_155809942.jpg",
             "/products/dragonfly/InShot_20260212_160512335.jpg",
           ],
-          primaryColors: ["black", "white", "red", "#007FFF"],
+          primaryColors: ["black", "white", "red", "#007FFF", "pink"],
           secondaryColors: ["black", "white", "grey", "red", "#007FFF", "green", "blue", "maroon", "pink", "purple", "orange", "yellow", "navy", "teal"],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
           variants: {
@@ -171,6 +180,7 @@ async function main() {
               { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },  // Out of stock
               { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
               { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
+              { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 6500 },
             ],
           },
         },
@@ -197,7 +207,7 @@ async function main() {
             "/products/dragonfly/InShot_20260212_155809942.jpg",
             "/products/dragonfly/InShot_20260212_160512335.jpg",
           ],
-          primaryColors: ["black", "white", "red", "#007FFF"],
+          primaryColors: ["black", "white", "red", "#007FFF", "pink"],
           secondaryColors: ["black", "white", "grey", "red", "#007FFF", "green", "blue", "maroon", "pink", "purple", "orange", "yellow", "navy", "teal"],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
         },
@@ -209,6 +219,7 @@ async function main() {
         { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },
         { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
         { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
+        { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 6500 },
       ];
       for (const v of dfVariants) {
         await prisma.variant.upsert({
@@ -246,11 +257,11 @@ async function main() {
           slug: "slip-ons",
           name: "Slip Ons",
           description:
-            "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, or orange (white coming soon).",
+            "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
           priceCents: 6000,
           currency: "usd",
           images: slipOnImages,
-          primaryColors: ["black", "grey", "white", "orange"],
+          primaryColors: ["black", "grey", "white", "orange", "pink"],
           secondaryColors: [],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
           variants: {
@@ -259,6 +270,7 @@ async function main() {
               { color: "grey", sku: "SO-GRY", stock: 999 },
               { color: "white", sku: "SO-WHT", stock: 0 },
               { color: "orange", sku: "SO-ORG", stock: 999 },
+              { color: "pink", sku: "SO-PNK", stock: 999 },
             ],
           },
         },
@@ -272,10 +284,10 @@ async function main() {
         data: {
           name: "Slip Ons",
           description:
-            "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, or orange (white coming soon).",
+            "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
           priceCents: 6000,
           images: slipOnImages,
-          primaryColors: ["black", "grey", "white", "orange"],
+          primaryColors: ["black", "grey", "white", "orange", "pink"],
           secondaryColors: [],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
         },
@@ -285,6 +297,7 @@ async function main() {
         { color: "grey", sku: "SO-GRY", stock: 999 },
         { color: "white", sku: "SO-WHT", stock: 0 },
         { color: "orange", sku: "SO-ORG", stock: 999 },
+        { color: "pink", sku: "SO-PNK", stock: 999 },
       ];
       for (const v of soVariants) {
         await prisma.variant.upsert({
@@ -324,7 +337,7 @@ async function main() {
           priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
           currency: "usd",
           images: magikidShoesImages,
-          primaryColors: ["black", "grey", "white", "orange"],
+          primaryColors: ["black", "grey", "white", "orange", "pink"],
           secondaryColors: [],
           sizes: MAGIKID_SHOES_KIDS_SIZES,
           variants: {
@@ -333,6 +346,7 @@ async function main() {
               { color: "grey", sku: "MK-GRY", stock: 999 },
               { color: "white", sku: "MK-WHT", stock: 0 },
               { color: "orange", sku: "MK-ORG", stock: 0 },
+              { color: "pink", sku: "MK-PNK", stock: 999 },
             ],
           },
         },
@@ -348,7 +362,7 @@ async function main() {
           description: MAGIKID_SHOES_DESCRIPTION_SHORT,
           priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
           images: magikidShoesImages,
-          primaryColors: ["black", "grey", "white", "orange"],
+          primaryColors: ["black", "grey", "white", "orange", "pink"],
           secondaryColors: [],
           sizes: MAGIKID_SHOES_KIDS_SIZES,
         },
@@ -358,6 +372,7 @@ async function main() {
         { color: "grey", sku: "MK-GRY", stock: 999 },
         { color: "white", sku: "MK-WHT", stock: 0 },
         { color: "orange", sku: "MK-ORG", stock: 0 },
+        { color: "pink", sku: "MK-PNK", stock: 999 },
       ];
       for (const v of mkVariants) {
         await prisma.variant.upsert({
@@ -548,32 +563,62 @@ async function main() {
       console.log("Updated Antioxidant Trail Mix product and variants.");
     }
 
-    // ── Remove retired footwear (The Gators) ──
-    const obsoleteFootwearSlugs = [...OBSOLETE_FOOTWEAR_SLUGS];
-    if (obsoleteFootwearSlugs.length > 0) {
-      const obsolete = await prisma.product.findMany({
-        where: { slug: { in: obsoleteFootwearSlugs } },
-        select: { id: true, slug: true },
+    // ── The Gators (comfort clog footwear) ──
+    const existingGators = await prisma.product.findUnique({ where: { slug: GATORS_SLUG } });
+    console.log("The Gators product check:", existingGators ? "Found" : "Not found");
+    if (!existingGators) {
+      const gatorsProduct = await prisma.product.create({
+        data: {
+          slug: GATORS_SLUG,
+          name: GATORS_NAME,
+          description: GATORS_DESCRIPTION_SHORT,
+          priceCents: GATORS_PRICE_CENTS,
+          currency: "usd",
+          images: [...GATORS_IMAGES],
+          primaryColors: [...GATORS_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...GATORS_SIZES],
+          variants: {
+            create: GATORS_VARIANTS.map((v) => ({ ...v })),
+          },
+        },
+        include: { variants: true },
       });
-      if (obsolete.length > 0) {
-        const obsoleteIds = obsolete.map((product) => product.id);
-        const variants = await prisma.variant.findMany({
-          where: { productId: { in: obsoleteIds } },
-          select: { id: true },
+      console.log("Seeded product:", gatorsProduct.slug);
+    } else {
+      console.log("Updating existing The Gators product...");
+      await prisma.product.update({
+        where: { id: existingGators.id },
+        data: {
+          name: GATORS_NAME,
+          description: GATORS_DESCRIPTION_SHORT,
+          priceCents: GATORS_PRICE_CENTS,
+          images: [...GATORS_IMAGES],
+          primaryColors: [...GATORS_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...GATORS_SIZES],
+        },
+      });
+      for (const v of GATORS_VARIANTS) {
+        await prisma.variant.upsert({
+          where: { sku: v.sku },
+          update: { stock: v.stock, color: v.color },
+          create: {
+            product: { connect: { id: existingGators.id } },
+            color: v.color,
+            sku: v.sku,
+            stock: v.stock,
+          },
         });
-        const variantIds = variants.map((variant) => variant.id);
-        if (variantIds.length > 0) {
-          await prisma.cartItem.deleteMany({ where: { variantId: { in: variantIds } } });
-          await prisma.variant.deleteMany({ where: { id: { in: variantIds } } });
-        }
-        await prisma.product.deleteMany({ where: { id: { in: obsoleteIds } } });
-        console.log(
-          "Removed obsolete footwear:",
-          obsolete.map((product) => product.slug).join(", "),
-        );
-      } else {
-        console.log("No obsolete footwear products to remove.");
       }
+      const keepGatorSkus = GATORS_VARIANTS.map((v) => v.sku);
+      await prisma.variant.deleteMany({
+        where: {
+          productId: existingGators.id,
+          sku: { notIn: [...keepGatorSkus] },
+        },
+      });
+      console.log("Updated The Gators product and variants.");
     }
 
     console.log('Seed script completed successfully.');

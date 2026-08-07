@@ -21,6 +21,7 @@ export default function Footer() {
           <Link className="hover:text-black" href="/about">About</Link>
           <Link className="hover:text-black" href="/careers">Careers</Link>
           <Link className="hover:text-black" href="/contact">Contact</Link>
+          <Link className="hover:text-black" href="/quiz">Take the Quiz</Link>
         </div>
         <div className="grid gap-2">
           <div className="text-neutral-900 font-medium">Legal</div>

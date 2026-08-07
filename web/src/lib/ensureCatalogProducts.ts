@@ -21,6 +21,16 @@ import {
   TRAIL_MIX_VARIANTS,
 } from "@/lib/trailMix";
 import {
+  GATORS_DESCRIPTION_SHORT,
+  GATORS_IMAGES,
+  GATORS_NAME,
+  GATORS_PRICE_CENTS,
+  GATORS_PRIMARY_COLORS,
+  GATORS_SIZES,
+  GATORS_SLUG,
+  GATORS_VARIANTS,
+} from "@/lib/gators";
+import {
   FILAMENT_DESCRIPTION_SHORT,
   FILAMENT_IMAGES,
   FILAMENT_NAME,
@@ -37,7 +47,7 @@ import {
   apparelSku,
   getApparelImages,
 } from "@/lib/apparel";
-import { FOOTWEAR_CATALOG, OBSOLETE_FOOTWEAR_SLUGS } from "@/lib/footwear";
+import { FOOTWEAR_CATALOG } from "@/lib/footwear";
 
 /**
  * Self-heal Product.category / Product.subcategory when the apparel migration
@@ -75,19 +85,21 @@ const FOOTWEAR_VARIANTS: Record<
     { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },
     { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
     { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
+    { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 6500 },
   ],
   "slip-ons": [
     { color: "black", sku: "SO-BLK", stock: 999 },
     { color: "grey", sku: "SO-GRY", stock: 999 },
     { color: "white", sku: "SO-WHT", stock: 0 },
     { color: "orange", sku: "SO-ORG", stock: 999 },
+    { color: "pink", sku: "SO-PNK", stock: 999 },
   ],
 };
 
 const FOOTWEAR_COLORS: Record<string, string[]> = {
   "v3-slides": ["black", "white", "grey", "green", "pink"],
-  dragonfly: ["black", "white", "red", "#007FFF"],
-  "slip-ons": ["black", "grey", "white", "orange"],
+  dragonfly: ["black", "white", "red", "#007FFF", "pink"],
+  "slip-ons": ["black", "grey", "white", "orange", "pink"],
 };
 
 const FOOTWEAR_SECONDARY: Record<string, string[]> = {
@@ -115,6 +127,7 @@ const FOOTWEAR_SIZES = ["5", "6", "7", "8", "9", "10", "11", "12"];
 export async function ensureFootwearProducts(): Promise<void> {
   for (const item of FOOTWEAR_CATALOG) {
     if (item.slug === "magikid-shoes") continue; // handled by ensureMagikidShoes
+    if (item.slug === GATORS_SLUG) continue; // handled by ensureGators
 
     const variants = FOOTWEAR_VARIANTS[item.slug] ?? [];
     const primaryColors = FOOTWEAR_COLORS[item.slug] ?? ["black"];
@@ -194,7 +207,10 @@ const MAGIKID_VARIANTS = [
   { color: "grey", sku: "MK-GRY", stock: 999 },
   { color: "white", sku: "MK-WHT", stock: 0 },
   { color: "orange", sku: "MK-ORG", stock: 0 },
+  { color: "pink", sku: "MK-PNK", stock: 999 },
 ] as const;
+
+const MAGIKID_PRIMARY_COLORS = ["black", "grey", "white", "orange", "pink"] as const;
 
 /** Keep footwear white OOS / pink in stock without requiring a manual seed run. */
 type FootwearStockVariant = {
@@ -225,6 +241,7 @@ const FOOTWEAR_STOCK_SYNC: Array<{
       { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },
       { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
       { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
+      { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 6500 },
     ],
   },
   {
@@ -234,6 +251,7 @@ const FOOTWEAR_STOCK_SYNC: Array<{
       { color: "grey", sku: "SO-GRY", stock: 999 },
       { color: "white", sku: "SO-WHT", stock: 0 },
       { color: "orange", sku: "SO-ORG", stock: 999 },
+      { color: "pink", sku: "SO-PNK", stock: 999 },
     ],
   },
 ];
@@ -276,7 +294,7 @@ export async function ensureMagikidShoes(): Promise<void> {
         currency: "usd",
         category: "footwear",
         images: MAGIKID_SHOES_IMAGES,
-        primaryColors: ["black", "grey", "white", "orange"],
+        primaryColors: [...MAGIKID_PRIMARY_COLORS],
         secondaryColors: [],
         sizes: MAGIKID_SHOES_KIDS_SIZES,
         variants: {
@@ -295,7 +313,7 @@ export async function ensureMagikidShoes(): Promise<void> {
       priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
       category: "footwear",
       images: MAGIKID_SHOES_IMAGES,
-      primaryColors: ["black", "grey", "white", "orange"],
+      primaryColors: [...MAGIKID_PRIMARY_COLORS],
       secondaryColors: [],
       sizes: MAGIKID_SHOES_KIDS_SIZES,
     },
@@ -439,33 +457,62 @@ export async function ensureTrailMix(): Promise<void> {
   });
 }
 
-/** Idempotently delete retired footwear (e.g. The Gators) so they leave listings/PDPs. */
-export async function removeObsoleteFootwear(): Promise<void> {
-  const obsoleteSlugs = [...OBSOLETE_FOOTWEAR_SLUGS];
-  if (obsoleteSlugs.length === 0) return;
+/** Idempotently upsert The Gators so the listing appears without a manual seed run. */
+export async function ensureGators(): Promise<void> {
+  const existing = await prisma.product.findUnique({ where: { slug: GATORS_SLUG } });
 
-  const obsolete = await prisma.product.findMany({
-    where: { slug: { in: obsoleteSlugs } },
-    select: { id: true },
-  });
-  const obsoleteIds = obsolete.map((product) => product.id);
-  if (obsoleteIds.length === 0) return;
-
-  const variants = await prisma.variant.findMany({
-    where: { productId: { in: obsoleteIds } },
-    select: { id: true },
-  });
-  const variantIds = variants.map((variant) => variant.id);
-  if (variantIds.length > 0) {
-    await prisma.cartItem.deleteMany({
-      where: { variantId: { in: variantIds } },
+  if (!existing) {
+    await prisma.product.create({
+      data: {
+        slug: GATORS_SLUG,
+        name: GATORS_NAME,
+        description: GATORS_DESCRIPTION_SHORT,
+        priceCents: GATORS_PRICE_CENTS,
+        currency: "usd",
+        images: [...GATORS_IMAGES],
+        primaryColors: [...GATORS_PRIMARY_COLORS],
+        secondaryColors: [],
+        sizes: [...GATORS_SIZES],
+        variants: {
+          create: GATORS_VARIANTS.map((v) => ({ ...v })),
+        },
+      },
     });
-    await prisma.variant.deleteMany({
-      where: { id: { in: variantIds } },
+    return;
+  }
+
+  await prisma.product.update({
+    where: { id: existing.id },
+    data: {
+      name: GATORS_NAME,
+      description: GATORS_DESCRIPTION_SHORT,
+      priceCents: GATORS_PRICE_CENTS,
+      images: [...GATORS_IMAGES],
+      primaryColors: [...GATORS_PRIMARY_COLORS],
+      secondaryColors: [],
+      sizes: [...GATORS_SIZES],
+    },
+  });
+
+  for (const v of GATORS_VARIANTS) {
+    await prisma.variant.upsert({
+      where: { sku: v.sku },
+      update: { stock: v.stock, color: v.color },
+      create: {
+        product: { connect: { id: existing.id } },
+        color: v.color,
+        sku: v.sku,
+        stock: v.stock,
+      },
     });
   }
-  await prisma.product.deleteMany({
-    where: { id: { in: obsoleteIds } },
+
+  const keepSkus = GATORS_VARIANTS.map((v) => v.sku);
+  await prisma.variant.deleteMany({
+    where: {
+      productId: existing.id,
+      sku: { notIn: [...keepSkus] },
+    },
   });
 }
 
@@ -653,7 +700,7 @@ export async function ensureCatalogProducts(): Promise<void> {
         ensureFootwearProducts(),
         ensureFootwearStock(),
         ensureMagikidShoes(),
-        removeObsoleteFootwear(),
+        ensureGators(),
         ensureGunHolster(),
         ensureFilament(),
         ensureTrailMix(),
@@ -691,15 +738,8 @@ export async function ensureFootwearCatalog(): Promise<void> {
       await ensureProductCategoryColumns();
       await ensureFootwearProducts();
       await ensureFootwearStock();
-      await removeObsoleteFootwear();
-      // Hot path: only create Magikid if missing — never rewrite the whole catalog.
-      const existing = await prisma.product.findUnique({
-        where: { slug: "magikid-shoes" },
-        select: { id: true },
-      });
-      if (!existing) {
-        await ensureMagikidShoes();
-      }
+      await ensureGators();
+      await ensureMagikidShoes();
       footwearEnsureAt = Date.now();
     } catch (error) {
       console.error("ensureFootwearCatalog failed:", error);
@@ -734,4 +774,29 @@ export async function ensureHealthCatalog(): Promise<void> {
   })();
 
   return healthEnsureInFlight;
+}
+
+/** Engineering-only ensure — skips apparel/footwear for fast /accessories loads. */
+let accessoriesEnsureAt = 0;
+let accessoriesEnsureInFlight: Promise<void> | null = null;
+const ACCESSORIES_ENSURE_TTL_MS = 10 * 60 * 1000;
+
+export async function ensureAccessoriesCatalog(): Promise<void> {
+  const now = Date.now();
+  if (accessoriesEnsureInFlight) return accessoriesEnsureInFlight;
+  if (now - accessoriesEnsureAt < ACCESSORIES_ENSURE_TTL_MS) return;
+
+  accessoriesEnsureInFlight = (async () => {
+    try {
+      await ensureProductCategoryColumns();
+      await ensureGunHolster();
+      accessoriesEnsureAt = Date.now();
+    } catch (error) {
+      console.error("ensureAccessoriesCatalog failed:", error);
+    } finally {
+      accessoriesEnsureInFlight = null;
+    }
+  })();
+
+  return accessoriesEnsureInFlight;
 }

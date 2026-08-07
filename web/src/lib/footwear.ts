@@ -3,6 +3,13 @@ import {
   MAGIKID_SHOES_DESCRIPTION_SHORT,
   MAGIKID_SHOES_THUMBNAIL_URL,
 } from "@/lib/magikidShoesThumbnail";
+import {
+  GATORS_DESCRIPTION_SHORT,
+  GATORS_IMAGES,
+  GATORS_NAME,
+  GATORS_PRICE_CENTS,
+  GATORS_SLUG,
+} from "@/lib/gators";
 import { getProductThumbnail } from "@/lib/productImages";
 
 /** Core footwear catalog — used as an immediate client seed when /api/search is slow or down. */
@@ -16,7 +23,8 @@ export type FootwearCatalogItem = {
 
 /**
  * Display order for All Footwear:
- * Magikid → Slides → Slip Ons → Sneakers (Dragonfly last).
+ * Magikid → Slides → Gators → Slip Ons → Sneakers (Dragonfly last).
+ * Gators stays in the grid — just not first.
  */
 export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
   {
@@ -41,7 +49,7 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     name: "V3 Slides",
     description:
       "World-class FDM printed slides with TPU lattice lowers and breathable uppers. Engineered from precision 3D scans.",
-    priceCents: 5500,
+    priceCents: 7500,
     images: [
       "/products/v3-slides/InShot_20260212_194352014.jpg",
       "/products/v3-slides/InShot_20260212_193956953.jpg",
@@ -56,10 +64,17 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     ],
   },
   {
+    slug: GATORS_SLUG,
+    name: GATORS_NAME,
+    description: GATORS_DESCRIPTION_SHORT,
+    priceCents: GATORS_PRICE_CENTS,
+    images: [...GATORS_IMAGES],
+  },
+  {
     slug: "slip-ons",
     name: "Slip Ons",
     description:
-      "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, or orange (white coming soon).",
+      "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
     priceCents: 6000,
     images: [
       "/products/slip-ons/InShot_20260405_203151152.jpg",
@@ -91,14 +106,6 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     ],
   },
 ];
-
-/** Retired footwear listings — deleted from DB on catalog ensure so they leave the shop. */
-export const OBSOLETE_FOOTWEAR_SLUGS = ["gators"] as const;
-
-export function isObsoleteFootwearSlug(slug: string | null | undefined): boolean {
-  const key = (slug || "").trim().toLowerCase();
-  return (OBSOLETE_FOOTWEAR_SLUGS as readonly string[]).includes(key);
-}
 
 export const FOOTWEAR_SLUGS = FOOTWEAR_CATALOG.map((item) => item.slug);
 

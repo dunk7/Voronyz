@@ -6,9 +6,11 @@ import { MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
 import { filterAccessoryProducts, filterFootwearProducts, filterHealthProducts } from "@/lib/productCategories";
 import { getFootwearCatalogSeed, type FootwearListProduct } from "@/lib/footwear";
 import { useEffect, useState, useCallback } from "react";
+import { getAccessoryCatalogSeed } from "@/lib/gunHolster";
 import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
+import { GATORS_SLUG } from "@/lib/gators";
 import { FILAMENT_SLUG, getAccessoryCatalogSeed } from "@/lib/filament";
 
 type Product = FootwearListProduct;
@@ -24,7 +26,6 @@ const productMeta: Record<string, {
     altImage: "/products/v3-slides/InShot_20260212_193956953.jpg",
   },
   dragonfly: {
-    tag: "Sneakers",
     altImage: "/products/dragonfly/InShot_20260212_153903491.jpg",
   },
   "slip-ons": {
@@ -32,7 +33,7 @@ const productMeta: Record<string, {
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
   "magikid-shoes": {
-    tag: "Slip-ons",
+    tag: "Kids",
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
   "gun-holster": {
@@ -77,6 +78,7 @@ type ProductsContentProps = {
 
 function categorySeed(category: ProductsContentProps["category"]): Product[] {
   if (category === "footwear") return getFootwearCatalogSeed();
+  if (category === "accessories") return getAccessoryCatalogSeed();
   if (category === "health") return getHealthCatalogSeed();
   if (category === "accessories") return getAccessoryCatalogSeed();
   return [];
@@ -106,7 +108,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
     const controller = new AbortController();
 
     async function fetchProducts() {
-      // Seed footwear / Collaborative immediately so the grid never goes empty behind the logo loader.
+      // Seed footwear / Engineering / Collaborative immediately so the grid never goes empty behind the logo loader.
       if (!searchQuery) {
         const seed = categorySeed(category);
         if (seed.length > 0) setProducts(seed);
@@ -329,6 +331,11 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                       {slugKey === "slip-ons" && (
                         <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
                           New
+                        </span>
+                      )}
+                      {slugKey === GATORS_SLUG && (
+                        <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
+                          New Listing
                         </span>
                       )}
                       {slugKey === FILAMENT_SLUG && (
