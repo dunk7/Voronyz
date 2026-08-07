@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getProductThumbnail } from "@/lib/productImages";
-import { ensureCatalogProducts, ensureFootwearCatalog, ensureHealthCatalog } from "@/lib/ensureCatalogProducts";
+import { ensureAccessoriesCatalog, ensureCatalogProducts, ensureFootwearCatalog, ensureHealthCatalog } from "@/lib/ensureCatalogProducts";
 import { getFootwearCatalogSeed } from "@/lib/footwear";
 import {
   filterAccessoryProducts,
@@ -9,13 +9,7 @@ import {
   filterFootwearProducts,
   filterHealthProducts,
 } from "@/lib/productCategories";
-import {
-  GUN_HOLSTER_DESCRIPTION_SHORT,
-  GUN_HOLSTER_IMAGES,
-  GUN_HOLSTER_NAME,
-  GUN_HOLSTER_PRICE_CENTS,
-  GUN_HOLSTER_SLUG,
-} from "@/lib/gunHolster";
+import { getAccessoryCatalogSeed } from "@/lib/filament";
 import {
   getHealthCatalogSeed,
 } from "@/lib/trailMix";
@@ -67,37 +61,24 @@ function applyCategoryFilter<T extends { slug: string }>(
 function getStaticCatalogFallback() {
   const now = new Date().toISOString();
   const footwear = getFootwearCatalogSeed();
+  const accessories = getAccessoryCatalogSeed();
   const health = getHealthCatalogSeed();
-  const extras = [
-    {
-      id: `catalog-${GUN_HOLSTER_SLUG}`,
-      slug: GUN_HOLSTER_SLUG,
-      name: GUN_HOLSTER_NAME,
-      description: GUN_HOLSTER_DESCRIPTION_SHORT,
-      priceCents: GUN_HOLSTER_PRICE_CENTS,
+  const apparel = APPAREL_CATALOG.map((item) => {
+    const images = getApparelImages(item);
+    return {
+      id: `catalog-${item.slug}`,
+      slug: item.slug,
+      name: item.name,
+      description: item.description,
+      priceCents: item.priceCents,
       currency: "usd",
-      images: [...GUN_HOLSTER_IMAGES],
-      thumbnail: getProductThumbnail({ slug: GUN_HOLSTER_SLUG, images: GUN_HOLSTER_IMAGES }),
+      images,
+      thumbnail: item.image,
       createdAt: now,
       updatedAt: now,
-    },
-    ...APPAREL_CATALOG.map((item) => {
-      const images = getApparelImages(item);
-      return {
-        id: `catalog-${item.slug}`,
-        slug: item.slug,
-        name: item.name,
-        description: item.description,
-        priceCents: item.priceCents,
-        currency: "usd",
-        images,
-        thumbnail: item.image,
-        createdAt: now,
-        updatedAt: now,
-      };
-    }),
-  ];
-  return [...footwear, ...health, ...extras];
+    };
+  });
+  return [...footwear, ...accessories, ...health, ...apparel];
 }
 
 export async function GET(request: NextRequest) {
@@ -110,6 +91,8 @@ export async function GET(request: NextRequest) {
     // Category listings skip heavy apparel upserts when possible.
     if (category === "footwear" && !(query && query.trim().length > 0)) {
       await ensureFootwearCatalog();
+    } else if (category === "accessories" && !(query && query.trim().length > 0)) {
+      await ensureAccessoriesCatalog();
     } else if (category === "health" && !(query && query.trim().length > 0)) {
       await ensureHealthCatalog();
     } else {
@@ -200,9 +183,9 @@ export async function GET(request: NextRequest) {
 
     products = applyCategoryFilter(products, category);
 
-    // Collaborative is a single product — never return/cache an empty health listing.
+    // Single-product categories — never return/cache an empty listing.
     if (
-      category === "health" &&
+      (category === "health" || category === "accessories") &&
       products.length === 0 &&
       !(query && query.trim().length > 0)
     ) {

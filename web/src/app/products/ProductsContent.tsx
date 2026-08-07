@@ -9,6 +9,7 @@ import { useEffect, useState, useCallback } from "react";
 import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
+import { GATORS_SLUG } from "@/lib/gators";
 import { FILAMENT_SLUG, getAccessoryCatalogSeed } from "@/lib/filament";
 import { LATTICE_INSOLES_SLUG } from "@/lib/latticeInsoles";
 
@@ -25,7 +26,6 @@ const productMeta: Record<string, {
     altImage: "/products/v3-slides/InShot_20260212_193956953.jpg",
   },
   dragonfly: {
-    tag: "Sneakers",
     altImage: "/products/dragonfly/InShot_20260212_153903491.jpg",
   },
   "slip-ons": {
@@ -33,11 +33,8 @@ const productMeta: Record<string, {
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
   "magikid-shoes": {
-    tag: "Slip-ons",
+    tag: "Kids",
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
-  },
-  "gun-holster": {
-    tag: "Engineering",
   },
   "tpu-90a-filament": {
     tag: "Filament",
@@ -62,8 +59,6 @@ function cardMetaForSlug(slug: string) {
       return productMeta["slip-ons"];
     case "magikid-shoes":
       return productMeta["magikid-shoes"];
-    case "gun-holster":
-      return productMeta["gun-holster"];
     case FILAMENT_SLUG:
     case "tpu-90a-filament":
       return productMeta["tpu-90a-filament"];
@@ -83,8 +78,8 @@ type ProductsContentProps = {
 
 function categorySeed(category: ProductsContentProps["category"]): Product[] {
   if (category === "footwear") return getFootwearCatalogSeed();
-  if (category === "health") return getHealthCatalogSeed();
   if (category === "accessories") return getAccessoryCatalogSeed();
+  if (category === "health") return getHealthCatalogSeed();
   return [];
 }
 
@@ -112,7 +107,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
     const controller = new AbortController();
 
     async function fetchProducts() {
-      // Seed footwear / Collaborative immediately so the grid never goes empty behind the logo loader.
+      // Seed footwear / Engineering / Collaborative immediately so the grid never goes empty behind the logo loader.
       if (!searchQuery) {
         const seed = categorySeed(category);
         if (seed.length > 0) setProducts(seed);
@@ -174,7 +169,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
       : "All Footwear";
   const subheading =
     category === "accessories"
-      ? "Engineered gear and materials — holsters, filament, made for makers."
+      ? "Engineered materials — TPU-90A filament, made for makers."
       : category === "health"
       ? "Helping the small businesses we support and stand for grow and be seen on the Voronyz marketplace."
       : "3D-printed, scan-calibrated footwear — engineered for comfort, built to last.";
@@ -335,6 +330,11 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                       {slugKey === "slip-ons" && (
                         <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
                           New
+                        </span>
+                      )}
+                      {slugKey === GATORS_SLUG && (
+                        <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
+                          New Listing
                         </span>
                       )}
                       {slugKey === FILAMENT_SLUG && (
