@@ -203,7 +203,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
             <div className="mt-6 h-px bg-neutral-200" />
           </div>
           <div className="flex min-h-[40vh] items-center justify-center py-16">
-            <LogoLoader size="lg" label="Loading" orbit />
+            <LogoLoader size="lg" label="Loading" />
           </div>
         </div>
       </div>
