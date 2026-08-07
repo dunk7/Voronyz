@@ -54,12 +54,20 @@ import {
   getApparelItem,
   getApparelImages,
   getApparelSubcategory,
+  isObsoleteApparelSlug,
 } from "@/lib/apparel";
 import LogoLoader from "@/components/ui/LogoLoader";
+import { redirect } from "next/navigation";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
 // This page is rendered on-demand.
 export const dynamic = "force-dynamic";
+
+/** Old pants / sweats product pages → single joggers listing. */
+const OBSOLETE_APPAREL_PRODUCT_REDIRECTS: Record<string, string> = {
+  "voronyz-technical-pants": "/products/voronyz-joggers",
+  "voronyz-lounge-sweats": "/products/voronyz-joggers",
+};
 
 type Media = {
   type: "image" | "video";
@@ -92,6 +100,10 @@ type ProductWithVariants = {
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const obsoleteRedirect = OBSOLETE_APPAREL_PRODUCT_REDIRECTS[slug.trim().toLowerCase()];
+  if (obsoleteRedirect || isObsoleteApparelSlug(slug)) {
+    redirect(obsoleteRedirect ?? "/products/voronyz-joggers");
+  }
   let product: ProductWithVariants;
   try {
     await ensureCatalogProducts();
