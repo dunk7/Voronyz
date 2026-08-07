@@ -39,6 +39,14 @@ import {
   FILAMENT_SLUG,
   FILAMENT_THUMBNAIL_URL,
 } from "@/lib/filament";
+import {
+  LATTICE_INSOLES_DESCRIPTION,
+  LATTICE_INSOLES_HOW_ITS_MADE,
+  LATTICE_INSOLES_IMAGES,
+  LATTICE_INSOLES_NAME,
+  LATTICE_INSOLES_SLUG,
+  LATTICE_INSOLES_THUMBNAIL_URL,
+} from "@/lib/latticeInsoles";
 import { isAccessorySlug, isApparelSlug, isHealthSlug } from "@/lib/productCategories";
 import {
   apparelProductShopHref,
@@ -176,6 +184,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? [...GATORS_IMAGES]
     : slug === FILAMENT_SLUG
     ? [...FILAMENT_IMAGES]
+    : slug === LATTICE_INSOLES_SLUG
+    ? [...LATTICE_INSOLES_IMAGES]
     : getApparelItem(slug)
     ? getApparelImages(getApparelItem(slug)!)
     : ((product.images as string[] | null) ?? defaultImages);
@@ -194,6 +204,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isTrailMix = slug === TRAIL_MIX_SLUG;
   const isGators = slug === GATORS_SLUG;
   const isFilament = slug === FILAMENT_SLUG;
+  const isLatticeInsoles = slug === LATTICE_INSOLES_SLUG;
   const apparelItem = getApparelItem(slug);
   const isApparel = Boolean(apparelItem);
   const shopHref = isAccessorySlug(slug)
@@ -216,6 +227,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         ? GATORS_NAME
         : isFilament
           ? FILAMENT_NAME
+          : isLatticeInsoles
+            ? LATTICE_INSOLES_NAME
           : product.name;
 
   // Product-specific descriptions
@@ -233,6 +246,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? GATORS_DESCRIPTION
     : isFilament
     ? FILAMENT_DESCRIPTION
+    : isLatticeInsoles
+    ? LATTICE_INSOLES_DESCRIPTION
     : product.description;
 
   const trailMixColors = isTrailMix
@@ -290,12 +305,21 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 </span>
               </>
             )}
-            {!isTrailMix && !isApparel && !isFilament && (
+            {isLatticeInsoles && (
+              <>
+                <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
+                  New Listing
+                </span>
+                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU lattice</span>
+                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">S · M · L · XL</span>
+              </>
+            )}
+            {!isTrailMix && !isApparel && !isFilament && !isLatticeInsoles && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
                 {isMagikidShoes ? "Made to order in <7 days" : "Made to order in <2 days"}
               </span>
             )}
-            {!isMagikidShoes && !isTrailMix && !isApparel && !isFilament && (
+            {!isMagikidShoes && !isTrailMix && !isApparel && !isFilament && !isLatticeInsoles && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
             )}
             {isApparel && apparelItem && (
@@ -377,6 +401,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   {...(isFilament && {
                     hideSizeSelector: true,
                   })}
+                  {...(isLatticeInsoles && {
+                    useCatalogSizes: true,
+                  })}
                   {...(isApparel && {
                     useCatalogSizes: true,
                     preOrder: true,
@@ -427,6 +454,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                           ? "Comfort clog"
                           : isFilament
                             ? "TPU-90A filament"
+                            : isLatticeInsoles
+                              ? "TPU lattice"
                             : "How it's made"}
           </div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed">
@@ -444,6 +473,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? GATORS_HOW_ITS_MADE
               : isFilament
               ? FILAMENT_HOW_ITS_MADE
+              : isLatticeInsoles
+              ? LATTICE_INSOLES_HOW_ITS_MADE
               : "Each pair takes a full day to print using our proprietary TPU blend. Following printing, we perform heat-treated post-processing to ensure exceptional quality, comfort, and durability."}
           </div>
         </div>
@@ -474,16 +505,22 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "How much does it cost?", a: "$60 per bag when back in stock." },
               { q: "When will it restock?", a: "We're restocking the next batch soon. Check back on Collaborative." },
             ] : isApparel ? [
-              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Hats, scarves, bottles, cool shades, jewelry, keychains, lace locks, drone parts, and RC stickers are One Size. Socks use S–XL. Lattice Insoles and Lattice Shoe Trees use S–XL / S–L sizing." },
+              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Hats, scarves, bottles, cool shades, jewelry, keychains, lace locks, drone parts, and RC stickers are One Size. Socks use S–XL. Lattice Shoe Trees use S–L sizing." },
               { q: "Can I pre-order coming soon pieces?", a: "Yes. Choose your color and size, then pay now to join the waitlist. We ship your order when that product arrives — timing can be a day or much longer depending on the drop." },
               { q: "When will my pre-order ship?", a: "As soon as we receive the product. You'll get updates by email. Pre-orders are paid reservations, not instant ship." },
-              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, Scarves, and more. Accessories (hats, water bottles, insoles, shades, jewelry) live under their own Apparel section. Engineering is separate." },
+              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, Scarves, and more. Accessories (hats, water bottles, shades, jewelry) live under their own Apparel section. Engineering is separate. Lattice Insoles are on All Footwear." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders once your pre-order ships." },
             ] : isGators ? [
               { q: "What is The Gators?", a: "A comfort clog named for the alligator 🐊 — closed toe, open back, thick cushioned platform, and easy slip-on wear for all-day comfort." },
               { q: "What colors are available?", a: "Black, pink, grey, and skin-tone tan. This is a new listing with low stock, so grab your size while pairs last." },
               { q: "How much do they cost?", a: "$85 per pair." },
               { q: "Are they true to size?", a: "Yes — use Men's, Women's, or Kids' sizing and pick your usual US size for a comfortable clog fit." },
+              { q: "How long does production take?", a: "Printed to order in about 1–2 days, then ships the next business day." },
+              { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
+            ] : isLatticeInsoles ? [
+              { q: "What sizes are available?", a: "S, M, L, and XL — pick the band that matches your usual shoe size." },
+              { q: "What colors can I order?", a: "Black and grey." },
+              { q: "Will they fit my shoes?", a: "They're drop-in lattice cushions sized for everyday sneakers and Voronyz footwear. Trim lightly at the toe if you need a closer fit." },
               { q: "How long does production take?", a: "Printed to order in about 1–2 days, then ships the next business day." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : [
@@ -568,6 +605,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const title = `${FILAMENT_NAME} – Voronyz`;
     const description = FILAMENT_DESCRIPTION;
     const images = [FILAMENT_THUMBNAIL_URL, ...FILAMENT_IMAGES];
+    return {
+      title,
+      description,
+      openGraph: { title, description, images },
+      twitter: { card: "summary_large_image", title, description, images },
+    };
+  }
+
+  if (slug === LATTICE_INSOLES_SLUG) {
+    const title = `${LATTICE_INSOLES_NAME} – Voronyz`;
+    const description = LATTICE_INSOLES_DESCRIPTION;
+    const images = [LATTICE_INSOLES_THUMBNAIL_URL, ...LATTICE_INSOLES_IMAGES];
     return {
       title,
       description,

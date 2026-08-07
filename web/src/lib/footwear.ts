@@ -10,6 +10,13 @@ import {
   GATORS_PRICE_CENTS,
   GATORS_SLUG,
 } from "@/lib/gators";
+import {
+  LATTICE_INSOLES_DESCRIPTION_SHORT,
+  LATTICE_INSOLES_IMAGES,
+  LATTICE_INSOLES_NAME,
+  LATTICE_INSOLES_PRICE_CENTS,
+  LATTICE_INSOLES_SLUG,
+} from "@/lib/latticeInsoles";
 import { getProductThumbnail } from "@/lib/productImages";
 
 /** Core footwear catalog — used as an immediate client seed when /api/search is slow or down. */
@@ -23,8 +30,8 @@ export type FootwearCatalogItem = {
 
 /**
  * Display order for All Footwear:
- * Magikid → Slides → Gators → Slip Ons → Sneakers (Dragonfly last).
- * Gators stays in the grid — just not first.
+ * Magikid → Slides → Gators → Slip Ons → Sneakers (Dragonfly) → Lattice Insoles.
+ * Gators stays in the grid — just not first. Lattice Insoles last.
  */
 export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
   {
@@ -104,6 +111,13 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
       "/products/dragonfly/InShot_20260212_155809942.jpg",
       "/products/dragonfly/InShot_20260212_160512335.jpg",
     ],
+  },
+  {
+    slug: LATTICE_INSOLES_SLUG,
+    name: LATTICE_INSOLES_NAME,
+    description: LATTICE_INSOLES_DESCRIPTION_SHORT,
+    priceCents: LATTICE_INSOLES_PRICE_CENTS,
+    images: [...LATTICE_INSOLES_IMAGES],
   },
 ];
 

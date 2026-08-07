@@ -5,8 +5,8 @@ export const APPAREL_ONE_SIZE = ["One Size"] as const;
  * Apparel sub-sections.
  * - `collection`: multi-product listing pages (shirts, scarves, sweaters, …) —
  *   add new designs to APPAREL_CATALOG with the matching subcategory.
- * - `standalone`: Accessories only (hats, bottles, insoles, shades, jewelry, …) —
- *   never mixed into clothing collections, and never shown on Engineering `/accessories`.
+ * - `standalone`: Accessories only (hats, bottles, shades, jewelry, …) — never mixed
+ *   into clothing collections, and never shown on Engineering `/accessories`.
  */
 export type ApparelSubcategoryId =
   | "shirts"
@@ -78,7 +78,7 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "accessories",
     label: "Accessories",
-    description: "Hats, bottles, insoles, shades, jewelry, keychains, drone & RC gear",
+    description: "Hats, bottles, shades, jewelry, keychains, drone & RC gear",
     listing: "standalone",
   },
 ];
@@ -275,18 +275,8 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-SQRT",
     comingSoon: true,
   },
-  {
-    slug: "voronyz-lattice-insoles",
-    subcategory: "accessories",
-    name: "Lattice Insoles",
-    description: "3D-printed TPU lattice insoles for cushion, bounce, and all-day support.",
-    priceCents: 3200,
-    colors: ["black", "grey"],
-    sizes: ["S", "M", "L", "XL"],
-    image: "/products/apparel/lattice-insoles.jpg",
-    skuPrefix: "APP-INSL",
-    comingSoon: true,
-  },
+  // ── Accessories only (never mixed into clothing collections) ────────────
+  // Lattice Insoles live on All Footwear as a live listing (see latticeInsoles.ts).
   {
     slug: "voronyz-cool-shades",
     subcategory: "accessories",
