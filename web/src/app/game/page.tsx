@@ -4,7 +4,7 @@ import StoreNavGame from "@/components/game/StoreNavGame";
 export const metadata: Metadata = {
   title: "Game – Voronyz Store",
   description:
-    "Tap to stroll a cute top-down Voronyz store. Explore aisles, collect sparkles, and find your way around.",
+    "Tap to stroll a cute top-down Voronyz store as a happy little robot. Explore aisles, collect sparkles, and find your way around.",
 };
 
 export default function GamePage() {
