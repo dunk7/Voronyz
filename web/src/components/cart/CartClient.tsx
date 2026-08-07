@@ -140,9 +140,18 @@ export default function CartClient() {
         const base = getBaseUnitPriceCents(it);
         return { ...it, basePriceCents: base, priceCents: base };
       });
+      const savings = migratedItems.reduce((sum, it) => {
+        const base = getBaseUnitPriceCents(it) * it.quantity;
+        const discounted = unitPriceForItem(it, normalized) * it.quantity;
+        return sum + Math.max(0, base - discounted);
+      }, 0);
       saveCart({ items: migratedItems, discountCode: normalized, shippingInsurance });
       setInputValue("");
-      setMessage("Discount applied successfully!");
+      setMessage(
+        savings > 0
+          ? `Discount applied — you save ${formatCentsAsCurrency(savings)}!`
+          : "Discount applied successfully!"
+      );
       setTimeout(clearMessage, 3000);
     } else {
       setMessage("Invalid discount code.");
@@ -177,9 +186,13 @@ export default function CartClient() {
     saveCart({ items, discountCode, shippingInsurance: next });
   }
 
+  const subtotalBeforeDiscount = items.reduce((sum, it) => {
+    return sum + getBaseUnitPriceCents(it) * it.quantity;
+  }, 0);
   const subtotal = items.reduce((sum, it) => {
     return sum + unitPriceForItem(it, discountCode) * it.quantity;
   }, 0);
+  const discountSavings = Math.max(0, subtotalBeforeDiscount - subtotal);
   const canOfferShippingInsurance = cartHasInsurableItems(items);
   const insuranceEnabled = canOfferShippingInsurance && shippingInsurance;
   const insuranceCents = insuranceEnabled ? getShippingInsuranceCents(items) : 0;
@@ -415,11 +428,27 @@ export default function CartClient() {
                 </button>
               </div>
               <div className="flex items-center gap-2 lg:gap-4 flex-1 lg:flex-none justify-end min-w-0 lg:min-w-[5rem]">
-                <div className="text-base font-semibold text-neutral-900 text-right flex-1 lg:flex-none">
-                  {formatCentsAsCurrency(
-                    unitPriceForItem(it, discountCode) * it.quantity
-                  )}
-                </div>
+                {(() => {
+                  const baseLine = getBaseUnitPriceCents(it) * it.quantity;
+                  const discountedLine = unitPriceForItem(it, discountCode) * it.quantity;
+                  const hasLineDiscount = discountedLine < baseLine;
+                  return (
+                    <div className="text-right flex-1 lg:flex-none">
+                      {hasLineDiscount && (
+                        <div className="text-xs text-neutral-500 line-through">
+                          {formatCentsAsCurrency(baseLine)}
+                        </div>
+                      )}
+                      <div
+                        className={`text-base font-semibold ${
+                          hasLineDiscount ? "text-emerald-700" : "text-neutral-900"
+                        }`}
+                      >
+                        {formatCentsAsCurrency(discountedLine)}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -521,14 +550,31 @@ export default function CartClient() {
               </div>
             )}
             {discountCode && (
-              <div className="mt-2 text-sm text-green-600 flex justify-between items-center bg-white p-2 rounded-md border border-green-200">
-                Discount &quot;{discountCode}&quot; applied! 
-                <button onClick={clearDiscount} className="text-sm underline">Remove</button>
+              <div className="mt-2 text-sm text-green-700 flex justify-between items-center gap-3 bg-emerald-50 p-2 rounded-md border border-green-200">
+                <span>
+                  Discount &quot;{discountCode}&quot; applied
+                  {discountSavings > 0 ? ` — you save ${formatCentsAsCurrency(discountSavings)}` : ""}
+                </span>
+                <button onClick={clearDiscount} className="text-sm underline shrink-0">Remove</button>
               </div>
             )}
           </div>
           {/* Totals */}
           <div className="space-y-2 pt-2 border-t border-black/10 text-sm">
+            {discountSavings > 0 && (
+              <>
+                <div className="flex items-center justify-between">
+                  <div className="text-neutral-700">Before discount</div>
+                  <div className="font-medium text-neutral-500 line-through">
+                    {formatCentsAsCurrency(subtotalBeforeDiscount)}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-emerald-700">
+                  <div>Discount savings</div>
+                  <div className="font-medium">-{formatCentsAsCurrency(discountSavings)}</div>
+                </div>
+              </>
+            )}
             <div className="flex items-center justify-between">
               <div className="text-neutral-700">Subtotal</div>
               <div className="font-medium text-neutral-900">{formatCentsAsCurrency(subtotal)}</div>
