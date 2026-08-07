@@ -31,6 +31,16 @@ import {
   FILAMENT_VARIANTS,
 } from "@/lib/filament";
 import {
+  LATTICE_INSOLES_DESCRIPTION_SHORT,
+  LATTICE_INSOLES_IMAGES,
+  LATTICE_INSOLES_NAME,
+  LATTICE_INSOLES_PRICE_CENTS,
+  LATTICE_INSOLES_PRIMARY_COLORS,
+  LATTICE_INSOLES_SIZES,
+  LATTICE_INSOLES_SLUG,
+  LATTICE_INSOLES_VARIANTS,
+} from "@/lib/latticeInsoles";
+import {
   APPAREL_CATALOG,
   APPAREL_CATEGORY,
   OBSOLETE_APPAREL_SLUGS,
@@ -115,6 +125,7 @@ const FOOTWEAR_SIZES = ["5", "6", "7", "8", "9", "10", "11", "12"];
 export async function ensureFootwearProducts(): Promise<void> {
   for (const item of FOOTWEAR_CATALOG) {
     if (item.slug === "magikid-shoes") continue; // handled by ensureMagikidShoes
+    if (item.slug === LATTICE_INSOLES_SLUG) continue; // handled by ensureLatticeInsoles
 
     const variants = FOOTWEAR_VARIANTS[item.slug] ?? [];
     const primaryColors = FOOTWEAR_COLORS[item.slug] ?? ["black"];
@@ -533,6 +544,74 @@ export async function ensureFilament(): Promise<void> {
   });
 }
 
+/** Idempotently upsert Lattice Insoles on All Footwear (S–XL, not shoe sizes). */
+export async function ensureLatticeInsoles(): Promise<void> {
+  let existing = await prisma.product.findUnique({ where: { slug: LATTICE_INSOLES_SLUG } });
+
+  if (!existing) {
+    try {
+      await prisma.product.create({
+        data: {
+          slug: LATTICE_INSOLES_SLUG,
+          name: LATTICE_INSOLES_NAME,
+          description: LATTICE_INSOLES_DESCRIPTION_SHORT,
+          priceCents: LATTICE_INSOLES_PRICE_CENTS,
+          currency: "usd",
+          category: "footwear",
+          subcategory: null,
+          images: [...LATTICE_INSOLES_IMAGES],
+          primaryColors: [...LATTICE_INSOLES_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...LATTICE_INSOLES_SIZES],
+          variants: {
+            create: LATTICE_INSOLES_VARIANTS.map((v) => ({ ...v })),
+          },
+        },
+      });
+      return;
+    } catch (error) {
+      existing = await prisma.product.findUnique({ where: { slug: LATTICE_INSOLES_SLUG } });
+      if (!existing) throw error;
+    }
+  }
+
+  await prisma.product.update({
+    where: { id: existing.id },
+    data: {
+      name: LATTICE_INSOLES_NAME,
+      description: LATTICE_INSOLES_DESCRIPTION_SHORT,
+      priceCents: LATTICE_INSOLES_PRICE_CENTS,
+      category: "footwear",
+      subcategory: null,
+      images: [...LATTICE_INSOLES_IMAGES],
+      primaryColors: [...LATTICE_INSOLES_PRIMARY_COLORS],
+      secondaryColors: [],
+      sizes: [...LATTICE_INSOLES_SIZES],
+    },
+  });
+
+  for (const v of LATTICE_INSOLES_VARIANTS) {
+    await prisma.variant.upsert({
+      where: { sku: v.sku },
+      update: { stock: v.stock, color: v.color },
+      create: {
+        product: { connect: { id: existing.id } },
+        color: v.color,
+        sku: v.sku,
+        stock: v.stock,
+      },
+    });
+  }
+
+  const keepSkus = LATTICE_INSOLES_VARIANTS.map((v) => v.sku);
+  await prisma.variant.deleteMany({
+    where: {
+      productId: existing.id,
+      sku: { notIn: [...keepSkus] },
+    },
+  });
+}
+
 /** Idempotently upsert apparel catalog products (coming soon / pre-order, stock 0). */
 export async function ensureApparelProducts(): Promise<void> {
   if (OBSOLETE_APPAREL_SLUGS.length > 0) {
@@ -653,6 +732,7 @@ export async function ensureCatalogProducts(): Promise<void> {
         ensureFootwearProducts(),
         ensureFootwearStock(),
         ensureMagikidShoes(),
+        ensureLatticeInsoles(),
         removeObsoleteFootwear(),
         ensureGunHolster(),
         ensureFilament(),
@@ -691,6 +771,7 @@ export async function ensureFootwearCatalog(): Promise<void> {
       await ensureProductCategoryColumns();
       await ensureFootwearProducts();
       await ensureFootwearStock();
+      await ensureLatticeInsoles();
       await removeObsoleteFootwear();
       // Hot path: only create Magikid if missing — never rewrite the whole catalog.
       const existing = await prisma.product.findUnique({
