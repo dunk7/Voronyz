@@ -6,7 +6,7 @@ import { Suspense } from "react";
 export const metadata: Metadata = {
   title: "Engineering – Voronyz",
   description:
-    "Shop Voronyz Engineering — Glock 43x carbon fiber nylon holsters and TPU-90A filament, the same material we use for footwear.",
+    "Shop Voronyz Engineering — TPU-90A filament, the same material we use for footwear.",
 };
 
 function EngineeringLoadingFallback() {
@@ -18,7 +18,7 @@ function EngineeringLoadingFallback() {
             Engineering
           </h1>
           <p className="mt-2 text-sm text-neutral-500 max-w-md">
-            Engineered carry gear — carbon fiber nylon, made to order.
+            Engineered materials — TPU-90A filament, made for makers.
           </p>
           <div className="mt-6 h-px bg-neutral-200" />
         </div>

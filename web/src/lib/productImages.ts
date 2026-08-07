@@ -27,7 +27,6 @@ export function normalizeProductImages(images: unknown): string[] {
 }
 
 import { MAGIKID_SHOES_THUMBNAIL_URL } from "@/lib/magikidShoesThumbnail";
-import { GUN_HOLSTER_THUMBNAIL_URL } from "@/lib/gunHolster";
 import { TRAIL_MIX_THUMBNAIL_URL } from "@/lib/trailMix";
 import { GATORS_SLUG, GATORS_THUMBNAIL_URL } from "@/lib/gators";
 import { FILAMENT_SLUG, FILAMENT_THUMBNAIL_URL } from "@/lib/filament";
@@ -43,7 +42,6 @@ export function getProductThumbnail(input: { slug?: string; images?: unknown }):
   if (input.slug === "dragonfly") return "/products/dragonfly/InShot_20260212_153516456.jpg";
   if (input.slug === "slip-ons") return "/products/slip-ons/InShot_20260405_203151152.jpg";
   if (input.slug === "magikid-shoes") return MAGIKID_SHOES_THUMBNAIL_URL;
-  if (input.slug === "gun-holster") return GUN_HOLSTER_THUMBNAIL_URL;
   if (input.slug === "antioxidant-trail-mix") return TRAIL_MIX_THUMBNAIL_URL;
   if (input.slug === GATORS_SLUG) return GATORS_THUMBNAIL_URL;
   if (input.slug === FILAMENT_SLUG) return FILAMENT_THUMBNAIL_URL;

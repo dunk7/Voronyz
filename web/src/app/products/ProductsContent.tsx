@@ -36,9 +36,6 @@ const productMeta: Record<string, {
     tag: "Kids",
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
-  "gun-holster": {
-    tag: "Engineering",
-  },
   "tpu-90a-filament": {
     tag: "Filament",
     altImage: "/products/tpu-90a-filament/pink-tpu-90a-spool-angle.jpg",
@@ -62,8 +59,6 @@ function cardMetaForSlug(slug: string) {
       return productMeta["slip-ons"];
     case "magikid-shoes":
       return productMeta["magikid-shoes"];
-    case "gun-holster":
-      return productMeta["gun-holster"];
     case FILAMENT_SLUG:
     case "tpu-90a-filament":
       return productMeta["tpu-90a-filament"];
@@ -174,7 +169,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
       : "All Footwear";
   const subheading =
     category === "accessories"
-      ? "Engineered gear and materials — holsters, filament, made for makers."
+      ? "Engineered materials — TPU-90A filament, made for makers."
       : category === "health"
       ? "Helping the small businesses we support and stand for grow and be seen on the Voronyz marketplace."
       : "3D-printed, scan-calibrated footwear — engineered for comfort, built to last.";

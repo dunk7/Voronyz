@@ -31,7 +31,7 @@ export type FootwearCatalogItem = {
 /**
  * Display order for All Footwear:
  * Magikid → Slides → Gators → Slip Ons → Sneakers (Dragonfly) → Lattice Insoles.
- * Gators stays in the grid — just not first.
+ * Gators stays in the grid — just not first. Lattice Insoles last.
  */
 export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
   {

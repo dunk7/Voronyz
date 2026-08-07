@@ -5,8 +5,8 @@ export const APPAREL_ONE_SIZE = ["One Size"] as const;
  * Apparel sub-sections.
  * - `collection`: multi-product listing pages (shirts, scarves, sweaters, …) —
  *   add new designs to APPAREL_CATALOG with the matching subcategory.
- * - `standalone`: Accessories only (hats, bottles, shades, jewelry, …) —
- *   never mixed into clothing collections, and never shown on Engineering `/accessories`.
+ * - `standalone`: Accessories only (hats, bottles, shades, jewelry, …) — never mixed
+ *   into clothing collections, and never shown on Engineering `/accessories`.
  */
 export type ApparelSubcategoryId =
   | "shirts"
@@ -36,7 +36,7 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "shirts",
     label: "Shirts",
-    description: "Nice shirts, oversized tees, and more designs to come",
+    description: "Oversized tees, nice shirts, and more designs to come",
     listing: "collection",
   },
   {
@@ -114,7 +114,10 @@ export function getApparelImages(item: ApparelCatalogItem): string[] {
 }
 
 /** Slugs removed from the live apparel catalog (cleaned up on ensure). */
-export const OBSOLETE_APPAREL_SLUGS = ["voronyz-technical-pants"] as const;
+export const OBSOLETE_APPAREL_SLUGS = [
+  "voronyz-technical-pants",
+  "voronyz-lounge-sweats",
+] as const;
 
 /**
  * Source of truth for apparel products.
@@ -123,18 +126,7 @@ export const OBSOLETE_APPAREL_SLUGS = ["voronyz-technical-pants"] as const;
  */
 export const APPAREL_CATALOG: ApparelCatalogItem[] = [
   // ── Shirts (multi-product) ──────────────────────────────────────────────
-  {
-    slug: "voronyz-nice-shirt",
-    subcategory: "shirts",
-    name: "Nice Shirt",
-    description: "Polished everyday shirt with a sharp collar and soft hand-feel.",
-    priceCents: 6800,
-    colors: ["black", "white", "grey"],
-    sizes: [...APPAREL_SIZES],
-    image: "/products/apparel/nice-shirt.jpg",
-    skuPrefix: "APP-NICE",
-    comingSoon: true,
-  },
+  // Oversized first: Apparel hub cover + shirts listing order follow catalog order.
   {
     slug: "voronyz-oversized-tee",
     subcategory: "shirts",
@@ -145,6 +137,18 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/shirt.jpg",
     skuPrefix: "APP-TEE",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-nice-shirt",
+    subcategory: "shirts",
+    name: "Nice Shirt",
+    description: "Polished everyday shirt with a sharp collar and soft hand-feel.",
+    priceCents: 6800,
+    colors: ["black", "white", "grey"],
+    sizes: [...APPAREL_SIZES],
+    image: "/products/apparel/nice-shirt.jpg",
+    skuPrefix: "APP-NICE",
     comingSoon: true,
   },
   // ── Sweaters (multi-product) ────────────────────────────────────────────
@@ -192,7 +196,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
   },
   // ── Joggers (multi-product) ─────────────────────────────────────────────
   {
-    slug: "voronyz-lounge-sweats",
+    slug: "voronyz-joggers",
     subcategory: "joggers",
     name: "Joggers",
     description: "Tapered joggers for training days and downtime.",
@@ -200,7 +204,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     colors: ["black", "grey"],
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/sweats.jpg",
-    skuPrefix: "APP-SWT",
+    skuPrefix: "APP-JGR",
     comingSoon: true,
   },
   // ── Outerwear (multi-product) ───────────────────────────────────────────

@@ -1,16 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { MAGIKID_SHOES_THUMBNAIL_URL, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT, MAGIKID_SHOES_BASE_PRICE_CENTS } from "../src/lib/magikidShoesThumbnail";
 import {
-  GUN_HOLSTER_DESCRIPTION_SHORT,
-  GUN_HOLSTER_IMAGES,
-  GUN_HOLSTER_NAME,
-  GUN_HOLSTER_PRICE_CENTS,
-  GUN_HOLSTER_PRIMARY_COLORS,
-  GUN_HOLSTER_SIZES,
-  GUN_HOLSTER_SLUG,
-  GUN_HOLSTER_VARIANTS,
-} from "../src/lib/gunHolster";
-import {
   TRAIL_MIX_DESCRIPTION_SHORT,
   TRAIL_MIX_FLAVOR_IDS,
   TRAIL_MIX_IMAGES,
@@ -31,16 +21,6 @@ import {
   FILAMENT_VARIANTS,
 } from "../src/lib/filament";
 import {
-  GATORS_DESCRIPTION_SHORT,
-  GATORS_IMAGES,
-  GATORS_NAME,
-  GATORS_PRICE_CENTS,
-  GATORS_PRIMARY_COLORS,
-  GATORS_SIZES,
-  GATORS_SLUG,
-  GATORS_VARIANTS,
-} from "../src/lib/gators";
-import {
   LATTICE_INSOLES_DESCRIPTION_SHORT,
   LATTICE_INSOLES_IMAGES,
   LATTICE_INSOLES_NAME,
@@ -50,6 +30,16 @@ import {
   LATTICE_INSOLES_SLUG,
   LATTICE_INSOLES_VARIANTS,
 } from "../src/lib/latticeInsoles";
+import {
+  GATORS_DESCRIPTION_SHORT,
+  GATORS_IMAGES,
+  GATORS_NAME,
+  GATORS_PRICE_CENTS,
+  GATORS_PRIMARY_COLORS,
+  GATORS_SIZES,
+  GATORS_SLUG,
+  GATORS_VARIANTS,
+} from "../src/lib/gators";
 
 const prisma = new PrismaClient();
 
@@ -399,62 +389,22 @@ async function main() {
       console.log("Updated Magikid Shoes product and variants.");
     }
 
-    // ── Glock 43x Holster (Voronyz Engineering — not footwear) ──
-    const existingGh = await prisma.product.findUnique({ where: { slug: GUN_HOLSTER_SLUG } });
-    console.log("Glock 43x Holster product check:", existingGh ? "Found" : "Not found");
-    if (!existingGh) {
-      const ghProduct = await prisma.product.create({
-        data: {
-          slug: GUN_HOLSTER_SLUG,
-          name: GUN_HOLSTER_NAME,
-          description: GUN_HOLSTER_DESCRIPTION_SHORT,
-          priceCents: GUN_HOLSTER_PRICE_CENTS,
-          currency: "usd",
-          images: [...GUN_HOLSTER_IMAGES],
-          primaryColors: [...GUN_HOLSTER_PRIMARY_COLORS],
-          secondaryColors: [],
-          sizes: [...GUN_HOLSTER_SIZES],
-          variants: {
-            create: GUN_HOLSTER_VARIANTS.map((v) => ({ ...v })),
-          },
-        },
-        include: { variants: true },
+    // ── Remove retired Glock 43x Holster listing ──
+    const existingGh = await prisma.product.findUnique({ where: { slug: "gun-holster" } });
+    if (existingGh) {
+      const ghVariants = await prisma.variant.findMany({
+        where: { productId: existingGh.id },
+        select: { id: true },
       });
-      console.log("Seeded product:", ghProduct.slug);
-    } else {
-      console.log("Updating existing Glock 43x Holster product...");
-      await prisma.product.update({
-        where: { id: existingGh.id },
-        data: {
-          name: GUN_HOLSTER_NAME,
-          description: GUN_HOLSTER_DESCRIPTION_SHORT,
-          priceCents: GUN_HOLSTER_PRICE_CENTS,
-          images: [...GUN_HOLSTER_IMAGES],
-          primaryColors: [...GUN_HOLSTER_PRIMARY_COLORS],
-          secondaryColors: [],
-          sizes: [...GUN_HOLSTER_SIZES],
-        },
-      });
-      for (const v of GUN_HOLSTER_VARIANTS) {
-        await prisma.variant.upsert({
-          where: { sku: v.sku },
-          update: { stock: v.stock, color: v.color },
-          create: {
-            product: { connect: { id: existingGh.id } },
-            color: v.color,
-            sku: v.sku,
-            stock: v.stock,
-          },
-        });
+      const ghVariantIds = ghVariants.map((v) => v.id);
+      if (ghVariantIds.length > 0) {
+        await prisma.cartItem.deleteMany({ where: { variantId: { in: ghVariantIds } } });
+        await prisma.variant.deleteMany({ where: { id: { in: ghVariantIds } } });
       }
-      const keepSkus = GUN_HOLSTER_VARIANTS.map((v) => v.sku);
-      await prisma.variant.deleteMany({
-        where: {
-          productId: existingGh.id,
-          sku: { notIn: [...keepSkus] },
-        },
-      });
-      console.log("Updated Gun Holster product and variants.");
+      await prisma.product.delete({ where: { id: existingGh.id } });
+      console.log("Removed Glock 43x Holster product.");
+    } else {
+      console.log("Glock 43x Holster product check: Not found (already removed)");
     }
 
     // ── TPU-90A Filament (Voronyz Engineering — not footwear) ──

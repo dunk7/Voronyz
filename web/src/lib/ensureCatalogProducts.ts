@@ -1,16 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { MAGIKID_SHOES_THUMBNAIL_URL, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT, MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
 import {
-  GUN_HOLSTER_DESCRIPTION_SHORT,
-  GUN_HOLSTER_IMAGES,
-  GUN_HOLSTER_NAME,
-  GUN_HOLSTER_PRICE_CENTS,
-  GUN_HOLSTER_PRIMARY_COLORS,
-  GUN_HOLSTER_SIZES,
-  GUN_HOLSTER_SLUG,
-  GUN_HOLSTER_VARIANTS,
-} from "@/lib/gunHolster";
-import {
   TRAIL_MIX_DESCRIPTION_SHORT,
   TRAIL_MIX_FLAVOR_IDS,
   TRAIL_MIX_IMAGES,
@@ -344,63 +334,28 @@ export async function ensureMagikidShoes(): Promise<void> {
   }
 }
 
-/** Idempotently upsert Gun Holster so it appears without a manual seed run. */
-export async function ensureGunHolster(): Promise<void> {
-  const existing = await prisma.product.findUnique({ where: { slug: GUN_HOLSTER_SLUG } });
-
-  if (!existing) {
-    await prisma.product.create({
-      data: {
-        slug: GUN_HOLSTER_SLUG,
-        name: GUN_HOLSTER_NAME,
-        description: GUN_HOLSTER_DESCRIPTION_SHORT,
-        priceCents: GUN_HOLSTER_PRICE_CENTS,
-        currency: "usd",
-        images: [...GUN_HOLSTER_IMAGES],
-        primaryColors: [...GUN_HOLSTER_PRIMARY_COLORS],
-        secondaryColors: [],
-        sizes: [...GUN_HOLSTER_SIZES],
-        variants: {
-          create: GUN_HOLSTER_VARIANTS.map((v) => ({ ...v })),
-        },
-      },
-    });
-    return;
-  }
-
-  await prisma.product.update({
-    where: { id: existing.id },
-    data: {
-      name: GUN_HOLSTER_NAME,
-      description: GUN_HOLSTER_DESCRIPTION_SHORT,
-      priceCents: GUN_HOLSTER_PRICE_CENTS,
-      images: [...GUN_HOLSTER_IMAGES],
-      primaryColors: [...GUN_HOLSTER_PRIMARY_COLORS],
-      secondaryColors: [],
-      sizes: [...GUN_HOLSTER_SIZES],
-    },
+/** Remove the retired Glock 43x Holster listing (and any cart rows pointing at it). */
+export async function removeGunHolster(): Promise<void> {
+  const existing = await prisma.product.findUnique({
+    where: { slug: "gun-holster" },
+    select: { id: true },
   });
+  if (!existing) return;
 
-  for (const v of GUN_HOLSTER_VARIANTS) {
-    await prisma.variant.upsert({
-      where: { sku: v.sku },
-      update: { stock: v.stock, color: v.color },
-      create: {
-        product: { connect: { id: existing.id } },
-        color: v.color,
-        sku: v.sku,
-        stock: v.stock,
-      },
+  const variants = await prisma.variant.findMany({
+    where: { productId: existing.id },
+    select: { id: true },
+  });
+  const variantIds = variants.map((variant) => variant.id);
+  if (variantIds.length > 0) {
+    await prisma.cartItem.deleteMany({
+      where: { variantId: { in: variantIds } },
+    });
+    await prisma.variant.deleteMany({
+      where: { id: { in: variantIds } },
     });
   }
-
-  const keepSkus = GUN_HOLSTER_VARIANTS.map((v) => v.sku);
-  await prisma.variant.deleteMany({
-    where: {
-      productId: existing.id,
-      sku: { notIn: [...keepSkus] },
-    },
-  });
+  await prisma.product.delete({ where: { id: existing.id } });
 }
 
 /** Idempotently upsert Antioxidant Trail Mix so it appears without a manual seed run. */
@@ -784,14 +739,14 @@ export async function ensureCatalogProducts(): Promise<void> {
     try {
       // Schema heal must not be swallowed — without these columns every product query 500s.
       await ensureProductCategoryColumns();
-      // Isolate failures so apparel/stock errors cannot skip Trail Mix / holster sync.
+      // Isolate failures so apparel/stock errors cannot skip Trail Mix / filament sync.
       const results = await Promise.allSettled([
         ensureFootwearProducts(),
         ensureFootwearStock(),
         ensureMagikidShoes(),
         ensureGators(),
         ensureLatticeInsoles(),
-        ensureGunHolster(),
+        removeGunHolster(),
         ensureFilament(),
         ensureTrailMix(),
         ensureApparelProducts(),
@@ -880,7 +835,8 @@ export async function ensureAccessoriesCatalog(): Promise<void> {
   accessoriesEnsureInFlight = (async () => {
     try {
       await ensureProductCategoryColumns();
-      await ensureGunHolster();
+      await removeGunHolster();
+      await ensureFilament();
       accessoriesEnsureAt = Date.now();
     } catch (error) {
       console.error("ensureAccessoriesCatalog failed:", error);
