@@ -193,6 +193,17 @@ model QuizResponse {
   @@index([resultProfile])
 }
 
+/// Clicks on public auto-apply discount short links (e.g. /aryan50).
+model DiscountCodeClick {
+  id        String   @id @default(cuid())
+  code      String
+  createdAt DateTime @default(now())
+  ipHash    String?
+
+  @@index([code, createdAt])
+  @@index([createdAt])
+}
+
 model Message {
   id                   String       @id @default(cuid())
   conversationId       String
