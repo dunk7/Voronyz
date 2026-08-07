@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { applyDiscountCodeToCartStorage } from "@/lib/applyDiscountToCart";
 import LogoLoader from "@/components/ui/LogoLoader";
@@ -45,12 +46,12 @@ export default function InfluencerDiscountLanding({
             <p className="mt-2 text-sm text-neutral-500">
               This influencer link is not set up. Head to the shop and enter a code at checkout.
             </p>
-            <a
+            <Link
               href="/products"
               className="mt-6 inline-flex rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white"
             >
               Shop Voronyz
-            </a>
+            </Link>
           </>
         ) : (
           <>
