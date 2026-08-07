@@ -1,7 +1,7 @@
 export const GATORS_SLUG = "gators";
 export const GATORS_NAME = "The Gators";
 export const GATORS_PRICE_CENTS = 8500; // $85
-export const GATORS_THUMBNAIL_URL = "/products/gators/gators.jpg";
+export const GATORS_THUMBNAIL_URL = "/products/gators/gators-marble-studio.jpg";
 
 export const GATORS_DESCRIPTION_SHORT =
   "Inspired by the alligator — chunky cushion, easy slip-on, ready for all-day wear.";
