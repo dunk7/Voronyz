@@ -285,7 +285,29 @@ export default function CartClient() {
       </div>
     );
   }
-  if (!items.length) return <div className="text-neutral-900">Your cart is empty.</div>;
+  if (!items.length) {
+    return (
+      <div className="space-y-4 text-neutral-900">
+        {discountCode ? (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4">
+            <p className="text-sm font-semibold text-emerald-900">
+              Discount &quot;{discountCode}&quot; is ready in your cart
+            </p>
+            <p className="mt-1 text-sm text-emerald-800/80">
+              Add products and it will apply automatically at checkout.
+            </p>
+          </div>
+        ) : null}
+        <p>Your cart is empty.</p>
+        <Link
+          href="/products"
+          className="inline-flex rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white hover:bg-neutral-800"
+        >
+          Shop footwear
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:gap-8 lg:grid-cols-3">
