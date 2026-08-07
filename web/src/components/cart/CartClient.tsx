@@ -649,10 +649,10 @@ export default function CartClient() {
           type="button"
           disabled={stripeBusy || isNanoCheckingOut}
           className="w-full rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="Pay with ACH bank transfer"
+          aria-label="Continue"
           onClick={() => startStripeCheckout("ach")}
         >
-          {isCheckingOut ? "Processing..." : "Pay with ACH"}
+          {isCheckingOut ? "Processing..." : "Continue"}
         </button>
         <p className="text-center text-xs text-neutral-500 -mt-1">
           Bank transfer · usually lower fees than card
