@@ -117,6 +117,28 @@ export default function CartClient() {
     setIsLoading(false);
   }, []);
 
+  // Influencer bio links land on /cart?discount=code after applying to localStorage.
+  useEffect(() => {
+    if (isLoading) return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const fromLink = normalizeDiscountCode(params.get("discount"));
+      if (!fromLink || !isValidDiscountCode(fromLink)) return;
+      if (discountCode === fromLink) {
+        setInputValue(fromLink);
+        setMessage(`Discount "${fromLink}" applied from your link!`);
+      }
+      // Clean the query so refresh doesn't re-flash the toast awkwardly.
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("discount")) {
+        url.searchParams.delete("discount");
+        window.history.replaceState({}, "", url.pathname + (url.search || ""));
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [isLoading, discountCode]);
+
   const clearMessage = () => setMessage("");
   const saveCart = (cartData: CartData) => {
     setItems(cartData.items);
