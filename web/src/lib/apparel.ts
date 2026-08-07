@@ -229,10 +229,10 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     priceCents: 4200,
     colors: ["black", "grey"],
     sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/scarf-features.jpg",
+    image: "/products/apparel/scarf-product.jpg",
     images: [
-      "/products/apparel/scarf-features.jpg",
-      "/products/apparel/scarf.jpg",
+      "/products/apparel/scarf-product.jpg",
+      "/products/apparel/scarf-snowboarder.jpg",
     ],
     skuPrefix: "APP-SCRF",
     comingSoon: true,
