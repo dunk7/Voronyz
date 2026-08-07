@@ -204,6 +204,29 @@ model DiscountCodeClick {
   @@index([createdAt])
 }
 
+/// Public affiliate / influencer applications from /affiliates.
+model AffiliateApplication {
+  id            String   @id @default(cuid())
+  firstName     String
+  lastName      String
+  email         String
+  phone         String?
+  platform      String
+  handleOrUrl   String
+  audienceSize  String
+  preferredSlug String?
+  preferredCode String?
+  niche         String
+  pitch         String
+  status        String   @default("pending")
+  ipHash        String?
+  createdAt     DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([email])
+  @@index([status])
+}
+
 model Message {
   id                   String       @id @default(cuid())
   conversationId       String
