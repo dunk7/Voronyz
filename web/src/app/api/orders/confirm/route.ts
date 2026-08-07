@@ -53,7 +53,8 @@ type CheckoutSession = {
       quantity: number;
     }>;
   } | null;
-  payment_intent?: string | { id?: string };
+  payment_intent?: string | { id?: string; status?: string };
+  status?: string | null;
   metadata: Record<string, string> | null;
 };
 
@@ -95,7 +96,23 @@ export async function POST(request: NextRequest) {
 
     const actualSession = sessionResponse as unknown as CheckoutSession;
 
-    if (actualSession.payment_status !== 'paid') {
+    const paymentIntent =
+      typeof actualSession.payment_intent === "object" && actualSession.payment_intent
+        ? actualSession.payment_intent
+        : null;
+    const isAchCheckout =
+      actualSession.metadata?.paymentMethod === "ach" ||
+      paymentIntent?.status === "processing";
+    // ACH Direct Debit is delayed: Checkout completes with payment_status unpaid /
+    // PaymentIntent processing. Accept that as an initiated order so success UX works.
+    const isAchProcessing =
+      isAchCheckout &&
+      actualSession.status === "complete" &&
+      actualSession.payment_status !== "paid" &&
+      (paymentIntent?.status === "processing" ||
+        actualSession.payment_status === "unpaid");
+
+    if (actualSession.payment_status !== "paid" && !isAchProcessing) {
       console.warn(`Order confirm: Payment not completed for session ${sessionId}, status: ${actualSession.payment_status}`);
       // Treat as a transient/pending state: the UI can poll this endpoint until paid.
       return NextResponse.json(
@@ -290,6 +307,10 @@ export async function POST(request: NextRequest) {
           phone: customerPhone,
         },
         paymentStatus: actualSession.payment_status,
+        paymentMethod:
+          actualSession.metadata?.paymentMethod ||
+          (isAchProcessing ? "ach" : existingMetadata.paymentMethod) ||
+          null,
         paymentIntentId:
           typeof actualSession.payment_intent === "string"
             ? actualSession.payment_intent
@@ -354,6 +375,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       dbSaved: true,
+      paymentStatus: actualSession.payment_status,
+      paymentMethod:
+        actualSession.metadata?.paymentMethod ||
+        (isAchProcessing ? "ach" : null),
       order: {
         id: order.id,
         stripeId: order.stripeId,

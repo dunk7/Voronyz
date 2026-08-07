@@ -59,12 +59,13 @@ export async function POST(request: NextRequest) {
     // Handle the event
     switch (event.type) {
       case "checkout.session.completed":
+      case "checkout.session.async_payment_succeeded": {
         const session = event.data.object as Stripe.Checkout.Session;
         try {
           await handleCheckoutCompleted(stripe, session);
         } catch (error) {
           // Log error and return 500 so Stripe retries
-          console.error(`❌ Error processing checkout.session.completed for ${session.id}:`, error);
+          console.error(`❌ Error processing ${event.type} for ${session.id}:`, error);
           // Return 500 to trigger Stripe retries - this ensures orders get saved
           return NextResponse.json({ 
             received: false, 
@@ -73,6 +74,41 @@ export async function POST(request: NextRequest) {
           }, { status: 500 });
         }
         break;
+      }
+      case "checkout.session.async_payment_failed": {
+        const failedSession = event.data.object as Stripe.Checkout.Session;
+        console.error(
+          `ACH/async payment failed for session ${failedSession.id}`,
+          failedSession.payment_status
+        );
+        try {
+          const existing = await prisma.order.findUnique({
+            where: { stripeId: failedSession.id },
+          });
+          if (existing) {
+            const meta =
+              existing.metadata &&
+              typeof existing.metadata === "object" &&
+              !Array.isArray(existing.metadata)
+                ? (existing.metadata as Record<string, unknown>)
+                : {};
+            await prisma.order.update({
+              where: { stripeId: failedSession.id },
+              data: {
+                metadata: {
+                  ...meta,
+                  paymentStatus: failedSession.payment_status,
+                  asyncPaymentFailed: true,
+                  updatedAt: new Date().toISOString(),
+                },
+              },
+            });
+          }
+        } catch (updateError) {
+          console.error("Failed to mark async payment failure on order:", updateError);
+        }
+        break;
+      }
       case "payment_intent.succeeded":
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
         console.log("PaymentIntent was successful:", paymentIntent.id);
@@ -259,6 +295,17 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
     const preserveCompletedStatus = existingOrder?.status === "completed";
     const nextStatus = preserveCompletedStatus ? undefined : orderStatus;
 
+    const existingMeta =
+      existingOrder?.metadata &&
+      typeof existingOrder.metadata === "object" &&
+      !Array.isArray(existingOrder.metadata)
+        ? (existingOrder.metadata as Record<string, unknown>)
+        : {};
+    const preservedOrderNumber =
+      typeof existingMeta.orderNumber === "string" && existingMeta.orderNumber
+        ? existingMeta.orderNumber
+        : orderNumber;
+
     // Create or update order in database with all information
     const order = await prisma.order.upsert({
       where: { stripeId: session.id },
@@ -268,7 +315,8 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
         subtotalCents,
         currency,
         metadata: {
-          orderNumber,
+          ...existingMeta,
+          orderNumber: preservedOrderNumber,
           lineItems,
           hasPreOrder,
           shippingInsurance,
@@ -282,6 +330,11 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
             phone: customerPhone,
           },
           paymentStatus: fullSession.payment_status,
+          paymentMethod:
+            fullSession.metadata?.paymentMethod ||
+            (typeof existingMeta.paymentMethod === "string"
+              ? existingMeta.paymentMethod
+              : null),
           paymentIntentId: typeof fullSession.payment_intent === 'string' 
             ? fullSession.payment_intent 
             : fullSession.payment_intent?.id || null,
@@ -294,7 +347,11 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
             amountCents: shippingCents,
             currency,
           },
-          createdAt: new Date().toISOString(),
+          createdAt:
+            typeof existingMeta.createdAt === "string"
+              ? existingMeta.createdAt
+              : new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         }
       },
       create: {
@@ -318,6 +375,7 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
             phone: customerPhone,
           },
           paymentStatus: fullSession.payment_status,
+          paymentMethod: fullSession.metadata?.paymentMethod || null,
           paymentIntentId: typeof fullSession.payment_intent === 'string' 
             ? fullSession.payment_intent 
             : fullSession.payment_intent?.id || null,
@@ -335,8 +393,14 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
       },
     });
 
-    console.log(`✅ Order created/updated successfully: ${order.id} (Order #${orderNumber}) for session ${session.id}`);
-    notifyPaidOrder(order.id);
+    console.log(`✅ Order created/updated successfully: ${order.id} (Order #${preservedOrderNumber}) for session ${session.id}`);
+    const wasNewOrder = !existingOrder;
+    const becamePaid =
+      fullSession.payment_status === "paid" &&
+      existingMeta.paymentStatus !== "paid";
+    if (wasNewOrder || becamePaid) {
+      notifyPaidOrder(order.id);
+    }
     return order;
   } catch (error) {
     console.error(`❌ Failed to handle checkout completion for session ${session.id}:`, error);

@@ -35,7 +35,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { items, discountCode, shippingInsurance, successUrl, cancelUrl } = requestBody;
+  const {
+    items,
+    discountCode,
+    shippingInsurance,
+    successUrl,
+    cancelUrl,
+    paymentMethod: rawPaymentMethod,
+  } = requestBody;
+  // ACH is the default / expected method; card is an opt-in alternate.
+  const paymentMethod =
+    rawPaymentMethod === "card" || rawPaymentMethod === "ach"
+      ? rawPaymentMethod
+      : "ach";
   
   // Get base URL for converting relative image paths to absolute URLs
   const baseUrl =
@@ -259,15 +271,28 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const isAch = paymentMethod === "ach";
     const session = await stripe.checkout.sessions.create({
-      // Use Dynamic Payment Methods — Stripe automatically shows all payment methods
-      // enabled in your Stripe Dashboard (cards, crypto/USDC, Apple Pay, Google Pay, etc.).
-      // To accept crypto: enable "Crypto" in Stripe Dashboard → Settings → Payment methods.
+      // Explicit method types so cart can lead with ACH and offer card as a secondary path.
+      payment_method_types: isAch ? ["us_bank_account"] : ["card"],
+      ...(isAch && {
+        payment_method_options: {
+          us_bank_account: {
+            financial_connections: {
+              permissions: ["payment_method"],
+            },
+            verification_method: "automatic",
+          },
+        },
+      }),
       line_items: lineItems,
       mode: 'payment',
       ...(!hasPickupOnly && {
         shipping_address_collection: {
-          allowed_countries: ['US', 'CA', 'GB', 'AU', 'DE', 'FR', 'IT', 'JP', 'MX'],
+          // ACH Direct Debit is US-only; card checkout keeps broader shipping.
+          allowed_countries: isAch
+            ? (["US"] as const)
+            : (["US", "CA", "GB", "AU", "DE", "FR", "IT", "JP", "MX"] as const),
         },
       }),
       phone_number_collection: {
@@ -278,6 +303,7 @@ export async function POST(request: NextRequest) {
       cancel_url: cancelUrl,
       metadata: {
         itemCount: items.length.toString(),
+        paymentMethod,
         ...(discountCode && { discountCode }),
         ...(hasPickupOnly && { fulfillment: 'pickup' }),
         ...(hasPreOrder && { hasPreOrder: 'true' }),
