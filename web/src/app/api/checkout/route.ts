@@ -8,6 +8,10 @@ import {
 } from "@/lib/discountPricing";
 import { cartHasPreOrder, resolveIsPreOrder } from "@/lib/preorder";
 import {
+  buildStripeCartItemsMetadata,
+  stripeHttpsImages,
+} from "@/lib/checkoutCartMetadata";
+import {
   buildShippingInsuranceLineItem,
   getInsurableItemQuantity,
   getShippingInsuranceCents,
@@ -166,7 +170,9 @@ export async function POST(request: NextRequest) {
             productImage = productImages[0];
           }
         }
-        const stripeImages = productImage ? getAbsoluteImageUrl(productImage) : [];
+        const stripeImages = stripeHttpsImages(
+          productImage ? getAbsoluteImageUrl(productImage) : []
+        );
 
         lineItems.push({
           price_data: {
@@ -215,7 +221,9 @@ export async function POST(request: NextRequest) {
         console.log(`Fallback line item: ${productName} @ ${unitAmount} cents x ${item.quantity}`);
 
         // Get product image from request
-        const stripeImages = item.image ? getAbsoluteImageUrl(item.image) : [];
+        const stripeImages = stripeHttpsImages(
+          item.image ? getAbsoluteImageUrl(item.image) : []
+        );
 
         lineItems.push({
           price_data: {
@@ -298,30 +306,29 @@ export async function POST(request: NextRequest) {
           shippingInsuranceCents: String(insuranceCents),
           shippingInsuranceQuantity: String(insuranceQty),
         }),
-        cartItems: JSON.stringify(
-          items.map((item: {
-            isPreOrder?: boolean;
-            productSlug?: string;
-            [key: string]: unknown;
-          }) => ({
-            ...item,
-            isPreOrder: resolveIsPreOrder({
-              isPreOrder: item.isPreOrder,
-              productSlug: item.productSlug,
-            }),
-          }))
-        ),
+        // Keep under Stripe's 500-char metadata value limit (pre-order carts
+        // used to blow this when images + full line payloads were stringified).
+        cartItems: buildStripeCartItemsMetadata(items),
       },
     });
 
     console.log('Stripe session created successfully:', session.id);
+    if (!session.url) {
+      console.error("Stripe session missing redirect URL:", session.id);
+      return NextResponse.json(
+        { error: "Checkout session was created without a redirect URL" },
+        { status: 500 }
+      );
+    }
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error("Full checkout error:", error);
+    const details =
+      error instanceof Error ? error.message : "An unknown error occurred";
     return NextResponse.json(
-      { 
-        error: "Failed to create checkout session", 
-        details: error instanceof Error ? error.message : "An unknown error occurred" 
+      {
+        error: "Failed to create checkout session",
+        details,
       },
       { status: 500 }
     );

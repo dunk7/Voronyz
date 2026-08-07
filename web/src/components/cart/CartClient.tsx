@@ -236,23 +236,34 @@ export default function CartClient() {
       if (!response.ok) {
         const rawText = await response.text();
         console.error("Checkout API error - Status:", response.status, "Raw response:", rawText);
-        let errorData: { error?: string } = {};
+        let errorData: { error?: string; details?: string } = {};
         try {
           errorData = JSON.parse(rawText);
         } catch {
           // Not JSON
         }
         throw new Error(
-          `Failed to create checkout session: ${errorData.error || rawText || "Unknown error"}`
+          errorData.details ||
+            errorData.error ||
+            rawText ||
+            "Failed to create checkout session"
         );
       }
 
       const { url } = await response.json();
+      if (!url) {
+        throw new Error("Checkout session did not return a payment URL");
+      }
       window.location.href = url;
     } catch (error) {
       console.error("Checkout failed:", error);
       setBusy(false);
-      alert("Checkout failed. Please try again.");
+      // Same payment path as footwear/slides — surface the real failure reason.
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "Checkout failed. Please try again.";
+      alert(message);
     }
   };
 
@@ -516,11 +527,7 @@ export default function CartClient() {
           aria-label="Pay with ACH bank transfer"
           onClick={() => startStripeCheckout("ach")}
         >
-          {isCheckingOut
-            ? "Processing..."
-            : hasPreOrderItems
-              ? "Pre-order with ACH"
-              : "Pay with ACH"}
+          {isCheckingOut ? "Processing..." : "Pay with ACH"}
         </button>
         <p className="text-center text-xs text-neutral-500 -mt-1">
           Bank transfer · usually lower fees than card
