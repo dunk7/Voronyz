@@ -7,6 +7,13 @@ import {
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
 import { cartHasPreOrder, resolveIsPreOrder } from "@/lib/preorder";
+import {
+  buildShippingInsuranceLineItem,
+  getInsurableItemQuantity,
+  getShippingInsuranceCents,
+  isShippingInsuranceRequested,
+  SHIPPING_INSURANCE_PRODUCT_NAME,
+} from "@/lib/shippingInsurance";
 
 const NANO_RECEIVE_ADDRESS = process.env.NANO_RECEIVE_ADDRESS;
 const NANO_DISCOUNT_RATE = 0.03;
@@ -23,7 +30,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { items, discountCode } = await request.json();
+    const { items, discountCode, shippingInsurance } = await request.json();
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "No items provided" }, { status: 400 });
@@ -35,8 +42,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate subtotal in USD cents — same discount code logic as Stripe checkout.
-    // A Nano-specific 3% discount is applied afterwards.
-    let subtotalCents = 0;
+    // A Nano-specific 3% discount is applied afterwards (products only; insurance is excluded).
+    let productSubtotalCents = 0;
     const lineItems: Array<{
       name: string;
       variant: string;
@@ -111,17 +118,33 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      subtotalCents += unitAmount * item.quantity;
+      productSubtotalCents += unitAmount * item.quantity;
     }
 
-    if (subtotalCents <= 0) {
+    if (productSubtotalCents <= 0) {
       return NextResponse.json({ error: "Invalid order total" }, { status: 400 });
     }
 
     const hasPreOrder = cartHasPreOrder(items);
+    const insuranceQty = getInsurableItemQuantity(items);
+    const wantsInsurance =
+      isShippingInsuranceRequested(shippingInsurance) && insuranceQty > 0;
+    const insuranceCents = wantsInsurance ? getShippingInsuranceCents(items) : 0;
 
-    const nanoDiscountCents = Math.round(subtotalCents * NANO_DISCOUNT_RATE);
-    const totalCents = subtotalCents - nanoDiscountCents;
+    if (wantsInsurance) {
+      const insuranceLine = buildShippingInsuranceLineItem(insuranceQty);
+      lineItems.push({
+        name: SHIPPING_INSURANCE_PRODUCT_NAME,
+        variant: "",
+        quantity: insuranceLine.quantity,
+        unitCents: insuranceLine.unitCents,
+      });
+    }
+
+    // Nano 3% off applies to products only; insurance is a fixed add-on.
+    const nanoDiscountCents = Math.round(productSubtotalCents * NANO_DISCOUNT_RATE);
+    const subtotalCents = productSubtotalCents + insuranceCents;
+    const totalCents = productSubtotalCents - nanoDiscountCents + insuranceCents;
     const subtotalUsd = subtotalCents / 100;
     const nanoDiscountUsd = nanoDiscountCents / 100;
 
@@ -187,6 +210,9 @@ export async function POST(request: NextRequest) {
           usdTotal: totalUsd,
           lineItems,
           hasPreOrder,
+          shippingInsurance: wantsInsurance,
+          shippingInsuranceCents: insuranceCents,
+          shippingInsuranceQuantity: insuranceQty,
           discountCode: discountCode || null,
           cartItems: JSON.stringify(
             items.map((item: {
@@ -208,7 +234,7 @@ export async function POST(request: NextRequest) {
     });
 
     console.log(
-      `Nano payment session created: ${order.id} — ${xnoAmount} XNO ($${totalUsd}, 3% off from $${subtotalUsd})`
+      `Nano payment session created: ${order.id} — ${xnoAmount} XNO ($${totalUsd}, 3% off from $${(productSubtotalCents / 100).toFixed(2)}${wantsInsurance ? ` + $${(insuranceCents / 100).toFixed(2)} insurance` : ""})`
     );
 
     return NextResponse.json({

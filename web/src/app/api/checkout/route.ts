@@ -7,6 +7,14 @@ import {
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
 import { cartHasPreOrder, resolveIsPreOrder } from "@/lib/preorder";
+import {
+  buildShippingInsuranceLineItem,
+  getInsurableItemQuantity,
+  getShippingInsuranceCents,
+  isShippingInsuranceRequested,
+  SHIPPING_INSURANCE_DESCRIPTION,
+  SHIPPING_INSURANCE_PRODUCT_NAME,
+} from "@/lib/shippingInsurance";
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -27,7 +35,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { items, discountCode, successUrl, cancelUrl, paymentMethod: rawPaymentMethod } =
+  const { items, discountCode, shippingInsurance, successUrl, cancelUrl, paymentMethod: rawPaymentMethod } =
     requestBody;
   // ACH is the default / expected method; card is an opt-in alternate.
   const paymentMethod =
@@ -239,6 +247,25 @@ export async function POST(request: NextRequest) {
     const hasPickupOnly = items.every((item: { fulfillment?: string }) => item.fulfillment === 'pickup');
     const hasPreOrder = cartHasPreOrder(items);
     const isAch = paymentMethod === "ach";
+    const insuranceQty = getInsurableItemQuantity(items);
+    const wantsInsurance =
+      isShippingInsuranceRequested(shippingInsurance) && insuranceQty > 0;
+    const insuranceCents = wantsInsurance ? getShippingInsuranceCents(items) : 0;
+
+    if (wantsInsurance) {
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: SHIPPING_INSURANCE_PRODUCT_NAME,
+            description: SHIPPING_INSURANCE_DESCRIPTION,
+          },
+          unit_amount: buildShippingInsuranceLineItem(1).unitCents,
+        },
+        quantity: insuranceQty,
+      });
+    }
+
     const session = await stripe.checkout.sessions.create({
       // Explicit method types so cart can lead with ACH and offer card as a secondary path.
       payment_method_types: isAch ? ["us_bank_account"] : ["card"],
@@ -274,6 +301,11 @@ export async function POST(request: NextRequest) {
         ...(discountCode && { discountCode }),
         ...(hasPickupOnly && { fulfillment: 'pickup' }),
         ...(hasPreOrder && { hasPreOrder: 'true' }),
+        ...(wantsInsurance && {
+          shippingInsurance: 'true',
+          shippingInsuranceCents: String(insuranceCents),
+          shippingInsuranceQuantity: String(insuranceQty),
+        }),
         cartItems: JSON.stringify(
           items.map((item: {
             isPreOrder?: boolean;
