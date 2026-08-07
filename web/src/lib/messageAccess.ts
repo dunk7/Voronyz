@@ -59,14 +59,22 @@ export async function getConversationForMember(
 }
 
 export async function findDirectConversation(userIdA: string, userIdB: string) {
+  const isSelf = userIdA === userIdB;
+
   const conversation = await prisma.conversation.findFirst({
-    where: {
-      isGroup: false,
-      AND: [
-        { members: { some: { userId: userIdA } } },
-        { members: { some: { userId: userIdB } } },
-      ],
-    },
+    where: isSelf
+      ? {
+          isGroup: false,
+          participantAId: userIdA,
+          participantBId: userIdA,
+        }
+      : {
+          isGroup: false,
+          AND: [
+            { members: { some: { userId: userIdA } } },
+            { members: { some: { userId: userIdB } } },
+          ],
+        },
     include: {
       members: {
         include: {
@@ -87,7 +95,17 @@ export async function findDirectConversation(userIdA: string, userIdB: string) {
     },
   });
 
-  if (!conversation || conversation.members.length !== 2) return null;
+  if (!conversation) return null;
+  if (isSelf) {
+    if (
+      conversation.members.length !== 1 ||
+      conversation.members[0]?.user.id !== userIdA
+    ) {
+      return null;
+    }
+    return conversation;
+  }
+  if (conversation.members.length !== 2) return null;
   return conversation;
 }
 
