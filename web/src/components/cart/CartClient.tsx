@@ -8,6 +8,7 @@ import {
   KNOWN_DISCOUNTED_UNIT_PRICES,
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
+import { clearDiscountUrgencySession } from "@/lib/discountUrgencySession";
 import { resolveIsPreOrder } from "@/lib/preorder";
 import {
   cartHasInsurableItems,
@@ -159,6 +160,8 @@ export default function CartClient() {
     clearMessage();
     const normalized = normalizeDiscountCode(inputValue);
     if (isValidDiscountCode(normalized)) {
+      // Manual cart entry must not unlock the short-link urgency timer.
+      clearDiscountUrgencySession();
       // Do NOT mutate stored item prices; compute discounted totals from `discountCode` so UI can't desync.
       const migratedItems = items.map((it) => {
         const base = getBaseUnitPriceCents(it);
@@ -184,6 +187,7 @@ export default function CartClient() {
   };
 
   const clearDiscount = () => {
+    clearDiscountUrgencySession();
     const migratedItems = items.map((it) => {
       const base = getBaseUnitPriceCents(it);
       return { ...it, basePriceCents: base, priceCents: base };

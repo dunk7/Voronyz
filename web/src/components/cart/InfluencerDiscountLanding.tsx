@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { applyDiscountCodeToCartStorage } from "@/lib/applyDiscountToCart";
 import { getDiscountCodeShopperDescription } from "@/lib/discountPricing";
+import { markDiscountUrgencyFromShortLink } from "@/lib/discountUrgencySession";
 import LogoLoader from "@/components/ui/LogoLoader";
 
 type InfluencerDiscountLandingProps = {
@@ -32,6 +33,8 @@ export default function InfluencerDiscountLanding({
       setStatus("error");
       return;
     }
+    // Unlock storefront urgency timer only for short-link arrivals.
+    markDiscountUrgencyFromShortLink(applied);
     setStatus("done");
     const timer = window.setTimeout(() => {
       router.replace("/");

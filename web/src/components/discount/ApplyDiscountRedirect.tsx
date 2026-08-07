@@ -2,30 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
-type CartData = {
-  items: unknown[];
-  discountCode: string | null;
-  shippingInsurance?: boolean;
-};
-
-function readCart(): CartData {
-  try {
-    const raw = localStorage.getItem("cart");
-    if (!raw) return { items: [], discountCode: null, shippingInsurance: false };
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) {
-      return { items: parsed, discountCode: null, shippingInsurance: false };
-    }
-    return {
-      items: Array.isArray(parsed.items) ? parsed.items : [],
-      discountCode: parsed.discountCode ?? null,
-      shippingInsurance: Boolean(parsed.shippingInsurance),
-    };
-  } catch {
-    return { items: [], discountCode: null, shippingInsurance: false };
-  }
-}
+import { applyDiscountCodeToCartStorage } from "@/lib/applyDiscountToCart";
+import { markDiscountUrgencyFromShortLink } from "@/lib/discountUrgencySession";
 
 type ApplyDiscountRedirectProps = {
   code: string;
@@ -45,10 +23,15 @@ export default function ApplyDiscountRedirect({
 
   useEffect(() => {
     try {
-      const cart = readCart();
-      cart.discountCode = code;
-      localStorage.setItem("cart", JSON.stringify(cart));
-      window.dispatchEvent(new Event("cartUpdated"));
+      const applied = applyDiscountCodeToCartStorage(code);
+      if (!applied) {
+        setError("Could not apply this discount. Continuing to the store…");
+        const timer = window.setTimeout(() => {
+          router.replace(redirectTo);
+        }, 1200);
+        return () => window.clearTimeout(timer);
+      }
+      markDiscountUrgencyFromShortLink(applied);
       router.replace(redirectTo);
     } catch (err) {
       console.error("Failed to auto-apply discount code:", err);
