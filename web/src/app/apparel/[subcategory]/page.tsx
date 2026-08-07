@@ -13,7 +13,8 @@ import ApparelSubcategoryContent from "../ApparelSubcategoryContent";
 
 /** Legacy subcategory paths that now live under a merged collection. */
 const LEGACY_SUBCATEGORY_REDIRECTS: Record<string, ApparelSubcategoryId> = {
-  sweats: "pants",
+  sweats: "joggers",
+  pants: "joggers",
 };
 
 type PageProps = {
@@ -27,6 +28,7 @@ export function generateStaticParams() {
     { subcategory: "hats" },
     { subcategory: "bottles" },
     { subcategory: "sweats" },
+    { subcategory: "pants" },
   ];
 }
 
