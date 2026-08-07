@@ -11,6 +11,16 @@ import {
   TRAIL_MIX_VARIANTS,
 } from "../src/lib/trailMix";
 import {
+  VIOLETTE_PONYBEAD_ANIMAL_IDS,
+  VIOLETTE_PONYBEAD_DESCRIPTION_SHORT,
+  VIOLETTE_PONYBEAD_IMAGES,
+  VIOLETTE_PONYBEAD_NAME,
+  VIOLETTE_PONYBEAD_PRICE_CENTS,
+  VIOLETTE_PONYBEAD_SIZES,
+  VIOLETTE_PONYBEAD_SLUG,
+  VIOLETTE_PONYBEAD_VARIANTS,
+} from "../src/lib/violettePonybeadAnimals";
+import {
   FILAMENT_DESCRIPTION_SHORT,
   FILAMENT_IMAGES,
   FILAMENT_NAME,
@@ -592,6 +602,64 @@ async function main() {
         },
       });
       console.log("Updated Antioxidant Trail Mix product and variants.");
+    }
+
+    // ── Violette Ponybead Animals (Collaborative — not footwear) ──
+    const existingViolette = await prisma.product.findUnique({ where: { slug: VIOLETTE_PONYBEAD_SLUG } });
+    console.log("Violette Ponybead Animals product check:", existingViolette ? "Found" : "Not found");
+    if (!existingViolette) {
+      const violetteProduct = await prisma.product.create({
+        data: {
+          slug: VIOLETTE_PONYBEAD_SLUG,
+          name: VIOLETTE_PONYBEAD_NAME,
+          description: VIOLETTE_PONYBEAD_DESCRIPTION_SHORT,
+          priceCents: VIOLETTE_PONYBEAD_PRICE_CENTS,
+          currency: "usd",
+          images: [...VIOLETTE_PONYBEAD_IMAGES],
+          primaryColors: [...VIOLETTE_PONYBEAD_ANIMAL_IDS],
+          secondaryColors: [],
+          sizes: [...VIOLETTE_PONYBEAD_SIZES],
+          variants: {
+            create: VIOLETTE_PONYBEAD_VARIANTS.map((v) => ({ ...v })),
+          },
+        },
+        include: { variants: true },
+      });
+      console.log("Seeded product:", violetteProduct.slug);
+    } else {
+      console.log("Updating existing Violette Ponybead Animals product...");
+      await prisma.product.update({
+        where: { id: existingViolette.id },
+        data: {
+          name: VIOLETTE_PONYBEAD_NAME,
+          description: VIOLETTE_PONYBEAD_DESCRIPTION_SHORT,
+          priceCents: VIOLETTE_PONYBEAD_PRICE_CENTS,
+          images: [...VIOLETTE_PONYBEAD_IMAGES],
+          primaryColors: [...VIOLETTE_PONYBEAD_ANIMAL_IDS],
+          secondaryColors: [],
+          sizes: [...VIOLETTE_PONYBEAD_SIZES],
+        },
+      });
+      for (const v of VIOLETTE_PONYBEAD_VARIANTS) {
+        await prisma.variant.upsert({
+          where: { sku: v.sku },
+          update: { stock: v.stock, color: v.color },
+          create: {
+            product: { connect: { id: existingViolette.id } },
+            color: v.color,
+            sku: v.sku,
+            stock: v.stock,
+          },
+        });
+      }
+      const keepVioletteSkus = VIOLETTE_PONYBEAD_VARIANTS.map((v) => v.sku);
+      await prisma.variant.deleteMany({
+        where: {
+          productId: existingViolette.id,
+          sku: { notIn: [...keepVioletteSkus] },
+        },
+      });
+      console.log("Updated Violette Ponybead Animals product and variants.");
     }
 
     // ── The Gators (comfort clog footwear) ──

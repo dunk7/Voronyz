@@ -1,3 +1,12 @@
+import {
+  VIOLETTE_PONYBEAD_DESCRIPTION_SHORT,
+  VIOLETTE_PONYBEAD_IMAGES,
+  VIOLETTE_PONYBEAD_NAME,
+  VIOLETTE_PONYBEAD_PRICE_CENTS,
+  VIOLETTE_PONYBEAD_SLUG,
+  VIOLETTE_PONYBEAD_THUMBNAIL_URL,
+} from "@/lib/violettePonybeadAnimals";
+
 export const TRAIL_MIX_SLUG = "antioxidant-trail-mix";
 export const TRAIL_MIX_NAME = "Antioxidant Trail Mix";
 export const TRAIL_MIX_PRICE_CENTS = 6000; // $60
@@ -69,10 +78,22 @@ export type HealthListProduct = {
   updatedAt: string | Date;
 };
 
-/** Instant Collaborative seed so Trail Mix never flashes empty while the API loads. */
+/** Instant Collaborative seed so listings never flash empty while the API loads. */
 export function getHealthCatalogSeed(): HealthListProduct[] {
   const now = new Date().toISOString();
   return [
+    {
+      id: `catalog-${VIOLETTE_PONYBEAD_SLUG}`,
+      slug: VIOLETTE_PONYBEAD_SLUG,
+      name: VIOLETTE_PONYBEAD_NAME,
+      description: VIOLETTE_PONYBEAD_DESCRIPTION_SHORT,
+      priceCents: VIOLETTE_PONYBEAD_PRICE_CENTS,
+      currency: "usd",
+      images: [...VIOLETTE_PONYBEAD_IMAGES],
+      thumbnail: VIOLETTE_PONYBEAD_THUMBNAIL_URL,
+      createdAt: now,
+      updatedAt: now,
+    },
     {
       id: `catalog-${TRAIL_MIX_SLUG}`,
       slug: TRAIL_MIX_SLUG,

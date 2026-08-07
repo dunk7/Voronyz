@@ -19,6 +19,8 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import LogoLoader from "@/components/ui/LogoLoader";
+import { trailMixFlavorLabel } from "@/lib/trailMix";
+import { violetteAnimalLabel, VIOLETTE_PONYBEAD_SLUG } from "@/lib/violettePonybeadAnimals";
 
 interface CartItem {
   id: string;
@@ -369,25 +371,23 @@ export default function CartClient() {
                   )}
                   {it.variant?.name && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-black/5 px-2 py-0.5 capitalize">
-                      {it.productSlug !== "antioxidant-trail-mix" && (
+                      {it.productSlug !== "antioxidant-trail-mix" &&
+                        it.productSlug !== VIOLETTE_PONYBEAD_SLUG && (
                         <span
                           className="inline-block h-3 w-3 rounded-full ring-1 ring-black/10"
                           style={{ backgroundColor: it.variant.name }}
                         />
                       )}
                       {it.productSlug === "antioxidant-trail-mix"
-                        ? it.variant.name === "wild-berry"
-                          ? "Wild Berry"
-                          : it.variant.name === "super-protein"
-                            ? "Super Protein"
-                            : it.variant.name === "chocolate"
-                              ? "Chocolate"
-                              : it.variant.name
-                        : it.variant.name}
+                        ? trailMixFlavorLabel(it.variant.name)
+                        : it.productSlug === VIOLETTE_PONYBEAD_SLUG
+                          ? violetteAnimalLabel(it.variant.name)
+                          : it.variant.name}
                     </span>
                   )}
                   {it.attributes?.size !== undefined &&
-                    it.productSlug !== "antioxidant-trail-mix" && (
+                    it.productSlug !== "antioxidant-trail-mix" &&
+                    it.productSlug !== VIOLETTE_PONYBEAD_SLUG && (
                     <span className="rounded-full bg-black/5 px-2 py-0.5">
                       {it.productSlug === "tpu-90a-filament"
                         ? "1kg spool"
@@ -649,10 +649,10 @@ export default function CartClient() {
           type="button"
           disabled={stripeBusy || isNanoCheckingOut}
           className="w-full rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="Pay with ACH bank transfer"
+          aria-label="Continue"
           onClick={() => startStripeCheckout("ach")}
         >
-          {isCheckingOut ? "Processing..." : "Pay with ACH"}
+          {isCheckingOut ? "Processing..." : "Continue"}
         </button>
         <p className="text-center text-xs text-neutral-500 -mt-1">
           Bank transfer · usually lower fees than card

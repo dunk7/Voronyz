@@ -2,21 +2,50 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
+  APPAREL_CATALOG,
   APPAREL_COLLECTION_SUBCATEGORIES,
-  apparelSubcategoryHref,
-  getApparelBySubcategory,
   getStandaloneApparelItems,
-  getSubcategoryCover,
 } from "@/lib/apparel";
-import SoftImage from "@/components/ui/SoftImage";
+import ApparelProductGrid, {
+  type ApparelGridProduct,
+} from "@/components/apparel/ApparelProductGrid";
 import LogoLoader from "@/components/ui/LogoLoader";
+
+function toGridProduct(
+  item: (typeof APPAREL_CATALOG)[number],
+): ApparelGridProduct {
+  return {
+    id: `catalog-${item.slug}`,
+    slug: item.slug,
+    name: item.name,
+    description: item.description,
+    priceCents: item.priceCents,
+    currency: "usd",
+    cover: item.image,
+    colors: item.colors,
+    sizes: item.sizes,
+    subcategory: item.subcategory,
+  };
+}
 
 export default function ApparelHubContent() {
   const router = useRouter();
   const [navigatingHref, setNavigatingHref] = useState<string | null>(null);
-  const standalone = getStandaloneApparelItems();
+
+  const collectionProducts = useMemo(
+    () =>
+      APPAREL_CATALOG.filter((item) =>
+        APPAREL_COLLECTION_SUBCATEGORIES.some((sub) => sub.id === item.subcategory),
+      ).map(toGridProduct),
+    [],
+  );
+
+  const accessoryProducts = useMemo(
+    () => getStandaloneApparelItems().map(toGridProduct),
+    [],
+  );
 
   function go(e: React.MouseEvent, href: string) {
     e.preventDefault();
@@ -41,144 +70,74 @@ export default function ApparelHubContent() {
               </p>
             </div>
             <span className="text-xs tabular-nums text-neutral-400">
-              {APPAREL_COLLECTION_SUBCATEGORIES.length} collections
+              {collectionProducts.length} listing
+              {collectionProducts.length === 1 ? "" : "s"}
             </span>
           </div>
           <div className="mt-6 h-px bg-neutral-200" />
         </div>
 
-        <section aria-labelledby="apparel-collections-heading">
-          <h2
-            id="apparel-collections-heading"
-            className="text-xs uppercase tracking-[0.2em] text-neutral-500 mb-4"
-          >
-            Collections
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {APPAREL_COLLECTION_SUBCATEGORIES.map((sub) => {
-              const items = getApparelBySubcategory(sub.id);
-              const cover = getSubcategoryCover(sub.id);
-              const href = apparelSubcategoryHref(sub.id);
-              const isNavigating = navigatingHref === href;
-              const count = items.length;
-
-              return (
+        <section aria-labelledby="apparel-listings-heading">
+          <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
+            <h2
+              id="apparel-listings-heading"
+              className="text-xs uppercase tracking-[0.2em] text-neutral-500"
+            >
+              Listings
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {APPAREL_COLLECTION_SUBCATEGORIES.map((sub) => (
                 <Link
                   key={sub.id}
-                  href={href}
-                  onClick={(e) => go(e, href)}
-                  className={`group block outline-none transition-all duration-200 active:scale-[0.99] ${
-                    isNavigating ? "pointer-events-none" : ""
+                  href={`/apparel/${sub.id}`}
+                  onClick={(e) => go(e, `/apparel/${sub.id}`)}
+                  className={`rounded-full px-3 py-1 text-[11px] font-medium ring-1 ring-black/10 text-neutral-600 transition hover:bg-neutral-900 hover:text-white hover:ring-neutral-900 ${
+                    navigatingHref === `/apparel/${sub.id}` ? "pointer-events-none opacity-60" : ""
                   }`}
                 >
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-neutral-100 ring-1 ring-black/5 transition group-hover:shadow-xl group-hover:ring-black/10">
-                    {cover ? (
-                      <SoftImage
-                        src={cover}
-                        alt={sub.label}
-                        fill
-                        className={`object-cover transition duration-500 ${
-                          isNavigating ? "scale-105 brightness-90" : "group-hover:scale-105"
-                        }`}
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 bg-neutral-200" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 p-5 text-white">
-                      <div className="flex items-end justify-between gap-3">
-                        <div>
-                          <h3 className="text-xl font-semibold tracking-tight">{sub.label}</h3>
-                          <p className="mt-1 text-sm text-white/75 line-clamp-2">
-                            {sub.description}
-                          </p>
-                        </div>
-                        <span className="shrink-0 rounded-full bg-white/15 backdrop-blur-sm px-2.5 py-1 text-[11px] font-medium tabular-nums ring-1 ring-white/20">
-                          {count} design{count === 1 ? "" : "s"}
-                        </span>
-                      </div>
-                    </div>
-                    {isNavigating && (
-                      <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/25 backdrop-blur-[2px]">
-                        <LogoLoader size="sm" tone="light" showBar={false} className="!gap-0" />
-                      </div>
-                    )}
-                  </div>
+                  {sub.label}
                 </Link>
-              );
-            })}
+              ))}
+            </div>
           </div>
+
+          {collectionProducts.length === 0 ? (
+            <div className="flex min-h-[30vh] items-center justify-center py-16">
+              <LogoLoader size="lg" label="Loading apparel" />
+            </div>
+          ) : (
+            <ApparelProductGrid products={collectionProducts} />
+          )}
         </section>
 
-        {standalone.length > 0 && (
-          <section className="mt-12 lg:mt-16" aria-labelledby="apparel-standalone-heading">
+        {accessoryProducts.length > 0 && (
+          <section className="mt-12 lg:mt-16" aria-labelledby="apparel-accessories-heading">
             <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
               <div>
                 <h2
-                  id="apparel-standalone-heading"
+                  id="apparel-accessories-heading"
                   className="text-xs uppercase tracking-[0.2em] text-neutral-500"
                 >
-                  Individual pieces
+                  Accessories
                 </h2>
                 <p className="mt-2 text-sm text-neutral-500 max-w-lg">
-                  Hats, bottles, shades, jewelry, and other accessory pieces — separate from clothing collections.
+                  Hats, bottles, shades, jewelry, and other accessory pieces.
                 </p>
               </div>
               <Link
                 href="/apparel/accessories"
                 onClick={(e) => go(e, "/apparel/accessories")}
-                className="text-sm font-medium text-neutral-800 underline underline-offset-4 hover:no-underline"
+                className={`text-sm font-medium text-neutral-800 underline underline-offset-4 hover:no-underline ${
+                  navigatingHref === "/apparel/accessories" ? "pointer-events-none opacity-60" : ""
+                }`}
               >
                 View all accessories →
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-              {standalone.map((item) => {
-                const href = `/products/${item.slug}`;
-                const isNavigating = navigatingHref === href;
-                return (
-                  <Link
-                    key={item.slug}
-                    href={href}
-                    onClick={(e) => go(e, href)}
-                    className={`group block outline-none transition-all duration-200 active:scale-[0.98] ${
-                      isNavigating ? "pointer-events-none" : ""
-                    }`}
-                  >
-                    <div className="relative aspect-square overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/5 transition group-hover:shadow-lg group-hover:ring-black/10">
-                      <SoftImage
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        className={`object-cover transition duration-500 ${
-                          isNavigating ? "scale-105 brightness-90" : "group-hover:scale-105"
-                        }`}
-                        sizes="(max-width: 768px) 50vw, 33vw"
-                      />
-                      <div className="absolute top-3 left-3 z-10">
-                        <span className="rounded-full bg-neutral-900 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white shadow-sm">
-                          Pre-order
-                        </span>
-                      </div>
-                      {isNavigating && (
-                        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
-                          <LogoLoader size="sm" tone="light" showBar={false} className="!gap-0" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="mt-3 px-0.5">
-                      <h3 className="text-[15px] font-semibold text-neutral-900 truncate">
-                        {item.name}
-                      </h3>
-                      <p className="mt-1 text-[13px] text-neutral-500 line-clamp-2">
-                        {item.description}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
+            <ApparelProductGrid
+              products={accessoryProducts}
+              hideSubcategoryBadge
+            />
           </section>
         )}
       </div>

@@ -58,6 +58,8 @@ type Props = {
   onCarryStyleChange?: (id: string) => void;
   /** Replace color swatches with flavor choices (e.g. trail mix). */
   flavorOptions?: FlavorOption[];
+  /** Label above flavor/style options. Defaults to "Flavor". */
+  flavorLabel?: string;
   soldOut?: boolean;
   /** Label when soldOut (e.g. "Sold Out"). Defaults to "Sold Out". */
   soldOutLabel?: string;
@@ -124,6 +126,7 @@ export default function AddToCart({
   selectedCarryStyleId,
   onCarryStyleChange,
   flavorOptions = [],
+  flavorLabel = "Flavor",
   soldOut = false,
   soldOutLabel = "Sold Out",
   preOrder = false,
@@ -541,10 +544,10 @@ export default function AddToCart({
           </div>
         )}
 
-        {/* Flavor options (trail mix) */}
+        {/* Flavor / style options (trail mix, ponybead animals, …) */}
         {hasFlavorOptions ? (
           <div className="grid gap-2">
-            <label className="text-sm text-neutral-700">Flavor</label>
+            <label className="text-sm text-neutral-700">{flavorLabel}</label>
             <div className="grid gap-2">
               {sortedFlavorOptions.map((flavor) => {
                 const isSelected = selectedPrimary === flavor.id;

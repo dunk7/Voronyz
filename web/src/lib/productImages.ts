@@ -28,6 +28,10 @@ export function normalizeProductImages(images: unknown): string[] {
 
 import { MAGIKID_SHOES_THUMBNAIL_URL } from "@/lib/magikidShoesThumbnail";
 import { TRAIL_MIX_THUMBNAIL_URL } from "@/lib/trailMix";
+import {
+  VIOLETTE_PONYBEAD_SLUG,
+  VIOLETTE_PONYBEAD_THUMBNAIL_URL,
+} from "@/lib/violettePonybeadAnimals";
 import { GATORS_SLUG, GATORS_THUMBNAIL_URL } from "@/lib/gators";
 import { FILAMENT_SLUG, FILAMENT_THUMBNAIL_URL } from "@/lib/filament";
 import {
@@ -43,6 +47,7 @@ export function getProductThumbnail(input: { slug?: string; images?: unknown }):
   if (input.slug === "slip-ons") return "/products/slip-ons/InShot_20260405_203151152.jpg";
   if (input.slug === "magikid-shoes") return MAGIKID_SHOES_THUMBNAIL_URL;
   if (input.slug === "antioxidant-trail-mix") return TRAIL_MIX_THUMBNAIL_URL;
+  if (input.slug === VIOLETTE_PONYBEAD_SLUG) return VIOLETTE_PONYBEAD_THUMBNAIL_URL;
   if (input.slug === GATORS_SLUG) return GATORS_THUMBNAIL_URL;
   if (input.slug === FILAMENT_SLUG) return FILAMENT_THUMBNAIL_URL;
   if (input.slug === LATTICE_INSOLES_SLUG) return LATTICE_INSOLES_THUMBNAIL_URL;

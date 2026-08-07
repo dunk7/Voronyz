@@ -23,6 +23,7 @@ import {
   ZoomIn,
 } from "lucide-react";
 import { AudioMessagePlayer } from "@/components/message/AudioMessagePlayer";
+import { LogoMark } from "@/components/ui/LogoLoader";
 import {
   formatVoiceDuration,
   useVoiceRecorder,
@@ -284,21 +285,15 @@ function TypingIndicator({ label }: { label?: string }) {
 function VoronyzLogoMark({
   size = 40,
   className = "",
-  priority = false,
 }: {
   size?: number;
   className?: string;
   priority?: boolean;
 }) {
   return (
-    <Image
-      src="/logo.png"
-      alt="Voronyz"
-      width={size}
-      height={size}
-      priority={priority}
-      className={className}
-    />
+    <span className={`inline-flex ${className}`} aria-hidden="true">
+      <LogoMark size={size} tone="light" animate={false} />
+    </span>
   );
 }
 

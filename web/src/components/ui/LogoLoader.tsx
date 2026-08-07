@@ -25,7 +25,7 @@ const SIZE_MAP = {
   lg: { mark: 56, bar: 168, stage: 200, text: "text-sm" },
 } as const;
 
-/** Four-dot Voronyz mark that respects tone (no PNG square frame). */
+/** Four-dot Voronyz mark that respects tone (no PNG / black square frame). */
 function VoronyzMark({
   size,
   fill,
@@ -46,6 +46,7 @@ function VoronyzMark({
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
       className={className}
+      style={{ background: "transparent", display: "block" }}
     >
       <circle
         className={animateDots ? "logo-loader-dot logo-loader-dot--a" : undefined}
@@ -136,8 +137,8 @@ export default function LogoLoader({
     >
       {useOrbit ? (
         <div
-          className="logo-loader-stage relative flex items-center justify-center"
-          style={{ width: dims.stage, height: dims.stage }}
+          className="logo-loader-stage relative flex items-center justify-center bg-transparent"
+          style={{ width: dims.stage, height: dims.stage, background: "transparent" }}
         >
           <p
             className={`logo-loader-wordmark pointer-events-none z-[1] select-none font-semibold tracking-[0.28em] uppercase ${dims.text} ${wordmarkColor}`}
