@@ -49,7 +49,7 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     name: "V3 Slides",
     description:
       "World-class FDM printed slides with TPU lattice lowers and breathable uppers. Engineered from precision 3D scans.",
-    priceCents: 5500,
+    priceCents: 7500,
     images: [
       "/products/v3-slides/InShot_20260212_194352014.jpg",
       "/products/v3-slides/InShot_20260212_193956953.jpg",
@@ -74,7 +74,7 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     slug: "slip-ons",
     name: "Slip Ons",
     description:
-      "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, or orange (white coming soon).",
+      "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
     priceCents: 6000,
     images: [
       "/products/slip-ons/InShot_20260405_203151152.jpg",
