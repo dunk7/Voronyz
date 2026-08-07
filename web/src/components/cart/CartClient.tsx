@@ -294,14 +294,8 @@ export default function CartClient() {
                   {it.attributes?.size !== undefined &&
                     it.productSlug !== "antioxidant-trail-mix" && (
                     <span className="rounded-full bg-black/5 px-2 py-0.5">
-                      {it.productSlug === "gun-holster"
-                        ? it.attributes.size === "IWB"
-                          ? "IWB — Inside the Waistband"
-                          : it.attributes.size === "OWB"
-                            ? "OWB — Outside the Waistband"
-                            : String(it.attributes.size)
-                        : it.productSlug === "tpu-90a-filament"
-                          ? "1kg spool"
+                      {it.productSlug === "tpu-90a-filament"
+                        ? "1kg spool"
                         : (
                           <>
                             Size {String(it.attributes.size)}

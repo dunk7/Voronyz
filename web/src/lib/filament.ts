@@ -32,15 +32,6 @@ export const FILAMENT_VARIANTS = [
   { color: "white", sku: "TPU90-WHT", stock: 10 },
 ] as const;
 
-import {
-  GUN_HOLSTER_DESCRIPTION_SHORT,
-  GUN_HOLSTER_IMAGES,
-  GUN_HOLSTER_NAME,
-  GUN_HOLSTER_PRICE_CENTS,
-  GUN_HOLSTER_THUMBNAIL_URL,
-  GUN_HOLSTER_SLUG,
-} from "@/lib/gunHolster";
-
 export type AccessoryListProduct = {
   id: string;
   slug: string;
@@ -54,22 +45,10 @@ export type AccessoryListProduct = {
   updatedAt: string | Date;
 };
 
-/** Instant Engineering seed so filament + holster appear while the API loads. */
+/** Instant Engineering seed so filament appears while the API loads. */
 export function getAccessoryCatalogSeed(): AccessoryListProduct[] {
   const now = new Date().toISOString();
   return [
-    {
-      id: `catalog-${GUN_HOLSTER_SLUG}`,
-      slug: GUN_HOLSTER_SLUG,
-      name: GUN_HOLSTER_NAME,
-      description: GUN_HOLSTER_DESCRIPTION_SHORT,
-      priceCents: GUN_HOLSTER_PRICE_CENTS,
-      currency: "usd",
-      images: [...GUN_HOLSTER_IMAGES],
-      thumbnail: GUN_HOLSTER_THUMBNAIL_URL,
-      createdAt: now,
-      updatedAt: now,
-    },
     {
       id: `catalog-${FILAMENT_SLUG}`,
       slug: FILAMENT_SLUG,
