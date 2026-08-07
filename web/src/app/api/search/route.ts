@@ -9,9 +9,7 @@ import {
   filterFootwearProducts,
   filterHealthProducts,
 } from "@/lib/productCategories";
-import {
-  getAccessoryCatalogSeed,
-} from "@/lib/gunHolster";
+import { getAccessoryCatalogSeed } from "@/lib/filament";
 import {
   getHealthCatalogSeed,
 } from "@/lib/trailMix";
