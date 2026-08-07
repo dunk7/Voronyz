@@ -14,6 +14,7 @@ export const VALID_DISCOUNT_CODES = [
   "maximus27",
   "emptyaus",
   "aryan10",
+  "aryan50",
   "super20",
   "chud25",
   "pedro30",
@@ -63,6 +64,10 @@ export function getDiscountedUnitPriceCents(
 
   if (normalizedCode === "emptyaus" && productSlug === "dragonfly") return 2000;
   if (normalizedCode === "aryan10" && isSlidesProduct(productSlug, productName)) return 1000;
+  // Aryan50: $5 off any item (per unit).
+  if (normalizedCode === "aryan50") {
+    return Math.max(0, baseUnitPriceCents - 500);
+  }
   // Young: $20/spool on TPU-90A Filament — checkout-only; never advertise on the site.
   if (
     normalizedCode === "young" &&
