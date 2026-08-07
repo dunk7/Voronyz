@@ -40,6 +40,16 @@ import {
   GATORS_SLUG,
   GATORS_VARIANTS,
 } from "../src/lib/gators";
+import {
+  LATTICE_INSOLES_DESCRIPTION_SHORT,
+  LATTICE_INSOLES_IMAGES,
+  LATTICE_INSOLES_NAME,
+  LATTICE_INSOLES_PRICE_CENTS,
+  LATTICE_INSOLES_PRIMARY_COLORS,
+  LATTICE_INSOLES_SIZES,
+  LATTICE_INSOLES_SLUG,
+  LATTICE_INSOLES_VARIANTS,
+} from "../src/lib/latticeInsoles";
 
 const prisma = new PrismaClient();
 
@@ -503,6 +513,77 @@ async function main() {
         },
       });
       console.log("Updated TPU-90A Filament product and variants.");
+    }
+
+    // ── Lattice Insoles (All Footwear — S–XL drop-in cushions) ──
+    const existingInsoles = await prisma.product.findUnique({ where: { slug: LATTICE_INSOLES_SLUG } });
+    console.log("Lattice Insoles product check:", existingInsoles ? "Found" : "Not found");
+    if (!existingInsoles) {
+      const insolesProduct = await prisma.product.create({
+        data: {
+          slug: LATTICE_INSOLES_SLUG,
+          name: LATTICE_INSOLES_NAME,
+          description: LATTICE_INSOLES_DESCRIPTION_SHORT,
+          priceCents: LATTICE_INSOLES_PRICE_CENTS,
+          currency: "usd",
+          category: "footwear",
+          images: [...LATTICE_INSOLES_IMAGES],
+          primaryColors: [...LATTICE_INSOLES_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...LATTICE_INSOLES_SIZES],
+          variants: {
+            create: LATTICE_INSOLES_VARIANTS.map((v) => ({ ...v })),
+          },
+        },
+        include: { variants: true },
+      });
+      console.log("Seeded product:", insolesProduct.slug);
+    } else {
+      console.log("Updating existing Lattice Insoles product...");
+      await prisma.product.update({
+        where: { id: existingInsoles.id },
+        data: {
+          name: LATTICE_INSOLES_NAME,
+          description: LATTICE_INSOLES_DESCRIPTION_SHORT,
+          priceCents: LATTICE_INSOLES_PRICE_CENTS,
+          category: "footwear",
+          subcategory: null,
+          images: [...LATTICE_INSOLES_IMAGES],
+          primaryColors: [...LATTICE_INSOLES_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...LATTICE_INSOLES_SIZES],
+        },
+      });
+      for (const v of LATTICE_INSOLES_VARIANTS) {
+        await prisma.variant.upsert({
+          where: { sku: v.sku },
+          update: { stock: v.stock, color: v.color },
+          create: {
+            product: { connect: { id: existingInsoles.id } },
+            color: v.color,
+            sku: v.sku,
+            stock: v.stock,
+          },
+        });
+      }
+      const keepSkus = LATTICE_INSOLES_VARIANTS.map((v) => v.sku);
+      const obsoleteVariants = await prisma.variant.findMany({
+        where: {
+          productId: existingInsoles.id,
+          sku: { notIn: [...keepSkus] },
+        },
+        select: { id: true },
+      });
+      const obsoleteIds = obsoleteVariants.map((variant) => variant.id);
+      if (obsoleteIds.length > 0) {
+        await prisma.cartItem.deleteMany({
+          where: { variantId: { in: obsoleteIds } },
+        });
+        await prisma.variant.deleteMany({
+          where: { id: { in: obsoleteIds } },
+        });
+      }
+      console.log("Updated Lattice Insoles product and variants.");
     }
 
     // ── Antioxidant Trail Mix (Voronyz Health — not footwear) ──

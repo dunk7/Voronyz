@@ -31,6 +31,10 @@ import { GUN_HOLSTER_THUMBNAIL_URL } from "@/lib/gunHolster";
 import { TRAIL_MIX_THUMBNAIL_URL } from "@/lib/trailMix";
 import { GATORS_SLUG, GATORS_THUMBNAIL_URL } from "@/lib/gators";
 import { FILAMENT_SLUG, FILAMENT_THUMBNAIL_URL } from "@/lib/filament";
+import {
+  LATTICE_INSOLES_SLUG,
+  LATTICE_INSOLES_THUMBNAIL_URL,
+} from "@/lib/latticeInsoles";
 import { getApparelItem } from "@/lib/apparel";
 
 export function getProductThumbnail(input: { slug?: string; images?: unknown }): string {
@@ -43,6 +47,7 @@ export function getProductThumbnail(input: { slug?: string; images?: unknown }):
   if (input.slug === "antioxidant-trail-mix") return TRAIL_MIX_THUMBNAIL_URL;
   if (input.slug === GATORS_SLUG) return GATORS_THUMBNAIL_URL;
   if (input.slug === FILAMENT_SLUG) return FILAMENT_THUMBNAIL_URL;
+  if (input.slug === LATTICE_INSOLES_SLUG) return LATTICE_INSOLES_THUMBNAIL_URL;
   const apparel = getApparelItem(input.slug);
   if (apparel) return apparel.image;
 

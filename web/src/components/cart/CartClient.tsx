@@ -227,6 +227,7 @@ export default function CartClient() {
           items: checkoutItems,
           discountCode: discountCode || "",
           paymentMethod: method,
+          shippingInsurance: insuranceEnabled,
           successUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/success`,
           cancelUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/cancel`,
         }),
