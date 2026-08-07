@@ -24,6 +24,15 @@ import {
   TRAIL_MIX_THUMBNAIL_URL,
 } from "@/lib/trailMix";
 import {
+  VIOLETTE_PONYBEAD_ANIMALS,
+  VIOLETTE_PONYBEAD_DESCRIPTION,
+  VIOLETTE_PONYBEAD_HOW_ITS_MADE,
+  VIOLETTE_PONYBEAD_IMAGES,
+  VIOLETTE_PONYBEAD_NAME,
+  VIOLETTE_PONYBEAD_SLUG,
+  VIOLETTE_PONYBEAD_THUMBNAIL_URL,
+} from "@/lib/violettePonybeadAnimals";
+import {
   GATORS_DESCRIPTION,
   GATORS_HOW_ITS_MADE,
   GATORS_IMAGES,
@@ -180,6 +189,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? magikidShoesImages
     : slug === TRAIL_MIX_SLUG
     ? [...TRAIL_MIX_IMAGES]
+    : slug === VIOLETTE_PONYBEAD_SLUG
+    ? [...VIOLETTE_PONYBEAD_IMAGES]
     : slug === GATORS_SLUG
     ? [...GATORS_IMAGES]
     : slug === FILAMENT_SLUG
@@ -202,6 +213,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isSlipOns = slug === "slip-ons";
   const isMagikidShoes = slug === "magikid-shoes";
   const isTrailMix = slug === TRAIL_MIX_SLUG;
+  const isViolettePonybead = slug === VIOLETTE_PONYBEAD_SLUG;
   const isGators = slug === GATORS_SLUG;
   const isFilament = slug === FILAMENT_SLUG;
   const isLatticeInsoles = slug === LATTICE_INSOLES_SLUG;
@@ -223,6 +235,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         : "Back to Shop";
   const displayName = isTrailMix
       ? TRAIL_MIX_NAME
+      : isViolettePonybead
+        ? VIOLETTE_PONYBEAD_NAME
       : isGators
         ? GATORS_NAME
         : isFilament
@@ -242,6 +256,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — black, grey, orange, and pink in stock; white temporarily unavailable."
     : isTrailMix
     ? TRAIL_MIX_DESCRIPTION
+    : isViolettePonybead
+    ? VIOLETTE_PONYBEAD_DESCRIPTION
     : isGators
     ? GATORS_DESCRIPTION
     : isFilament
@@ -252,6 +268,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   const trailMixColors = isTrailMix
     ? TRAIL_MIX_FLAVORS.map((flavor) => flavor.id)
+    : isViolettePonybead
+    ? VIOLETTE_PONYBEAD_ANIMALS.map((animal) => animal.id)
     : (product.primaryColors as string[]);
 
   return (
@@ -286,6 +304,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
               </span>
             )}
+            {isViolettePonybead && (
+              <>
+                <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
+                  New Listing
+                </span>
+                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">$10 each</span>
+                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">4 animals</span>
+              </>
+            )}
             {isFilament && (
               <>
                 <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
@@ -314,12 +341,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">S · M · L · XL</span>
               </>
             )}
-            {!isTrailMix && !isApparel && !isFilament && !isLatticeInsoles && (
+            {!isTrailMix && !isApparel && !isFilament && !isLatticeInsoles && !isViolettePonybead && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
                 {isMagikidShoes ? "Made to order in <7 days" : "Made to order in <2 days"}
               </span>
             )}
-            {!isMagikidShoes && !isTrailMix && !isApparel && !isFilament && !isLatticeInsoles && (
+            {!isMagikidShoes && !isTrailMix && !isApparel && !isFilament && !isLatticeInsoles && !isViolettePonybead && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
             )}
             {isApparel && apparelItem && (
@@ -369,7 +396,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               }>
                 <AddToCart
                   variants={product.variants}
-                  primaryColors={isTrailMix ? trailMixColors : (product.primaryColors as string[])}
+                  primaryColors={isTrailMix || isViolettePonybead ? trailMixColors : (product.primaryColors as string[])}
                   productPriceCents={product.priceCents}
                   {...(isDragonfly && {
                     secondaryColors: (product.secondaryColors as string[]).filter(c => c.toLowerCase() !== "#007fff"),
@@ -397,6 +424,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     hideSizeSelector: true,
                     soldOut: true,
                     flavorOptions: TRAIL_MIX_FLAVORS,
+                  })}
+                  {...(isViolettePonybead && {
+                    hideSizeSelector: true,
+                    flavorLabel: "Animal",
+                    flavorOptions: VIOLETTE_PONYBEAD_ANIMALS,
                   })}
                   {...(isFilament && {
                     hideSizeSelector: true,
@@ -448,6 +480,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   ? "Print + finish"
                   : isTrailMix
                       ? "Collaborative"
+                      : isViolettePonybead
+                        ? "Collaborative"
                       : isApparel
                         ? "Apparel"
                         : isGators
@@ -467,6 +501,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? "Slip Ons are printed in one piece per colorway for a seamless look, then finished for flex and daily wear. There is no secondary accent color — the shade you choose is the full shoe."
               : isTrailMix
               ? TRAIL_MIX_HOW_ITS_MADE
+              : isViolettePonybead
+              ? VIOLETTE_PONYBEAD_HOW_ITS_MADE
               : isApparel
               ? "Voronyz Apparel is designed for a clean modern fit — consistent fabrics, considered proportions, and colorways that work across the full lineup. These pieces are available for pre-order: pay now to join the waitlist, and we'll ship when the drop arrives."
               : isGators
@@ -504,6 +540,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Does it come in sizes?", a: "No sizes — choose a flavor instead." },
               { q: "How much does it cost?", a: "$60 per bag when back in stock." },
               { q: "When will it restock?", a: "We're restocking the next batch soon. Check back on Collaborative." },
+            ] : isViolettePonybead ? [
+              { q: "What animals are available?", a: "Raccoon, chipmunk, skunk, and fox — each a handmade pony bead keychain with a silver lobster clasp." },
+              { q: "How much do they cost?", a: "$10 per animal." },
+              { q: "Does it come in sizes?", a: "No sizes — pick the animal style you want." },
+              { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isApparel ? [
               { q: "What sizes are available?", a: "Most pieces run XS–XXL. Hats, scarves, bottles, cool shades, jewelry, keychains, lace locks, drone parts, and RC stickers are One Size. Socks use S–XL. Lattice Shoe Trees use S–L sizing." },
               { q: "Can I pre-order coming soon pieces?", a: "Yes. Choose your color and size, then pay now to join the waitlist. We ship your order when that product arrives — timing can be a day or much longer depending on the drop." },
@@ -581,6 +622,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const title = `${TRAIL_MIX_NAME} – Voronyz`;
     const description = TRAIL_MIX_DESCRIPTION;
     const images = [TRAIL_MIX_THUMBNAIL_URL];
+    return {
+      title,
+      description,
+      openGraph: { title, description, images },
+      twitter: { card: "summary_large_image", title, description, images },
+    };
+  }
+
+  if (slug === VIOLETTE_PONYBEAD_SLUG) {
+    const title = `${VIOLETTE_PONYBEAD_NAME} – Voronyz`;
+    const description = VIOLETTE_PONYBEAD_DESCRIPTION;
+    const images = [VIOLETTE_PONYBEAD_THUMBNAIL_URL];
     return {
       title,
       description,

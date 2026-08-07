@@ -11,6 +11,16 @@ import {
   TRAIL_MIX_VARIANTS,
 } from "@/lib/trailMix";
 import {
+  VIOLETTE_PONYBEAD_ANIMAL_IDS,
+  VIOLETTE_PONYBEAD_DESCRIPTION_SHORT,
+  VIOLETTE_PONYBEAD_IMAGES,
+  VIOLETTE_PONYBEAD_NAME,
+  VIOLETTE_PONYBEAD_PRICE_CENTS,
+  VIOLETTE_PONYBEAD_SIZES,
+  VIOLETTE_PONYBEAD_SLUG,
+  VIOLETTE_PONYBEAD_VARIANTS,
+} from "@/lib/violettePonybeadAnimals";
+import {
   GATORS_DESCRIPTION_SHORT,
   GATORS_IMAGES,
   GATORS_NAME,
@@ -423,6 +433,70 @@ export async function ensureTrailMix(): Promise<void> {
   });
 }
 
+/** Idempotently upsert Violette Ponybead Animals so Collaborative shows it without a manual seed. */
+export async function ensureViolettePonybeadAnimals(): Promise<void> {
+  let existing = await prisma.product.findUnique({ where: { slug: VIOLETTE_PONYBEAD_SLUG } });
+
+  if (!existing) {
+    try {
+      await prisma.product.create({
+        data: {
+          slug: VIOLETTE_PONYBEAD_SLUG,
+          name: VIOLETTE_PONYBEAD_NAME,
+          description: VIOLETTE_PONYBEAD_DESCRIPTION_SHORT,
+          priceCents: VIOLETTE_PONYBEAD_PRICE_CENTS,
+          currency: "usd",
+          images: [...VIOLETTE_PONYBEAD_IMAGES],
+          primaryColors: [...VIOLETTE_PONYBEAD_ANIMAL_IDS],
+          secondaryColors: [],
+          sizes: [...VIOLETTE_PONYBEAD_SIZES],
+          variants: {
+            create: VIOLETTE_PONYBEAD_VARIANTS.map((v) => ({ ...v })),
+          },
+        },
+      });
+      return;
+    } catch (error) {
+      existing = await prisma.product.findUnique({ where: { slug: VIOLETTE_PONYBEAD_SLUG } });
+      if (!existing) throw error;
+    }
+  }
+
+  await prisma.product.update({
+    where: { id: existing.id },
+    data: {
+      name: VIOLETTE_PONYBEAD_NAME,
+      description: VIOLETTE_PONYBEAD_DESCRIPTION_SHORT,
+      priceCents: VIOLETTE_PONYBEAD_PRICE_CENTS,
+      images: [...VIOLETTE_PONYBEAD_IMAGES],
+      primaryColors: [...VIOLETTE_PONYBEAD_ANIMAL_IDS],
+      secondaryColors: [],
+      sizes: [...VIOLETTE_PONYBEAD_SIZES],
+    },
+  });
+
+  for (const v of VIOLETTE_PONYBEAD_VARIANTS) {
+    await prisma.variant.upsert({
+      where: { sku: v.sku },
+      update: { stock: v.stock, color: v.color },
+      create: {
+        product: { connect: { id: existing.id } },
+        color: v.color,
+        sku: v.sku,
+        stock: v.stock,
+      },
+    });
+  }
+
+  const keepSkus = VIOLETTE_PONYBEAD_VARIANTS.map((v) => v.sku);
+  await prisma.variant.deleteMany({
+    where: {
+      productId: existing.id,
+      sku: { notIn: [...keepSkus] },
+    },
+  });
+}
+
 /** Idempotently upsert The Gators so the listing appears without a manual seed run. */
 export async function ensureGators(): Promise<void> {
   const existing = await prisma.product.findUnique({ where: { slug: GATORS_SLUG } });
@@ -749,6 +823,7 @@ export async function ensureCatalogProducts(): Promise<void> {
         removeGunHolster(),
         ensureFilament(),
         ensureTrailMix(),
+        ensureViolettePonybeadAnimals(),
         ensureApparelProducts(),
       ]);
       for (const result of results) {
@@ -810,6 +885,7 @@ export async function ensureHealthCatalog(): Promise<void> {
   healthEnsureInFlight = (async () => {
     try {
       await ensureProductCategoryColumns();
+      await ensureViolettePonybeadAnimals();
       await ensureTrailMix();
       healthEnsureAt = Date.now();
     } catch (error) {
