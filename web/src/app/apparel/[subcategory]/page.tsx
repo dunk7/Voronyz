@@ -25,6 +25,19 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { subcategory } = await params;
+  const key = (subcategory || "").trim().toLowerCase();
+  const legacy = LEGACY_SUBCATEGORY_REDIRECTS[key];
+  if (legacy) {
+    const id = legacy.replace("/apparel/", "");
+    const sub = getApparelSubcategory(id);
+    if (sub) {
+      const count = getApparelBySubcategory(sub.id).length;
+      return {
+        title: `${sub.label} – Apparel – Voronyz`,
+        description: `${sub.description}. ${count} design${count === 1 ? "" : "s"} in this Voronyz Apparel section.`,
+      };
+    }
+  }
   const sub = getApparelSubcategory(subcategory);
   if (!sub) {
     return { title: "Apparel – Voronyz" };

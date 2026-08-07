@@ -31,6 +31,16 @@ import {
   GATORS_VARIANTS,
 } from "@/lib/gators";
 import {
+  FILAMENT_DESCRIPTION_SHORT,
+  FILAMENT_IMAGES,
+  FILAMENT_NAME,
+  FILAMENT_PRICE_CENTS,
+  FILAMENT_PRIMARY_COLORS,
+  FILAMENT_SIZES,
+  FILAMENT_SLUG,
+  FILAMENT_VARIANTS,
+} from "@/lib/filament";
+import {
   APPAREL_CATALOG,
   APPAREL_CATEGORY,
   OBSOLETE_APPAREL_SLUGS,
@@ -75,19 +85,21 @@ const FOOTWEAR_VARIANTS: Record<
     { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },
     { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
     { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
+    { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 6500 },
   ],
   "slip-ons": [
     { color: "black", sku: "SO-BLK", stock: 999 },
     { color: "grey", sku: "SO-GRY", stock: 999 },
     { color: "white", sku: "SO-WHT", stock: 0 },
     { color: "orange", sku: "SO-ORG", stock: 999 },
+    { color: "pink", sku: "SO-PNK", stock: 999 },
   ],
 };
 
 const FOOTWEAR_COLORS: Record<string, string[]> = {
   "v3-slides": ["black", "white", "grey", "green", "pink"],
-  dragonfly: ["black", "white", "red", "#007FFF"],
-  "slip-ons": ["black", "grey", "white", "orange"],
+  dragonfly: ["black", "white", "red", "#007FFF", "pink"],
+  "slip-ons": ["black", "grey", "white", "orange", "pink"],
 };
 
 const FOOTWEAR_SECONDARY: Record<string, string[]> = {
@@ -195,7 +207,10 @@ const MAGIKID_VARIANTS = [
   { color: "grey", sku: "MK-GRY", stock: 999 },
   { color: "white", sku: "MK-WHT", stock: 0 },
   { color: "orange", sku: "MK-ORG", stock: 0 },
+  { color: "pink", sku: "MK-PNK", stock: 999 },
 ] as const;
+
+const MAGIKID_PRIMARY_COLORS = ["black", "grey", "white", "orange", "pink"] as const;
 
 /** Keep footwear white OOS / pink in stock without requiring a manual seed run. */
 type FootwearStockVariant = {
@@ -226,6 +241,7 @@ const FOOTWEAR_STOCK_SYNC: Array<{
       { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },
       { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
       { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
+      { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 6500 },
     ],
   },
   {
@@ -235,6 +251,7 @@ const FOOTWEAR_STOCK_SYNC: Array<{
       { color: "grey", sku: "SO-GRY", stock: 999 },
       { color: "white", sku: "SO-WHT", stock: 0 },
       { color: "orange", sku: "SO-ORG", stock: 999 },
+      { color: "pink", sku: "SO-PNK", stock: 999 },
     ],
   },
 ];
@@ -277,7 +294,7 @@ export async function ensureMagikidShoes(): Promise<void> {
         currency: "usd",
         category: "footwear",
         images: MAGIKID_SHOES_IMAGES,
-        primaryColors: ["black", "grey", "white", "orange"],
+        primaryColors: [...MAGIKID_PRIMARY_COLORS],
         secondaryColors: [],
         sizes: MAGIKID_SHOES_KIDS_SIZES,
         variants: {
@@ -296,7 +313,7 @@ export async function ensureMagikidShoes(): Promise<void> {
       priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
       category: "footwear",
       images: MAGIKID_SHOES_IMAGES,
-      primaryColors: ["black", "grey", "white", "orange"],
+      primaryColors: [...MAGIKID_PRIMARY_COLORS],
       secondaryColors: [],
       sizes: MAGIKID_SHOES_KIDS_SIZES,
     },
@@ -440,7 +457,7 @@ export async function ensureTrailMix(): Promise<void> {
   });
 }
 
-/** Idempotently upsert The Gators so the new listing appears without a manual seed run. */
+/** Idempotently upsert The Gators so the listing appears without a manual seed run. */
 export async function ensureGators(): Promise<void> {
   const existing = await prisma.product.findUnique({ where: { slug: GATORS_SLUG } });
 
@@ -491,6 +508,70 @@ export async function ensureGators(): Promise<void> {
   }
 
   const keepSkus = GATORS_VARIANTS.map((v) => v.sku);
+  await prisma.variant.deleteMany({
+    where: {
+      productId: existing.id,
+      sku: { notIn: [...keepSkus] },
+    },
+  });
+}
+
+/** Idempotently upsert TPU-90A Filament so the Engineering listing appears without a manual seed. */
+export async function ensureFilament(): Promise<void> {
+  let existing = await prisma.product.findUnique({ where: { slug: FILAMENT_SLUG } });
+
+  if (!existing) {
+    try {
+      await prisma.product.create({
+        data: {
+          slug: FILAMENT_SLUG,
+          name: FILAMENT_NAME,
+          description: FILAMENT_DESCRIPTION_SHORT,
+          priceCents: FILAMENT_PRICE_CENTS,
+          currency: "usd",
+          images: [...FILAMENT_IMAGES],
+          primaryColors: [...FILAMENT_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...FILAMENT_SIZES],
+          variants: {
+            create: FILAMENT_VARIANTS.map((v) => ({ ...v })),
+          },
+        },
+      });
+      return;
+    } catch (error) {
+      existing = await prisma.product.findUnique({ where: { slug: FILAMENT_SLUG } });
+      if (!existing) throw error;
+    }
+  }
+
+  await prisma.product.update({
+    where: { id: existing.id },
+    data: {
+      name: FILAMENT_NAME,
+      description: FILAMENT_DESCRIPTION_SHORT,
+      priceCents: FILAMENT_PRICE_CENTS,
+      images: [...FILAMENT_IMAGES],
+      primaryColors: [...FILAMENT_PRIMARY_COLORS],
+      secondaryColors: [],
+      sizes: [...FILAMENT_SIZES],
+    },
+  });
+
+  for (const v of FILAMENT_VARIANTS) {
+    await prisma.variant.upsert({
+      where: { sku: v.sku },
+      update: { stock: v.stock, color: v.color },
+      create: {
+        product: { connect: { id: existing.id } },
+        color: v.color,
+        sku: v.sku,
+        stock: v.stock,
+      },
+    });
+  }
+
+  const keepSkus = FILAMENT_VARIANTS.map((v) => v.sku);
   await prisma.variant.deleteMany({
     where: {
       productId: existing.id,
@@ -621,6 +702,7 @@ export async function ensureCatalogProducts(): Promise<void> {
         ensureMagikidShoes(),
         ensureGators(),
         ensureGunHolster(),
+        ensureFilament(),
         ensureTrailMix(),
         ensureApparelProducts(),
       ]);
@@ -657,14 +739,7 @@ export async function ensureFootwearCatalog(): Promise<void> {
       await ensureFootwearProducts();
       await ensureFootwearStock();
       await ensureGators();
-      // Hot path: only create Magikid if missing — never rewrite the whole catalog.
-      const existing = await prisma.product.findUnique({
-        where: { slug: "magikid-shoes" },
-        select: { id: true },
-      });
-      if (!existing) {
-        await ensureMagikidShoes();
-      }
+      await ensureMagikidShoes();
       footwearEnsureAt = Date.now();
     } catch (error) {
       console.error("ensureFootwearCatalog failed:", error);
@@ -699,4 +774,29 @@ export async function ensureHealthCatalog(): Promise<void> {
   })();
 
   return healthEnsureInFlight;
+}
+
+/** Engineering-only ensure — skips apparel/footwear for fast /accessories loads. */
+let accessoriesEnsureAt = 0;
+let accessoriesEnsureInFlight: Promise<void> | null = null;
+const ACCESSORIES_ENSURE_TTL_MS = 10 * 60 * 1000;
+
+export async function ensureAccessoriesCatalog(): Promise<void> {
+  const now = Date.now();
+  if (accessoriesEnsureInFlight) return accessoriesEnsureInFlight;
+  if (now - accessoriesEnsureAt < ACCESSORIES_ENSURE_TTL_MS) return;
+
+  accessoriesEnsureInFlight = (async () => {
+    try {
+      await ensureProductCategoryColumns();
+      await ensureGunHolster();
+      accessoriesEnsureAt = Date.now();
+    } catch (error) {
+      console.error("ensureAccessoriesCatalog failed:", error);
+    } finally {
+      accessoriesEnsureInFlight = null;
+    }
+  })();
+
+  return accessoriesEnsureInFlight;
 }

@@ -4,7 +4,7 @@ export const GATORS_PRICE_CENTS = 8500; // $85
 export const GATORS_THUMBNAIL_URL = "/products/gators/gators.jpg";
 
 export const GATORS_DESCRIPTION_SHORT =
-  "Comfort clog inspired by the alligator — chunky cushion, easy slip-on, new listing with low stock.";
+  "Inspired by the alligator — chunky cushion, easy slip-on, ready for all-day wear.";
 
 export const GATORS_DESCRIPTION =
   "Meet The Gators 🐊 — a comfort-first clog with serious bite. Named for the alligator, these easy slip-ons blend a rounded closed toe, open back, and a thick cushioned platform so every step feels soft and supported. Clogs are built for all-day wear: slide them on, stay comfortable, and go. The Gators take that classic clog comfort and give it a gator attitude — grippy sole energy, a breathable mesh upper, and a silhouette that looks as bold as it feels. Limited run — new listing, low stock.";
