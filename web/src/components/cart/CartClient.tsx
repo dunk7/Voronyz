@@ -9,6 +9,13 @@ import {
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
 import { resolveIsPreOrder } from "@/lib/preorder";
+import {
+  cartHasInsurableItems,
+  getShippingInsuranceCents,
+  isShippingInsuranceRequested,
+  SHIPPING_INSURANCE_CENTS_PER_ITEM,
+  SHIPPING_INSURANCE_DESCRIPTION,
+} from "@/lib/shippingInsurance";
 import Image from "next/image";
 import Link from "next/link";
 import LogoLoader from "@/components/ui/LogoLoader";
@@ -33,11 +40,13 @@ interface CartItem {
 interface CartData {
   items: CartItem[];
   discountCode: string | null;
+  shippingInsurance?: boolean;
 }
 
 export default function CartClient() {
   const [items, setItems] = useState<CartItem[]>([]);
   const [discountCode, setDiscountCode] = useState<string | null>(null);
+  const [shippingInsurance, setShippingInsurance] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -68,9 +77,11 @@ export default function CartClient() {
           loadedItems = parsed.map((item: unknown) => ({ ...(item as CartItem) }));
           setItems(loadedItems);
           setDiscountCode(null);
-          saveCart({ items: loadedItems, discountCode: null });
+          setShippingInsurance(false);
+          saveCart({ items: loadedItems, discountCode: null, shippingInsurance: false });
         } else {
           const normalizedCode = normalizeDiscountCode(parsed.discountCode);
+          const loadedInsurance = isShippingInsuranceRequested(parsed.shippingInsurance);
           loadedItems = (parsed.items || []).map((it) => {
             // Migrate to always have a base unit price.
             const base = typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
@@ -90,8 +101,13 @@ export default function CartClient() {
           });
           setItems(loadedItems);
           setDiscountCode(normalizedCode);
+          setShippingInsurance(loadedInsurance);
           // Persist the normalized/migrated shape so pricing stays consistent.
-          saveCart({ items: loadedItems, discountCode: normalizedCode });
+          saveCart({
+            items: loadedItems,
+            discountCode: normalizedCode,
+            shippingInsurance: loadedInsurance,
+          });
         }
       }
     } catch (error) {
@@ -105,6 +121,7 @@ export default function CartClient() {
   const saveCart = (cartData: CartData) => {
     setItems(cartData.items);
     setDiscountCode(cartData.discountCode);
+    setShippingInsurance(Boolean(cartData.shippingInsurance));
     try {
       localStorage.setItem("cart", JSON.stringify(cartData));
       // Dispatch event to update cart count in header
@@ -123,7 +140,7 @@ export default function CartClient() {
         const base = getBaseUnitPriceCents(it);
         return { ...it, basePriceCents: base, priceCents: base };
       });
-      saveCart({ items: migratedItems, discountCode: normalized });
+      saveCart({ items: migratedItems, discountCode: normalized, shippingInsurance });
       setInputValue("");
       setMessage("Discount applied successfully!");
       setTimeout(clearMessage, 3000);
@@ -138,7 +155,7 @@ export default function CartClient() {
       const base = getBaseUnitPriceCents(it);
       return { ...it, basePriceCents: base, priceCents: base };
     });
-    saveCart({ items: migratedItems, discountCode: null });
+    saveCart({ items: migratedItems, discountCode: null, shippingInsurance });
     setInputValue("");
     setMessage("Discount removed.");
     setTimeout(clearMessage, 3000);
@@ -146,18 +163,27 @@ export default function CartClient() {
 
   function remove(itemId: string) {
     const newItems = items.filter(item => item.id !== itemId);
-    saveCart({ items: newItems, discountCode });
+    const nextInsurance = cartHasInsurableItems(newItems) ? shippingInsurance : false;
+    saveCart({ items: newItems, discountCode, shippingInsurance: nextInsurance });
   }
 
   function updateQuantity(itemId: string, nextQty: number) {
     const qty = Math.min(99, Math.max(1, Number(nextQty) || 1));
     const newItems = items.map((it) => (it.id === itemId ? { ...it, quantity: qty } : it));
-    saveCart({ items: newItems, discountCode });
+    saveCart({ items: newItems, discountCode, shippingInsurance });
+  }
+
+  function toggleShippingInsurance(next: boolean) {
+    saveCart({ items, discountCode, shippingInsurance: next });
   }
 
   const subtotal = items.reduce((sum, it) => {
     return sum + unitPriceForItem(it, discountCode) * it.quantity;
   }, 0);
+  const canOfferShippingInsurance = cartHasInsurableItems(items);
+  const insuranceEnabled = canOfferShippingInsurance && shippingInsurance;
+  const insuranceCents = insuranceEnabled ? getShippingInsuranceCents(items) : 0;
+  const orderTotal = subtotal + insuranceCents;
   const hasPreOrderItems = items.some((it) =>
     resolveIsPreOrder({ isPreOrder: it.isPreOrder, productSlug: it.productSlug })
   );
@@ -201,6 +227,7 @@ export default function CartClient() {
           items: checkoutItems,
           discountCode: discountCode || "",
           paymentMethod: method,
+          shippingInsurance: insuranceEnabled,
           successUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/success`,
           cancelUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/cancel`,
         }),
@@ -209,23 +236,34 @@ export default function CartClient() {
       if (!response.ok) {
         const rawText = await response.text();
         console.error("Checkout API error - Status:", response.status, "Raw response:", rawText);
-        let errorData: { error?: string } = {};
+        let errorData: { error?: string; details?: string } = {};
         try {
           errorData = JSON.parse(rawText);
         } catch {
           // Not JSON
         }
         throw new Error(
-          `Failed to create checkout session: ${errorData.error || rawText || "Unknown error"}`
+          errorData.details ||
+            errorData.error ||
+            rawText ||
+            "Failed to create checkout session"
         );
       }
 
       const { url } = await response.json();
+      if (!url) {
+        throw new Error("Checkout session did not return a payment URL");
+      }
       window.location.href = url;
     } catch (error) {
       console.error("Checkout failed:", error);
       setBusy(false);
-      alert("Checkout failed. Please try again.");
+      // Same payment path as footwear/slides — surface the real failure reason.
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "Checkout failed. Please try again.";
+      alert(message);
     }
   };
 
@@ -294,14 +332,8 @@ export default function CartClient() {
                   {it.attributes?.size !== undefined &&
                     it.productSlug !== "antioxidant-trail-mix" && (
                     <span className="rounded-full bg-black/5 px-2 py-0.5">
-                      {it.productSlug === "gun-holster"
-                        ? it.attributes.size === "IWB"
-                          ? "IWB — Inside the Waistband"
-                          : it.attributes.size === "OWB"
-                            ? "OWB — Outside the Waistband"
-                            : String(it.attributes.size)
-                        : it.productSlug === "tpu-90a-filament"
-                          ? "1kg spool"
+                      {it.productSlug === "tpu-90a-filament"
+                        ? "1kg spool"
                         : (
                           <>
                             Size {String(it.attributes.size)}
@@ -406,6 +438,60 @@ export default function CartClient() {
             you pay now to reserve your spot. Pre-order items ship when we receive them — timing can range from a day to much longer.
           </div>
         )}
+        {canOfferShippingInsurance && (
+          <button
+            type="button"
+            onClick={() => toggleShippingInsurance(!shippingInsurance)}
+            aria-pressed={shippingInsurance}
+            aria-describedby="shipping-insurance-help"
+            className={`w-full rounded-2xl border-2 px-5 py-5 text-left transition-all active:scale-[0.99] ${
+              shippingInsurance
+                ? "border-neutral-900 bg-neutral-900 text-white shadow-md"
+                : "border-neutral-900/15 bg-white text-neutral-900 hover:border-neutral-900/40 hover:bg-neutral-50"
+            }`}
+          >
+            <span className="flex items-center justify-between gap-4">
+              <span className="min-w-0">
+                <span className="block text-lg font-semibold tracking-tight sm:text-xl">
+                  {shippingInsurance ? "Shipping insurance added" : "Add shipping insurance"}
+                </span>
+                <span
+                  id="shipping-insurance-help"
+                  className={`mt-1.5 block text-sm leading-snug sm:text-base ${
+                    shippingInsurance ? "text-white/75" : "text-neutral-600"
+                  }`}
+                >
+                  {SHIPPING_INSURANCE_DESCRIPTION}
+                </span>
+              </span>
+              <span className="shrink-0 text-right">
+                <span className="block text-2xl font-bold tabular-nums sm:text-3xl">
+                  {formatCentsAsCurrency(
+                    getShippingInsuranceCents(items) || SHIPPING_INSURANCE_CENTS_PER_ITEM
+                  )}
+                </span>
+                <span
+                  className={`mt-1 block text-xs font-medium uppercase tracking-[0.14em] ${
+                    shippingInsurance ? "text-white/60" : "text-neutral-500"
+                  }`}
+                >
+                  {formatCentsAsCurrency(SHIPPING_INSURANCE_CENTS_PER_ITEM)} / item
+                </span>
+              </span>
+            </span>
+            <span
+              className={`mt-4 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-semibold ${
+                shippingInsurance
+                  ? "bg-white text-neutral-900"
+                  : "bg-neutral-900 text-white"
+              }`}
+            >
+              {shippingInsurance
+                ? "Tap to remove"
+                : `Tap to add · ${formatCentsAsCurrency(SHIPPING_INSURANCE_CENTS_PER_ITEM)}`}
+            </span>
+          </button>
+        )}
         {/* Combined Discount and Subtotal Section */}
         <div className="rounded-xl border border-black/10 p-4 space-y-4 bg-white">
           {/* Discount Input */}
@@ -441,10 +527,26 @@ export default function CartClient() {
               </div>
             )}
           </div>
-          {/* Subtotal */}
-          <div className="flex items-center justify-between text-sm pt-2 border-t border-black/10">
-            <div className="text-neutral-700">Subtotal</div>
-            <div className="font-bold text-neutral-900">{formatCentsAsCurrency(subtotal)}</div>
+          {/* Totals */}
+          <div className="space-y-2 pt-2 border-t border-black/10 text-sm">
+            <div className="flex items-center justify-between">
+              <div className="text-neutral-700">Subtotal</div>
+              <div className="font-medium text-neutral-900">{formatCentsAsCurrency(subtotal)}</div>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="text-neutral-700">Shipping</div>
+              <div className="font-medium text-emerald-700">Free</div>
+            </div>
+            {insuranceEnabled && (
+              <div className="flex items-center justify-between">
+                <div className="text-neutral-700">Shipping insurance</div>
+                <div className="font-medium text-neutral-900">{formatCentsAsCurrency(insuranceCents)}</div>
+              </div>
+            )}
+            <div className="flex items-center justify-between pt-2 border-t border-black/10">
+              <div className="font-semibold text-neutral-900">Total</div>
+              <div className="font-bold text-neutral-900">{formatCentsAsCurrency(orderTotal)}</div>
+            </div>
           </div>
         </div>
         <button
@@ -454,11 +556,7 @@ export default function CartClient() {
           aria-label="Pay with ACH bank transfer"
           onClick={() => startStripeCheckout("ach")}
         >
-          {isCheckingOut
-            ? "Processing..."
-            : hasPreOrderItems
-              ? "Pre-order with ACH"
-              : "Pay with ACH"}
+          {isCheckingOut ? "Processing..." : "Pay with ACH"}
         </button>
         <p className="text-center text-xs text-neutral-500 -mt-1">
           Bank transfer · usually lower fees than card
@@ -502,6 +600,7 @@ export default function CartClient() {
                 body: JSON.stringify({
                   items: checkoutItems,
                   discountCode: discountCode || '',
+                  shippingInsurance: insuranceEnabled,
                 }),
               });
 

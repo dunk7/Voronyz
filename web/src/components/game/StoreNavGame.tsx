@@ -309,12 +309,10 @@ export default function StoreNavGame() {
   const rippleRef = useRef<{ x: number; y: number; t: number } | null>(null);
   const popupRef = useRef<{ text: string; t: number } | null>(null);
   const activeZoneRef = useRef<string | null>(null);
-  const fullscreenRef = useRef(false);
   const pointerActiveRef = useRef(false);
 
   const [score, setScore] = useState(0);
   const [won, setWon] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const syncCamera = useCallback((player: Vec) => {
     const { w: vw, h: vh } = viewportRef.current;
@@ -334,17 +332,10 @@ export default function StoreNavGame() {
     let cssW: number;
     let cssH: number;
 
-    if (fullscreenRef.current) {
-      // Portrait-friendly fullscreen: fill the actual viewport (including mobile browser chrome)
-      const vv = window.visualViewport;
-      cssW = Math.max(1, Math.floor(vv?.width ?? window.innerWidth));
-      cssH = Math.max(1, Math.floor(vv?.height ?? window.innerHeight));
-    } else {
-      const rect = wrapper.getBoundingClientRect();
-      cssW = Math.max(280, Math.floor(rect.width));
-      // Keep a playable landscape-ish playfield in the page layout
-      cssH = Math.max(240, Math.min(Math.round(cssW * 0.62), Math.round(window.innerHeight * 0.55)));
-    }
+    const rect = wrapper.getBoundingClientRect();
+    cssW = Math.max(280, Math.floor(rect.width));
+    // Keep a playable landscape-ish playfield in the page layout
+    cssH = Math.max(240, Math.min(Math.round(cssW * 0.62), Math.round(window.innerHeight * 0.55)));
 
     viewportRef.current = { w: cssW, h: cssH };
     canvas.style.width = `${cssW}px`;
@@ -358,40 +349,6 @@ export default function StoreNavGame() {
     syncCamera(playerRef.current);
   }, [syncCamera]);
 
-  const exitFullscreen = useCallback(() => {
-    fullscreenRef.current = false;
-    pointerActiveRef.current = false;
-    setIsFullscreen(false);
-    document.documentElement.style.overflow = "";
-    document.body.style.overflow = "";
-    document.body.style.touchAction = "";
-    document.body.style.position = "";
-    document.body.style.width = "";
-    document.body.style.height = "";
-    document.body.style.top = "";
-    document.body.style.left = "";
-    // Defer resize so layout can settle after leaving fixed mode
-    requestAnimationFrame(() => resizeCanvas());
-  }, [resizeCanvas]);
-
-  const enterFullscreen = useCallback(() => {
-    fullscreenRef.current = true;
-    setIsFullscreen(true);
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-    document.body.style.touchAction = "none";
-    document.body.style.position = "fixed";
-    document.body.style.top = "0";
-    document.body.style.left = "0";
-    document.body.style.width = "100%";
-    document.body.style.height = "100%";
-    requestAnimationFrame(() => resizeCanvas());
-  }, [resizeCanvas]);
-
-  const toggleFullscreen = useCallback(() => {
-    if (fullscreenRef.current) exitFullscreen();
-    else enterFullscreen();
-  }, [enterFullscreen, exitFullscreen]);
 
   const resetGame = useCallback(() => {
     playerRef.current = { ...START_POS };
@@ -466,9 +423,7 @@ export default function StoreNavGame() {
     const vv = typeof window !== "undefined" ? window.visualViewport : null;
     vv?.addEventListener("resize", onResize);
     vv?.addEventListener("scroll", onResize);
-    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => {
-      if (!fullscreenRef.current) resizeCanvas();
-    }) : null;
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => resizeCanvas()) : null;
     if (ro && wrapperRef.current) ro.observe(wrapperRef.current);
     return () => {
       window.removeEventListener("resize", onResize);
@@ -479,23 +434,11 @@ export default function StoreNavGame() {
     };
   }, [resizeCanvas]);
 
-  // Escape exits fullscreen; lock page scroll while playing fullscreen
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && fullscreenRef.current) {
-        e.preventDefault();
-        exitFullscreen();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [exitFullscreen]);
 
   // Prevent page scroll / rubber-band when interacting with the game
   useEffect(() => {
     const canvas = canvasRef.current;
     const wrapper = wrapperRef.current;
-    const root = rootRef.current;
     if (!canvas || !wrapper) return;
 
     const blockTouch = (e: TouchEvent) => {
@@ -506,53 +449,23 @@ export default function StoreNavGame() {
     const blockWheel = (e: WheelEvent) => {
       e.preventDefault();
     };
-    const blockFullscreenScroll = (e: TouchEvent | WheelEvent) => {
-      if (!fullscreenRef.current) return;
-      const target = e.target as HTMLElement | null;
-      if (target?.closest("button, a")) return;
-      if (e.cancelable) e.preventDefault();
-    };
 
     canvas.addEventListener("touchstart", blockTouch, { passive: false });
     canvas.addEventListener("touchmove", blockTouch, { passive: false });
     wrapper.addEventListener("touchstart", blockTouch, { passive: false });
     wrapper.addEventListener("touchmove", blockTouch, { passive: false });
     wrapper.addEventListener("wheel", blockWheel, { passive: false });
-    root?.addEventListener("touchmove", blockFullscreenScroll, { passive: false });
-    root?.addEventListener("wheel", blockFullscreenScroll, { passive: false });
 
-    // Extra guard while fullscreen so the page behind can't rubber-band
-    if (isFullscreen) {
-      document.addEventListener("touchmove", blockFullscreenScroll, { passive: false });
-      document.addEventListener("wheel", blockFullscreenScroll, { passive: false });
-    }
-
+    
     return () => {
       canvas.removeEventListener("touchstart", blockTouch);
       canvas.removeEventListener("touchmove", blockTouch);
       wrapper.removeEventListener("touchstart", blockTouch);
       wrapper.removeEventListener("touchmove", blockTouch);
       wrapper.removeEventListener("wheel", blockWheel);
-      root?.removeEventListener("touchmove", blockFullscreenScroll);
-      root?.removeEventListener("wheel", blockFullscreenScroll);
-      document.removeEventListener("touchmove", blockFullscreenScroll);
-      document.removeEventListener("wheel", blockFullscreenScroll);
-    };
-  }, [isFullscreen]);
-
-  // Cleanup body lock on unmount
-  useEffect(() => {
-    return () => {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
-      document.body.style.touchAction = "";
-      document.body.style.position = "";
-      document.body.style.width = "";
-      document.body.style.height = "";
-      document.body.style.top = "";
-      document.body.style.left = "";
     };
   }, []);
+
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -806,33 +719,10 @@ export default function StoreNavGame() {
     return () => cancelAnimationFrame(raf);
   }, [syncCamera]);
 
-  const fullscreenToggle = (
-    <button
-      type="button"
-      onClick={toggleFullscreen}
-      className="absolute right-3 top-3 z-30 flex h-10 w-10 items-center justify-center rounded-xl bg-white/90 shadow-sm ring-1 ring-black/5 transition hover:bg-white active:scale-95"
-      aria-label={isFullscreen ? "Exit full screen" : "Enter full screen"}
-      aria-pressed={isFullscreen}
-      title={isFullscreen ? "Exit full screen" : "Full screen"}
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/logo.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" draggable={false} />
-    </button>
-  );
 
   const hud = (
     <div
-      className={`flex flex-wrap items-center justify-between gap-3 ${
-        isFullscreen ? "absolute left-0 right-14 top-0 z-20 px-3 py-2 sm:px-4" : ""
-      }`}
-      style={
-        isFullscreen
-          ? {
-              background: "linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0))",
-              pointerEvents: "none",
-            }
-          : undefined
-      }
+      className="flex flex-wrap items-center justify-between gap-3"
     >
       <div className="flex items-center gap-2 sm:gap-3" style={{ pointerEvents: "auto" }}>
         <div className="rounded-full bg-gradient-to-r from-rose-400 to-amber-300 px-3 py-1.5 text-sm font-semibold text-white shadow-sm sm:px-4">
@@ -852,47 +742,16 @@ export default function StoreNavGame() {
   return (
     <div
       ref={rootRef}
-      className={
-        isFullscreen
-          ? "fixed inset-0 z-[200] bg-black"
-          : "relative space-y-5"
-      }
-      style={
-        isFullscreen
-          ? {
-              touchAction: "none",
-              overscrollBehavior: "none",
-              width: "100vw",
-              height: "100dvh",
-              maxHeight: "100dvh",
-            }
-          : undefined
-      }
+      className="relative space-y-5"
     >
-      {!isFullscreen && hud}
+      {hud}
 
       <div
-        className={isFullscreen ? "bg-[#fff5eb]" : "relative"}
-        style={
-          isFullscreen
-            ? {
-                position: "absolute",
-                inset: 0,
-                width: "100%",
-                height: "100%",
-                touchAction: "none",
-                overscrollBehavior: "none",
-              }
-            : undefined
-        }
+        className="relative"
       >
         <div
           ref={wrapperRef}
-          className={`relative overflow-hidden select-none touch-none overscroll-none ${
-            isFullscreen
-              ? "h-full w-full rounded-none ring-0 shadow-none"
-              : "rounded-[28px] ring-1 ring-rose-200/60 shadow-[0_20px_60px_-28px_rgba(255,107,107,0.55)]"
-          }`}
+          className="relative overflow-hidden select-none touch-none overscroll-none rounded-[28px] ring-1 ring-rose-200/60 shadow-[0_20px_60px_-28px_rgba(255,107,107,0.55)]"
           style={{
             background:
               "radial-gradient(circle at 20% 20%, #ffe8f0, transparent 45%), radial-gradient(circle at 80% 10%, #e8f8ff, transparent 40%), #fff5eb",
@@ -941,8 +800,6 @@ export default function StoreNavGame() {
             aria-label="Top-down Voronyz store map. Tap or drag to move your cute little robot. You stay centered while the map moves."
           />
 
-          {fullscreenToggle}
-          {isFullscreen && hud}
 
           {won && (
             <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/55 backdrop-blur-[2px]">

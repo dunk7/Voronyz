@@ -3,9 +3,9 @@ export const APPAREL_ONE_SIZE = ["One Size"] as const;
 
 /**
  * Apparel sub-sections.
- * - `collection`: multi-product listing pages (shirts, hats, scarves, bottles, …) —
+ * - `collection`: multi-product listing pages (shirts, scarves, sweaters, …) —
  *   add new designs to APPAREL_CATALOG with the matching subcategory.
- * - `standalone`: Accessories only (insoles, shades, jewelry, …) — never mixed
+ * - `standalone`: Accessories only (hats, bottles, shades, jewelry, …) — never mixed
  *   into clothing collections, and never shown on Engineering `/accessories`.
  */
 export type ApparelSubcategoryId =
@@ -15,10 +15,11 @@ export type ApparelSubcategoryId =
   | "shorts"
   | "joggers"
   | "outerwear"
-  | "hats"
   | "scarves"
-  | "bottles"
   | "accessories";
+
+/** Legacy apparel collection paths that now live under Accessories. */
+export const LEGACY_APPAREL_ACCESSORY_SUBCATEGORIES = ["hats", "bottles"] as const;
 
 export type ApparelListingKind = "collection" | "standalone";
 
@@ -35,7 +36,7 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "shirts",
     label: "Shirts",
-    description: "Nice shirts, oversized tees, and more designs to come",
+    description: "Oversized tees, nice shirts, and more designs to come",
     listing: "collection",
   },
   {
@@ -69,27 +70,15 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
     listing: "collection",
   },
   {
-    id: "hats",
-    label: "Hats",
-    description: "UV hats and headwear designs",
-    listing: "collection",
-  },
-  {
     id: "scarves",
     label: "Scarves",
     description: "Knit scarves and cool-weather neck layers",
     listing: "collection",
   },
   {
-    id: "bottles",
-    label: "Bottles",
-    description: "Insulated bottles, lock squirt bottles, and everyday drinkware",
-    listing: "collection",
-  },
-  {
     id: "accessories",
     label: "Accessories",
-    description: "Insoles, shades, jewelry, keychains, drone & RC gear",
+    description: "Hats, bottles, shades, jewelry, keychains, drone & RC gear",
     listing: "standalone",
   },
 ];
@@ -137,18 +126,7 @@ export const OBSOLETE_APPAREL_SLUGS = [
  */
 export const APPAREL_CATALOG: ApparelCatalogItem[] = [
   // ── Shirts (multi-product) ──────────────────────────────────────────────
-  {
-    slug: "voronyz-nice-shirt",
-    subcategory: "shirts",
-    name: "Nice Shirt",
-    description: "Polished everyday shirt with a sharp collar and soft hand-feel.",
-    priceCents: 6800,
-    colors: ["black", "white", "grey"],
-    sizes: [...APPAREL_SIZES],
-    image: "/products/apparel/nice-shirt.jpg",
-    skuPrefix: "APP-NICE",
-    comingSoon: true,
-  },
+  // Oversized first: Apparel hub cover + shirts listing order follow catalog order.
   {
     slug: "voronyz-oversized-tee",
     subcategory: "shirts",
@@ -159,6 +137,18 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/shirt.jpg",
     skuPrefix: "APP-TEE",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-nice-shirt",
+    subcategory: "shirts",
+    name: "Nice Shirt",
+    description: "Polished everyday shirt with a sharp collar and soft hand-feel.",
+    priceCents: 6800,
+    colors: ["black", "white", "grey"],
+    sizes: [...APPAREL_SIZES],
+    image: "/products/apparel/nice-shirt.jpg",
+    skuPrefix: "APP-NICE",
     comingSoon: true,
   },
   // ── Sweaters (multi-product) ────────────────────────────────────────────
@@ -230,19 +220,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-OUT",
     comingSoon: true,
   },
-  // ── Hats (multi-product) ────────────────────────────────────────────────
-  {
-    slug: "voronyz-uv-hat",
-    subcategory: "hats",
-    name: "UV Hat",
-    description: "Wide-brim UV hat for sun coverage on long outdoor days.",
-    priceCents: 3800,
-    colors: ["black", "beige"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/uv-hat.jpg",
-    skuPrefix: "APP-UVHT",
-    comingSoon: true,
-  },
   // ── Scarves (multi-product) ─────────────────────────────────────────────
   {
     slug: "voronyz-scarf",
@@ -260,10 +237,22 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-SCRF",
     comingSoon: true,
   },
-  // ── Bottles (multi-product) ─────────────────────────────────────────────
+  // ── Accessories only (never mixed into clothing collections) ────────────
+  {
+    slug: "voronyz-uv-hat",
+    subcategory: "accessories",
+    name: "UV Hat",
+    description: "Wide-brim UV hat for sun coverage on long outdoor days.",
+    priceCents: 3800,
+    colors: ["black", "beige"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/uv-hat.jpg",
+    skuPrefix: "APP-UVHT",
+    comingSoon: true,
+  },
   {
     slug: "voronyz-water-bottle",
-    subcategory: "bottles",
+    subcategory: "accessories",
     name: "Stainless Water Bottle",
     description: "Insulated stainless bottle with a clean Voronyz finish.",
     priceCents: 3600,
@@ -275,7 +264,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
   },
   {
     slug: "voronyz-lock-squirt-bottle",
-    subcategory: "bottles",
+    subcategory: "accessories",
     name: "Lock Squirt Bottle",
     description:
       "750ml BPA-free cycling squirt bottle with twist-to-lock leak-proof cap, quick flow, and lightweight adventure-ready build.",
@@ -287,18 +276,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     comingSoon: true,
   },
   // ── Accessories only (never mixed into clothing collections) ────────────
-  {
-    slug: "voronyz-lattice-insoles",
-    subcategory: "accessories",
-    name: "Lattice Insoles",
-    description: "3D-printed TPU lattice insoles for cushion, bounce, and all-day support.",
-    priceCents: 3200,
-    colors: ["black", "grey"],
-    sizes: ["S", "M", "L", "XL"],
-    image: "/products/apparel/lattice-insoles.jpg",
-    skuPrefix: "APP-INSL",
-    comingSoon: true,
-  },
+  // Lattice Insoles live on All Footwear as a live listing (see latticeInsoles.ts).
   {
     slug: "voronyz-cool-shades",
     subcategory: "accessories",
@@ -436,6 +414,13 @@ export function isApparelSubcategoryId(
   id: string | null | undefined,
 ): id is ApparelSubcategoryId {
   return Boolean(getApparelSubcategory(id));
+}
+
+export function isLegacyApparelAccessorySubcategory(
+  id: string | null | undefined,
+): boolean {
+  const key = (id || "").trim().toLowerCase();
+  return (LEGACY_APPAREL_ACCESSORY_SUBCATEGORIES as readonly string[]).includes(key);
 }
 
 export function isCollectionSubcategory(id: string | null | undefined): boolean {
