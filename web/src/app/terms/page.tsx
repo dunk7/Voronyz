@@ -93,7 +93,7 @@ export default function TermsPage() {
               <ul className="list-disc list-inside space-y-1 text-neutral-700 ml-4">
                 <li>All prices are in USD unless otherwise specified</li>
                 <li>Payment is due at the time of order placement</li>
-                <li>We accept major credit cards and other payment methods as displayed</li>
+                <li>We accept ACH bank transfers (preferred), major credit cards, and other payment methods as displayed</li>
                 <li>Taxes and shipping charges will be added to your order total</li>
               </ul>
             </div>
