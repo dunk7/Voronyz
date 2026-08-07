@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState, type CSSProperties } from "react";
 
 type LogoLoaderProps = {
@@ -26,7 +25,61 @@ const SIZE_MAP = {
   lg: { mark: 56, bar: 168, stage: 200, text: "text-sm" },
 } as const;
 
-/** Animated Voronyz logo (same mark as the header) with a flowing progress bar. */
+/** Four-dot Voronyz mark that respects tone (no white-on-white PNG square). */
+function VoronyzMark({
+  size,
+  fill,
+  className = "",
+  animateDots = false,
+}: {
+  size: number;
+  fill: string;
+  className?: string;
+  animateDots?: boolean;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 64 64"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      className={className}
+    >
+      <circle
+        className={animateDots ? "logo-loader-dot logo-loader-dot--a" : undefined}
+        cx="22"
+        cy="18"
+        r="5.5"
+        fill={fill}
+      />
+      <circle
+        className={animateDots ? "logo-loader-dot logo-loader-dot--b" : undefined}
+        cx="42"
+        cy="18"
+        r="5.5"
+        fill={fill}
+      />
+      <circle
+        className={animateDots ? "logo-loader-dot logo-loader-dot--c" : undefined}
+        cx="32"
+        cy="46"
+        r="5.5"
+        fill={fill}
+      />
+      <circle
+        className={animateDots ? "logo-loader-dot logo-loader-dot--core" : undefined}
+        cx="32"
+        cy="30"
+        r="9"
+        fill={fill}
+      />
+    </svg>
+  );
+}
+
+/** Animated Voronyz logo mark with a flowing progress bar. */
 export default function LogoLoader({
   size = "md",
   label,
@@ -98,26 +151,20 @@ export default function LogoLoader({
           >
             {/* Radius + bounce live on this wrapper so the mark can spin freely */}
             <div className="logo-loader-orbit-arm">
-              <Image
-                src="/logo.png"
-                alt=""
-                width={dims.mark}
-                height={dims.mark}
-                className="logo-loader-mark-spin rounded-sm"
-                priority
+              <VoronyzMark
+                size={dims.mark}
+                fill={fill}
+                className="logo-loader-mark-spin"
               />
             </div>
           </div>
         </div>
       ) : (
-        <Image
-          src="/logo.png"
-          alt=""
-          width={dims.mark}
-          height={dims.mark}
-          aria-hidden="true"
-          className="logo-loader-mark rounded-sm"
-          priority
+        <VoronyzMark
+          size={dims.mark}
+          fill={fill}
+          className="logo-loader-mark"
+          animateDots
         />
       )}
 
@@ -154,17 +201,17 @@ type LogoMarkProps = {
 /** Compact static/pulsing logo mark for image placeholders and overlays. */
 export function LogoMark({
   size = 28,
+  tone = "dark",
   className = "",
   animate = true,
 }: LogoMarkProps) {
+  const fill = tone === "light" ? "#ffffff" : "#0e0e0e";
   return (
-    <Image
-      src="/logo.png"
-      alt=""
-      width={size}
-      height={size}
-      aria-hidden="true"
-      className={`rounded-sm ${animate ? "logo-loader-mark" : ""} ${className}`}
+    <VoronyzMark
+      size={size}
+      fill={fill}
+      className={`${animate ? "logo-loader-mark" : ""} ${className}`}
+      animateDots={animate}
     />
   );
 }

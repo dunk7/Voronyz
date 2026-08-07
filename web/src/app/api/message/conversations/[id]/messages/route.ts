@@ -17,6 +17,7 @@ import {
   getMessageUserId,
   unauthorizedMessageResponse,
 } from "@/lib/messageAuth";
+import { MESSAGE_BODY_MAX_LENGTH } from "@/lib/messageConversation";
 import {
   serializeChatMessage,
   serializeConversationDetail,
@@ -253,9 +254,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
     );
   }
 
-  if (messageBody.length > 4000) {
+  if (messageBody.length > MESSAGE_BODY_MAX_LENGTH) {
     return NextResponse.json(
-      { error: "Message must be at most 4000 characters." },
+      {
+        error: `Message must be at most ${MESSAGE_BODY_MAX_LENGTH} characters.`,
+      },
       { status: 400 }
     );
   }

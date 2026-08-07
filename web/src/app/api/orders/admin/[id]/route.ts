@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getProductThumbnail } from "@/lib/productImages";
 import { parseOrderMetadata, type AdminOrder, type OrderLineItem } from "@/lib/orderTypes";
@@ -7,6 +8,8 @@ import {
   isOrdersAdminConfigured,
   unauthorizedOrdersResponse,
 } from "@/lib/ordersAdmin";
+
+const MAX_ADMIN_NOTES_LENGTH = 4000;
 
 function enrichLineItemImage(item: OrderLineItem): OrderLineItem {
   if (item.image) return item;
@@ -42,6 +45,7 @@ function toAdminOrder(order: {
     paymentMethod: parsed.paymentMethod,
     discountCode: parsed.discountCode,
     hasPreOrder: parsed.hasPreOrder,
+    adminNotes: parsed.adminNotes,
   };
 }
 
@@ -68,17 +72,19 @@ export async function PATCH(
 
   const { id } = await params;
 
-  let body: { status?: string };
+  let body: { status?: string; adminNotes?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const newStatus = body.status?.trim();
-  if (!newStatus || !(newStatus in ALLOWED_FROM)) {
+  const hasStatus = typeof body.status === "string";
+  const hasNotes = typeof body.adminNotes === "string";
+
+  if (!hasStatus && !hasNotes) {
     return NextResponse.json(
-      { error: 'Status must be "completed", "paid", or "preorder"' },
+      { error: 'Provide "status" and/or "adminNotes"' },
       { status: 400 }
     );
   }
@@ -88,31 +94,59 @@ export async function PATCH(
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
 
-  const allowedCurrent = ALLOWED_FROM[newStatus];
-  if (!allowedCurrent.includes(order.status)) {
-    return NextResponse.json(
-      {
-        error: `Only ${allowedCurrent.join(" or ")} orders can be marked as ${newStatus}`,
-      },
-      { status: 400 }
-    );
-  }
-
   const existingMetadata =
     order.metadata && typeof order.metadata === "object" && !Array.isArray(order.metadata)
-      ? (order.metadata as Record<string, unknown>)
+      ? { ...(order.metadata as Record<string, unknown>) }
       : {};
 
-  const metadataUpdate =
-    newStatus === "completed"
-      ? { ...existingMetadata, completedAt: new Date().toISOString() }
-      : { ...existingMetadata, completedAt: null };
+  let nextStatus = order.status;
+  let metadataUpdate = existingMetadata;
+
+  if (hasStatus) {
+    const newStatus = body.status!.trim();
+    if (!(newStatus in ALLOWED_FROM)) {
+      return NextResponse.json(
+        { error: 'Status must be "completed", "paid", or "preorder"' },
+        { status: 400 }
+      );
+    }
+
+    const allowedCurrent = ALLOWED_FROM[newStatus];
+    if (!allowedCurrent.includes(order.status)) {
+      return NextResponse.json(
+        {
+          error: `Only ${allowedCurrent.join(" or ")} orders can be marked as ${newStatus}`,
+        },
+        { status: 400 }
+      );
+    }
+
+    nextStatus = newStatus;
+    metadataUpdate =
+      newStatus === "completed"
+        ? { ...metadataUpdate, completedAt: new Date().toISOString() }
+        : { ...metadataUpdate, completedAt: null };
+  }
+
+  if (hasNotes) {
+    if (body.adminNotes!.length > MAX_ADMIN_NOTES_LENGTH) {
+      return NextResponse.json(
+        { error: `Notes must be ${MAX_ADMIN_NOTES_LENGTH} characters or fewer` },
+        { status: 400 }
+      );
+    }
+    const trimmed = body.adminNotes!.trim();
+    metadataUpdate = {
+      ...metadataUpdate,
+      adminNotes: trimmed || null,
+    };
+  }
 
   const updated = await prisma.order.update({
     where: { id },
     data: {
-      status: newStatus,
-      metadata: metadataUpdate,
+      status: nextStatus,
+      metadata: metadataUpdate as Prisma.InputJsonValue,
     },
   });
 
