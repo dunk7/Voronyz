@@ -7,6 +7,7 @@ export interface OrderDetails {
   dbSaved?: boolean;
   warning?: string;
   paymentStatus?: string;
+  paymentMethod?: string | null;
   sessionId?: string;
   order: {
     id: string;
@@ -63,6 +64,11 @@ export function OrderSuccessContent({
       item.isPreOrder === true ||
       item.name.toLowerCase().startsWith("pre-order")
   );
+  const isAch = order.paymentMethod === "ach";
+  const achStillClearing =
+    isAch &&
+    order.paymentStatus !== "paid" &&
+    !isPending;
 
   return (
     <div className="container py-12 text-black bg-white">
@@ -81,19 +87,30 @@ export function OrderSuccessContent({
           {isPending
             ? "Your payment is processing. This can take a moment — please keep this page open."
             : hasPreOrder
-              ? `Order ${orderNumber} is paid and reserved. We'll ship when the product arrives — that could be a day or much longer.`
+              ? `Order ${orderNumber} is reserved. We'll ship when the product arrives — that could be a day or much longer.`
               : `Your order ${orderNumber} has been placed successfully.`}
         </p>
+        {achStillClearing && (
+          <p className="text-sm text-neutral-600">
+            Your ACH bank debit is processing and typically clears in a few business days.
+          </p>
+        )}
         {details.email && (
           <p className="text-sm text-black">Confirmation sent to {details.email}</p>
         )}
         <div className="flex items-center justify-center gap-3">
           <span
             className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
-              isPending ? "bg-yellow-100 text-black" : "bg-emerald-100 text-black"
+              isPending || achStillClearing
+                ? "bg-yellow-100 text-black"
+                : "bg-emerald-100 text-black"
             }`}
           >
-            {isPending ? "Payment processing" : "Payment confirmed"}
+            {isPending
+              ? "Payment processing"
+              : achStillClearing
+                ? "ACH processing"
+                : "Payment confirmed"}
           </span>
           {order.paymentStatus && (
             <span className="text-xs text-black">Status: {order.paymentStatus}</span>

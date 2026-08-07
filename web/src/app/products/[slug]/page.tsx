@@ -40,6 +40,14 @@ import {
   GATORS_SLUG,
   GATORS_THUMBNAIL_URL,
 } from "@/lib/gators";
+import {
+  FILAMENT_DESCRIPTION,
+  FILAMENT_HOW_ITS_MADE,
+  FILAMENT_IMAGES,
+  FILAMENT_NAME,
+  FILAMENT_SLUG,
+  FILAMENT_THUMBNAIL_URL,
+} from "@/lib/filament";
 import { isAccessorySlug, isApparelSlug, isHealthSlug } from "@/lib/productCategories";
 import {
   apparelProductShopHref,
@@ -177,6 +185,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? [...TRAIL_MIX_IMAGES]
     : slug === GATORS_SLUG
     ? [...GATORS_IMAGES]
+    : slug === FILAMENT_SLUG
+    ? [...FILAMENT_IMAGES]
     : getApparelItem(slug)
     ? getApparelImages(getApparelItem(slug)!)
     : ((product.images as string[] | null) ?? defaultImages);
@@ -195,6 +205,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isGunHolster = slug === GUN_HOLSTER_SLUG;
   const isTrailMix = slug === TRAIL_MIX_SLUG;
   const isGators = slug === GATORS_SLUG;
+  const isFilament = slug === FILAMENT_SLUG;
   const apparelItem = getApparelItem(slug);
   const isApparel = Boolean(apparelItem);
   const shopHref = isAccessorySlug(slug)
@@ -217,23 +228,27 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       ? TRAIL_MIX_NAME
       : isGators
         ? GATORS_NAME
-        : product.name;
+        : isFilament
+          ? FILAMENT_NAME
+          : product.name;
 
   // Product-specific descriptions
   const displayDescription = slug === "v3-slides" 
     ? "World-class FDM printed slides with TPU 90A lattice lowers and breathable uppers. Engineered from precision 3D scans."
     : slug === "dragonfly"
-    ? "Lightweight, breathable 3D-printed sneakers featuring a custom lattice sole for unmatched cushioning and style. Available in four stunning colorways with fully customizable lace colors."
+    ? "Lightweight, breathable 3D-printed sneakers featuring a custom lattice sole for unmatched cushioning and style. Available in five stunning colorways with fully customizable lace colors."
     : isMagikidShoes
     ? MAGIKID_SHOES_DESCRIPTION
     : isSlipOns
-    ? "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — black, grey, orange in stock; white temporarily unavailable."
+    ? "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — black, grey, orange, and pink in stock; white temporarily unavailable."
     : isGunHolster
     ? GUN_HOLSTER_DESCRIPTION
     : isTrailMix
     ? TRAIL_MIX_DESCRIPTION
     : isGators
     ? GATORS_DESCRIPTION
+    : isFilament
+    ? FILAMENT_DESCRIPTION
     : product.description;
 
   const holsterVariants = isGunHolster
@@ -276,6 +291,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
               </span>
             )}
+            {isFilament && (
+              <>
+                <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
+                  New Listing
+                </span>
+                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">1kg spool</span>
+                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU-90A</span>
+              </>
+            )}
             {isGators && (
               <>
                 <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
@@ -286,12 +310,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 </span>
               </>
             )}
-            {!isTrailMix && !isApparel && (
+            {!isTrailMix && !isApparel && !isFilament && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
                 {isMagikidShoes ? "Made to order in <7 days" : "Made to order in <2 days"}
               </span>
             )}
-            {!isMagikidShoes && !isGunHolster && !isTrailMix && !isApparel && (
+            {!isMagikidShoes && !isGunHolster && !isTrailMix && !isApparel && !isFilament && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
             )}
             {isApparel && apparelItem && (
@@ -392,6 +416,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     soldOut: true,
                     flavorOptions: TRAIL_MIX_FLAVORS,
                   })}
+                  {...(isFilament && {
+                    hideSizeSelector: true,
+                  })}
                   {...(isApparel && {
                     useCatalogSizes: true,
                     preOrder: true,
@@ -401,7 +428,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   productName={displayName}
                   coverImage={(images[0] as string) || defaultImages[0]}
                   productSlug={slug}
-                  promoHint={undefined}
                 />
               </Suspense>
 
@@ -442,7 +468,23 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <div className="container pb-12">
         <div className="mt-10 overflow-hidden rounded-3xl ring-1 ring-black/5 bg-white">
           <div className="bg-black text-white px-6 py-4 text-sm font-medium">
-            {isDragonfly ? "Crafted for you" : isMagikidShoes ? "Magikid edition" : isSlipOns ? "Print + finish" : isGunHolster ? "Carbon fiber nylon" : isTrailMix ? "Collaborative" : isApparel ? "Apparel" : isGators ? "Comfort clog" : "How it's made"}
+            {isDragonfly
+              ? "Crafted for you"
+              : isMagikidShoes
+                ? "Magikid edition"
+                : isSlipOns
+                  ? "Print + finish"
+                  : isGunHolster
+                    ? "Carbon fiber nylon"
+                    : isTrailMix
+                      ? "Collaborative"
+                      : isApparel
+                        ? "Apparel"
+                        : isGators
+                          ? "Comfort clog"
+                          : isFilament
+                            ? "TPU-90A filament"
+                            : "How it's made"}
           </div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed">
             {isDragonfly
@@ -459,26 +501,29 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? "Voronyz Apparel is designed for a clean modern fit — consistent fabrics, considered proportions, and colorways that work across the full lineup. These pieces are available for pre-order: pay now to join the waitlist, and we'll ship when the drop arrives."
               : isGators
               ? GATORS_HOW_ITS_MADE
+              : isFilament
+              ? FILAMENT_HOW_ITS_MADE
               : "Each pair takes a full day to print using our proprietary TPU blend. Following printing, we perform heat-treated post-processing to ensure exceptional quality, comfort, and durability."}
           </div>
         </div>
 
+        {!isFilament && (
         <div className="mt-12">
           <h2 className="text-lg font-semibold text-neutral-900 mb-4">FAQs</h2>
           <FAQ
             items={isDragonfly ? [
-              { q: "What colors are available?", a: "The Dragonfly's come in Black, White, Red, and Azure Blue — white is currently out of stock. Black is $5 less at $60. Laces can be any color you want!" },
+              { q: "What colors are available?", a: "The Dragonfly's come in Black, White, Red, Azure Blue, and Pink — white is currently out of stock. Black is $5 less at $60. Laces can be any color you want!" },
               { q: "Are they true to size?", a: "Yes — we offer Men's, Women's, and Kids' sizing. They're designed for a comfortable, snug fit right out of the box." },
               { q: "How long does production take?", a: "Each pair is 3D-printed to order. Production takes about 1-2 days, then ships out next business day." },
               { q: "Is shipping really free?", a: "Yes! We offer free shipping on all domestic US orders. No minimum purchase required. We currently only ship within the US." },
               { q: "Can I wash them?", a: "Absolutely. The lattice sole and upper are fully washable — toss them in the washer on a gentle cycle." },
             ] : isMagikidShoes ? [
-              { q: "What colors can I order?", a: "Black and grey are in stock. White and orange are listed but currently out of stock." },
+              { q: "What colors can I order?", a: "Black, grey, and pink are in stock. White and orange are listed but currently out of stock." },
               { q: "How does Magikid Lab pickup work?", a: "Choose pickup at checkout — you pay $30 for the shoes with no shipping fee. We'll email you when your pair is ready to collect in person at Magikid Lab." },
               { q: "How does shipping work?", a: "The shoes are $30. Shipping is an extra $7. Pickup at Magikid Lab is $30 with no shipping fee." },
               { q: "How long does production take?", a: "Made to order in under 7 days, then we ship or hold for pickup." },
             ] : isSlipOns ? [
-              { q: "What colors can I order?", a: "Black, grey, white, and orange are listed — white is currently out of stock. Each pair is one solid body color (no two-tone option)." },
+              { q: "What colors can I order?", a: "Black, grey, orange, and pink are in stock — white is currently out of stock. Each pair is one solid body color (no two-tone option)." },
               { q: "Why is white unavailable?", a: "We're temporarily out of white material runs. Select another color or check back — inventory updates when we restock." },
               { q: "Are they true to size?", a: "Use the Men's / Women's / Kids' toggles on the product page to pick your usual US size." },
               { q: "How long does production take?", a: "About 1–2 days to print, then we ship the next business day." },
@@ -514,6 +559,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             ]}
           />
         </div>
+        )}
       </div>
     </div>
   );
@@ -538,7 +584,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug === "slip-ons") {
     const title = "Slip Ons – Voronyz";
     const description =
-      "Minimal 3D-printed slip-ons with a flexible lattice sole. $60. Black, grey, and orange in stock; white temporarily unavailable.";
+      "Minimal 3D-printed slip-ons with a flexible lattice sole. $60. Black, grey, orange, and pink in stock; white temporarily unavailable.";
     const images = ["/products/slip-ons/InShot_20260405_203151152.jpg"];
     return {
       title,
@@ -588,6 +634,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const title = `${GATORS_NAME} – Voronyz`;
     const description = GATORS_DESCRIPTION;
     const images = [GATORS_THUMBNAIL_URL];
+    return {
+      title,
+      description,
+      openGraph: { title, description, images },
+      twitter: { card: "summary_large_image", title, description, images },
+    };
+  }
+
+  if (slug === FILAMENT_SLUG) {
+    const title = `${FILAMENT_NAME} – Voronyz`;
+    const description = FILAMENT_DESCRIPTION;
+    const images = [FILAMENT_THUMBNAIL_URL, ...FILAMENT_IMAGES];
     return {
       title,
       description,

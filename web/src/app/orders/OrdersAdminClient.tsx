@@ -14,11 +14,14 @@ import {
   MessageSquare,
   Package,
   Search,
+  StickyNote,
   Tag,
+  TrendingUp,
   Upload,
 } from "lucide-react";
 import MagikidThumbnailPanel from "./MagikidThumbnailPanel";
 import DiscountCodesAdminPanel from "./DiscountCodesAdminPanel";
+import OrdersStatsPanel from "./OrdersStatsPanel";
 import UploadsAdminPanel from "./UploadsAdminPanel";
 import QuizResultsAdminPanel from "./QuizResultsAdminPanel";
 import { formatCentsAsCurrency } from "@/lib/money";
@@ -30,8 +33,10 @@ import {
 
 type SortKey = "date" | "price" | "name" | "status";
 type SortDir = "asc" | "desc";
-type AdminTab = "orders" | "discounts" | "uploads" | "quiz";
+type AdminTab = "orders" | "stats" | "discounts" | "uploads" | "quiz";
 type OrdersView = "open" | "completed" | "all";
+
+const MAX_ADMIN_NOTES_LENGTH = 4000;
 
 const STATUS_STYLES: Record<string, string> = {
   paid: "bg-emerald-100 text-emerald-800",
@@ -122,6 +127,100 @@ function SortButton({
       {label}
       <Icon className="h-3.5 w-3.5" />
     </button>
+  );
+}
+
+function OrderNotesEditor({
+  order,
+  onSaved,
+  onAuthLost,
+}: {
+  order: AdminOrder;
+  onSaved: (order: AdminOrder) => void;
+  onAuthLost: () => void;
+}) {
+  const [notes, setNotes] = useState(order.adminNotes ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [savedFlash, setSavedFlash] = useState(false);
+
+  useEffect(() => {
+    setNotes(order.adminNotes ?? "");
+    setError(null);
+    setSavedFlash(false);
+  }, [order.id, order.adminNotes]);
+
+  const dirty = notes !== (order.adminNotes ?? "");
+
+  async function saveNotes() {
+    if (saving) return;
+    if (notes.length > MAX_ADMIN_NOTES_LENGTH) {
+      setError(`Notes must be ${MAX_ADMIN_NOTES_LENGTH} characters or fewer`);
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/orders/admin/${order.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ adminNotes: notes }),
+      });
+      if (res.status === 401) {
+        onAuthLost();
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to save notes");
+      }
+      if (data.order) {
+        onSaved(data.order);
+        setNotes(data.order.adminNotes ?? "");
+      }
+      setSavedFlash(true);
+      window.setTimeout(() => setSavedFlash(false), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save notes");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="space-y-3 print:hidden">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-neutral-500">
+          <StickyNote className="h-3.5 w-3.5" />
+          Notes
+        </h3>
+        <span className="text-[11px] text-neutral-400">
+          {notes.length}/{MAX_ADMIN_NOTES_LENGTH}
+        </span>
+      </div>
+      <textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        rows={4}
+        placeholder="Internal notes for this order…"
+        className="w-full resize-y rounded-xl border border-black/10 bg-neutral-50 px-3 py-2.5 text-sm leading-relaxed text-neutral-900 focus:outline-none focus:ring-2 focus:ring-black/10"
+      />
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={saveNotes}
+          disabled={saving || !dirty}
+          className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-40"
+        >
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          {saving ? "Saving…" : savedFlash ? "Saved" : "Save notes"}
+        </button>
+        {dirty ? (
+          <span className="text-xs text-amber-700">Unsaved changes</span>
+        ) : null}
+      </div>
+      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+    </div>
   );
 }
 
@@ -245,7 +344,7 @@ export default function OrdersAdminClient() {
   }
 
   function handleRefresh() {
-    if (tab === "orders" || tab === "discounts") loadOrders();
+    if (tab === "orders" || tab === "stats" || tab === "discounts") loadOrders();
     else if (tab === "quiz") setQuizRefresh((n) => n + 1);
     else setUploadsRefresh((n) => n + 1);
     loadMessageSetting();
@@ -356,6 +455,7 @@ export default function OrdersAdminClient() {
           o.shipping?.name,
           o.shipping?.address?.line1,
           o.shipping?.address?.city,
+          o.adminNotes,
           ...o.lineItems.map((i) => i.name),
         ]
           .filter(Boolean)
@@ -473,7 +573,9 @@ export default function OrdersAdminClient() {
             <p className="text-sm text-neutral-500">
               {tab === "orders"
                 ? `${filteredOrders.length} shown · ${openOrdersCount} open · ${completedOrdersCount} completed`
-                : tab === "discounts"
+                : tab === "stats"
+                  ? "Revenue and order performance"
+                  : tab === "discounts"
                   ? `${discountOrdersCount} order${discountOrdersCount === 1 ? "" : "s"} with discount codes`
                   : tab === "quiz"
                     ? "Take the Quiz poll results"
@@ -514,10 +616,14 @@ export default function OrdersAdminClient() {
             <button
               type="button"
               onClick={handleRefresh}
-              disabled={(tab === "orders" || tab === "discounts") && loadingOrders}
+              disabled={
+                (tab === "orders" || tab === "stats" || tab === "discounts") &&
+                loadingOrders
+              }
               className="rounded-full border border-black/10 px-4 py-2 text-sm hover:bg-neutral-50 disabled:opacity-50"
             >
-              {(tab === "orders" || tab === "discounts") && loadingOrders
+              {(tab === "orders" || tab === "stats" || tab === "discounts") &&
+              loadingOrders
                 ? "Refreshing…"
                 : "Refresh"}
             </button>
@@ -547,6 +653,18 @@ export default function OrdersAdminClient() {
             >
               <Package className="h-4 w-4" />
               Orders
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("stats")}
+              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
+                tab === "stats"
+                  ? "bg-black text-white"
+                  : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
+              }`}
+            >
+              <TrendingUp className="h-4 w-4" />
+              Stats
             </button>
             <button
               type="button"
@@ -620,6 +738,10 @@ export default function OrdersAdminClient() {
             refreshToken={quizRefresh}
             onAuthLost={() => setAuthenticated(false)}
           />
+        ) : null}
+
+        {tab === "stats" ? (
+          <OrdersStatsPanel orders={orders} loading={loadingOrders} />
         ) : null}
 
         {tab === "discounts" ? (
@@ -784,6 +906,12 @@ export default function OrdersAdminClient() {
                         >
                           {order.status.replace(/_/g, " ")}
                         </span>
+                        {order.adminNotes ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-900">
+                            <StickyNote className="h-3 w-3" />
+                            Note
+                          </span>
+                        ) : null}
                       </div>
                       <p className="text-sm text-neutral-800 font-medium">{shipName}</p>
                       <p className="text-sm text-neutral-500">{formatDate(order.createdAt)}</p>
@@ -925,6 +1053,16 @@ export default function OrdersAdminClient() {
                         </div>
                       </div>
                       </div>
+
+                      <OrderNotesEditor
+                        order={order}
+                        onAuthLost={() => setAuthenticated(false)}
+                        onSaved={(updated) =>
+                          setOrders((prev) =>
+                            prev.map((o) => (o.id === updated.id ? updated : o))
+                          )
+                        }
+                      />
                     </div>
                   )}
                 </article>

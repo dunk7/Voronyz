@@ -13,8 +13,7 @@ export type ApparelSubcategoryId =
   | "sweaters"
   | "socks"
   | "shorts"
-  | "sweats"
-  | "pants"
+  | "joggers"
   | "outerwear"
   | "scarves"
   | "accessories";
@@ -59,15 +58,9 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
     listing: "collection",
   },
   {
-    id: "sweats",
-    label: "Sweats",
-    description: "Sweatpants and lounge bottoms",
-    listing: "collection",
-  },
-  {
-    id: "pants",
-    label: "Pants",
-    description: "Everyday and technical pant designs",
+    id: "joggers",
+    label: "Joggers",
+    description: "Tapered joggers for training days and downtime",
     listing: "collection",
   },
   {
@@ -121,7 +114,10 @@ export function getApparelImages(item: ApparelCatalogItem): string[] {
 }
 
 /** Slugs removed from the live apparel catalog (cleaned up on ensure). */
-export const OBSOLETE_APPAREL_SLUGS = [] as const;
+export const OBSOLETE_APPAREL_SLUGS = [
+  "voronyz-technical-pants",
+  "voronyz-lounge-sweats",
+] as const;
 
 /**
  * Source of truth for apparel products.
@@ -197,30 +193,17 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-SHRT",
     comingSoon: true,
   },
-  // ── Sweats (multi-product) ──────────────────────────────────────────────
+  // ── Joggers (multi-product) ─────────────────────────────────────────────
   {
-    slug: "voronyz-lounge-sweats",
-    subcategory: "sweats",
-    name: "Sweats",
-    description: "Tapered sweatpants for training days and downtime.",
+    slug: "voronyz-joggers",
+    subcategory: "joggers",
+    name: "Joggers",
+    description: "Tapered joggers for training days and downtime.",
     priceCents: 7200,
     colors: ["black", "grey"],
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/sweats.jpg",
-    skuPrefix: "APP-SWT",
-    comingSoon: true,
-  },
-  // ── Pants (multi-product) ───────────────────────────────────────────────
-  {
-    slug: "voronyz-technical-pants",
-    subcategory: "pants",
-    name: "Technical Pants",
-    description: "Streamlined pants with a sharp taper and everyday stretch.",
-    priceCents: 8800,
-    colors: ["black", "grey"],
-    sizes: [...APPAREL_SIZES],
-    image: "/products/apparel/pants.jpg",
-    skuPrefix: "APP-PNT",
+    skuPrefix: "APP-JGR",
     comingSoon: true,
   },
   // ── Outerwear (multi-product) ───────────────────────────────────────────
@@ -245,7 +228,11 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     priceCents: 4200,
     colors: ["black", "grey"],
     sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/scarf.jpg",
+    image: "/products/apparel/scarf-features.jpg",
+    images: [
+      "/products/apparel/scarf-features.jpg",
+      "/products/apparel/scarf.jpg",
+    ],
     skuPrefix: "APP-SCRF",
     comingSoon: true,
   },
@@ -265,13 +252,26 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
   {
     slug: "voronyz-water-bottle",
     subcategory: "accessories",
-    name: "Water Bottle",
+    name: "Stainless Water Bottle",
     description: "Insulated stainless bottle with a clean Voronyz finish.",
     priceCents: 3600,
     colors: ["black", "white"],
     sizes: [...APPAREL_ONE_SIZE],
     image: "/products/apparel/water-bottle.jpg",
     skuPrefix: "APP-BTTL",
+    comingSoon: true,
+  },
+  {
+    slug: "voronyz-lock-squirt-bottle",
+    subcategory: "accessories",
+    name: "Lock Squirt Bottle",
+    description:
+      "750ml BPA-free cycling squirt bottle with twist-to-lock leak-proof cap, quick flow, and lightweight adventure-ready build.",
+    priceCents: 2800,
+    colors: ["black"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/lock-squirt-bottle.jpg",
+    skuPrefix: "APP-SQRT",
     comingSoon: true,
   },
   {
