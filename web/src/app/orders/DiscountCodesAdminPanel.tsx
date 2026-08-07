@@ -4,12 +4,19 @@ import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Check, Copy, Link2, Package, Search, Tag } from "lucide-react";
 import { formatCentsAsCurrency } from "@/lib/money";
-import { VALID_DISCOUNT_CODES } from "@/lib/discountPricing";
+import {
+  VALID_DISCOUNT_CODES,
+  getDiscountCodeDescription,
+} from "@/lib/discountPricing";
 import {
   formatShippingAddress,
   type AdminOrder,
   type OrderLineItem,
 } from "@/lib/orderTypes";
+import {
+  buildInfluencerDiscountUrl,
+  INFLUENCER_DISCOUNT_LINKS,
+} from "@/lib/influencerLinks";
 
 type DiscountCodesAdminPanelProps = {
   orders: AdminOrder[];
@@ -62,6 +69,7 @@ function statusClass(status: string) {
 
 type DiscountGroup = {
   code: string;
+  description: string;
   orders: AdminOrder[];
   itemCount: number;
   totalCents: number;
@@ -73,6 +81,108 @@ function fallbackAutoApplyUrl(code: string): string {
   const origin =
     typeof window !== "undefined" ? window.location.origin : "https://voronyz.com";
   return `${origin.replace(/\/$/, "")}/${code}`;
+}
+
+function CopyLinkButton({ text, label }: { text: string; label?: string }) {
+  const [copied, setCopied] = useState(false);
+
+  async function copy() {
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      disabled={!text}
+      className="inline-flex items-center gap-1.5 rounded-lg border border-black/10 bg-white px-3 py-2 text-xs font-semibold text-neutral-800 hover:bg-neutral-50 disabled:opacity-40"
+      title={label ? `Copy ${label}` : "Copy link"}
+    >
+      {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+      {copied ? "Copied" : label || "Copy link"}
+    </button>
+  );
+}
+
+function InfluencerLinksPanel() {
+  return (
+    <div className="rounded-2xl bg-white p-4 sm:p-5 ring-1 ring-black/5 space-y-4">
+      <div>
+        <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+          <Link2 className="h-3.5 w-3.5" />
+          Influencer bio links
+        </div>
+        <h2 className="mt-1 text-base font-semibold text-neutral-900">
+          Share these with creators
+        </h2>
+        <p className="mt-1 text-sm text-neutral-500 max-w-2xl">
+          Give each influencer their short Voronyz link for Instagram / TikTok bios.
+          When a shopper opens it, their discount code is applied in the cart automatically
+          (example: <span className="font-mono text-neutral-700">voronyz.com/aryan</span> →{" "}
+          <span className="font-mono text-neutral-700">Aryan50</span>).
+        </p>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-black/10 text-xs uppercase tracking-[0.14em] text-neutral-500">
+              <th className="py-2 pr-4 font-medium">Influencer</th>
+              <th className="py-2 pr-4 font-medium">Code</th>
+              <th className="py-2 pr-4 font-medium">Bio link</th>
+              <th className="py-2 font-medium">Copy</th>
+            </tr>
+          </thead>
+          <tbody>
+            {INFLUENCER_DISCOUNT_LINKS.map((link) => {
+              const url = buildInfluencerDiscountUrl(link.slug);
+              return (
+                <tr
+                  key={link.slug}
+                  className="border-b border-black/5 last:border-0 align-middle"
+                >
+                  <td className="py-3 pr-4 font-semibold text-neutral-900">
+                    {link.label}
+                  </td>
+                  <td className="py-3 pr-4">
+                    <span className="inline-flex rounded-md bg-neutral-100 px-2 py-1 font-mono text-xs font-semibold uppercase tracking-wide text-neutral-800">
+                      {link.code}
+                    </span>
+                  </td>
+                  <td className="py-3 pr-4">
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-mono text-xs sm:text-sm text-neutral-800 underline underline-offset-2 hover:text-black break-all"
+                    >
+                      {url}
+                    </a>
+                    <div className="mt-0.5 text-xs text-neutral-500">
+                      Path: /{link.slug}
+                    </div>
+                  </td>
+                  <td className="py-3">
+                    <div className="flex flex-wrap gap-2">
+                      <CopyLinkButton text={url} label="Copy link" />
+                      <CopyLinkButton text={link.code} label="Copy code" />
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 }
 
 export default function DiscountCodesAdminPanel({
@@ -140,6 +250,7 @@ export default function DiscountCodesAdminPanel({
       const meta = linkMetaByCode[code];
       map.set(code, {
         code,
+        description: getDiscountCodeDescription(code),
         orders: [],
         itemCount: 0,
         totalCents: 0,
@@ -163,6 +274,7 @@ export default function DiscountCodesAdminPanel({
       } else {
         map.set(code, {
           code,
+          description: getDiscountCodeDescription(code),
           orders: [order],
           itemCount,
           totalCents: order.totalCents,
@@ -242,14 +354,18 @@ export default function DiscountCodesAdminPanel({
 
   if (loading && orders.length === 0 && linksLoading) {
     return (
-      <div className="flex justify-center py-20 text-neutral-400 text-sm">
-        Loading discount codes…
+      <div className="space-y-4">
+        <InfluencerLinksPanel />
+        <div className="flex justify-center py-20 text-neutral-400 text-sm">
+          Loading discount codes…
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
+      <InfluencerLinksPanel />
       <div className="rounded-2xl bg-white p-4 ring-1 ring-black/5 space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -375,6 +491,10 @@ export default function DiscountCodesAdminPanel({
 
             <div className="flex flex-wrap gap-4 text-sm text-neutral-600">
               <p>
+                <span className="font-medium text-neutral-800">Deal:</span>{" "}
+                {selectedGroup.description}
+              </p>
+              <p>
                 <span className="font-medium text-neutral-800">Clicks:</span>{" "}
                 {selectedGroup.clicks}
               </p>
@@ -405,6 +525,7 @@ export default function DiscountCodesAdminPanel({
                 className="rounded-xl border border-black/5 bg-neutral-50 px-4 py-3 text-left hover:bg-neutral-100 transition-colors"
               >
                 <p className="font-mono text-sm font-semibold">{group.code}</p>
+                <p className="text-xs text-neutral-600 mt-1">{group.description}</p>
                 <p className="text-xs text-neutral-500 mt-1">
                   {group.clicks} click{group.clicks === 1 ? "" : "s"} ·{" "}
                   {group.orders.length} order{group.orders.length === 1 ? "" : "s"} ·{" "}
@@ -426,8 +547,8 @@ export default function DiscountCodesAdminPanel({
             <>
               <p className="font-medium text-neutral-700">No discount code orders yet</p>
               <p className="text-sm mt-1">
-                Click any code above to copy its auto-apply link. Orders that use a code
-                will show up here.
+                All active codes (including aryan50) are listed above. Click a code to
+                copy its auto-apply link. Orders that use a code will show up here.
               </p>
             </>
           ) : (
