@@ -43,6 +43,7 @@ const SHELVES: Rect[] = [
   { x: 1300, y: 720, w: 240, h: 64, color: "#FF7675", label: "Gift Shop", labelColor: "#fff" },
   { x: 1600, y: 720, w: 220, h: 64, color: "#81ECEC", label: "Samples", labelColor: "#0a3d3d" },
 
+  { x: 200, y: 980, w: 180, h: 70, color: "#FAB1A0", label: "Returns", labelColor: "#5a2a1a" },
   { x: 460, y: 980, w: 200, h: 70, color: "#DFE6E9", label: "Fitting", labelColor: "#2d3436" },
   { x: 740, y: 980, w: 220, h: 70, color: "#FFEAA7", label: "Lounge", labelColor: "#5a4a00" },
   { x: 1040, y: 980, w: 200, h: 70, color: "#B2BEC3", label: "Info Desk", labelColor: "#2d3436" },
@@ -149,11 +150,6 @@ function drawRoundedRect(
   ctx.arcTo(x, y + h, x, y, r);
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
-}
-
-function isPortraitViewport() {
-  if (typeof window === "undefined") return false;
-  return window.innerHeight > window.innerWidth;
 }
 
 /** Top-down happy little robot — face follows movement direction. */
@@ -313,13 +309,11 @@ export default function StoreNavGame() {
   const rippleRef = useRef<{ x: number; y: number; t: number } | null>(null);
   const popupRef = useRef<{ text: string; t: number } | null>(null);
   const activeZoneRef = useRef<string | null>(null);
-  const fullscreenRef = useRef(false);
-  const forceLandscapeRef = useRef(false);
 
   const [score, setScore] = useState(0);
+  const [hint, setHint] = useState("Tap anywhere to walk around the store!");
   const [won, setWon] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [forceLandscape, setForceLandscape] = useState(false);
+  const [activeZone, setActiveZone] = useState<string | null>(null);
 
   const syncCamera = useCallback((player: Vec) => {
     const { w: vw, h: vh } = viewportRef.current;
@@ -336,24 +330,10 @@ export default function StoreNavGame() {
     if (!canvas || !wrapper) return;
 
     const dpr = Math.min(2, window.devicePixelRatio || 1);
-    let cssW: number;
-    let cssH: number;
-
-    if (fullscreenRef.current) {
-      if (forceLandscapeRef.current && isPortraitViewport()) {
-        // CSS-rotated landscape: visual width = phone height, visual height = phone width
-        cssW = window.innerHeight;
-        cssH = window.innerWidth;
-      } else {
-        cssW = window.innerWidth;
-        cssH = window.innerHeight;
-      }
-    } else {
-      const rect = wrapper.getBoundingClientRect();
-      cssW = Math.max(280, Math.floor(rect.width));
-      // Keep a playable landscape-ish playfield in the page layout
-      cssH = Math.max(240, Math.min(Math.round(cssW * 0.62), Math.round(window.innerHeight * 0.55)));
-    }
+    const rect = wrapper.getBoundingClientRect();
+    const cssW = Math.max(280, Math.floor(rect.width));
+    // Keep a playable landscape-ish playfield in the page layout
+    const cssH = Math.max(240, Math.min(Math.round(cssW * 0.62), Math.round(window.innerHeight * 0.55)));
 
     viewportRef.current = { w: cssW, h: cssH };
     canvas.style.width = `${cssW}px`;
@@ -367,41 +347,6 @@ export default function StoreNavGame() {
     syncCamera(playerRef.current);
   }, [syncCamera]);
 
-  const exitFullscreen = useCallback(() => {
-    fullscreenRef.current = false;
-    forceLandscapeRef.current = false;
-    setIsFullscreen(false);
-    setForceLandscape(false);
-    document.documentElement.style.overflow = "";
-    document.body.style.overflow = "";
-    document.body.style.touchAction = "";
-    document.body.style.position = "";
-    document.body.style.width = "";
-    document.body.style.height = "";
-    // Defer resize so layout can settle after leaving fixed mode
-    requestAnimationFrame(() => resizeCanvas());
-  }, [resizeCanvas]);
-
-  const enterFullscreen = useCallback(() => {
-    const portrait = isPortraitViewport();
-    fullscreenRef.current = true;
-    forceLandscapeRef.current = portrait;
-    setIsFullscreen(true);
-    setForceLandscape(portrait);
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-    document.body.style.touchAction = "none";
-    document.body.style.position = "fixed";
-    document.body.style.width = "100%";
-    document.body.style.height = "100%";
-    requestAnimationFrame(() => resizeCanvas());
-  }, [resizeCanvas]);
-
-  const toggleFullscreen = useCallback(() => {
-    if (fullscreenRef.current) exitFullscreen();
-    else enterFullscreen();
-  }, [enterFullscreen, exitFullscreen]);
-
   const resetGame = useCallback(() => {
     playerRef.current = { ...START_POS };
     targetRef.current = null;
@@ -413,6 +358,8 @@ export default function StoreNavGame() {
     syncCamera(START_POS);
     setScore(0);
     setWon(false);
+    setActiveZone(null);
+    setHint("Tap anywhere to walk around the store!");
   }, [syncCamera]);
 
   const screenToMap = useCallback((clientX: number, clientY: number): Vec | null => {
@@ -421,7 +368,6 @@ export default function StoreNavGame() {
     const rect = canvas.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return null;
 
-    // getBoundingClientRect already reflects CSS rotation, so client coords map directly
     const localX = ((clientX - rect.left) / rect.width) * viewportRef.current.w;
     const localY = ((clientY - rect.top) / rect.height) * viewportRef.current.h;
     return {
@@ -460,6 +406,7 @@ export default function StoreNavGame() {
 
       targetRef.current = dest;
       rippleRef.current = { x: dest.x, y: dest.y, t: 0 };
+      setHint("On the way…");
     },
     [screenToMap, won]
   );
@@ -467,19 +414,10 @@ export default function StoreNavGame() {
   // Resize + orientation
   useEffect(() => {
     resizeCanvas();
-    const onResize = () => {
-      if (fullscreenRef.current) {
-        const portrait = isPortraitViewport();
-        forceLandscapeRef.current = portrait;
-        setForceLandscape(portrait);
-      }
-      resizeCanvas();
-    };
+    const onResize = () => resizeCanvas();
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onResize);
-    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => {
-      if (!fullscreenRef.current) resizeCanvas();
-    }) : null;
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => resizeCanvas()) : null;
     if (ro && wrapperRef.current) ro.observe(wrapperRef.current);
     return () => {
       window.removeEventListener("resize", onResize);
@@ -487,18 +425,6 @@ export default function StoreNavGame() {
       ro?.disconnect();
     };
   }, [resizeCanvas]);
-
-  // Escape exits fullscreen; lock page scroll while playing fullscreen
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && fullscreenRef.current) {
-        e.preventDefault();
-        exitFullscreen();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [exitFullscreen]);
 
   // Prevent page scroll / rubber-band when interacting with the game canvas
   useEffect(() => {
@@ -530,18 +456,6 @@ export default function StoreNavGame() {
       wrapper.removeEventListener("touchmove", blockWrapperScroll);
       wrapper.removeEventListener("wheel", blockWheel);
     };
-  }, [isFullscreen]);
-
-  // Cleanup body lock on unmount
-  useEffect(() => {
-    return () => {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
-      document.body.style.touchAction = "";
-      document.body.style.position = "";
-      document.body.style.width = "";
-      document.body.style.height = "";
-    };
   }, []);
 
   useEffect(() => {
@@ -568,6 +482,7 @@ export default function StoreNavGame() {
           player.x = target.x;
           player.y = target.y;
           targetRef.current = null;
+          setHint("Tap another spot to keep exploring!");
         } else {
           facingRef.current = Math.atan2(dy, dx);
           const step = SPEED * dt;
@@ -600,6 +515,7 @@ export default function StoreNavGame() {
           const next = s + collectedNow;
           if (next >= INITIAL_COLLECTIBLES.length) {
             setWon(true);
+            setHint("You found everything in the store!");
             popupRef.current = { text: "Store explorer complete! 🎉", t: 3 };
           }
           return next;
@@ -623,6 +539,7 @@ export default function StoreNavGame() {
       }
       if (activeZoneRef.current !== zoneName) {
         activeZoneRef.current = zoneName;
+        setActiveZone(zoneName);
       }
 
       if (rippleRef.current) {
@@ -757,8 +674,28 @@ export default function StoreNavGame() {
       // Cute top-down robot (camera keeps them near center)
       const bob = Math.sin(bobRef.current) * 2;
       const px = player.x;
-      const py = player.y;
+      const py = player.y + bob;
       drawCuteRobot(ctx, px, py, facingRef.current, bob);
+
+      const faceAngle = facingRef.current;
+      const eyeOx = Math.cos(faceAngle) * 3;
+      const eyeOy = Math.sin(faceAngle) * 3;
+      ctx.fillStyle = "#2d3436";
+      ctx.beginPath();
+      ctx.arc(px - 5 + eyeOx, py - 3 + eyeOy, 2.2, 0, Math.PI * 2);
+      ctx.arc(px + 5 + eyeOx, py - 3 + eyeOy, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(px + eyeOx * 0.5, py + 3 + eyeOy * 0.5, 5, 0.15, Math.PI - 0.15);
+      ctx.strokeStyle = "#2d3436";
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+
+      ctx.fillStyle = "#2d3436";
+      ctx.beginPath();
+      ctx.ellipse(px - 7, py + PLAYER_R - 2, 5, 2.5, -0.2, 0, Math.PI * 2);
+      ctx.ellipse(px + 7, py + PLAYER_R - 2, 5, 2.5, 0.2, 0, Math.PI * 2);
+      ctx.fill();
 
       if (popupRef.current) {
         const pop = popupRef.current;
@@ -770,7 +707,7 @@ export default function StoreNavGame() {
         const text = pop.text;
         const tw = ctx.measureText(text).width;
         const bx = px;
-        const by = py + bob * 0.35 - PLAYER_R - 28;
+        const by = py - PLAYER_R - 28;
         drawRoundedRect(ctx, bx - tw / 2 - 14, by - 16, tw + 28, 32, 16);
         ctx.fillStyle = "rgba(35, 25, 45, 0.88)";
         ctx.fill();
@@ -780,7 +717,7 @@ export default function StoreNavGame() {
         ctx.restore();
       }
 
-      // Brand corner (world-space, near map origin)
+      // Brand corner (world-space, near map origin — also draw screen overlay below)
       ctx.fillStyle = "rgba(45, 35, 55, 0.45)";
       ctx.font = "800 16px ui-rounded, system-ui, sans-serif";
       ctx.textAlign = "left";
@@ -789,6 +726,26 @@ export default function StoreNavGame() {
 
       ctx.restore();
 
+      // Mini-map (screen space)
+      const mmW = 110;
+      const mmH = Math.round((mmW * MAP_H) / MAP_W);
+      const mmX = vw - mmW - 14;
+      const mmY = 14;
+      const scaleX = mmW / MAP_W;
+      const scaleY = mmH / MAP_H;
+      ctx.fillStyle = "rgba(35, 25, 45, 0.72)";
+      drawRoundedRect(ctx, mmX - 4, mmY - 4, mmW + 8, mmH + 8, 10);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,245,235,0.9)";
+      ctx.fillRect(mmX, mmY, mmW, mmH);
+      ctx.strokeStyle = "rgba(255,107,107,0.85)";
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(mmX + cam.x * scaleX, mmY + cam.y * scaleY, vw * scaleX, vh * scaleY);
+      ctx.fillStyle = "#FF7675";
+      ctx.beginPath();
+      ctx.arc(mmX + player.x * scaleX, mmY + player.y * scaleY, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
       raf = requestAnimationFrame(tick);
     };
 
@@ -796,155 +753,97 @@ export default function StoreNavGame() {
     return () => cancelAnimationFrame(raf);
   }, [syncCamera]);
 
-  const hud = (
-    <div
-      className="absolute left-0 right-0 top-0 z-20 flex flex-wrap items-center justify-end gap-3 px-3 py-2 sm:px-4"
-      style={{
-        background: "linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0))",
-        pointerEvents: "none",
-      }}
-    >
-      <div className="flex items-center gap-2 sm:gap-3" style={{ pointerEvents: "auto" }}>
-        <div className="rounded-full bg-gradient-to-r from-rose-400 to-amber-300 px-3 py-1.5 text-sm font-semibold text-white shadow-sm sm:px-4">
-          Finds {score}/{INITIAL_COLLECTIBLES.length}
-        </div>
-        <button
-          type="button"
-          onClick={toggleFullscreen}
-          className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 transition hover:border-neutral-300 hover:bg-neutral-50 sm:px-4"
-          aria-pressed={isFullscreen}
-        >
-          {isFullscreen ? "Exit" : "Full screen"}
-        </button>
-        <button
-          type="button"
-          onClick={resetGame}
-          className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 transition hover:border-neutral-300 hover:bg-neutral-50 sm:px-4"
-        >
-          Reset
-        </button>
-      </div>
-    </div>
-  );
-
   return (
-    <div
-      className={
-        isFullscreen
-          ? "fixed inset-0 z-[200] bg-black"
-          : undefined
-      }
-      style={
-        isFullscreen
-          ? {
-              touchAction: "none",
-              overscrollBehavior: "none",
-            }
-          : undefined
-      }
-    >
-      <div
-        className={isFullscreen ? "bg-[#fff5eb]" : undefined}
-        style={
-          isFullscreen
-            ? forceLandscape
-              ? {
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  width: "100vh",
-                  height: "100vw",
-                  transform: "translate(-50%, -50%) rotate(90deg)",
-                  transformOrigin: "center center",
-                  touchAction: "none",
-                  overscrollBehavior: "none",
-                }
-              : {
-                  position: "absolute",
-                  inset: 0,
-                  width: "100%",
-                  height: "100%",
-                  touchAction: "none",
-                  overscrollBehavior: "none",
-                }
-            : undefined
-        }
-      >
-        <div
-          ref={wrapperRef}
-          className={`relative overflow-hidden select-none touch-none overscroll-none ${
-            isFullscreen
-              ? "h-full w-full rounded-none ring-0 shadow-none"
-              : "rounded-[28px] ring-1 ring-rose-200/60 shadow-[0_20px_60px_-28px_rgba(255,107,107,0.55)]"
-          }`}
-          style={{
-            background:
-              "radial-gradient(circle at 20% 20%, #ffe8f0, transparent 45%), radial-gradient(circle at 80% 10%, #e8f8ff, transparent 40%), #fff5eb",
-            touchAction: "none",
-            overscrollBehavior: "none",
-            WebkitUserSelect: "none",
-            userSelect: "none",
-          }}
-          onContextMenu={(e) => e.preventDefault()}
-        >
-          <canvas
-            ref={canvasRef}
-            className="block cursor-pointer"
-            style={{
-              touchAction: "none",
-              WebkitTouchCallout: "none",
-              WebkitUserSelect: "none",
-              userSelect: "none",
-              display: "block",
-            }}
-            onPointerDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              (e.target as HTMLCanvasElement).setPointerCapture?.(e.pointerId);
-              handlePointer(e.clientX, e.clientY);
-            }}
-            onPointerMove={(e) => {
-              if (e.buttons > 0) e.preventDefault();
-            }}
-            role="img"
-            aria-label="Top-down Voronyz store map. Tap to move your cute little robot. You stay centered while the map moves."
-          />
-
-          {hud}
-
-          {isFullscreen && forceLandscape && (
-            <p className="pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-black/45 px-3 py-1 text-[11px] font-medium text-white">
-              Landscape full screen — no need to tilt your phone
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="space-y-1">
+          <p className="text-sm text-neutral-600">{hint}</p>
+          {activeZone && (
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-rose-500">
+              Now in: {activeZone}
             </p>
           )}
-
-          {won && (
-            <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/55 backdrop-blur-[2px]">
-              <div className="mx-4 max-w-sm rounded-3xl bg-white/95 p-6 text-center shadow-xl ring-1 ring-rose-100">
-                <p className="text-2xl font-bold text-neutral-900">You explored the whole store!</p>
-                <p className="mt-2 text-sm text-neutral-600">
-                  Your little robot explored it all. Tap reset for another lap, or hop over to shop for real.
-                </p>
-                <div className="mt-5 flex flex-wrap justify-center gap-2">
-                  <button
-                    type="button"
-                    onClick={resetGame}
-                    className="rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white"
-                  >
-                    Play again
-                  </button>
-                  <Link
-                    href="/products"
-                    className="rounded-full bg-gradient-to-r from-rose-400 to-amber-300 px-5 py-2.5 text-sm font-semibold text-white"
-                  >
-                    Shop footwear
-                  </Link>
-                </div>
-              </div>
-            </div>
-          )}
+        </div>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="rounded-full bg-gradient-to-r from-rose-400 to-amber-300 px-3 py-1.5 text-sm font-semibold text-white shadow-sm sm:px-4">
+            Finds {score}/{INITIAL_COLLECTIBLES.length}
+          </div>
+          <button
+            type="button"
+            onClick={resetGame}
+            className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 transition hover:border-neutral-300 hover:bg-neutral-50 sm:px-4"
+          >
+            Reset
+          </button>
         </div>
       </div>
+
+      <div
+        ref={wrapperRef}
+        className="relative overflow-hidden select-none touch-none overscroll-none rounded-[28px] ring-1 ring-rose-200/60 shadow-[0_20px_60px_-28px_rgba(255,107,107,0.55)]"
+        style={{
+          background:
+            "radial-gradient(circle at 20% 20%, #ffe8f0, transparent 45%), radial-gradient(circle at 80% 10%, #e8f8ff, transparent 40%), #fff5eb",
+          touchAction: "none",
+          overscrollBehavior: "none",
+          WebkitUserSelect: "none",
+          userSelect: "none",
+        }}
+        onContextMenu={(e) => e.preventDefault()}
+      >
+        <canvas
+          ref={canvasRef}
+          className="block cursor-pointer"
+          style={{
+            touchAction: "none",
+            WebkitTouchCallout: "none",
+            WebkitUserSelect: "none",
+            userSelect: "none",
+            display: "block",
+          }}
+          onPointerDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            (e.target as HTMLCanvasElement).setPointerCapture?.(e.pointerId);
+            handlePointer(e.clientX, e.clientY);
+          }}
+          onPointerMove={(e) => {
+            if (e.buttons > 0) e.preventDefault();
+          }}
+          role="img"
+          aria-label="Top-down Voronyz store map. Tap to move your cute little robot. You stay centered while the map moves."
+        />
+
+        {won && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/55 backdrop-blur-[2px]">
+            <div className="mx-4 max-w-sm rounded-3xl bg-white/95 p-6 text-center shadow-xl ring-1 ring-rose-100">
+              <p className="text-2xl font-bold text-neutral-900">You explored the whole store!</p>
+              <p className="mt-2 text-sm text-neutral-600">
+                Cute stroll complete. Tap reset for another lap, or hop over to shop for real.
+              </p>
+              <div className="mt-5 flex flex-wrap justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={resetGame}
+                  className="rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white"
+                >
+                  Play again
+                </button>
+                <Link
+                  href="/products"
+                  className="rounded-full bg-gradient-to-r from-rose-400 to-amber-300 px-5 py-2.5 text-sm font-semibold text-white"
+                >
+                  Shop footwear
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <p className="text-center text-xs text-neutral-500">
+        Tip: you stay in the center while the big store map scrolls under you.
+      </p>
     </div>
   );
 }
