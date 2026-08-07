@@ -49,13 +49,13 @@ export default function SoftImage({
     <>
       {manageFade && !loaded && (
         <div
-          className="absolute inset-0 z-[1] flex items-center justify-center bg-neutral-100"
+          className="absolute inset-0 z-[1] flex items-center justify-center pointer-events-none"
           aria-hidden="true"
         >
           <LogoMark
             size={36}
             tone={placeholderTone}
-            className="opacity-25"
+            className="opacity-20"
           />
         </div>
       )}
