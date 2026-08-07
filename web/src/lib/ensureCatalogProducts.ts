@@ -31,6 +31,16 @@ import {
   GATORS_VARIANTS,
 } from "@/lib/gators";
 import {
+  FILAMENT_DESCRIPTION_SHORT,
+  FILAMENT_IMAGES,
+  FILAMENT_NAME,
+  FILAMENT_PRICE_CENTS,
+  FILAMENT_PRIMARY_COLORS,
+  FILAMENT_SIZES,
+  FILAMENT_SLUG,
+  FILAMENT_VARIANTS,
+} from "@/lib/filament";
+import {
   APPAREL_CATALOG,
   APPAREL_CATEGORY,
   OBSOLETE_APPAREL_SLUGS,
@@ -447,7 +457,7 @@ export async function ensureTrailMix(): Promise<void> {
   });
 }
 
-/** Idempotently upsert The Gators so the new listing appears without a manual seed run. */
+/** Idempotently upsert The Gators so the listing appears without a manual seed run. */
 export async function ensureGators(): Promise<void> {
   const existing = await prisma.product.findUnique({ where: { slug: GATORS_SLUG } });
 
@@ -498,6 +508,70 @@ export async function ensureGators(): Promise<void> {
   }
 
   const keepSkus = GATORS_VARIANTS.map((v) => v.sku);
+  await prisma.variant.deleteMany({
+    where: {
+      productId: existing.id,
+      sku: { notIn: [...keepSkus] },
+    },
+  });
+}
+
+/** Idempotently upsert TPU-90A Filament so the Engineering listing appears without a manual seed. */
+export async function ensureFilament(): Promise<void> {
+  let existing = await prisma.product.findUnique({ where: { slug: FILAMENT_SLUG } });
+
+  if (!existing) {
+    try {
+      await prisma.product.create({
+        data: {
+          slug: FILAMENT_SLUG,
+          name: FILAMENT_NAME,
+          description: FILAMENT_DESCRIPTION_SHORT,
+          priceCents: FILAMENT_PRICE_CENTS,
+          currency: "usd",
+          images: [...FILAMENT_IMAGES],
+          primaryColors: [...FILAMENT_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...FILAMENT_SIZES],
+          variants: {
+            create: FILAMENT_VARIANTS.map((v) => ({ ...v })),
+          },
+        },
+      });
+      return;
+    } catch (error) {
+      existing = await prisma.product.findUnique({ where: { slug: FILAMENT_SLUG } });
+      if (!existing) throw error;
+    }
+  }
+
+  await prisma.product.update({
+    where: { id: existing.id },
+    data: {
+      name: FILAMENT_NAME,
+      description: FILAMENT_DESCRIPTION_SHORT,
+      priceCents: FILAMENT_PRICE_CENTS,
+      images: [...FILAMENT_IMAGES],
+      primaryColors: [...FILAMENT_PRIMARY_COLORS],
+      secondaryColors: [],
+      sizes: [...FILAMENT_SIZES],
+    },
+  });
+
+  for (const v of FILAMENT_VARIANTS) {
+    await prisma.variant.upsert({
+      where: { sku: v.sku },
+      update: { stock: v.stock, color: v.color },
+      create: {
+        product: { connect: { id: existing.id } },
+        color: v.color,
+        sku: v.sku,
+        stock: v.stock,
+      },
+    });
+  }
+
+  const keepSkus = FILAMENT_VARIANTS.map((v) => v.sku);
   await prisma.variant.deleteMany({
     where: {
       productId: existing.id,
@@ -628,6 +702,7 @@ export async function ensureCatalogProducts(): Promise<void> {
         ensureMagikidShoes(),
         ensureGators(),
         ensureGunHolster(),
+        ensureFilament(),
         ensureTrailMix(),
         ensureApparelProducts(),
       ]);
@@ -699,4 +774,29 @@ export async function ensureHealthCatalog(): Promise<void> {
   })();
 
   return healthEnsureInFlight;
+}
+
+/** Engineering-only ensure — skips apparel/footwear for fast /accessories loads. */
+let accessoriesEnsureAt = 0;
+let accessoriesEnsureInFlight: Promise<void> | null = null;
+const ACCESSORIES_ENSURE_TTL_MS = 10 * 60 * 1000;
+
+export async function ensureAccessoriesCatalog(): Promise<void> {
+  const now = Date.now();
+  if (accessoriesEnsureInFlight) return accessoriesEnsureInFlight;
+  if (now - accessoriesEnsureAt < ACCESSORIES_ENSURE_TTL_MS) return;
+
+  accessoriesEnsureInFlight = (async () => {
+    try {
+      await ensureProductCategoryColumns();
+      await ensureGunHolster();
+      accessoriesEnsureAt = Date.now();
+    } catch (error) {
+      console.error("ensureAccessoriesCatalog failed:", error);
+    } finally {
+      accessoriesEnsureInFlight = null;
+    }
+  })();
+
+  return accessoriesEnsureInFlight;
 }

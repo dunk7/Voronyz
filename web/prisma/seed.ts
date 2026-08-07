@@ -21,6 +21,16 @@ import {
   TRAIL_MIX_VARIANTS,
 } from "../src/lib/trailMix";
 import {
+  FILAMENT_DESCRIPTION_SHORT,
+  FILAMENT_IMAGES,
+  FILAMENT_NAME,
+  FILAMENT_PRICE_CENTS,
+  FILAMENT_PRIMARY_COLORS,
+  FILAMENT_SIZES,
+  FILAMENT_SLUG,
+  FILAMENT_VARIANTS,
+} from "../src/lib/filament";
+import {
   GATORS_DESCRIPTION_SHORT,
   GATORS_IMAGES,
   GATORS_NAME,
@@ -46,7 +56,7 @@ async function main() {
           name: "V3 Slides",
           description:
             "World-class FDM printed slides with TPU lattice lowers and breathable uppers. Engineered from precision 3D scans.",
-          priceCents: 5500,
+          priceCents: 7500,
           currency: "usd",
           images: [
             "/products/v3-slides/InShot_20260212_194352014.jpg",
@@ -81,7 +91,7 @@ async function main() {
       await prisma.product.update({
         where: { id: existing.id },
         data: {
-          priceCents: 5500,
+          priceCents: 7500,
           images: [
             "/products/v3-slides/InShot_20260212_194352014.jpg",
             "/products/v3-slides/InShot_20260212_193956953.jpg",
@@ -435,6 +445,64 @@ async function main() {
         },
       });
       console.log("Updated Gun Holster product and variants.");
+    }
+
+    // ── TPU-90A Filament (Voronyz Engineering — not footwear) ──
+    const existingFilament = await prisma.product.findUnique({ where: { slug: FILAMENT_SLUG } });
+    console.log("TPU-90A Filament product check:", existingFilament ? "Found" : "Not found");
+    if (!existingFilament) {
+      const filamentProduct = await prisma.product.create({
+        data: {
+          slug: FILAMENT_SLUG,
+          name: FILAMENT_NAME,
+          description: FILAMENT_DESCRIPTION_SHORT,
+          priceCents: FILAMENT_PRICE_CENTS,
+          currency: "usd",
+          images: [...FILAMENT_IMAGES],
+          primaryColors: [...FILAMENT_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...FILAMENT_SIZES],
+          variants: {
+            create: FILAMENT_VARIANTS.map((v) => ({ ...v })),
+          },
+        },
+        include: { variants: true },
+      });
+      console.log("Seeded product:", filamentProduct.slug);
+    } else {
+      console.log("Updating existing TPU-90A Filament product...");
+      await prisma.product.update({
+        where: { id: existingFilament.id },
+        data: {
+          name: FILAMENT_NAME,
+          description: FILAMENT_DESCRIPTION_SHORT,
+          priceCents: FILAMENT_PRICE_CENTS,
+          images: [...FILAMENT_IMAGES],
+          primaryColors: [...FILAMENT_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...FILAMENT_SIZES],
+        },
+      });
+      for (const v of FILAMENT_VARIANTS) {
+        await prisma.variant.upsert({
+          where: { sku: v.sku },
+          update: { stock: v.stock, color: v.color },
+          create: {
+            product: { connect: { id: existingFilament.id } },
+            color: v.color,
+            sku: v.sku,
+            stock: v.stock,
+          },
+        });
+      }
+      const keepSkus = FILAMENT_VARIANTS.map((v) => v.sku);
+      await prisma.variant.deleteMany({
+        where: {
+          productId: existingFilament.id,
+          sku: { notIn: [...keepSkus] },
+        },
+      });
+      console.log("Updated TPU-90A Filament product and variants.");
     }
 
     // ── Antioxidant Trail Mix (Voronyz Health — not footwear) ──

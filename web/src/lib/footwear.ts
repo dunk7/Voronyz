@@ -49,7 +49,7 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     name: "V3 Slides",
     description:
       "World-class FDM printed slides with TPU lattice lowers and breathable uppers. Engineered from precision 3D scans.",
-    priceCents: 5500,
+    priceCents: 7500,
     images: [
       "/products/v3-slides/InShot_20260212_194352014.jpg",
       "/products/v3-slides/InShot_20260212_193956953.jpg",
