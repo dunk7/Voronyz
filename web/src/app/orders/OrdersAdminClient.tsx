@@ -246,6 +246,7 @@ export default function OrdersAdminClient() {
   const [tab, setTab] = useState<AdminTab>("orders");
   const [uploadsRefresh, setUploadsRefresh] = useState(0);
   const [quizRefresh, setQuizRefresh] = useState(0);
+  const [discountsRefresh, setDiscountsRefresh] = useState(0);
   const [messageEnabled, setMessageEnabled] = useState<boolean | null>(null);
   const [messageToggleSaving, setMessageToggleSaving] = useState(false);
   const [messageToggleError, setMessageToggleError] = useState<string | null>(null);
@@ -344,8 +345,11 @@ export default function OrdersAdminClient() {
   }
 
   function handleRefresh() {
-    if (tab === "orders" || tab === "stats" || tab === "discounts") loadOrders();
-    else if (tab === "quiz") setQuizRefresh((n) => n + 1);
+    if (tab === "orders" || tab === "stats") loadOrders();
+    else if (tab === "discounts") {
+      loadOrders();
+      setDiscountsRefresh((n) => n + 1);
+    } else if (tab === "quiz") setQuizRefresh((n) => n + 1);
     else setUploadsRefresh((n) => n + 1);
     loadMessageSetting();
   }
@@ -745,7 +749,11 @@ export default function OrdersAdminClient() {
         ) : null}
 
         {tab === "discounts" ? (
-          <DiscountCodesAdminPanel orders={orders} loading={loadingOrders} />
+          <DiscountCodesAdminPanel
+            orders={orders}
+            loading={loadingOrders}
+            refreshToken={discountsRefresh}
+          />
         ) : null}
 
         {tab === "orders" ? (
