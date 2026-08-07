@@ -117,7 +117,7 @@ export default function CartClient() {
     setIsLoading(false);
   }, []);
 
-  // Influencer bio links land on /cart?discount=code after applying to localStorage.
+  // Optional ?discount= toast (bio links now land on home; cart may still receive this param).
   useEffect(() => {
     if (isLoading) return;
     try {
