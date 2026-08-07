@@ -12,7 +12,6 @@ import LogoLoader from "@/components/ui/LogoLoader";
 import { GATORS_SLUG } from "@/lib/gators";
 import { FILAMENT_SLUG, getAccessoryCatalogSeed } from "@/lib/filament";
 import { LATTICE_INSOLES_SLUG } from "@/lib/latticeInsoles";
-<<<<<<< HEAD
 import {
   APPAREL_CATALOG,
   APPAREL_COLLECTION_SUBCATEGORIES,
@@ -21,9 +20,7 @@ import {
 import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
-=======
 import { VIOLETTE_PONYBEAD_SLUG } from "@/lib/violettePonybeadAnimals";
->>>>>>> origin/cursor/violette-ponybead-animals-c260
 
 type Product = FootwearListProduct;
 
