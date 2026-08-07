@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import {
   APPAREL_SUBCATEGORIES,
+  apparelSubcategoryHref,
   getApparelBySubcategory,
   getApparelSubcategory,
   isApparelSubcategoryId,
+  isLegacyApparelAccessorySubcategory,
   type ApparelSubcategoryId,
 } from "@/lib/apparel";
 import ApparelSubcategoryContent from "../ApparelSubcategoryContent";
@@ -20,11 +22,23 @@ const LEGACY_SUBCATEGORY_REDIRECTS: Record<string, string> = {
 };
 
 export function generateStaticParams() {
-  return APPAREL_SUBCATEGORIES.map((sub) => ({ subcategory: sub.id }));
+  return [
+    ...APPAREL_SUBCATEGORIES.map((sub) => ({ subcategory: sub.id })),
+    // Keep legacy hats/bottles paths buildable so they can redirect.
+    { subcategory: "hats" },
+    { subcategory: "bottles" },
+  ];
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { subcategory } = await params;
+  if (isLegacyApparelAccessorySubcategory(subcategory)) {
+    return {
+      title: "Accessories – Apparel – Voronyz",
+      description:
+        "Hats, bottles, insoles, shades, jewelry, and more Voronyz accessory pieces.",
+    };
+  }
   const key = (subcategory || "").trim().toLowerCase();
   const legacy = LEGACY_SUBCATEGORY_REDIRECTS[key];
   if (legacy) {
@@ -51,6 +65,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ApparelSubcategoryPage({ params }: PageProps) {
   const { subcategory } = await params;
+  if (isLegacyApparelAccessorySubcategory(subcategory)) {
+    redirect(apparelSubcategoryHref("accessories"));
+  }
   const legacy = LEGACY_SUBCATEGORY_REDIRECTS[(subcategory || "").trim().toLowerCase()];
   if (legacy) {
     redirect(legacy);
