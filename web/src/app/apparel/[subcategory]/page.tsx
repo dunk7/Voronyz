@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import {
   APPAREL_SUBCATEGORIES,
   getApparelBySubcategory,
@@ -8,6 +8,11 @@ import {
   type ApparelSubcategoryId,
 } from "@/lib/apparel";
 import ApparelSubcategoryContent from "../ApparelSubcategoryContent";
+
+/** Legacy subcategory paths that now live under a merged collection. */
+const LEGACY_SUBCATEGORY_REDIRECTS: Record<string, ApparelSubcategoryId> = {
+  sweats: "pants",
+};
 
 type PageProps = {
   params: Promise<{ subcategory: string }>;
@@ -19,7 +24,9 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { subcategory } = await params;
-  const sub = getApparelSubcategory(subcategory);
+  const resolved =
+    LEGACY_SUBCATEGORY_REDIRECTS[subcategory] ?? subcategory;
+  const sub = getApparelSubcategory(resolved);
   if (!sub) {
     return { title: "Apparel – Voronyz" };
   }
@@ -32,6 +39,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ApparelSubcategoryPage({ params }: PageProps) {
   const { subcategory } = await params;
+  const legacy = LEGACY_SUBCATEGORY_REDIRECTS[subcategory];
+  if (legacy) {
+    redirect(`/apparel/${legacy}`);
+  }
   if (!isApparelSubcategoryId(subcategory)) {
     notFound();
   }
