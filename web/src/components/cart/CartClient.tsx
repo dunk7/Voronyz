@@ -534,6 +534,12 @@ export default function CartClient() {
                   setInputValue(e.target.value);
                   clearMessage();
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    applyDiscount();
+                  }
+                }}
                 placeholder="Enter code"
                 className="flex-1 rounded-md border border-black/10 px-3 py-2 text-sm text-neutral-900 bg-white"
               />
