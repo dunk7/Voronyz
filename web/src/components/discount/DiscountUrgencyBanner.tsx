@@ -1,15 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import {
   getDiscountCodeShopperDescription,
   isValidDiscountCode,
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
+import {
+  DISCOUNT_URGENCY_CODE_KEY,
+  DISCOUNT_URGENCY_ENDS_AT_KEY,
+  getDiscountUrgencyShortLinkCode,
+} from "@/lib/discountUrgencySession";
 
 const TIMER_MS = 10 * 60 * 1000;
-const ENDS_AT_KEY = "discountUrgencyEndsAt";
-const CODE_KEY = "discountUrgencyCode";
 
 function readActiveDiscountCode(): string | null {
   try {
@@ -27,13 +31,25 @@ function readActiveDiscountCode(): string | null {
   }
 }
 
+/**
+ * Only show when the active cart code was applied via that creator's short link
+ * (e.g. /aryan → aryan50), not when typed manually in the cart.
+ */
+function readShortLinkUrgencyCode(): string | null {
+  const fromLink = getDiscountUrgencyShortLinkCode();
+  if (!fromLink) return null;
+  const inCart = readActiveDiscountCode();
+  if (!inCart || inCart !== fromLink) return null;
+  return fromLink;
+}
+
 /** Fake urgency: always give ~10 minutes; when it hits zero, restart. Never expires the code. */
 function syncEndsAt(code: string, forceReset = false): number {
   const now = Date.now();
   if (!forceReset) {
     try {
-      const storedCode = sessionStorage.getItem(CODE_KEY);
-      const storedEnds = Number(sessionStorage.getItem(ENDS_AT_KEY));
+      const storedCode = sessionStorage.getItem(DISCOUNT_URGENCY_CODE_KEY);
+      const storedEnds = Number(sessionStorage.getItem(DISCOUNT_URGENCY_ENDS_AT_KEY));
       if (
         storedCode === code &&
         Number.isFinite(storedEnds) &&
@@ -48,8 +64,8 @@ function syncEndsAt(code: string, forceReset = false): number {
 
   const endsAt = now + TIMER_MS;
   try {
-    sessionStorage.setItem(CODE_KEY, code);
-    sessionStorage.setItem(ENDS_AT_KEY, String(endsAt));
+    sessionStorage.setItem(DISCOUNT_URGENCY_CODE_KEY, code);
+    sessionStorage.setItem(DISCOUNT_URGENCY_ENDS_AT_KEY, String(endsAt));
   } catch {
     /* ignore */
   }
@@ -63,11 +79,18 @@ function formatRemaining(ms: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+function isAdminPath(pathname: string | null): boolean {
+  return Boolean(
+    pathname?.startsWith("/orders") || pathname?.startsWith("/message")
+  );
+}
+
 /**
- * Sitewide strip shown while a discount code is active in the cart.
- * Countdown is cosmetic — it resets at zero and never removes the code.
+ * Storefront-only strip after a creator short link applies a discount.
+ * Hidden on admin. Countdown is cosmetic — resets at zero; never removes the code.
  */
 export default function DiscountUrgencyBanner() {
+  const pathname = usePathname();
   const [code, setCode] = useState<string | null>(null);
   const [remainingMs, setRemainingMs] = useState(TIMER_MS);
   const [mounted, setMounted] = useState(false);
@@ -76,7 +99,7 @@ export default function DiscountUrgencyBanner() {
     setMounted(true);
 
     const refreshCode = () => {
-      setCode(readActiveDiscountCode());
+      setCode(readShortLinkUrgencyCode());
     };
 
     refreshCode();
@@ -108,7 +131,7 @@ export default function DiscountUrgencyBanner() {
     return () => window.clearInterval(id);
   }, [code]);
 
-  if (!mounted || !code) return null;
+  if (!mounted || !code || isAdminPath(pathname)) return null;
 
   const description = getDiscountCodeShopperDescription(code);
   const low = remainingMs <= 60_000;
