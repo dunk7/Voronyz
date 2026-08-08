@@ -120,7 +120,7 @@ export default function CartClient() {
     setIsLoading(false);
   }, []);
 
-  // Optional ?discount= toast (bio links now land on home; cart may still receive this param).
+  // Optional ?discount= toast (bio links land on home/#footwear; cart may still receive this param).
   useEffect(() => {
     if (isLoading) return;
     try {

@@ -532,7 +532,7 @@ export default function DiscountCodesAdminPanel({
               <p className="text-xs text-amber-900/80">
                 {selectedGroup.orders.length === 0
                   ? "This code is live with 0 used so far — share the link now. Orders will show up here when someone checks out with it."
-                  : "Send this to the influencer for their bio. Visiting it auto-applies the code and opens the store."}
+                  : "Send this to the influencer for their bio. Visiting it auto-applies the code and opens All Footwear on the home page."}
               </p>
             </div>
 
