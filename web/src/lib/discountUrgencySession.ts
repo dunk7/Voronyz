@@ -23,6 +23,9 @@ export function markDiscountUrgencyFromShortLink(
   } catch {
     /* sessionStorage unavailable */
   }
+  // Notify layout banner after the short-link flag is set (applyDiscount may
+  // have already fired cartUpdated before this mark ran).
+  window.dispatchEvent(new Event("cartUpdated"));
 }
 
 export function clearDiscountUrgencySession(): void {
@@ -34,6 +37,7 @@ export function clearDiscountUrgencySession(): void {
   } catch {
     /* ignore */
   }
+  window.dispatchEvent(new Event("cartUpdated"));
 }
 
 /** Code that arrived via short link this session, if any. */
