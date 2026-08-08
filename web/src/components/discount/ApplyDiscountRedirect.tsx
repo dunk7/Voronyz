@@ -30,7 +30,11 @@ export default function ApplyDiscountRedirect({
         }, 1200);
         return () => window.clearTimeout(timer);
       }
-      router.replace(redirectTo);
+      // Brief pause so the session banner can paint before soft-nav home.
+      const timer = window.setTimeout(() => {
+        router.replace(redirectTo);
+      }, 400);
+      return () => window.clearTimeout(timer);
     } catch (err) {
       console.error("Failed to auto-apply discount code:", err);
       setError("Could not apply this discount. Continuing to the store…");

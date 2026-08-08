@@ -94,13 +94,14 @@ export default function CartClient() {
         } else {
           const loadedInsurance = isShippingInsuranceRequested(parsed.shippingInsurance);
           loadedItems = (parsed.items || []).map((it) => {
-            // Migrate to always have a base unit price.
-            const base = typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
-
-            // Heuristic: older carts used to overwrite `priceCents` when a coupon was applied.
-            // If the stored "base" looks like one of the coupon prices, restore the typical base.
-            const looksLikeCouponPrice = KNOWN_DISCOUNTED_UNIT_PRICES.has(base);
-            const repairedBase = looksLikeCouponPrice ? 7500 : base;
+            // Prefer an explicit base price. Only run the legacy coupon-price repair when
+            // older carts mutated `priceCents` in place and never stored `basePriceCents`
+            // (otherwise real $30 filament / Magikid lines get rewritten to $75).
+            const hasExplicitBase = typeof it.basePriceCents === "number";
+            const raw = hasExplicitBase ? it.basePriceCents! : it.priceCents;
+            const looksLikeLegacyCouponMutation =
+              !hasExplicitBase && KNOWN_DISCOUNTED_UNIT_PRICES.has(raw);
+            const repairedBase = looksLikeLegacyCouponMutation ? 7500 : raw;
 
             return {
               ...it,
@@ -137,17 +138,24 @@ export default function CartClient() {
     };
   }, []);
 
-  // Optional ?discount= toast (bio links now land on home; cart may still receive this param).
+  const clearMessage = () => setMessage("");
+
+  // Legacy ?discount= deep links (and any leftover bio-link query) activate the session.
   useEffect(() => {
     if (isLoading) return;
     try {
       const params = new URLSearchParams(window.location.search);
       const fromLink = normalizeDiscountCode(params.get("discount"));
       if (!fromLink || !isValidDiscountCode(fromLink)) return;
-      if (discountCode === fromLink) {
-        setInputValue(fromLink);
-        setMessage(`Discount "${fromLink}" applied from your link!`);
+
+      const applied = activateDiscountSession(fromLink, "link");
+      if (applied) {
+        setDiscountCode(applied);
+        setInputValue(applied);
+        setMessage(`Discount "${applied}" applied from your link!`);
+        setTimeout(clearMessage, 3000);
       }
+
       // Clean the query so refresh doesn't re-flash the toast awkwardly.
       const url = new URL(window.location.href);
       if (url.searchParams.has("discount")) {
@@ -157,9 +165,10 @@ export default function CartClient() {
     } catch {
       /* ignore */
     }
-  }, [isLoading, discountCode]);
+    // Only on initial cart load — not every discountCode change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]);
 
-  const clearMessage = () => setMessage("");
   const saveCart = (cartData: CartData) => {
     setItems(cartData.items);
     // Discount is session-only — never write it into localStorage.
