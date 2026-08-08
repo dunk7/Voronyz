@@ -23,7 +23,15 @@ export const VALID_DISCOUNT_CODES = [
   "young",
 ] as const;
 
+/**
+ * Codes that only unlock via a creator short link (e.g. /aryan → aryan50).
+ * Manual cart entry and raw /{code} URLs must not apply them — shoppers who
+ * never clicked the link (or who type the code) keep full price.
+ */
+export const LINK_ONLY_DISCOUNT_CODES = ["aryan50"] as const;
+
 const validDiscountCodeSet = new Set<string>(VALID_DISCOUNT_CODES);
+const linkOnlyDiscountCodeSet = new Set<string>(LINK_ONLY_DISCOUNT_CODES);
 
 export const KNOWN_DISCOUNTED_UNIT_PRICES = new Set<number>([
   5000,
@@ -45,6 +53,40 @@ export function isValidDiscountCode(code: string | null | undefined): boolean {
   return normalized ? validDiscountCodeSet.has(normalized) : false;
 }
 
+/** True when this code must come from a short link — never typed in the cart. */
+export function isLinkOnlyDiscountCode(code: string | null | undefined): boolean {
+  const normalized = normalizeDiscountCode(code);
+  return normalized ? linkOnlyDiscountCodeSet.has(normalized) : false;
+}
+
+/**
+ * Codes shoppers may type into the cart Apply field.
+ * Link-only codes intentionally look "invalid" so they stay undiscoverable.
+ */
+export function isManuallyApplicableDiscountCode(
+  code: string | null | undefined
+): boolean {
+  const normalized = normalizeDiscountCode(code);
+  if (!normalized || !isValidDiscountCode(normalized)) return false;
+  return !isLinkOnlyDiscountCode(normalized);
+}
+
+/**
+ * Shopper-facing label that avoids leaking link-only code strings.
+ * Admin UIs should keep using the raw code.
+ */
+export function getDiscountCodeShopperLabel(
+  code: string | null | undefined
+): string {
+  const normalized = normalizeDiscountCode(code);
+  if (!normalized) return "Discount";
+  if (isLinkOnlyDiscountCode(normalized)) {
+    if (normalized === "aryan50") return "Creator offer";
+    return "Special offer";
+  }
+  return normalized.toUpperCase();
+}
+
 /** Short admin-facing summary of what a configured discount code does. */
 export function getDiscountCodeDescription(
   code: string | null | undefined
@@ -62,7 +104,7 @@ export function getDiscountCodeDescription(
     case "aryan10":
       return "$10 on V3 slides";
     case "aryan50":
-      return "$5 off any item";
+      return "$5 off any item (short-link /aryan only)";
     case "super20":
       return "$20 fixed unit price";
     case "chud25":

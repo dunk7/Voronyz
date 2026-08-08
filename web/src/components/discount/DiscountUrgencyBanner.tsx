@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   getDiscountCodeShopperDescription,
+  getDiscountCodeShopperLabel,
+  isLinkOnlyDiscountCode,
   isValidDiscountCode,
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
@@ -134,6 +136,9 @@ export default function DiscountUrgencyBanner() {
   if (!mounted || !code || isAdminPath(pathname)) return null;
 
   const description = getDiscountCodeShopperDescription(code);
+  const label = isLinkOnlyDiscountCode(code)
+    ? getDiscountCodeShopperLabel(code)
+    : `Code ${code}`;
   const low = remainingMs <= 60_000;
 
   return (
@@ -144,7 +149,7 @@ export default function DiscountUrgencyBanner() {
     >
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-1 px-4 py-2.5 text-center sm:flex-row sm:gap-3 sm:px-6">
         <p className="text-xs font-medium tracking-wide sm:text-sm">
-          <span className="font-semibold text-white">Code {code}</span>
+          <span className="font-semibold text-white">{label}</span>
           <span className="mx-1.5 text-emerald-400/80">·</span>
           <span>{description}</span>
         </p>
