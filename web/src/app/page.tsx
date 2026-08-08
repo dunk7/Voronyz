@@ -1,14 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import HeroParallax from "@/components/HeroParallax";
+import ScrollToFootwearHash from "@/components/ScrollToFootwearHash";
 import { ArrowRight } from "lucide-react";
 import { Suspense } from "react";
 import ProductsContent from "@/app/products/ProductsContent";
 import LogoLoader from "@/components/ui/LogoLoader";
+import { FOOTWEAR_SECTION_ID } from "@/lib/discountShortLinkDestination";
 
 export default function Home() {
   return (
     <div className="relative">
+      <ScrollToFootwearHash />
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-black" />
         <div
@@ -196,16 +199,22 @@ export default function Home() {
         </div>
       </section>
 
-      {/* All Footwear — seamless continuation */}
-      <Suspense fallback={
-        <div className="bg-texture-white">
-          <div className="container flex min-h-[40vh] items-center justify-center py-16">
-            <LogoLoader size="lg" label="Loading" orbit />
+      {/* All Footwear — seamless continuation (short links land on #footwear) */}
+      <section
+        id={FOOTWEAR_SECTION_ID}
+        aria-label="All Footwear"
+        className="scroll-mt-24"
+      >
+        <Suspense fallback={
+          <div className="bg-texture-white">
+            <div className="container flex min-h-[40vh] items-center justify-center py-16">
+              <LogoLoader size="lg" label="Loading" orbit />
+            </div>
           </div>
-        </div>
-      }>
-        <ProductsContent />
-      </Suspense>
+        }>
+          <ProductsContent />
+        </Suspense>
+      </section>
     </div>
   );
 }

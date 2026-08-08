@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { applyDiscountCodeToCartStorage } from "@/lib/applyDiscountToCart";
+import { DISCOUNT_SHORT_LINK_HOME } from "@/lib/discountShortLinkDestination";
 import { getDiscountCodeShopperDescription } from "@/lib/discountPricing";
 import { markDiscountUrgencyFromShortLink } from "@/lib/discountUrgencySession";
 import LogoLoader from "@/components/ui/LogoLoader";
@@ -15,15 +15,14 @@ type InfluencerDiscountLandingProps = {
 };
 
 /**
- * Bio-link landing: stash the influencer discount in the cart, then send
- * first-time shoppers to the home page (cart would be empty) with the code active.
+ * Bio-link landing: stash the influencer discount in cart storage, then send
+ * shoppers straight to home All Footwear (never the empty cart).
  */
 export default function InfluencerDiscountLanding({
   slug,
   code,
   label,
 }: InfluencerDiscountLandingProps) {
-  const router = useRouter();
   const [status, setStatus] = useState<"applying" | "done" | "error">("applying");
   const benefit = getDiscountCodeShopperDescription(code);
 
@@ -36,11 +35,10 @@ export default function InfluencerDiscountLanding({
     // Unlock storefront urgency timer only for short-link arrivals.
     markDiscountUrgencyFromShortLink(applied);
     setStatus("done");
-    const timer = window.setTimeout(() => {
-      router.replace("/");
-    }, 400);
-    return () => window.clearTimeout(timer);
-  }, [code, router]);
+    // Hard replace so the browser lands on home + footwear hash immediately
+    // (no cart hop, no soft-nav hash miss).
+    window.location.replace(DISCOUNT_SHORT_LINK_HOME);
+  }, [code]);
 
   return (
     <div className="bg-texture-white min-h-[70vh] flex items-center justify-center px-4">
@@ -68,7 +66,7 @@ export default function InfluencerDiscountLanding({
             </p>
             <p className="mt-2 text-sm text-neutral-500">
               Code <span className="font-mono font-medium text-neutral-800">{code}</span>{" "}
-              from <span className="font-mono">/{slug}</span> — {benefit}. Taking you to the shop.
+              from <span className="font-mono">/{slug}</span> — {benefit}. Taking you to All Footwear.
             </p>
           </>
         )}

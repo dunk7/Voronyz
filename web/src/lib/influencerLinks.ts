@@ -6,7 +6,7 @@ import {
 
 /**
  * Short bio links → discount codes.
- * Example: voronyz.com/aryan applies Aryan50 then sends shoppers home.
+ * Example: voronyz.com/aryan applies Aryan50 then sends shoppers to home All Footwear.
  * Keep slugs lowercase; landing pages normalize case-insensitive hits.
  */
 export const INFLUENCER_DISCOUNT_LINKS = [

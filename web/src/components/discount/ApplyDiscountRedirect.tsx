@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { applyDiscountCodeToCartStorage } from "@/lib/applyDiscountToCart";
+import { DISCOUNT_SHORT_LINK_HOME } from "@/lib/discountShortLinkDestination";
 import { markDiscountUrgencyFromShortLink } from "@/lib/discountUrgencySession";
 
 type ApplyDiscountRedirectProps = {
@@ -10,15 +10,24 @@ type ApplyDiscountRedirectProps = {
   redirectTo?: string;
 };
 
+function goToDestination(path: string) {
+  // Home footwear target needs a hard navigation so the hash scrolls reliably.
+  if (path === DISCOUNT_SHORT_LINK_HOME || path === "/" || path === "/#footwear") {
+    window.location.replace(DISCOUNT_SHORT_LINK_HOME);
+    return;
+  }
+  // Custom ?to= paths stay as a full navigation (discount already in localStorage).
+  window.location.replace(path);
+}
+
 /**
  * Writes the influencer discount into the local cart, then sends the shopper
- * to the storefront with the code already active.
+ * straight to home All Footwear (or an explicit ?to= path) with the code active.
  */
 export default function ApplyDiscountRedirect({
   code,
-  redirectTo = "/",
+  redirectTo = DISCOUNT_SHORT_LINK_HOME,
 }: ApplyDiscountRedirectProps) {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -27,21 +36,21 @@ export default function ApplyDiscountRedirect({
       if (!applied) {
         setError("Could not apply this discount. Continuing to the store…");
         const timer = window.setTimeout(() => {
-          router.replace(redirectTo);
+          goToDestination(redirectTo);
         }, 1200);
         return () => window.clearTimeout(timer);
       }
       markDiscountUrgencyFromShortLink(applied);
-      router.replace(redirectTo);
+      goToDestination(redirectTo);
     } catch (err) {
       console.error("Failed to auto-apply discount code:", err);
       setError("Could not apply this discount. Continuing to the store…");
       const timer = window.setTimeout(() => {
-        router.replace(redirectTo);
+        goToDestination(redirectTo);
       }, 1200);
       return () => window.clearTimeout(timer);
     }
-  }, [code, redirectTo, router]);
+  }, [code, redirectTo]);
 
   return (
     <main className="min-h-[60vh] flex items-center justify-center px-6">
