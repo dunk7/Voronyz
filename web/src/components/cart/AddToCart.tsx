@@ -4,6 +4,8 @@ import { formatCentsAsCurrency } from "@/lib/money";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { normalizeStudentName } from "@/lib/magikidShoesThumbnail";
+import ProductDiscountCallout from "@/components/discount/ProductDiscountCallout";
+import { stripPersistedCartDiscountCode } from "@/lib/discountSession";
 
 interface VariantProps {
   id: string;
@@ -418,9 +420,18 @@ export default function AddToCart({
         cart.push(newItem);
       }
 
-      // Update full cart and save
+      // Update full cart and save — never persist discount codes in localStorage.
       fullCart.items = cart;
-      localStorage.setItem("cart", JSON.stringify(fullCart));
+      fullCart.discountCode = null;
+      stripPersistedCartDiscountCode();
+      localStorage.setItem(
+        "cart",
+        JSON.stringify({
+          items: fullCart.items,
+          discountCode: null,
+          shippingInsurance: Boolean(fullCart.shippingInsurance),
+        })
+      );
       // Dispatch event to update cart count in header
       window.dispatchEvent(new Event('cartUpdated'));
       setAdded(true);
@@ -543,6 +554,12 @@ export default function AddToCart({
             </p>
           </div>
         )}
+
+        <ProductDiscountCallout
+          productSlug={productSlug}
+          productName={productName}
+          basePriceCents={priceCents}
+        />
 
         {/* Flavor / style options (trail mix, ponybead animals, …) */}
         {hasFlavorOptions ? (
