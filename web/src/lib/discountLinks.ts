@@ -1,10 +1,12 @@
 import { createHash } from "crypto";
 import { prisma } from "@/lib/prisma";
 import {
+  isLinkOnlyDiscountCode,
   VALID_DISCOUNT_CODES,
   isValidDiscountCode,
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
+import { getInfluencerLinkForCode, buildInfluencerDiscountUrl } from "@/lib/influencerLinks";
 
 let clickTableReady: Promise<void> | null = null;
 
@@ -49,10 +51,16 @@ export function getSiteOrigin(): string {
   return "https://voronyz.com";
 }
 
-/** Permanent public auto-apply link for an influencer bio, e.g. https://voronyz.com/aryan50 */
+/** Permanent public auto-apply link for an influencer bio, e.g. https://voronyz.com/aryan */
 export function getDiscountAutoApplyUrl(code: string): string | null {
   const normalized = normalizeDiscountCode(code);
   if (!normalized || !isValidDiscountCode(normalized)) return null;
+  // Link-only codes must use the vanity slug — never advertise /aryan50.
+  if (isLinkOnlyDiscountCode(normalized)) {
+    const influencer = getInfluencerLinkForCode(normalized);
+    if (!influencer) return null;
+    return buildInfluencerDiscountUrl(influencer.slug);
+  }
   return `${getSiteOrigin()}/${normalized}`;
 }
 

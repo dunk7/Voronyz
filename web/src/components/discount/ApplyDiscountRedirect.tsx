@@ -23,6 +23,8 @@ export default function ApplyDiscountRedirect({
 
   useEffect(() => {
     try {
+      // Mark short-link session before writing the cart (needed for link-only codes).
+      markDiscountUrgencyFromShortLink(code);
       const applied = applyDiscountCodeToCartStorage(code);
       if (!applied) {
         setError("Could not apply this discount. Continuing to the store…");
@@ -31,7 +33,6 @@ export default function ApplyDiscountRedirect({
         }, 1200);
         return () => window.clearTimeout(timer);
       }
-      markDiscountUrgencyFromShortLink(applied);
       router.replace(redirectTo);
     } catch (err) {
       console.error("Failed to auto-apply discount code:", err);

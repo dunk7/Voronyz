@@ -1,7 +1,9 @@
 import {
+  isLinkOnlyDiscountCode,
   isValidDiscountCode,
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
+import { getDiscountUrgencyShortLinkCode } from "@/lib/discountUrgencySession";
 
 type StoredCart = {
   items: unknown[];
@@ -12,6 +14,9 @@ type StoredCart = {
 /**
  * Write a validated discount code into localStorage cart (same shape CartClient uses).
  * Returns the normalized code when applied, or null if invalid.
+ *
+ * Link-only codes (aryan50) require the short-link session flag first — call
+ * markDiscountUrgencyFromShortLink(code) before this, after the unlock cookie API.
  */
 export function applyDiscountCodeToCartStorage(
   code: string | null | undefined
@@ -20,6 +25,11 @@ export function applyDiscountCodeToCartStorage(
 
   const normalized = normalizeDiscountCode(code);
   if (!normalized || !isValidDiscountCode(normalized)) return null;
+
+  // Link-only: refuse unless this tab arrived via the creator short link.
+  if (isLinkOnlyDiscountCode(normalized)) {
+    if (getDiscountUrgencyShortLinkCode() !== normalized) return null;
+  }
 
   let cart: StoredCart = {
     items: [],
