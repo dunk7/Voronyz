@@ -115,6 +115,52 @@ export function getDiscountCodeShopperDescription(
   }
 }
 
+/**
+ * Product-page promo line when a session discount is active.
+ * Returns null for checkout-only codes (e.g. `young`) that must not be advertised.
+ */
+export function getProductDiscountPromo(
+  code: string | null | undefined,
+  context: DiscountPricingContext & { basePriceCents: number }
+): {
+  code: string;
+  message: string;
+  discountedUnitPriceCents: number;
+  savesCents: number;
+  appliesToProduct: boolean;
+} | null {
+  const normalized = normalizeDiscountCode(code);
+  if (!normalized || !isValidDiscountCode(normalized)) return null;
+  // Never advertise checkout-only codes on product pages.
+  if (normalized === "young") return null;
+
+  const discountedUnitPriceCents = getDiscountedUnitPriceCents(
+    context.basePriceCents,
+    normalized,
+    context
+  );
+  const savesCents = Math.max(0, context.basePriceCents - discountedUnitPriceCents);
+  const appliesToProduct = discountedUnitPriceCents < context.basePriceCents;
+
+  let message = getDiscountCodeShopperDescription(normalized);
+  if (normalized === "aryan50") {
+    message = "$5 off with this code";
+  } else if (appliesToProduct && savesCents > 0) {
+    const dollars = (discountedUnitPriceCents / 100).toFixed(
+      discountedUnitPriceCents % 100 === 0 ? 0 : 2
+    );
+    message = `Just $${dollars} with this code`;
+  }
+
+  return {
+    code: normalized,
+    message,
+    discountedUnitPriceCents,
+    savesCents,
+    appliesToProduct,
+  };
+}
+
 function isSlidesProduct(productSlug?: string, productName?: string): boolean {
   const slug = (productSlug || "").toLowerCase();
   const name = (productName || "").toLowerCase();
