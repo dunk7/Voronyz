@@ -234,8 +234,8 @@ export default function GalleryExperience() {
   const filtered = galleryByPerson(filter);
   const reviewStrip =
     filter === "All"
-      ? GALLERY_ITEMS.filter((i) => i.review || i.type === "video")
-      : filtered.filter((i) => i.type === "video" || i.review);
+      ? GALLERY_ITEMS.filter((i) => i.review)
+      : filtered.filter((i) => i.review || i.type === "video");
 
   const onFilter = useCallback((next: GalleryPerson | "All") => {
     setFilter(next);
