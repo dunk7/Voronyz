@@ -620,6 +620,61 @@ export async function ensureFilament(): Promise<void> {
   });
 }
 
+/**
+ * Sync Lattice Insoles variants by color (not SKU-only upsert).
+ *
+ * Legacy apparel rows used APP-INSL-* SKUs with stock 0. Creating INSL-* via
+ * sku upsert fails on @@unique([productId, color]), so Add to Cart stayed
+ * disabled. Reuse the color row, rename the SKU, and restock instead.
+ */
+async function syncLatticeInsoleVariants(productId: string): Promise<void> {
+  const existingVariants = await prisma.variant.findMany({
+    where: { productId },
+    select: { id: true, sku: true, color: true },
+  });
+  const bySku = new Map(existingVariants.map((variant) => [variant.sku, variant]));
+  const byColor = new Map(existingVariants.map((variant) => [variant.color, variant]));
+  const keepIds = new Set<string>();
+
+  for (const desired of LATTICE_INSOLES_VARIANTS) {
+    const match = bySku.get(desired.sku) ?? byColor.get(desired.color);
+    if (match) {
+      await prisma.variant.update({
+        where: { id: match.id },
+        data: {
+          sku: desired.sku,
+          color: desired.color,
+          stock: desired.stock,
+        },
+      });
+      keepIds.add(match.id);
+      continue;
+    }
+
+    const created = await prisma.variant.create({
+      data: {
+        productId,
+        color: desired.color,
+        sku: desired.sku,
+        stock: desired.stock,
+      },
+    });
+    keepIds.add(created.id);
+  }
+
+  const obsoleteIds = existingVariants
+    .filter((variant) => !keepIds.has(variant.id))
+    .map((variant) => variant.id);
+  if (obsoleteIds.length > 0) {
+    await prisma.cartItem.deleteMany({
+      where: { variantId: { in: obsoleteIds } },
+    });
+    await prisma.variant.deleteMany({
+      where: { id: { in: obsoleteIds } },
+    });
+  }
+}
+
 /** Idempotently upsert Lattice Insoles on All Footwear (S–XL, not shoe sizes). */
 export async function ensureLatticeInsoles(): Promise<void> {
   let existing = await prisma.product.findUnique({ where: { slug: LATTICE_INSOLES_SLUG } });
@@ -666,36 +721,7 @@ export async function ensureLatticeInsoles(): Promise<void> {
     },
   });
 
-  for (const v of LATTICE_INSOLES_VARIANTS) {
-    await prisma.variant.upsert({
-      where: { sku: v.sku },
-      update: { stock: v.stock, color: v.color },
-      create: {
-        product: { connect: { id: existing.id } },
-        color: v.color,
-        sku: v.sku,
-        stock: v.stock,
-      },
-    });
-  }
-
-  const keepSkus = LATTICE_INSOLES_VARIANTS.map((v) => v.sku);
-  const obsoleteVariants = await prisma.variant.findMany({
-    where: {
-      productId: existing.id,
-      sku: { notIn: [...keepSkus] },
-    },
-    select: { id: true },
-  });
-  const obsoleteIds = obsoleteVariants.map((variant) => variant.id);
-  if (obsoleteIds.length > 0) {
-    await prisma.cartItem.deleteMany({
-      where: { variantId: { in: obsoleteIds } },
-    });
-    await prisma.variant.deleteMany({
-      where: { id: { in: obsoleteIds } },
-    });
-  }
+  await syncLatticeInsoleVariants(existing.id);
 }
 
 /** Idempotently upsert apparel catalog products (coming soon / pre-order, stock 0). */
