@@ -20,9 +20,9 @@ type LogoLoaderProps = {
 };
 
 const SIZE_MAP = {
-  sm: { mark: 36, bar: 88, text: "text-[10px]" },
-  md: { mark: 56, bar: 132, text: "text-xs" },
-  lg: { mark: 72, bar: 168, text: "text-sm" },
+  sm: { mark: 36, bar: 88 },
+  md: { mark: 56, bar: 132 },
+  lg: { mark: 72, bar: 168 },
 } as const;
 
 /** Site logo asset — white dots on transparent (no black square). */
