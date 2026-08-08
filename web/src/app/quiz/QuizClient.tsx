@@ -68,7 +68,8 @@ function loadCart(): CartData {
     if (Array.isArray(parsed)) return { items: parsed, discountCode: null, shippingInsurance: false };
     return {
       items: Array.isArray(parsed.items) ? parsed.items : [],
-      discountCode: parsed.discountCode ?? null,
+      // Discount codes are session-only — never revive from localStorage.
+      discountCode: null,
       shippingInsurance: Boolean(parsed.shippingInsurance),
     };
   } catch {
@@ -77,7 +78,14 @@ function loadCart(): CartData {
 }
 
 function saveCart(cart: CartData) {
-  localStorage.setItem("cart", JSON.stringify(cart));
+  localStorage.setItem(
+    "cart",
+    JSON.stringify({
+      items: cart.items,
+      discountCode: null,
+      shippingInsurance: Boolean(cart.shippingInsurance),
+    })
+  );
   window.dispatchEvent(new Event("cartUpdated"));
 }
 
