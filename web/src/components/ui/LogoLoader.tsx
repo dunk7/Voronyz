@@ -25,7 +25,10 @@ const SIZE_MAP = {
   lg: { mark: 56, bar: 168, stage: 200, text: "text-sm" },
 } as const;
 
-/** Four-dot Voronyz mark that respects tone (no PNG / black square frame). */
+/**
+ * Four-dot Voronyz mark that respects tone (no PNG / black square frame).
+ * Satellite dots sit on a shared radius at 120° intervals (even distribution).
+ */
 function VoronyzMark({
   size,
   fill,
@@ -37,6 +40,8 @@ function VoronyzMark({
   className?: string;
   animateDots?: boolean;
 }) {
+  // Brand geometry in a 64×64 viewBox (matches /logo.png proportions):
+  // core at (32, 26.5); satellites at R=23.5, angles -150°, -30°, 90°.
   return (
     <svg
       width={size}
@@ -50,30 +55,30 @@ function VoronyzMark({
     >
       <circle
         className={animateDots ? "logo-loader-dot logo-loader-dot--a" : undefined}
-        cx="22"
-        cy="18"
-        r="5.5"
+        cx="11.65"
+        cy="14.75"
+        r="5.25"
         fill={fill}
       />
       <circle
         className={animateDots ? "logo-loader-dot logo-loader-dot--b" : undefined}
-        cx="42"
-        cy="18"
-        r="5.5"
+        cx="52.35"
+        cy="14.75"
+        r="5.25"
         fill={fill}
       />
       <circle
         className={animateDots ? "logo-loader-dot logo-loader-dot--c" : undefined}
         cx="32"
-        cy="46"
-        r="5.5"
+        cy="50"
+        r="5.25"
         fill={fill}
       />
       <circle
         className={animateDots ? "logo-loader-dot logo-loader-dot--core" : undefined}
         cx="32"
-        cy="30"
-        r="9"
+        cy="26.5"
+        r="7.5"
         fill={fill}
       />
     </svg>
