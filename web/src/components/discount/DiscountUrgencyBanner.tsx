@@ -115,6 +115,12 @@ export default function DiscountUrgencyBanner() {
     };
   }, []);
 
+  // Soft navigations (e.g. /aryan → /) keep the layout mounted; re-check gate.
+  useEffect(() => {
+    if (!ready) return;
+    setCode(readShortLinkUrgencyCode());
+  }, [pathname, ready]);
+
   useEffect(() => {
     if (!code) return;
 
