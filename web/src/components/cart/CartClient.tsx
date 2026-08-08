@@ -165,8 +165,6 @@ export default function CartClient() {
     } catch {
       /* ignore */
     }
-    // Only on initial cart load — not every discountCode change.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading]);
 
   const saveCart = (cartData: CartData) => {
