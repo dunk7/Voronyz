@@ -310,7 +310,15 @@ export default function Header() {
           {/* Left cluster: brand + nav */}
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-3" aria-label="Voronyz home">
-              <LogoMark size={40} tone="light" animate={false} />
+              <Image
+                src="/logo.png"
+                alt="Voronyz"
+                width={40}
+                height={40}
+                priority
+                className="bg-transparent"
+                style={{ background: "transparent" }}
+              />
               <span className="text-lg sm:text-xl font-semibold tracking-[0.2em] text-white">VORONYZ</span>
             </Link>
             <nav className="hidden xl:flex items-center gap-1 ml-2 min-w-0">
