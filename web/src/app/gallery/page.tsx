@@ -4,7 +4,7 @@ import { GALLERY_PHOTOS } from "@/lib/gallery";
 
 export const metadata: Metadata = {
   title: "Gallery – Voronyz",
-  description: "A growing collection of Voronyz moments, places, and people.",
+  description: "Moments from Instagram @voronyz — footwear, makers, and community.",
 };
 
 export default function GalleryPage() {
@@ -15,7 +15,7 @@ export default function GalleryPage() {
       <div className="container py-10 lg:py-14">
         <div className="mb-8 lg:mb-10">
           <p className="text-xs uppercase tracking-[0.24em] text-neutral-500 mb-3">
-            Moments
+            From Instagram
           </p>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -23,7 +23,16 @@ export default function GalleryPage() {
                 Gallery
               </h1>
               <p className="mt-2 text-sm text-neutral-500 max-w-xl">
-                A living collection of pictures — more on the way.
+                Posts from{" "}
+                <a
+                  href="https://instagram.com/voronyz"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2 hover:text-neutral-800"
+                >
+                  @voronyz
+                </a>{" "}
+                and tagged creators.
               </p>
             </div>
             <span className="text-xs tabular-nums text-neutral-400">
@@ -34,29 +43,45 @@ export default function GalleryPage() {
         </div>
 
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 sm:gap-6 [column-fill:_balance]">
-          {GALLERY_PHOTOS.map((photo) => (
-            <figure
-              key={photo.id}
-              className="mb-4 sm:mb-6 break-inside-avoid overflow-hidden rounded-2xl bg-neutral-100 ring-1 ring-black/5"
-            >
-              <div className="relative w-full">
-                <Image
-                  src={photo.src}
-                  alt={photo.alt}
-                  width={1024}
-                  height={1536}
-                  className="h-auto w-full object-cover"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  priority={photo.id === GALLERY_PHOTOS[0]?.id}
-                />
-              </div>
-              {photo.caption ? (
-                <figcaption className="px-4 py-3 text-sm text-neutral-600">
-                  {photo.caption}
-                </figcaption>
-              ) : null}
-            </figure>
-          ))}
+          {GALLERY_PHOTOS.map((photo) => {
+            const figure = (
+              <figure className="mb-4 sm:mb-6 break-inside-avoid overflow-hidden rounded-2xl bg-neutral-100 ring-1 ring-black/5 transition hover:ring-black/15">
+                <div className="relative w-full">
+                  <Image
+                    src={photo.src}
+                    alt={photo.alt}
+                    width={1024}
+                    height={1536}
+                    className="h-auto w-full object-cover"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    priority={photo.id === GALLERY_PHOTOS[0]?.id}
+                  />
+                </div>
+                {photo.caption ? (
+                  <figcaption className="px-4 py-3 text-sm text-neutral-600">
+                    {photo.caption}
+                  </figcaption>
+                ) : null}
+              </figure>
+            );
+
+            if (photo.href) {
+              return (
+                <a
+                  key={photo.id}
+                  href={photo.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
+                  aria-label={`${photo.alt} — view on Instagram`}
+                >
+                  {figure}
+                </a>
+              );
+            }
+
+            return <div key={photo.id}>{figure}</div>;
+          })}
         </div>
       </div>
     </div>
