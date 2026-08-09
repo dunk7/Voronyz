@@ -3,6 +3,8 @@ import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 import {
+  applyFixedCartDiscountToLines,
+  cappedCartFixedDiscountCents,
   getDiscountedUnitPriceCents,
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
@@ -250,6 +252,40 @@ export async function POST(request: NextRequest) {
     const wantsInsurance =
       isShippingInsuranceRequested(shippingInsurance) && insuranceQty > 0;
     const insuranceCents = wantsInsurance ? getShippingInsuranceCents(items) : 0;
+
+    // Cart-level fixed discounts (e.g. Arabella50 = $5 off entire cart) are applied
+    // to product lines only — before shipping insurance is appended.
+    const normalizedDiscount = normalizeDiscountCode(discountCode);
+    const productSubtotalCents = lineItems.reduce((sum, li) => {
+      const unit = li.price_data?.unit_amount ?? 0;
+      const qty = li.quantity ?? 0;
+      return sum + unit * qty;
+    }, 0);
+    const cartFixedOff = cappedCartFixedDiscountCents(
+      productSubtotalCents,
+      normalizedDiscount
+    );
+    if (cartFixedOff > 0) {
+      const adjusted = applyFixedCartDiscountToLines(
+        lineItems.map((li) => ({
+          line: li,
+          unitAmount: li.price_data.unit_amount,
+          quantity: li.quantity,
+        })),
+        cartFixedOff
+      );
+      lineItems.length = 0;
+      for (const row of adjusted) {
+        lineItems.push({
+          ...row.line,
+          price_data: {
+            ...row.line.price_data,
+            unit_amount: row.unitAmount,
+          },
+          quantity: row.quantity,
+        });
+      }
+    }
 
     if (wantsInsurance) {
       lineItems.push({

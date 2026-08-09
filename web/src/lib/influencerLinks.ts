@@ -12,6 +12,7 @@ import {
 export const INFLUENCER_DISCOUNT_LINKS = [
   { slug: "aryan", code: "aryan50", label: "Aryan" },
   { slug: "aryan10", code: "aryan10", label: "Aryan (slides $10)" },
+  { slug: "arabella", code: "arabella50", label: "Arabella" },
   { slug: "pedro", code: "pedro30", label: "Pedro" },
   { slug: "nicole", code: "nicole50", label: "Nicole" },
   { slug: "andy", code: "andy50", label: "Andy" },

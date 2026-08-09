@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { formatCentsAsCurrency } from "@/lib/money";
 import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 import {
+  cappedCartFixedDiscountCents,
   getDiscountedUnitPriceCents,
   isValidDiscountCode,
   KNOWN_DISCOUNTED_UNIT_PRICES,
@@ -172,11 +173,17 @@ export default function CartClient() {
         const discounted = unitPriceForItem(it, normalized) * it.quantity;
         return sum + Math.max(0, base - discounted);
       }, 0);
+      const unitSubtotal = migratedItems.reduce(
+        (sum, it) => sum + unitPriceForItem(it, normalized) * it.quantity,
+        0
+      );
+      const cartFixedOff = cappedCartFixedDiscountCents(unitSubtotal, normalized);
+      const totalSavings = savings + cartFixedOff;
       saveCart({ items: migratedItems, discountCode: normalized, shippingInsurance });
       setInputValue("");
       setMessage(
-        savings > 0
-          ? `Discount applied — you save ${formatCentsAsCurrency(savings)}!`
+        totalSavings > 0
+          ? `Discount applied — you save ${formatCentsAsCurrency(totalSavings)}!`
           : "Discount applied successfully!"
       );
       setTimeout(clearMessage, 3000);
@@ -217,9 +224,14 @@ export default function CartClient() {
   const subtotalBeforeDiscount = items.reduce((sum, it) => {
     return sum + getBaseUnitPriceCents(it) * it.quantity;
   }, 0);
-  const subtotal = items.reduce((sum, it) => {
+  const subtotalAfterUnitDiscounts = items.reduce((sum, it) => {
     return sum + unitPriceForItem(it, discountCode) * it.quantity;
   }, 0);
+  const cartFixedDiscount = cappedCartFixedDiscountCents(
+    subtotalAfterUnitDiscounts,
+    discountCode
+  );
+  const subtotal = subtotalAfterUnitDiscounts - cartFixedDiscount;
   const discountSavings = Math.max(0, subtotalBeforeDiscount - subtotal);
   const canOfferShippingInsurance = cartHasInsurableItems(items);
   const insuranceEnabled = canOfferShippingInsurance && shippingInsurance;
