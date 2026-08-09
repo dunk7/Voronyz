@@ -12,6 +12,7 @@ import {
   hashDiscountClickIp,
   recordDiscountCodeClick,
 } from "@/lib/discountLinks";
+import { DISCOUNT_SHORT_LINK_HOME } from "@/lib/discountShortLinkDestination";
 import { getInfluencerLinkBySlug } from "@/lib/influencerLinks";
 
 export const dynamic = "force-dynamic";
@@ -24,8 +25,12 @@ type PageProps = {
 function safeRedirectPath(raw: string | undefined): string {
   const value = (raw || "").trim();
   // Only allow same-origin relative paths (store or product pages).
-  if (!value.startsWith("/") || value.startsWith("//")) return "/";
-  if (value.includes("://")) return "/";
+  // Default: home All Footwear — never the cart.
+  if (!value.startsWith("/") || value.startsWith("//")) return DISCOUNT_SHORT_LINK_HOME;
+  if (value.includes("://")) return DISCOUNT_SHORT_LINK_HOME;
+  if (value === "/" || value === "/cart" || value.startsWith("/cart?")) {
+    return DISCOUNT_SHORT_LINK_HOME;
+  }
   return value;
 }
 

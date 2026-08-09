@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { applyDiscountCodeToCartStorage } from "@/lib/applyDiscountToCart";
 import {
   getDiscountCodeShopperDescription,
   getDiscountCodeShopperLabel,
   isLinkOnlyDiscountCode,
 } from "@/lib/discountPricing";
+import { DISCOUNT_SHORT_LINK_HOME } from "@/lib/discountShortLinkDestination";
 import LogoLoader from "@/components/ui/LogoLoader";
 
 type InfluencerDiscountLandingProps = {
@@ -19,7 +19,7 @@ type InfluencerDiscountLandingProps = {
 
 /**
  * Bio-link landing: activate the influencer discount for this session, then send
- * first-time shoppers to the home page with the code + timer visible.
+ * shoppers straight to home All Footwear with the code + timer visible.
  * Link-only codes also mint a server unlock cookie so checkout can apply the deal.
  */
 export default function InfluencerDiscountLanding({
@@ -27,7 +27,6 @@ export default function InfluencerDiscountLanding({
   code,
   label,
 }: InfluencerDiscountLandingProps) {
-  const router = useRouter();
   const [status, setStatus] = useState<"applying" | "done" | "error">("applying");
   const benefit = getDiscountCodeShopperDescription(code);
 
@@ -57,8 +56,10 @@ export default function InfluencerDiscountLanding({
         }
         if (cancelled) return;
         setStatus("done");
+        // Hard replace so the browser lands on home + footwear hash immediately
+        // (no cart hop, no soft-nav hash miss). Brief pause lets the banner paint.
         timer = window.setTimeout(() => {
-          router.replace("/");
+          window.location.replace(DISCOUNT_SHORT_LINK_HOME);
         }, 400);
       } catch (err) {
         console.error("Failed to apply influencer discount:", err);
@@ -71,7 +72,7 @@ export default function InfluencerDiscountLanding({
       cancelled = true;
       if (timer) window.clearTimeout(timer);
     };
-  }, [code, slug, router]);
+  }, [code, slug]);
 
   return (
     <div className="bg-texture-white min-h-[70vh] flex items-center justify-center px-4">
@@ -102,12 +103,12 @@ export default function InfluencerDiscountLanding({
                 <>
                   {getDiscountCodeShopperLabel(code)} from{" "}
                   <span className="font-mono">/{slug}</span> — {benefit}. Taking
-                  you to the shop.
+                  you to All Footwear.
                 </>
               ) : (
                 <>
                   Code <span className="font-mono font-medium text-neutral-800">{code}</span>{" "}
-                  from <span className="font-mono">/{slug}</span> — {benefit}. Taking you to the shop.
+                  from <span className="font-mono">/{slug}</span> — {benefit}. Taking you to All Footwear.
                 </>
               )}
             </p>
