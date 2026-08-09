@@ -7,6 +7,7 @@ import {
   apparelSubcategoryHref,
   getApparelBySubcategory,
   getApparelItem,
+  getApparelListingBySubcategory,
   getApparelSubcategory,
   type ApparelSubcategoryId,
 } from "@/lib/apparel";
@@ -31,7 +32,7 @@ type Product = {
 };
 
 function catalogSeed(subcategory: ApparelSubcategoryId): Product[] {
-  return getApparelBySubcategory(subcategory).map((item) => ({
+  return getApparelListingBySubcategory(subcategory).map((item) => ({
     id: `catalog-${item.slug}`,
     slug: item.slug,
     name: item.name,
@@ -89,35 +90,36 @@ export default function ApparelSubcategoryContent({
   }, [subcategoryId]);
 
   const enriched = useMemo(() => {
-    const order = new Map(
-      getApparelBySubcategory(subcategoryId).map((item, index) => [item.slug, index]),
+    const availableSlugs = new Set(
+      products
+        .map((product) => product.slug.trim().toLowerCase())
+        .filter((slug) => getApparelItem(slug)?.subcategory === subcategoryId),
     );
-    const items = products
-      .map((product) => {
-        const meta = getApparelItem(product.slug);
-        if (!meta || meta.subcategory !== subcategoryId) return null;
-        return {
-          id: product.id,
-          slug: product.slug,
-          name: product.name,
-          description: product.description,
-          priceCents: product.priceCents,
-          currency: product.currency,
-          subcategory: meta.subcategory,
-          colors: product.primaryColors?.length ? product.primaryColors : meta.colors,
-          sizes: product.sizes?.length ? product.sizes : meta.sizes,
-          cover: product.thumbnail || meta.image || (product.images?.[0] ?? meta.image),
-        } satisfies ApparelGridProduct;
+
+    return getApparelListingBySubcategory(subcategoryId)
+      .filter((listing) => {
+        const styles = listing.listingGroup
+          ? getApparelBySubcategory(subcategoryId).filter(
+              (item) => item.listingGroup === listing.listingGroup,
+            )
+          : [listing];
+        return styles.some((style) => availableSlugs.has(style.slug.trim().toLowerCase()));
       })
-      .filter((product): product is ApparelGridProduct => product !== null);
-
-    items.sort((a, b) => {
-      const aKey = a.slug.trim().toLowerCase();
-      const bKey = b.slug.trim().toLowerCase();
-      return (order.get(aKey) ?? Number.MAX_SAFE_INTEGER) - (order.get(bKey) ?? Number.MAX_SAFE_INTEGER);
-    });
-
-    return items;
+      .map(
+        (listing) =>
+          ({
+            id: `catalog-${listing.slug}`,
+            slug: listing.slug,
+            name: listing.name,
+            description: listing.description,
+            priceCents: listing.priceCents,
+            currency: "usd",
+            subcategory: listing.subcategory,
+            colors: listing.colors,
+            sizes: listing.sizes,
+            cover: listing.image,
+          }) satisfies ApparelGridProduct,
+      );
   }, [products, subcategoryId]);
 
   const siblingCollections = APPAREL_COLLECTION_SUBCATEGORIES.filter(

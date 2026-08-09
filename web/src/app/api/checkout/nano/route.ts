@@ -4,8 +4,11 @@ import crypto from "crypto";
 import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 import {
   getDiscountedUnitPriceCents,
-  normalizeDiscountCode,
 } from "@/lib/discountPricing";
+import {
+  DISCOUNT_LINK_UNLOCK_COOKIE,
+  resolveCheckoutDiscountCode,
+} from "@/lib/discountLinkUnlock";
 import { cartHasPreOrder, resolveIsPreOrder } from "@/lib/preorder";
 import {
   buildShippingInsuranceLineItem,
@@ -53,7 +56,10 @@ export async function POST(request: NextRequest) {
       productSlug?: string;
       isPreOrder?: boolean;
     }> = [];
-    const normalizedDiscountCode = normalizeDiscountCode(discountCode);
+    const normalizedDiscountCode = resolveCheckoutDiscountCode(
+      discountCode,
+      request.cookies.get(DISCOUNT_LINK_UNLOCK_COOKIE)?.value
+    );
 
     for (const item of items) {
       const productSlug = item.productSlug || "";
@@ -213,7 +219,7 @@ export async function POST(request: NextRequest) {
           shippingInsurance: wantsInsurance,
           shippingInsuranceCents: insuranceCents,
           shippingInsuranceQuantity: insuranceQty,
-          discountCode: discountCode || null,
+          discountCode: normalizedDiscountCode || null,
           cartItems: JSON.stringify(
             items.map((item: {
               isPreOrder?: boolean;
