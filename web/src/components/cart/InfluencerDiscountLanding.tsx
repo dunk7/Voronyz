@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { applyDiscountCodeToCartStorage } from "@/lib/applyDiscountToCart";
-import { getDiscountCodeShopperDescription } from "@/lib/discountPricing";
+import {
+  getDiscountCodeShopperDescription,
+  getDiscountCodeShopperLabel,
+  isLinkOnlyDiscountCode,
+} from "@/lib/discountPricing";
 import LogoLoader from "@/components/ui/LogoLoader";
 
 type InfluencerDiscountLandingProps = {
@@ -16,6 +20,7 @@ type InfluencerDiscountLandingProps = {
 /**
  * Bio-link landing: activate the influencer discount for this session, then send
  * first-time shoppers to the home page with the code + timer visible.
+ * Link-only codes also mint a server unlock cookie so checkout can apply the deal.
  */
 export default function InfluencerDiscountLanding({
   slug,
@@ -27,17 +32,46 @@ export default function InfluencerDiscountLanding({
   const benefit = getDiscountCodeShopperDescription(code);
 
   useEffect(() => {
-    const applied = applyDiscountCodeToCartStorage(code, "link");
-    if (!applied) {
-      setStatus("error");
-      return;
+    let cancelled = false;
+    let timer: number | undefined;
+
+    async function apply() {
+      try {
+        if (isLinkOnlyDiscountCode(code)) {
+          const unlockRes = await fetch("/api/discount/link-unlock", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ slug }),
+            credentials: "same-origin",
+          });
+          if (!unlockRes.ok) {
+            if (!cancelled) setStatus("error");
+            return;
+          }
+        }
+
+        const applied = applyDiscountCodeToCartStorage(code, "link");
+        if (!applied) {
+          if (!cancelled) setStatus("error");
+          return;
+        }
+        if (cancelled) return;
+        setStatus("done");
+        timer = window.setTimeout(() => {
+          router.replace("/");
+        }, 400);
+      } catch (err) {
+        console.error("Failed to apply influencer discount:", err);
+        if (!cancelled) setStatus("error");
+      }
     }
-    setStatus("done");
-    const timer = window.setTimeout(() => {
-      router.replace("/");
-    }, 400);
-    return () => window.clearTimeout(timer);
-  }, [code, router]);
+
+    void apply();
+    return () => {
+      cancelled = true;
+      if (timer) window.clearTimeout(timer);
+    };
+  }, [code, slug, router]);
 
   return (
     <div className="bg-texture-white min-h-[70vh] flex items-center justify-center px-4">
@@ -64,8 +98,18 @@ export default function InfluencerDiscountLanding({
               Applying {label}&apos;s discount…
             </p>
             <p className="mt-2 text-sm text-neutral-500">
-              Code <span className="font-mono font-medium text-neutral-800">{code}</span>{" "}
-              from <span className="font-mono">/{slug}</span> — {benefit}. Taking you to the shop.
+              {isLinkOnlyDiscountCode(code) ? (
+                <>
+                  {getDiscountCodeShopperLabel(code)} from{" "}
+                  <span className="font-mono">/{slug}</span> — {benefit}. Taking
+                  you to the shop.
+                </>
+              ) : (
+                <>
+                  Code <span className="font-mono font-medium text-neutral-800">{code}</span>{" "}
+                  from <span className="font-mono">/{slug}</span> — {benefit}. Taking you to the shop.
+                </>
+              )}
             </p>
           </>
         )}

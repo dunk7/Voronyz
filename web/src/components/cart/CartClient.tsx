@@ -3,7 +3,10 @@ import { useState, useEffect } from "react";
 import { formatCentsAsCurrency } from "@/lib/money";
 import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 import {
+  getDiscountCodeShopperLabel,
   getDiscountedUnitPriceCents,
+  isLinkOnlyDiscountCode,
+  isManuallyApplicableDiscountCode,
   isValidDiscountCode,
   KNOWN_DISCOUNTED_UNIT_PRICES,
   normalizeDiscountCode,
@@ -16,6 +19,7 @@ import {
   stripPersistedCartDiscountCode,
   subscribeDiscountSession,
 } from "@/lib/discountSession";
+import { applyDiscountCodeToCartStorage } from "@/lib/applyDiscountToCart";
 import { resolveIsPreOrder } from "@/lib/preorder";
 import {
   cartHasInsurableItems,
@@ -141,6 +145,7 @@ export default function CartClient() {
   const clearMessage = () => setMessage("");
 
   // Legacy ?discount= deep links (and any leftover bio-link query) activate the session.
+  // Link-only codes (aryan50) are ignored here — they require the vanity short link + unlock cookie.
   useEffect(() => {
     if (isLoading) return;
     try {
@@ -148,19 +153,21 @@ export default function CartClient() {
       const fromLink = normalizeDiscountCode(params.get("discount"));
       if (!fromLink || !isValidDiscountCode(fromLink)) return;
 
-      const applied = activateDiscountSession(fromLink, "link");
+      // Clean the query either way so refresh doesn't re-flash awkwardly.
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("discount")) {
+        url.searchParams.delete("discount");
+        window.history.replaceState({}, "", url.pathname + (url.search || ""));
+      }
+
+      if (isLinkOnlyDiscountCode(fromLink)) return;
+
+      const applied = applyDiscountCodeToCartStorage(fromLink, "link");
       if (applied) {
         setDiscountCode(applied);
         setInputValue(applied);
         setMessage(`Discount "${applied}" applied from your link!`);
         setTimeout(clearMessage, 3000);
-      }
-
-      // Clean the query so refresh doesn't re-flash the toast awkwardly.
-      const url = new URL(window.location.href);
-      if (url.searchParams.has("discount")) {
-        url.searchParams.delete("discount");
-        window.history.replaceState({}, "", url.pathname + (url.search || ""));
       }
     } catch {
       /* ignore */
@@ -191,7 +198,9 @@ export default function CartClient() {
   const applyDiscount = () => {
     clearMessage();
     const normalized = normalizeDiscountCode(inputValue);
-    if (isValidDiscountCode(normalized)) {
+    // Link-only codes (aryan50) intentionally look invalid when typed —
+    // they only unlock via the creator short link.
+    if (isManuallyApplicableDiscountCode(normalized)) {
       // Manual cart entry activates the same visible code + timer as a short link.
       activateDiscountSession(normalized, "manual");
       // Do NOT mutate stored item prices; compute discounted totals from session code.
@@ -355,7 +364,9 @@ export default function CartClient() {
         {discountCode ? (
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4">
             <p className="text-sm font-semibold text-emerald-900">
-              Discount &quot;{discountCode}&quot; is ready in your cart
+              {isLinkOnlyDiscountCode(discountCode)
+                ? `${getDiscountCodeShopperLabel(discountCode)} is ready in your cart`
+                : `Discount "${discountCode}" is ready in your cart`}
             </p>
             <p className="mt-1 text-sm text-emerald-800/80">
               Add products and it will apply automatically at checkout.
@@ -640,7 +651,9 @@ export default function CartClient() {
             {discountCode && (
               <div className="mt-2 text-sm text-green-700 flex justify-between items-center gap-3 bg-emerald-50 p-2 rounded-md border border-green-200">
                 <span>
-                  Discount &quot;{discountCode}&quot; applied
+                  {isLinkOnlyDiscountCode(discountCode)
+                    ? `${getDiscountCodeShopperLabel(discountCode)} applied`
+                    : `Discount "${discountCode}" applied`}
                   {discountSavings > 0 ? ` — you save ${formatCentsAsCurrency(discountSavings)}` : ""}
                 </span>
                 <button onClick={clearDiscount} className="text-sm underline shrink-0">Remove</button>

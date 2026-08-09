@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { getDiscountCodeShopperDescription } from "@/lib/discountPricing";
+import {
+  getDiscountCodeShopperDescription,
+  getDiscountCodeShopperLabel,
+  isLinkOnlyDiscountCode,
+} from "@/lib/discountPricing";
 import {
   bootDiscountSession,
   DISCOUNT_TIMER_MS,
@@ -80,6 +84,9 @@ export default function DiscountUrgencyBanner() {
   if (!mounted || !code || isAdminPath(pathname)) return null;
 
   const description = getDiscountCodeShopperDescription(code);
+  const label = isLinkOnlyDiscountCode(code)
+    ? getDiscountCodeShopperLabel(code)
+    : code.toUpperCase();
   const low = remainingMs <= 60_000;
 
   return (
@@ -91,7 +98,7 @@ export default function DiscountUrgencyBanner() {
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-1.5 px-4 py-3.5 text-center sm:flex-row sm:gap-4 sm:px-6">
         <p className="text-sm font-semibold tracking-wide sm:text-base">
           <span className="rounded-md bg-white px-2 py-0.5 font-mono text-sm font-bold uppercase tracking-wider text-emerald-950 sm:text-base">
-            {code}
+            {label}
           </span>
           <span className="mx-2 text-emerald-300/90">—</span>
           <span className="text-white">{description}</span>

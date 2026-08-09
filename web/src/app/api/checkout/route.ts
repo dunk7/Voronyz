@@ -4,8 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 import {
   getDiscountedUnitPriceCents,
-  normalizeDiscountCode,
 } from "@/lib/discountPricing";
+import {
+  DISCOUNT_LINK_UNLOCK_COOKIE,
+  resolveCheckoutDiscountCode,
+} from "@/lib/discountLinkUnlock";
 import { cartHasPreOrder, resolveIsPreOrder } from "@/lib/preorder";
 import {
   buildStripeCartItemsMetadata,
@@ -52,6 +55,13 @@ export async function POST(request: NextRequest) {
     rawPaymentMethod === "card" || rawPaymentMethod === "ach"
       ? rawPaymentMethod
       : "ach";
+
+  // Link-only codes (e.g. aryan50) require the short-link unlock cookie.
+  // Typing the code or POSTing it without visiting /aryan → full price.
+  const appliedDiscountCode = resolveCheckoutDiscountCode(
+    discountCode,
+    request.cookies.get(DISCOUNT_LINK_UNLOCK_COOKIE)?.value
+  );
   
   // Get base URL for converting relative image paths to absolute URLs
   const baseUrl =
@@ -136,7 +146,7 @@ export async function POST(request: NextRequest) {
             : 7500;
         const unitAmount = getDiscountedUnitPriceCents(
           baseUnitAmount,
-          normalizeDiscountCode(discountCode),
+          appliedDiscountCode,
           {
             productSlug,
             productName: productNameForDiscount,
@@ -196,7 +206,7 @@ export async function POST(request: NextRequest) {
         const fallbackProductName = item.productName || '';
         const unitAmount = getDiscountedUnitPriceCents(
           typeof item.priceCents === "number" && item.priceCents > 0 ? item.priceCents : 7500,
-          normalizeDiscountCode(discountCode),
+          appliedDiscountCode,
           {
             productSlug: fallbackSlug,
             productName: fallbackProductName,
@@ -298,7 +308,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         itemCount: items.length.toString(),
         paymentMethod,
-        ...(discountCode && { discountCode }),
+        ...(appliedDiscountCode && { discountCode: appliedDiscountCode }),
         ...(hasPickupOnly && { fulfillment: 'pickup' }),
         ...(hasPreOrder && { hasPreOrder: 'true' }),
         ...(wantsInsurance && {
