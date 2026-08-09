@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import {
   APPAREL_SUBCATEGORIES,
   apparelSubcategoryHref,
-  getApparelBySubcategory,
+  getApparelListingBySubcategory,
   getApparelSubcategory,
   isApparelSubcategoryId,
   isLegacyApparelAccessorySubcategory,
@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const id = legacy.replace("/apparel/", "");
     const sub = getApparelSubcategory(id);
     if (sub) {
-      const count = getApparelBySubcategory(sub.id).length;
+      const count = getApparelListingBySubcategory(sub.id).length;
       return {
         title: `${sub.label} – Apparel – Voronyz`,
         description: `${sub.description}. ${count} design${count === 1 ? "" : "s"} in this Voronyz Apparel section.`,
@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!sub) {
     return { title: "Apparel – Voronyz" };
   }
-  const count = getApparelBySubcategory(sub.id).length;
+  const count = getApparelListingBySubcategory(sub.id).length;
   return {
     title: `${sub.label} – Apparel – Voronyz`,
     description: `${sub.description}. ${count} design${count === 1 ? "" : "s"} in this Voronyz Apparel section.`,
