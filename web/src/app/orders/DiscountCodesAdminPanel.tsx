@@ -135,9 +135,11 @@ function InfluencerLinksPanel() {
         </h2>
         <p className="mt-1 text-sm text-neutral-500 max-w-2xl">
           Give each influencer their short Voronyz link for Instagram / TikTok bios.
-          When a shopper opens it, their discount code is applied in the cart automatically
-          (example: <span className="font-mono text-neutral-700">voronyz.com/aryan</span> →{" "}
-          <span className="font-mono text-neutral-700">Aryan50</span>).
+          When a shopper opens it, their discount is applied automatically
+          (example: <span className="font-mono text-neutral-700">voronyz.com/aryan</span>).
+          Aryan&apos;s offer is{" "}
+          <span className="font-medium text-neutral-700">short-link only</span> —
+          typing the code in the cart does nothing.
         </p>
       </div>
 
@@ -530,9 +532,11 @@ export default function DiscountCodesAdminPanel({
                 </button>
               </div>
               <p className="text-xs text-amber-900/80">
-                {selectedGroup.orders.length === 0
-                  ? "This code is live with 0 used so far — share the link now. Orders will show up here when someone checks out with it."
-                  : "Send this to the influencer for their bio. Visiting it auto-applies the code and opens the store."}
+                {selectedGroup.code === "aryan50"
+                  ? "Short-link only: share voronyz.com/aryan. Shoppers who type the code (or never click the link) pay full price. The link opens All Footwear on the home page."
+                  : selectedGroup.orders.length === 0
+                    ? "This code is live with 0 used so far — share the link now. Orders will show up here when someone checks out with it."
+                    : "Send this to the influencer for their bio. Visiting it auto-applies the code and opens All Footwear on the home page."}
               </p>
             </div>
 

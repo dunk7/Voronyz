@@ -20,10 +20,19 @@ export const VALID_DISCOUNT_CODES = [
   "pedro30",
   "nicole50",
   "andy50",
+  "arabella50",
   "young",
 ] as const;
 
+/**
+ * Codes that only unlock via a creator short link (e.g. /aryan → aryan50).
+ * Manual cart entry and raw /{code} URLs must not apply them — shoppers who
+ * never clicked the link (or who type the code) keep full price.
+ */
+export const LINK_ONLY_DISCOUNT_CODES = ["aryan50"] as const;
+
 const validDiscountCodeSet = new Set<string>(VALID_DISCOUNT_CODES);
+const linkOnlyDiscountCodeSet = new Set<string>(LINK_ONLY_DISCOUNT_CODES);
 
 export const KNOWN_DISCOUNTED_UNIT_PRICES = new Set<number>([
   5000,
@@ -45,6 +54,40 @@ export function isValidDiscountCode(code: string | null | undefined): boolean {
   return normalized ? validDiscountCodeSet.has(normalized) : false;
 }
 
+/** True when this code must come from a short link — never typed in the cart. */
+export function isLinkOnlyDiscountCode(code: string | null | undefined): boolean {
+  const normalized = normalizeDiscountCode(code);
+  return normalized ? linkOnlyDiscountCodeSet.has(normalized) : false;
+}
+
+/**
+ * Codes shoppers may type into the cart Apply field.
+ * Link-only codes intentionally look "invalid" so they stay undiscoverable.
+ */
+export function isManuallyApplicableDiscountCode(
+  code: string | null | undefined
+): boolean {
+  const normalized = normalizeDiscountCode(code);
+  if (!normalized || !isValidDiscountCode(normalized)) return false;
+  return !isLinkOnlyDiscountCode(normalized);
+}
+
+/**
+ * Shopper-facing label that avoids leaking link-only code strings.
+ * Admin UIs should keep using the raw code.
+ */
+export function getDiscountCodeShopperLabel(
+  code: string | null | undefined
+): string {
+  const normalized = normalizeDiscountCode(code);
+  if (!normalized) return "Discount";
+  if (isLinkOnlyDiscountCode(normalized)) {
+    if (normalized === "aryan50") return "Creator offer";
+    return "Special offer";
+  }
+  return normalized.toUpperCase();
+}
+
 /** Short admin-facing summary of what a configured discount code does. */
 export function getDiscountCodeDescription(
   code: string | null | undefined
@@ -62,6 +105,8 @@ export function getDiscountCodeDescription(
     case "aryan10":
       return "$10 on V3 slides";
     case "aryan50":
+      return "$5 off any item (short-link /aryan only)";
+    case "arabella50":
       return "$5 off any item";
     case "super20":
       return "$20 fixed unit price";
@@ -103,6 +148,7 @@ export function getDiscountCodeShopperDescription(
     case "super20":
       return "All items just $20 each";
     case "aryan50":
+    case "arabella50":
       return "$5 off every item";
     case "emptyaus":
       return "Dragonfly for only $20";
@@ -113,6 +159,52 @@ export function getDiscountCodeShopperDescription(
     default:
       return "Your discount is locked in";
   }
+}
+
+/**
+ * Product-page promo line when a session discount is active.
+ * Returns null for checkout-only codes (e.g. `young`) that must not be advertised.
+ */
+export function getProductDiscountPromo(
+  code: string | null | undefined,
+  context: DiscountPricingContext & { basePriceCents: number }
+): {
+  code: string;
+  message: string;
+  discountedUnitPriceCents: number;
+  savesCents: number;
+  appliesToProduct: boolean;
+} | null {
+  const normalized = normalizeDiscountCode(code);
+  if (!normalized || !isValidDiscountCode(normalized)) return null;
+  // Never advertise checkout-only codes on product pages.
+  if (normalized === "young") return null;
+
+  const discountedUnitPriceCents = getDiscountedUnitPriceCents(
+    context.basePriceCents,
+    normalized,
+    context
+  );
+  const savesCents = Math.max(0, context.basePriceCents - discountedUnitPriceCents);
+  const appliesToProduct = discountedUnitPriceCents < context.basePriceCents;
+
+  let message = getDiscountCodeShopperDescription(normalized);
+  if (normalized === "aryan50" || normalized === "arabella50") {
+    message = "$5 off with this offer";
+  } else if (appliesToProduct && savesCents > 0) {
+    const dollars = (discountedUnitPriceCents / 100).toFixed(
+      discountedUnitPriceCents % 100 === 0 ? 0 : 2
+    );
+    message = `Just $${dollars} with this code`;
+  }
+
+  return {
+    code: normalized,
+    message,
+    discountedUnitPriceCents,
+    savesCents,
+    appliesToProduct,
+  };
 }
 
 function isSlidesProduct(productSlug?: string, productName?: string): boolean {
@@ -134,8 +226,8 @@ export function getDiscountedUnitPriceCents(
 
   if (normalizedCode === "emptyaus" && productSlug === "dragonfly") return 2000;
   if (normalizedCode === "aryan10" && isSlidesProduct(productSlug, productName)) return 1000;
-  // Aryan50: $5 off any item (per unit).
-  if (normalizedCode === "aryan50") {
+  // Aryan50 / Arabella50: $5 off any item (per unit).
+  if (normalizedCode === "aryan50" || normalizedCode === "arabella50") {
     return Math.max(0, baseUnitPriceCents - 500);
   }
   // Young: $20/spool on TPU-90A Filament — checkout-only; never advertise on the site.
