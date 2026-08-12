@@ -55,14 +55,19 @@ export default function LogoLoader({
       aria-label={label || "Loading"}
       style={{ background: "transparent" }}
     >
+      {/*
+        Serve the raw PNG (unoptimized) so the image pipeline never paints an
+        opaque black square behind the transparent logo mark.
+      */}
       <Image
         src={logoSrc(tone)}
         alt=""
         width={dims.mark}
         height={dims.mark}
         aria-hidden="true"
+        unoptimized
         className="logo-loader-mark bg-transparent"
-        style={{ background: "transparent", display: "block" }}
+        style={{ background: "transparent", display: "block", mixBlendMode: "normal" }}
         priority
       />
 
@@ -112,9 +117,10 @@ export function LogoMark({
       width={size}
       height={size}
       aria-hidden="true"
+      unoptimized
       priority={priority}
       className={`bg-transparent ${animate ? "logo-loader-mark" : ""} ${className}`}
-      style={{ background: "transparent", display: "block" }}
+      style={{ background: "transparent", display: "block", mixBlendMode: "normal" }}
     />
   );
 }
