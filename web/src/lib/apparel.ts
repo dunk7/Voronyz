@@ -117,6 +117,7 @@ export function getApparelImages(item: ApparelCatalogItem): string[] {
 export const OBSOLETE_APPAREL_SLUGS = [
   "voronyz-technical-pants",
   "voronyz-lounge-sweats",
+  "voronyz-lattice-shoe-trees",
 ] as const;
 
 /**
@@ -368,18 +369,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_ONE_SIZE],
     image: "/products/apparel/charm-bracelet.jpg",
     skuPrefix: "APP-CHAR",
-    comingSoon: true,
-  },
-  {
-    slug: "voronyz-lattice-shoe-trees",
-    subcategory: "accessories",
-    name: "Lattice Shoe Trees",
-    description: "Breathable 3D-printed shoe trees that hold shape and air out your pairs.",
-    priceCents: 3400,
-    colors: ["black", "white"],
-    sizes: ["S", "M", "L"],
-    image: "/products/apparel/lattice-shoe-trees.jpg",
-    skuPrefix: "APP-TREE",
     comingSoon: true,
   },
 ];
