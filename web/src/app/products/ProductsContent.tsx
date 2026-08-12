@@ -483,30 +483,30 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
           <section
             id="apparel"
             aria-labelledby="footwear-apparel-heading"
-            className="mt-24 sm:mt-32 lg:mt-40"
+            className="mt-16 sm:mt-20"
           >
-            <div className="mb-10 sm:mb-14 border-t border-neutral-200 pt-16 sm:pt-20 lg:pt-24">
-              <p className="text-[11px] sm:text-xs uppercase tracking-[0.4em] text-neutral-400 mb-4 sm:mb-6">
-                Next section
-              </p>
-              <h2
-                id="footwear-apparel-heading"
-                className="text-6xl sm:text-8xl lg:text-[7.5rem] xl:text-[9rem] font-semibold tracking-[-0.04em] leading-[0.85] text-neutral-900"
-              >
-                Apparel
-              </h2>
-              <div className="mt-6 sm:mt-8 flex flex-wrap items-end justify-between gap-4">
-                <p className="max-w-lg text-sm sm:text-base text-neutral-500 leading-relaxed">
-                  Built different people need built different apparel — shirts, layers,
-                  and accessories continue below.
-                </p>
+            <div className="mb-12">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <h2
+                    id="footwear-apparel-heading"
+                    className="text-3xl font-semibold tracking-tight text-neutral-900"
+                  >
+                    Apparel
+                  </h2>
+                  <p className="mt-2 text-sm text-neutral-500 max-w-md">
+                    Built different people need built different apparel — shirts,
+                    layers, and accessories continue below.
+                  </p>
+                </div>
                 <Link
                   href="/apparel"
-                  className="text-sm font-medium text-neutral-900 underline underline-offset-4 hover:no-underline shrink-0"
+                  className="text-xs font-medium text-neutral-500 hover:text-neutral-900 transition-colors hidden sm:block shrink-0"
                 >
                   Browse full Apparel →
                 </Link>
               </div>
+              <div className="mt-6 h-px bg-neutral-200" />
             </div>
 
             <ApparelProductGrid products={apparelContinuationProducts} />
