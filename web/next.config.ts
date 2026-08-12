@@ -29,6 +29,32 @@ const nextConfig: NextConfig = {
         destination: "/products/voronyz-joggers",
         permanent: true,
       },
+      // Removed accessory listings — redirect to Accessories hub.
+      {
+        source: "/products/voronyz-necklace",
+        destination: "/apparel/accessories",
+        permanent: true,
+      },
+      {
+        source: "/products/voronyz-keychain",
+        destination: "/apparel/accessories",
+        permanent: true,
+      },
+      {
+        source: "/products/voronyz-rc-car-stickers",
+        destination: "/apparel/accessories",
+        permanent: true,
+      },
+      {
+        source: "/products/voronyz-charm-bracelet",
+        destination: "/apparel/accessories",
+        permanent: true,
+      },
+      {
+        source: "/products/voronyz-lattice-shoe-trees",
+        destination: "/apparel/accessories",
+        permanent: true,
+      },
     ];
   },
 };
