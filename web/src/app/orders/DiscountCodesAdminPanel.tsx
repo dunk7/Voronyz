@@ -136,8 +136,8 @@ function InfluencerLinksPanel() {
         <p className="mt-1 text-sm text-neutral-500 max-w-2xl">
           Give each influencer their short Voronyz link for Instagram / TikTok bios.
           When a shopper opens it, their discount code is applied in the cart automatically
-          (example: <span className="font-mono text-neutral-700">voronyz.com/aryan</span> →{" "}
-          <span className="font-mono text-neutral-700">Aryan50</span>).
+          (example: <span className="font-mono text-neutral-700">voronyz.com/arabella</span> →{" "}
+          <span className="font-mono text-neutral-700">Arabella50</span>).
         </p>
       </div>
 
@@ -325,8 +325,10 @@ export default function DiscountCodesAdminPanel({
       }
     }
 
-    // Prefer influencer codes (Aryan first), then alphabetical — unused codes stay visible.
+    // Prefer influencer codes (Arabella first), then alphabetical — unused codes stay visible.
     return Array.from(map.values()).sort((a, b) => {
+      if (a.code === "arabella50") return -1;
+      if (b.code === "arabella50") return 1;
       if (a.code === "aryan50") return -1;
       if (b.code === "aryan50") return 1;
       const aInf = a.influencerSlug ? 0 : 1;
@@ -615,9 +617,9 @@ export default function DiscountCodesAdminPanel({
               <p className="text-sm mt-1">
                 Codes are live even at{" "}
                 <span className="font-medium text-neutral-800">0 used</span>. Open{" "}
-                <span className="font-mono text-neutral-800">aryan50</span> above to
-                copy Aryan&apos;s short link (
-                <span className="font-mono text-neutral-800">voronyz.com/aryan</span>).
+                <span className="font-mono text-neutral-800">arabella50</span> above to
+                copy Arabella&apos;s short link (
+                <span className="font-mono text-neutral-800">voronyz.com/arabella</span>).
               </p>
             </>
           ) : selectedCode !== "all" && selectedGroup && selectedGroup.orders.length === 0 ? (
