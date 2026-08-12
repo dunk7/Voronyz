@@ -30,27 +30,9 @@ export type FootwearCatalogItem = {
 
 /**
  * Display order for All Footwear:
- * Magikid → Slides → Gators → Slip Ons → Sneakers (Dragonfly) → Lattice Insoles.
- * Gators stays in the grid — just not first. Lattice Insoles last.
+ * Slides → Slip Ons → Sneakers (Dragonfly) → Lattice Insoles → Magikid → Gators.
  */
 export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
-  {
-    slug: "magikid-shoes",
-    name: "Magikid Shoes",
-    description: MAGIKID_SHOES_DESCRIPTION_SHORT,
-    priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
-    images: [
-      MAGIKID_SHOES_THUMBNAIL_URL,
-      "/products/slip-ons/InShot_20260405_203151152.jpg",
-      "/products/slip-ons/InShot_20260405_203425292.jpg",
-      "/products/slip-ons/InShot_20260405_203601045.jpg",
-      "/products/slip-ons/InShot_20260405_203736918.jpg",
-      "/products/slip-ons/InShot_20260405_203930832.jpg",
-      "/products/slip-ons/InShot_20260405_204113872.jpg",
-      "/products/slip-ons/InShot_20260405_204333303.jpg",
-      "/products/slip-ons/InShot_20260405_202911983.jpg",
-    ],
-  },
   {
     slug: "v3-slides",
     name: "V3 Slides",
@@ -69,13 +51,6 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
       "/products/v3-slides/InShot_20260212_195535113.jpg",
       "/products/v3-slides/InShot_20260212_195649672.jpg",
     ],
-  },
-  {
-    slug: GATORS_SLUG,
-    name: GATORS_NAME,
-    description: GATORS_DESCRIPTION_SHORT,
-    priceCents: GATORS_PRICE_CENTS,
-    images: [...GATORS_IMAGES],
   },
   {
     slug: "slip-ons",
@@ -118,6 +93,30 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     description: LATTICE_INSOLES_DESCRIPTION_SHORT,
     priceCents: LATTICE_INSOLES_PRICE_CENTS,
     images: [...LATTICE_INSOLES_IMAGES],
+  },
+  {
+    slug: "magikid-shoes",
+    name: "Magikid Shoes",
+    description: MAGIKID_SHOES_DESCRIPTION_SHORT,
+    priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
+    images: [
+      MAGIKID_SHOES_THUMBNAIL_URL,
+      "/products/slip-ons/InShot_20260405_203151152.jpg",
+      "/products/slip-ons/InShot_20260405_203425292.jpg",
+      "/products/slip-ons/InShot_20260405_203601045.jpg",
+      "/products/slip-ons/InShot_20260405_203736918.jpg",
+      "/products/slip-ons/InShot_20260405_203930832.jpg",
+      "/products/slip-ons/InShot_20260405_204113872.jpg",
+      "/products/slip-ons/InShot_20260405_204333303.jpg",
+      "/products/slip-ons/InShot_20260405_202911983.jpg",
+    ],
+  },
+  {
+    slug: GATORS_SLUG,
+    name: GATORS_NAME,
+    description: GATORS_DESCRIPTION_SHORT,
+    priceCents: GATORS_PRICE_CENTS,
+    images: [...GATORS_IMAGES],
   },
 ];
 
