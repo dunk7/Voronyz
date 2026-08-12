@@ -15,6 +15,7 @@ export const VALID_DISCOUNT_CODES = [
   "emptyaus",
   "aryan10",
   "aryan50",
+  "arabella50",
   "super20",
   "chud25",
   "pedro30",
@@ -62,6 +63,7 @@ export function getDiscountCodeDescription(
     case "aryan10":
       return "$10 on V3 slides";
     case "aryan50":
+    case "arabella50":
       return "$5 off any item";
     case "super20":
       return "$20 fixed unit price";
@@ -103,6 +105,7 @@ export function getDiscountCodeShopperDescription(
     case "super20":
       return "All items just $20 each";
     case "aryan50":
+    case "arabella50":
       return "$5 off every item";
     case "emptyaus":
       return "Dragonfly for only $20";
@@ -134,8 +137,8 @@ export function getDiscountedUnitPriceCents(
 
   if (normalizedCode === "emptyaus" && productSlug === "dragonfly") return 2000;
   if (normalizedCode === "aryan10" && isSlidesProduct(productSlug, productName)) return 1000;
-  // Aryan50: $5 off any item (per unit).
-  if (normalizedCode === "aryan50") {
+  // Aryan50 / Arabella50: $5 off any item (per unit).
+  if (normalizedCode === "aryan50" || normalizedCode === "arabella50") {
     return Math.max(0, baseUnitPriceCents - 500);
   }
   // Young: $20/spool on TPU-90A Filament — checkout-only; never advertise on the site.
