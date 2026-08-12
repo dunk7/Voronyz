@@ -106,6 +106,8 @@ export function getDiscountCodeDescription(
       return "$10 on V3 slides";
     case "aryan50":
       return "$5 off any item (short-link /aryan only)";
+    case "arabella50":
+      return "$5 off any item";
     case "super20":
       return "$20 fixed unit price";
     case "chud25":
@@ -115,8 +117,6 @@ export function getDiscountCodeDescription(
     case "nicole50":
       return "$50 fixed unit price";
     case "andy50":
-      return "$50 fixed unit price";
-    case "arabella50":
       return "$50 fixed unit price";
     case "young":
       return "$20/spool TPU-90A (checkout-only)";
@@ -138,7 +138,6 @@ export function getDiscountCodeShopperDescription(
     case "chud25":
     case "nicole50":
     case "andy50":
-    case "arabella50":
       return "All items just $50 each";
     case "superdeal35":
       return "All items just $35 each";
@@ -149,6 +148,7 @@ export function getDiscountCodeShopperDescription(
     case "super20":
       return "All items just $20 each";
     case "aryan50":
+    case "arabella50":
       return "$5 off every item";
     case "emptyaus":
       return "Dragonfly for only $20";
@@ -189,7 +189,7 @@ export function getProductDiscountPromo(
   const appliesToProduct = discountedUnitPriceCents < context.basePriceCents;
 
   let message = getDiscountCodeShopperDescription(normalized);
-  if (normalized === "aryan50") {
+  if (normalized === "aryan50" || normalized === "arabella50") {
     message = "$5 off with this offer";
   } else if (appliesToProduct && savesCents > 0) {
     const dollars = (discountedUnitPriceCents / 100).toFixed(
@@ -226,8 +226,8 @@ export function getDiscountedUnitPriceCents(
 
   if (normalizedCode === "emptyaus" && productSlug === "dragonfly") return 2000;
   if (normalizedCode === "aryan10" && isSlidesProduct(productSlug, productName)) return 1000;
-  // Aryan50: $5 off any item (per unit).
-  if (normalizedCode === "aryan50") {
+  // Aryan50 / Arabella50: $5 off any item (per unit).
+  if (normalizedCode === "aryan50" || normalizedCode === "arabella50") {
     return Math.max(0, baseUnitPriceCents - 500);
   }
   // Young: $20/spool on TPU-90A Filament — checkout-only; never advertise on the site.
@@ -245,7 +245,6 @@ export function getDiscountedUnitPriceCents(
   if (normalizedCode === "pedro30") return 3000;
   if (normalizedCode === "nicole50") return 5000;
   if (normalizedCode === "andy50") return 5000;
-  if (normalizedCode === "arabella50") return 5000;
 
   return baseUnitPriceCents;
 }

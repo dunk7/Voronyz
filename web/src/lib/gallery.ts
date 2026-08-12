@@ -44,14 +44,6 @@ const REVIEWERS: GalleryPerson[] = [
 
 export const GALLERY_ITEMS: GalleryItem[] = [
   {
-    id: "dunes",
-    type: "image",
-    src: "/gallery/dunes.png",
-    alt: "Two people standing barefoot on a sand dune at dusk",
-    caption: "Dusk on the dunes",
-    person: "Voronyz",
-  },
-  {
     id: "DbtQnbTSiRr",
     type: "video",
     src: "/gallery/reviews/DbtQnbTSiRr.mp4",

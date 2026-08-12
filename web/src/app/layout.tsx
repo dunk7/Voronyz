@@ -24,6 +24,7 @@ const geistMono = Geist_Mono({
 
 export const viewport: Viewport = {
   themeColor: "#000000",
+  colorScheme: "dark",
 };
 
 export const metadata: Metadata = {
@@ -72,10 +73,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" style={{ background: "#000000" }}>
+    <html
+      lang="en"
+      style={{ background: "#000000", backgroundColor: "#000000" }}
+    >
+      <head>
+        {/* Paint black before CSS/JS so the logo splash never sits on a white frame. */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html:
+              "html,body{background:#000!important;background-color:#000!important}",
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        style={{ background: "#000000" }}
+        style={{ background: "#000000", backgroundColor: "#000000" }}
         suppressHydrationWarning
       >
         <DiscountUrgencyBanner />
