@@ -617,9 +617,9 @@ export default function DiscountCodesAdminPanel({
               <p className="text-sm mt-1">
                 Codes are live even at{" "}
                 <span className="font-medium text-neutral-800">0 used</span>. Open{" "}
-                <span className="font-mono text-neutral-800">aryan50</span> above to
-                copy Aryan&apos;s short link (
-                <span className="font-mono text-neutral-800">voronyz.com/aryan</span>).
+                <span className="font-mono text-neutral-800">arabella50</span> above to
+                copy Arabella&apos;s short link (
+                <span className="font-mono text-neutral-800">voronyz.com/arabella</span>).
               </p>
             </>
           ) : selectedCode !== "all" && selectedGroup && selectedGroup.orders.length === 0 ? (
