@@ -514,27 +514,42 @@ async function main() {
           sizes: [...LATTICE_INSOLES_SIZES],
         },
       });
-      for (const v of LATTICE_INSOLES_VARIANTS) {
-        await prisma.variant.upsert({
-          where: { sku: v.sku },
-          update: { stock: v.stock, color: v.color },
-          create: {
-            product: { connect: { id: existingInsoles.id } },
-            color: v.color,
-            sku: v.sku,
-            stock: v.stock,
-          },
-        });
-      }
-      const keepSkus = LATTICE_INSOLES_VARIANTS.map((v) => v.sku);
-      const obsoleteVariants = await prisma.variant.findMany({
-        where: {
-          productId: existingInsoles.id,
-          sku: { notIn: [...keepSkus] },
-        },
-        select: { id: true },
+      // Migrate by color so legacy APP-INSL-* (stock 0) rows become INSL-* in stock.
+      // SKU-only upsert fails on @@unique([productId, color]) and leaves Add to Cart disabled.
+      const existingInsoleVariants = await prisma.variant.findMany({
+        where: { productId: existingInsoles.id },
+        select: { id: true, sku: true, color: true },
       });
-      const obsoleteIds = obsoleteVariants.map((variant) => variant.id);
+      const insoleBySku = new Map(
+        existingInsoleVariants.map((variant) => [variant.sku, variant]),
+      );
+      const insoleByColor = new Map(
+        existingInsoleVariants.map((variant) => [variant.color, variant]),
+      );
+      const keepInsoleIds = new Set<string>();
+      for (const v of LATTICE_INSOLES_VARIANTS) {
+        const match = insoleBySku.get(v.sku) ?? insoleByColor.get(v.color);
+        if (match) {
+          await prisma.variant.update({
+            where: { id: match.id },
+            data: { sku: v.sku, color: v.color, stock: v.stock },
+          });
+          keepInsoleIds.add(match.id);
+        } else {
+          const created = await prisma.variant.create({
+            data: {
+              productId: existingInsoles.id,
+              color: v.color,
+              sku: v.sku,
+              stock: v.stock,
+            },
+          });
+          keepInsoleIds.add(created.id);
+        }
+      }
+      const obsoleteIds = existingInsoleVariants
+        .filter((variant) => !keepInsoleIds.has(variant.id))
+        .map((variant) => variant.id);
       if (obsoleteIds.length > 0) {
         await prisma.cartItem.deleteMany({
           where: { variantId: { in: obsoleteIds } },

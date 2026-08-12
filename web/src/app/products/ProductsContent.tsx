@@ -15,6 +15,7 @@ import { LATTICE_INSOLES_SLUG } from "@/lib/latticeInsoles";
 import {
   APPAREL_CATALOG,
   APPAREL_COLLECTION_SUBCATEGORIES,
+  collapseApparelListings,
   getStandaloneApparelItems,
 } from "@/lib/apparel";
 import ApparelProductGrid, {
@@ -204,8 +205,10 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
 
   const apparelCollectionProducts = useMemo((): ApparelGridProduct[] => {
     if (!showApparelContinuation) return [];
-    return APPAREL_CATALOG.filter((item) =>
-      APPAREL_COLLECTION_SUBCATEGORIES.some((sub) => sub.id === item.subcategory),
+    return collapseApparelListings(
+      APPAREL_CATALOG.filter((item) =>
+        APPAREL_COLLECTION_SUBCATEGORIES.some((sub) => sub.id === item.subcategory),
+      ),
     ).map((item) => ({
       id: `catalog-${item.slug}`,
       slug: item.slug,

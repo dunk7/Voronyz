@@ -5,7 +5,7 @@ import FAQ from "@/components/FAQ";
 import { Suspense } from "react";
 import Link from "next/link";
 import { Metadata } from "next";
-import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
+import { ensureCatalogProducts, ensureLatticeInsoles } from "@/lib/ensureCatalogProducts";
 import {
   MAGIKID_SHOES_THUMBNAIL_URL,
   MAGIKID_SHOES_DESCRIPTION,
@@ -62,10 +62,12 @@ import {
   apparelProductShopLabel,
   getApparelItem,
   getApparelImages,
+  getApparelStyleOptions,
   getApparelSubcategory,
   isObsoleteApparelSlug,
 } from "@/lib/apparel";
 import LogoLoader from "@/components/ui/LogoLoader";
+import ApparelStyleSwitcher from "@/components/apparel/ApparelStyleSwitcher";
 import { redirect } from "next/navigation";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
@@ -121,6 +123,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   let product: ProductWithVariants;
   try {
     await ensureCatalogProducts();
+    // Always re-sync Lattice Insoles on its PDP so legacy APP-INSL-* stock-0
+    // rows are migrated even if the catalog ensure TTL skipped a failed run.
+    if (slug === LATTICE_INSOLES_SLUG) {
+      await ensureLatticeInsoles();
+    }
     product = await prisma.product.findUnique({ 
       where: { slug }, 
       include: { 
@@ -236,6 +243,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isLatticeInsoles = slug === LATTICE_INSOLES_SLUG;
   const apparelItem = getApparelItem(slug);
   const isApparel = Boolean(apparelItem);
+  const apparelStyleOptions = apparelItem ? getApparelStyleOptions(slug) : [];
   const shopHref = isAccessorySlug(slug)
     ? "/accessories"
     : isHealthSlug(slug)
@@ -406,6 +414,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
           <div className="lg:col-span-5">
             <div className="lg:sticky lg:top-20 space-y-6">
+              {isApparel && apparelStyleOptions.length > 1 && (
+                <ApparelStyleSwitcher
+                  options={apparelStyleOptions}
+                  activeSlug={slug}
+                />
+              )}
               <Suspense fallback={
                 <div className="h-[48px] rounded-full bg-neutral-100 flex items-center justify-center">
                   <LogoLoader size="sm" showBar={false} className="!gap-0 scale-75" />
