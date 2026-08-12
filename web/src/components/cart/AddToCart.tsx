@@ -4,6 +4,14 @@ import { formatCentsAsCurrency } from "@/lib/money";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { normalizeStudentName } from "@/lib/magikidShoesThumbnail";
+import ProductDiscountCallout from "@/components/discount/ProductDiscountCallout";
+import { getDiscountedUnitPriceCents } from "@/lib/discountPricing";
+import {
+  bootDiscountSession,
+  getActiveDiscountCode,
+  stripPersistedCartDiscountCode,
+  subscribeDiscountSession,
+} from "@/lib/discountSession";
 
 interface VariantProps {
   id: string;
@@ -92,6 +100,8 @@ interface CartItem {
   variantId: string;
   quantity: number;
   priceCents: number;
+  /** Undiscounted unit price — session discounts are applied at cart/checkout. */
+  basePriceCents?: number;
   variant: { name: string };
   attributes?: { color?: string; size?: string; fulfillment?: string; gender?: string };
   productSlug?: string;
@@ -257,11 +267,30 @@ export default function AddToCart({
     [fulfillmentOptions, selectedFulfillment]
   );
 
+  const [sessionDiscountCode, setSessionDiscountCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    bootDiscountSession();
+    const sync = () => setSessionDiscountCode(getActiveDiscountCode());
+    sync();
+    const unsubscribe = subscribeDiscountSession(sync);
+    window.addEventListener("cartUpdated", sync);
+    return () => {
+      unsubscribe();
+      window.removeEventListener("cartUpdated", sync);
+    };
+  }, []);
+
   const priceCents = hasFulfillmentOptions
     ? (selectedFulfillmentOption?.priceCents ?? productPriceCents ?? 7500)
     : (selectedVariant?.priceCents ?? productPriceCents ?? 7500);
-  const totalCents = priceCents * quantity;
+  const discountedUnitCents = getDiscountedUnitPriceCents(priceCents, sessionDiscountCode, {
+    productSlug,
+    productName,
+  });
+  const totalCents = discountedUnitCents * quantity;
   const formattedTotal = formatCentsAsCurrency(totalCents);
+  const showDiscountedPrice = discountedUnitCents < priceCents;
 
   // Disable add if no selections or primary out of stock (pre-orders stay allowed)
   const canAdd =
@@ -390,7 +419,9 @@ export default function AddToCart({
         cart[existingItemIndex] = { 
           ...existingItem, 
           quantity: existingItem.quantity + quantity,
-          priceCents: priceCents,
+          // Always store the undiscounted base — session code is applied at cart/checkout.
+          priceCents,
+          basePriceCents: priceCents,
           image: resolvedCoverImage,
           message: existingItem.message || ''
         };
@@ -403,6 +434,7 @@ export default function AddToCart({
           variantId: selectedVariant.id,
           quantity,
           priceCents,
+          basePriceCents: priceCents,
           variant: { name: selectedPrimary },
           attributes: { 
             ...(selectedSecondary && { color: selectedSecondary }), 
@@ -418,9 +450,18 @@ export default function AddToCart({
         cart.push(newItem);
       }
 
-      // Update full cart and save
+      // Update full cart and save — never persist discount codes in localStorage.
       fullCart.items = cart;
-      localStorage.setItem("cart", JSON.stringify(fullCart));
+      fullCart.discountCode = null;
+      stripPersistedCartDiscountCode();
+      localStorage.setItem(
+        "cart",
+        JSON.stringify({
+          items: fullCart.items,
+          discountCode: null,
+          shippingInsurance: Boolean(fullCart.shippingInsurance),
+        })
+      );
       // Dispatch event to update cart count in header
       window.dispatchEvent(new Event('cartUpdated'));
       setAdded(true);
@@ -543,6 +584,12 @@ export default function AddToCart({
             </p>
           </div>
         )}
+
+        <ProductDiscountCallout
+          productSlug={productSlug}
+          productName={productName}
+          basePriceCents={priceCents}
+        />
 
         {/* Flavor / style options (trail mix, ponybead animals, …) */}
         {hasFlavorOptions ? (
@@ -797,8 +844,17 @@ export default function AddToCart({
             onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
             className="w-20 h-[48px] rounded-md border border-black/10 px-3 py-2 text-sm text-neutral-900"
           />
-          <div className="flex items-baseline gap-2 pt-1">
-            <span className="text-2xl font-bold text-neutral-900">{formattedTotal}</span>
+          <div className="flex flex-col gap-0.5 pt-1">
+            {showDiscountedPrice ? (
+              <div className="flex flex-wrap items-baseline gap-2">
+                <span className="text-sm text-neutral-400 line-through">
+                  {formatCentsAsCurrency(priceCents * quantity)}
+                </span>
+                <span className="text-2xl font-bold text-emerald-800">{formattedTotal}</span>
+              </div>
+            ) : (
+              <span className="text-2xl font-bold text-neutral-900">{formattedTotal}</span>
+            )}
           </div>
           <div className="button-container flex-1">
             {added ? (

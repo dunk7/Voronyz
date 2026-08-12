@@ -36,7 +36,7 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "shirts",
     label: "Shirts",
-    description: "Oversized tees, nice shirts, and more designs to come",
+    description: "Oversized tees and more cuts in one listing — switch styles on the product page",
     listing: "collection",
   },
   {
@@ -106,6 +106,17 @@ export type ApparelCatalogItem = {
    * waitlist; we ship when the product lands (could be days or longer).
    */
   comingSoon: boolean;
+  /**
+   * When set, sibling styles share one PLP card. The first catalog entry in
+   * the group is the default (card cover + first style shown on open).
+   */
+  listingGroup?: string;
+  /** Label in the on-product style switcher. Defaults to `name`. */
+  styleLabel?: string;
+  /** Name on the shared PLP card. Defaults to the representative item's name. */
+  listingName?: string;
+  /** Description on the shared PLP card. Defaults to the representative description. */
+  listingDescription?: string;
 };
 
 export function getApparelImages(item: ApparelCatalogItem): string[] {
@@ -125,8 +136,8 @@ export const OBSOLETE_APPAREL_SLUGS = [
  * (e.g. `shirts`). Collection subcategories are built for many products each.
  */
 export const APPAREL_CATALOG: ApparelCatalogItem[] = [
-  // ── Shirts (multi-product) ──────────────────────────────────────────────
-  // Oversized first: Apparel hub cover + shirts listing order follow catalog order.
+  // ── Shirts (one PLP card; styles switch on the product page) ─────────────
+  // Oversized first: shared listing card + default style when you open the tee.
   {
     slug: "voronyz-oversized-tee",
     subcategory: "shirts",
@@ -138,6 +149,11 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     image: "/products/apparel/shirt.jpg",
     skuPrefix: "APP-TEE",
     comingSoon: true,
+    listingGroup: "tees",
+    styleLabel: "Oversized",
+    listingName: "Tee Shirt",
+    listingDescription:
+      "Voronyz tees in multiple cuts — start with oversized, then switch styles.",
   },
   {
     slug: "voronyz-nice-shirt",
@@ -150,6 +166,8 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     image: "/products/apparel/nice-shirt.jpg",
     skuPrefix: "APP-NICE",
     comingSoon: true,
+    listingGroup: "tees",
+    styleLabel: "Nice Shirt",
   },
   // ── Sweaters (multi-product) ────────────────────────────────────────────
   {
@@ -431,6 +449,64 @@ export function isStandaloneSubcategory(id: string | null | undefined): boolean 
 /** All catalog items in a subcategory (ordered as in APPAREL_CATALOG). */
 export function getApparelBySubcategory(id: ApparelSubcategoryId): ApparelCatalogItem[] {
   return APPAREL_CATALOG.filter((item) => item.subcategory === id);
+}
+
+/** First catalog entry for a listing group (default style + shared PLP card). */
+export function getApparelListingRepresentative(
+  listingGroup: string | null | undefined,
+): ApparelCatalogItem | null {
+  const key = (listingGroup || "").trim();
+  if (!key) return null;
+  return APPAREL_CATALOG.find((item) => item.listingGroup === key) ?? null;
+}
+
+/** Style options that share a PLP card (ordered as in APPAREL_CATALOG). */
+export function getApparelStyleOptions(
+  slug: string | null | undefined,
+): ApparelCatalogItem[] {
+  const item = getApparelItem(slug);
+  if (!item) return [];
+  if (!item.listingGroup) return [item];
+  return APPAREL_CATALOG.filter((entry) => entry.listingGroup === item.listingGroup);
+}
+
+/** PLP display fields for a catalog item (uses shared listing name when grouped). */
+export function toApparelListingItem(item: ApparelCatalogItem): ApparelCatalogItem {
+  if (!item.listingGroup) return item;
+  const rep = getApparelListingRepresentative(item.listingGroup) ?? item;
+  return {
+    ...rep,
+    name: rep.listingName ?? rep.name,
+    description: rep.listingDescription ?? rep.description,
+  };
+}
+
+/**
+ * Collapse style siblings into one listing card per `listingGroup`.
+ * Ungrouped items pass through unchanged. Order follows the input list.
+ */
+export function collapseApparelListings(
+  items: ApparelCatalogItem[],
+): ApparelCatalogItem[] {
+  const seenGroups = new Set<string>();
+  const out: ApparelCatalogItem[] = [];
+  for (const item of items) {
+    if (item.listingGroup) {
+      if (seenGroups.has(item.listingGroup)) continue;
+      seenGroups.add(item.listingGroup);
+      out.push(toApparelListingItem(item));
+      continue;
+    }
+    out.push(item);
+  }
+  return out;
+}
+
+/** Collection / subcategory PLP items with style groups collapsed. */
+export function getApparelListingBySubcategory(
+  id: ApparelSubcategoryId,
+): ApparelCatalogItem[] {
+  return collapseApparelListings(getApparelBySubcategory(id));
 }
 
 export function getStandaloneApparelItems(): ApparelCatalogItem[] {

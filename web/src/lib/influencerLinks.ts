@@ -6,7 +6,7 @@ import {
 
 /**
  * Short bio links → discount codes.
- * Example: voronyz.com/aryan applies Aryan50 then sends shoppers home.
+ * Example: voronyz.com/aryan applies Aryan50 then sends shoppers to home All Footwear.
  * Keep slugs lowercase; landing pages normalize case-insensitive hits.
  */
 export const INFLUENCER_DISCOUNT_LINKS = [
@@ -15,6 +15,7 @@ export const INFLUENCER_DISCOUNT_LINKS = [
   { slug: "pedro", code: "pedro30", label: "Pedro" },
   { slug: "nicole", code: "nicole50", label: "Nicole" },
   { slug: "andy", code: "andy50", label: "Andy" },
+  { slug: "arabella", code: "arabella50", label: "Arabella" },
   { slug: "maximus", code: "maximus27", label: "Maximus" },
   { slug: "chud", code: "chud25", label: "Chud" },
   { slug: "emptyaus", code: "emptyaus", label: "Emptyaus" },
