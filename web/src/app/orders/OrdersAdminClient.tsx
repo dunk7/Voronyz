@@ -650,45 +650,45 @@ export default function OrdersAdminClient() {
           className="border-t border-black/5 bg-neutral-50"
           aria-label="Admin sections"
         >
-          <div className="container flex gap-2 py-3">
+          <div className="container grid grid-cols-2 gap-2 py-3 sm:grid-cols-3 lg:grid-cols-6">
             <button
               type="button"
               onClick={() => setTab("orders")}
-              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
+              className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold transition-colors sm:px-4 ${
                 tab === "orders"
                   ? "bg-black text-white"
                   : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
               }`}
             >
-              <Package className="h-4 w-4" />
+              <Package className="h-4 w-4 shrink-0" />
               Orders
             </button>
             <button
               type="button"
               onClick={() => setTab("stats")}
-              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
+              className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold transition-colors sm:px-4 ${
                 tab === "stats"
                   ? "bg-black text-white"
                   : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
               }`}
             >
-              <TrendingUp className="h-4 w-4" />
+              <TrendingUp className="h-4 w-4 shrink-0" />
               Stats
             </button>
             <button
               type="button"
               onClick={() => setTab("discounts")}
-              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
+              className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold transition-colors sm:px-4 ${
                 tab === "discounts"
                   ? "bg-black text-white"
                   : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
               }`}
             >
-              <Tag className="h-4 w-4" />
-              Discount codes
+              <Tag className="h-4 w-4 shrink-0" />
+              <span className="truncate">Discount codes</span>
               {discountOrdersCount > 0 ? (
                 <span
-                  className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${
+                  className={`shrink-0 rounded-md px-1.5 py-0.5 text-xs font-medium ${
                     tab === "discounts"
                       ? "bg-white/20 text-white"
                       : "bg-neutral-100 text-neutral-600"
@@ -701,37 +701,37 @@ export default function OrdersAdminClient() {
             <button
               type="button"
               onClick={() => setTab("uploads")}
-              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
+              className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold transition-colors sm:px-4 ${
                 tab === "uploads"
                   ? "bg-black text-white"
                   : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
               }`}
             >
-              <Upload className="h-4 w-4" />
+              <Upload className="h-4 w-4 shrink-0" />
               Uploads
             </button>
             <button
               type="button"
               onClick={() => setTab("quiz")}
-              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
+              className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold transition-colors sm:px-4 ${
                 tab === "quiz"
                   ? "bg-black text-white"
                   : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
               }`}
             >
-              <BarChart3 className="h-4 w-4" />
-              Quiz results
+              <BarChart3 className="h-4 w-4 shrink-0" />
+              <span className="truncate">Quiz results</span>
             </button>
             <button
               type="button"
               onClick={() => setTab("affiliates")}
-              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
+              className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold transition-colors sm:px-4 ${
                 tab === "affiliates"
                   ? "bg-black text-white"
                   : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
               }`}
             >
-              <Users className="h-4 w-4" />
+              <Users className="h-4 w-4 shrink-0" />
               Affiliates
             </button>
           </div>
