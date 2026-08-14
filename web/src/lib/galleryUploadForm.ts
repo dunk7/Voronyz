@@ -18,9 +18,9 @@ export type GalleryUploadFieldsInput = {
   honeypot: string;
   formStartedAt: number | null;
   turnstileToken: string;
-  nameRaw: string;
-  emailRaw: string;
-  captionRaw: string;
+  nameRaw?: string;
+  emailRaw?: string;
+  captionRaw?: string;
 };
 
 export type ValidatedGalleryUploadFields = {
@@ -30,6 +30,8 @@ export type ValidatedGalleryUploadFields = {
   clientIp: string;
   ipHash: string;
 };
+
+const ANONYMOUS_GALLERY_NAME = "Anonymous";
 
 export type GalleryUploadFieldError = {
   error: string;
@@ -72,19 +74,22 @@ export async function validateGalleryUploadFields(
       : { error: turnstile.message, status: 400 };
   }
 
-  const name = normalizeUploadName(input.nameRaw);
+  const nameRaw = (input.nameRaw ?? "").trim();
+  const name = nameRaw
+    ? normalizeUploadName(nameRaw)
+    : ANONYMOUS_GALLERY_NAME;
   if (!name) {
     return { error: "Please enter your name (2–120 characters).", status: 400 };
   }
 
-  const emailRaw = input.emailRaw.trim();
-  const email = emailRaw ? normalizeUploadEmail(input.emailRaw) : null;
+  const emailRaw = (input.emailRaw ?? "").trim();
+  const email = emailRaw ? normalizeUploadEmail(emailRaw) : null;
   if (emailRaw && !email) {
     return { error: "Please enter a valid email address.", status: 400 };
   }
 
-  const captionRaw = input.captionRaw.trim();
-  const caption = captionRaw ? normalizeCaption(input.captionRaw) : null;
+  const captionRaw = (input.captionRaw ?? "").trim();
+  const caption = captionRaw ? normalizeCaption(captionRaw) : null;
   if (captionRaw && !caption) {
     return { error: "Caption must be 280 characters or fewer.", status: 400 };
   }

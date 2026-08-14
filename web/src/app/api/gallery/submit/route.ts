@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
         honeypot: String(formData.get("company") ?? ""),
         formStartedAt: Number(formData.get("_formStartedAt")),
         turnstileToken: String(formData.get("cf-turnstile-response") ?? ""),
+        // Name / email / caption are optional — anonymous photo-only uploads.
         nameRaw: String(formData.get("name") ?? ""),
         emailRaw: String(formData.get("email") ?? ""),
         captionRaw: String(formData.get("caption") ?? ""),

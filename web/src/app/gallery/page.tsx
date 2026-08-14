@@ -19,7 +19,6 @@ export default async function GalleryPage() {
       id: p.id,
       src: p.src,
       alt: p.alt,
-      caption: p.caption,
       unoptimized: true,
     })),
     ...GALLERY_PHOTOS.map((p) => ({
@@ -41,20 +40,15 @@ export default async function GalleryPage() {
               <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
                 Gallery
               </h1>
-              <p className="mt-2 text-sm text-neutral-500 max-w-xl">
-                Official shots and community review photos. Upload yours below —
-                every submission is reviewed before it appears here.
-              </p>
             </div>
-            <span className="text-xs tabular-nums text-neutral-400">
-              {count} photo{count === 1 ? "" : "s"}
-            </span>
+            <div className="flex flex-wrap items-start gap-3">
+              <span className="mt-1.5 text-xs tabular-nums text-neutral-400">
+                {count} photo{count === 1 ? "" : "s"}
+              </span>
+              <GalleryUploadClient />
+            </div>
           </div>
           <div className="mt-6 h-px bg-neutral-200" />
-        </div>
-
-        <div className="mb-10 lg:mb-12">
-          <GalleryUploadClient />
         </div>
 
         <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
@@ -72,11 +66,6 @@ export default async function GalleryPage() {
                 priority={photo.id === photos[0]?.id}
                 unoptimized={photo.unoptimized}
               />
-              {photo.caption ? (
-                <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent px-2.5 pb-2 pt-8 text-[11px] sm:text-xs text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:px-3 sm:pb-2.5">
-                  {photo.caption}
-                </figcaption>
-              ) : null}
             </figure>
           ))}
         </div>

@@ -85,7 +85,9 @@ export async function listApprovedGalleryPhotos(
       src: galleryImageUrl(row.id),
       alt: row.caption?.trim()
         ? row.caption.trim()
-        : `Review photo from ${row.name}`,
+        : row.name && row.name !== "Anonymous"
+          ? `Review photo from ${row.name}`
+          : "Review photo",
       caption: row.caption?.trim() || undefined,
     }));
   } catch (err) {
