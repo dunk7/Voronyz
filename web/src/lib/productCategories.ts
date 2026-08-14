@@ -40,9 +40,13 @@ export function isFootwearSlug(slug: string | null | undefined): boolean {
 }
 
 export function filterFootwearProducts<T extends { slug: string }>(products: T[]): T[] {
+  // Allowlist only — retired leftovers (e.g. RC Car Stickers) must never leak into footwear.
   const order = new Map(FOOTWEAR_SLUGS.map((slug, index) => [slug, index]));
   return products
-    .filter((p) => isFootwearSlug(p.slug))
+    .filter((p) => {
+      const key = p.slug.trim().toLowerCase();
+      return order.has(key) && isFootwearSlug(key);
+    })
     .sort((a, b) => {
       const aKey = a.slug.trim().toLowerCase();
       const bKey = b.slug.trim().toLowerCase();
