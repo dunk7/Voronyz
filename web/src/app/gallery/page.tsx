@@ -18,11 +18,12 @@ export default async function GalleryPage() {
       id: p.id,
       src: p.src,
       alt: p.alt,
-      caption: p.caption,
       unoptimized: true,
     })),
     ...GALLERY_PHOTOS.map((p) => ({
-      ...p,
+      id: p.id,
+      src: p.src,
+      alt: p.alt,
       unoptimized: false,
     })),
   ];
@@ -32,18 +33,10 @@ export default async function GalleryPage() {
     <div className="bg-texture-white min-h-[80vh]">
       <div className="container py-10 lg:py-14">
         <div className="mb-8 lg:mb-10">
-          <p className="text-xs uppercase tracking-[0.24em] text-neutral-500 mb-3">
-            Moments
-          </p>
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
-                Gallery
-              </h1>
-              <p className="mt-2 text-sm text-neutral-500 max-w-xl">
-                A living collection of pictures — more on the way.
-              </p>
-            </div>
+            <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
+              Gallery
+            </h1>
             <span className="text-xs tabular-nums text-neutral-400">
               {count} photo{count === 1 ? "" : "s"}
             </span>
@@ -68,11 +61,6 @@ export default async function GalleryPage() {
                 priority={photo.id === photos[0]?.id}
                 unoptimized={photo.unoptimized}
               />
-              {photo.caption ? (
-                <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent px-2.5 pb-2 pt-8 text-[11px] sm:text-xs text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:px-3 sm:pb-2.5">
-                  {photo.caption}
-                </figcaption>
-              ) : null}
             </figure>
           ))}
         </div>
