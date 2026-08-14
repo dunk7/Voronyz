@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 import {
+  cappedCartFixedDiscountCents,
   getDiscountedUnitPriceCents,
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
@@ -121,7 +122,13 @@ export async function POST(request: NextRequest) {
       productSubtotalCents += unitAmount * item.quantity;
     }
 
-    if (productSubtotalCents <= 0) {
+    const cartFixedOff = cappedCartFixedDiscountCents(
+      productSubtotalCents,
+      normalizedDiscountCode
+    );
+    productSubtotalCents -= cartFixedOff;
+
+    if (productSubtotalCents + cartFixedOff <= 0) {
       return NextResponse.json({ error: "Invalid order total" }, { status: 400 });
     }
 
