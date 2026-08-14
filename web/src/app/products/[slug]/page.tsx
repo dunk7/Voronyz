@@ -5,7 +5,7 @@ import FAQ from "@/components/FAQ";
 import { Suspense } from "react";
 import Link from "next/link";
 import { Metadata } from "next";
-import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
+import { ensureCatalogProducts, ensureLatticeInsoles } from "@/lib/ensureCatalogProducts";
 import {
   MAGIKID_SHOES_THUMBNAIL_URL,
   MAGIKID_SHOES_DESCRIPTION,
@@ -116,6 +116,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   let product: ProductWithVariants;
   try {
     await ensureCatalogProducts();
+    // Always re-sync Lattice Insoles on its PDP so legacy APP-INSL-* stock-0
+    // rows are migrated even if the catalog ensure TTL skipped a failed run.
+    if (slug === LATTICE_INSOLES_SLUG) {
+      await ensureLatticeInsoles();
+    }
     product = await prisma.product.findUnique({ 
       where: { slug }, 
       include: { 
