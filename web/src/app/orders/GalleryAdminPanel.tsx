@@ -176,7 +176,7 @@ export default function GalleryAdminPanel({
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search name, email, caption…"
+                      placeholder="Search filename or id…"
           className="w-full rounded-xl border border-black/10 bg-white pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
         />
       </div>
@@ -218,14 +218,9 @@ export default function GalleryAdminPanel({
                 </div>
                 <div className="p-4 space-y-3 flex-1 flex flex-col">
                   <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="font-semibold text-neutral-900 truncate">
-                        {s.name}
-                      </p>
-                      <p className="text-xs text-neutral-500">
-                        {formatDate(s.createdAt)} · {formatBytes(s.sizeBytes)}
-                      </p>
-                    </div>
+                    <p className="text-xs text-neutral-500">
+                      {formatDate(s.createdAt)} · {formatBytes(s.sizeBytes)}
+                    </p>
                     <span
                       className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
                         STATUS_STYLES[s.status] ?? "bg-neutral-100 text-neutral-700"
@@ -234,23 +229,6 @@ export default function GalleryAdminPanel({
                       {s.status}
                     </span>
                   </div>
-
-                  {s.caption ? (
-                    <p className="text-sm text-neutral-700 line-clamp-3">
-                      {s.caption}
-                    </p>
-                  ) : (
-                    <p className="text-sm text-neutral-400 italic">No caption</p>
-                  )}
-
-                  {s.email ? (
-                    <a
-                      href={`mailto:${s.email}`}
-                      className="text-xs text-neutral-500 hover:text-black truncate"
-                    >
-                      {s.email}
-                    </a>
-                  ) : null}
 
                   <div className="mt-auto flex flex-wrap gap-2 pt-1">
                     {s.status !== "approved" ? (

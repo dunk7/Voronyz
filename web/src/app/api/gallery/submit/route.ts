@@ -62,9 +62,6 @@ export async function POST(request: NextRequest) {
         honeypot: String(formData.get("company") ?? ""),
         formStartedAt: Number(formData.get("_formStartedAt")),
         turnstileToken: String(formData.get("cf-turnstile-response") ?? ""),
-        nameRaw: String(formData.get("name") ?? ""),
-        emailRaw: String(formData.get("email") ?? ""),
-        captionRaw: String(formData.get("caption") ?? ""),
       },
       request
     );
@@ -105,9 +102,9 @@ export async function POST(request: NextRequest) {
 
     const buffer = Buffer.from(await fileField.arrayBuffer());
     const row = await persistGalleryUpload({
-      name: fields.name,
-      email: fields.email,
-      caption: fields.caption,
+      name: "Anonymous",
+      email: null,
+      caption: null,
       originalFileName: fileField.name,
       mimeType: resolveMimeType(fileField),
       buffer,
@@ -119,8 +116,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       id: row.id,
-      message:
-        "Thanks! Your review photo was submitted and is waiting for approval before it appears in the gallery.",
+      message: "Submitted for review.",
     });
   } catch (err) {
     console.error("Gallery photo submission failed:", err);

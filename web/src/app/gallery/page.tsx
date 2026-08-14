@@ -6,8 +6,7 @@ import GalleryUploadClient from "./GalleryUploadClient";
 
 export const metadata: Metadata = {
   title: "Gallery – Voronyz",
-  description:
-    "Voronyz moments and customer review photos. Upload yours — we approve before they go live.",
+  description: "A growing collection of Voronyz moments, places, and people.",
 };
 
 export const dynamic = "force-dynamic";
@@ -42,8 +41,7 @@ export default async function GalleryPage() {
                 Gallery
               </h1>
               <p className="mt-2 text-sm text-neutral-500 max-w-xl">
-                Official shots and community review photos. Upload yours below —
-                every submission is reviewed before it appears here.
+                A living collection of pictures — more on the way.
               </p>
             </div>
             <span className="text-xs tabular-nums text-neutral-400">
@@ -53,11 +51,9 @@ export default async function GalleryPage() {
           <div className="mt-6 h-px bg-neutral-200" />
         </div>
 
-        <div className="mb-10 lg:mb-12">
-          <GalleryUploadClient />
-        </div>
-
         <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
+          <GalleryUploadClient />
+
           {photos.map((photo) => (
             <figure
               key={photo.id}
