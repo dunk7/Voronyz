@@ -72,10 +72,11 @@ import { redirect } from "next/navigation";
 // This page is rendered on-demand.
 export const dynamic = "force-dynamic";
 
-/** Old pants / sweats product pages → single joggers listing. */
+/** Old pants / sweats product pages → single joggers listing; removed accessories → Accessories. */
 const OBSOLETE_APPAREL_PRODUCT_REDIRECTS: Record<string, string> = {
   "voronyz-technical-pants": "/products/voronyz-joggers",
   "voronyz-lounge-sweats": "/products/voronyz-joggers",
+  "voronyz-lattice-shoe-trees": "/apparel/accessories",
 };
 
 type Media = {
@@ -558,7 +559,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Does it come in sizes?", a: "No sizes — pick the animal style you want." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isApparel ? [
-              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Hats, scarves, bottles, cool shades, jewelry, keychains, lace locks, drone parts, and RC stickers are One Size. Socks use S–XL. Lattice Shoe Trees use S–L sizing." },
+              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Hats, scarves, bottles, cool shades, jewelry, keychains, lace locks, drone parts, and RC stickers are One Size. Socks use S–XL." },
               { q: "Can I pre-order coming soon pieces?", a: "Yes. Choose your color and size, then pay now to join the waitlist. We ship your order when that product arrives — timing can be a day or much longer depending on the drop." },
               { q: "When will my pre-order ship?", a: "As soon as we receive the product. You'll get updates by email. Pre-orders are paid reservations, not instant ship." },
               { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, Scarves, and more. Accessories (hats, water bottles, shades, jewelry) live under their own Apparel section. Engineering is separate. Lattice Insoles are on All Footwear." },
