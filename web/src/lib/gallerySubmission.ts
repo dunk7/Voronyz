@@ -83,9 +83,7 @@ export async function listApprovedGalleryPhotos(
     return rows.map((row) => ({
       id: row.id,
       src: galleryImageUrl(row.id),
-      alt: row.caption?.trim()
-        ? row.caption.trim()
-        : `Review photo from ${row.name}`,
+      alt: "Customer review photo",
       caption: row.caption?.trim() || undefined,
     }));
   } catch (err) {

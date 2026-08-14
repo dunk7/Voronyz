@@ -217,34 +217,22 @@ async function notifyNewGalleryPhotoAsync(
   const lines = [
     `New review photo on voronyz.com/gallery`,
     ``,
-    `Name: ${submission.name}`,
-    submission.email ? `Email: ${submission.email}` : null,
-    submission.caption ? `Caption: ${submission.caption}` : null,
     `File: ${submission.originalFileName} (${sizeKb} KB)`,
     `Submission ID: ${submission.id}`,
     ``,
     `Approve or reject in admin: ${adminUrl}`,
-  ].filter(Boolean) as string[];
+  ];
 
-  const subject = `Review photo pending: ${submission.name}`;
+  const subject = `Review photo pending`;
   const text = lines.join("\n");
   const html = [
     `<p><strong>New review photo</strong> waiting for approval on <a href="${escapeHtml(siteBaseUrl())}/gallery">voronyz.com/gallery</a></p>`,
     `<ul>`,
-    `<li><strong>Name:</strong> ${escapeHtml(submission.name)}</li>`,
-    submission.email
-      ? `<li><strong>Email:</strong> ${escapeHtml(submission.email)}</li>`
-      : "",
-    submission.caption
-      ? `<li><strong>Caption:</strong> ${escapeHtml(submission.caption)}</li>`
-      : "",
     `<li><strong>File:</strong> ${escapeHtml(submission.originalFileName)} (${sizeKb} KB)</li>`,
     `<li><strong>ID:</strong> ${escapeHtml(submission.id)}</li>`,
     `</ul>`,
     `<p><a href="${escapeHtml(adminUrl)}">Open admin to approve or reject</a></p>`,
-  ]
-    .filter(Boolean)
-    .join("");
+  ].join("");
 
   await sendAdminEmail(subject, text, html);
 }
