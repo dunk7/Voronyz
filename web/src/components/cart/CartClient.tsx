@@ -3,12 +3,23 @@ import { useState, useEffect } from "react";
 import { formatCentsAsCurrency } from "@/lib/money";
 import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 import {
+  getDiscountCodeShopperLabel,
   getDiscountedUnitPriceCents,
+  isLinkOnlyDiscountCode,
+  isManuallyApplicableDiscountCode,
   isValidDiscountCode,
   KNOWN_DISCOUNTED_UNIT_PRICES,
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
-import { clearDiscountUrgencySession } from "@/lib/discountUrgencySession";
+import {
+  activateDiscountSession,
+  bootDiscountSession,
+  clearDiscountSession,
+  getActiveDiscountCode,
+  stripPersistedCartDiscountCode,
+  subscribeDiscountSession,
+} from "@/lib/discountSession";
+import { applyDiscountCodeToCartStorage } from "@/lib/applyDiscountToCart";
 import { resolveIsPreOrder } from "@/lib/preorder";
 import {
   cartHasInsurableItems,
@@ -69,7 +80,10 @@ export default function CartClient() {
     });
 
   useEffect(() => {
-    // Load cart from localStorage
+    bootDiscountSession();
+    stripPersistedCartDiscountCode();
+
+    // Load cart items from localStorage; discount lives in session only.
     try {
       const cartDataStr = localStorage.getItem("cart");
       if (cartDataStr) {
@@ -79,22 +93,19 @@ export default function CartClient() {
           // Legacy array format, migrate
           loadedItems = parsed.map((item: unknown) => ({ ...(item as CartItem) }));
           setItems(loadedItems);
-          setDiscountCode(null);
           setShippingInsurance(false);
           saveCart({ items: loadedItems, discountCode: null, shippingInsurance: false });
         } else {
-          const normalizedCode = normalizeDiscountCode(parsed.discountCode);
           const loadedInsurance = isShippingInsuranceRequested(parsed.shippingInsurance);
           loadedItems = (parsed.items || []).map((it) => {
-            // Migrate to always have a base unit price.
-            const base = typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
-
-            // Heuristic: older carts used to overwrite `priceCents` when a coupon was applied.
-            // If we have a coupon and the stored "base" looks like one of the coupon prices,
-            // restore the typical base price so clearing the coupon works as expected.
-            const looksLikeCouponPrice = KNOWN_DISCOUNTED_UNIT_PRICES.has(base);
-            const repairedBase =
-              normalizedCode && isValidDiscountCode(normalizedCode) && looksLikeCouponPrice ? 7500 : base;
+            // Prefer an explicit base price. Only run the legacy coupon-price repair when
+            // older carts mutated `priceCents` in place and never stored `basePriceCents`
+            // (otherwise real $30 filament / Magikid lines get rewritten to $75).
+            const hasExplicitBase = typeof it.basePriceCents === "number";
+            const raw = hasExplicitBase ? it.basePriceCents! : it.priceCents;
+            const looksLikeLegacyCouponMutation =
+              !hasExplicitBase && KNOWN_DISCOUNTED_UNIT_PRICES.has(raw);
+            const repairedBase = looksLikeLegacyCouponMutation ? 7500 : raw;
 
             return {
               ...it,
@@ -103,12 +114,11 @@ export default function CartClient() {
             };
           });
           setItems(loadedItems);
-          setDiscountCode(normalizedCode);
           setShippingInsurance(loadedInsurance);
-          // Persist the normalized/migrated shape so pricing stays consistent.
+          // Never persist discount codes in localStorage — session-only.
           saveCart({
             items: loadedItems,
-            discountCode: normalizedCode,
+            discountCode: null,
             shippingInsurance: loadedInsurance,
           });
         }
@@ -117,38 +127,67 @@ export default function CartClient() {
       console.error("Failed to load cart from localStorage:", error);
       localStorage.removeItem("cart");
     }
+
+    setDiscountCode(getActiveDiscountCode());
     setIsLoading(false);
+
+    const syncSessionCode = () => {
+      setDiscountCode(getActiveDiscountCode());
+    };
+    const unsubscribe = subscribeDiscountSession(syncSessionCode);
+    window.addEventListener("cartUpdated", syncSessionCode);
+    return () => {
+      unsubscribe();
+      window.removeEventListener("cartUpdated", syncSessionCode);
+    };
   }, []);
 
-  // Optional ?discount= toast (bio links now land on home; cart may still receive this param).
+  const clearMessage = () => setMessage("");
+
+  // Legacy ?discount= deep links (and any leftover bio-link query) activate the session.
+  // Link-only codes (aryan50) are ignored here — they require the vanity short link + unlock cookie.
   useEffect(() => {
     if (isLoading) return;
     try {
       const params = new URLSearchParams(window.location.search);
       const fromLink = normalizeDiscountCode(params.get("discount"));
       if (!fromLink || !isValidDiscountCode(fromLink)) return;
-      if (discountCode === fromLink) {
-        setInputValue(fromLink);
-        setMessage(`Discount "${fromLink}" applied from your link!`);
-      }
-      // Clean the query so refresh doesn't re-flash the toast awkwardly.
+
+      // Clean the query either way so refresh doesn't re-flash awkwardly.
       const url = new URL(window.location.href);
       if (url.searchParams.has("discount")) {
         url.searchParams.delete("discount");
         window.history.replaceState({}, "", url.pathname + (url.search || ""));
       }
+
+      if (isLinkOnlyDiscountCode(fromLink)) return;
+
+      const applied = applyDiscountCodeToCartStorage(fromLink, "link");
+      if (applied) {
+        setDiscountCode(applied);
+        setInputValue(applied);
+        setMessage(`Discount "${applied}" applied from your link!`);
+        setTimeout(clearMessage, 3000);
+      }
     } catch {
       /* ignore */
     }
-  }, [isLoading, discountCode]);
+  }, [isLoading]);
 
-  const clearMessage = () => setMessage("");
   const saveCart = (cartData: CartData) => {
     setItems(cartData.items);
-    setDiscountCode(cartData.discountCode);
+    // Discount is session-only — never write it into localStorage.
+    setDiscountCode(getActiveDiscountCode());
     setShippingInsurance(Boolean(cartData.shippingInsurance));
     try {
-      localStorage.setItem("cart", JSON.stringify(cartData));
+      localStorage.setItem(
+        "cart",
+        JSON.stringify({
+          items: cartData.items,
+          discountCode: null,
+          shippingInsurance: Boolean(cartData.shippingInsurance),
+        })
+      );
       // Dispatch event to update cart count in header
       window.dispatchEvent(new Event('cartUpdated'));
     } catch (error) {
@@ -159,10 +198,12 @@ export default function CartClient() {
   const applyDiscount = () => {
     clearMessage();
     const normalized = normalizeDiscountCode(inputValue);
-    if (isValidDiscountCode(normalized)) {
-      // Manual cart entry must not unlock the short-link urgency timer.
-      clearDiscountUrgencySession();
-      // Do NOT mutate stored item prices; compute discounted totals from `discountCode` so UI can't desync.
+    // Link-only codes (aryan50) intentionally look invalid when typed —
+    // they only unlock via the creator short link.
+    if (isManuallyApplicableDiscountCode(normalized)) {
+      // Manual cart entry activates the same visible code + timer as a short link.
+      activateDiscountSession(normalized, "manual");
+      // Do NOT mutate stored item prices; compute discounted totals from session code.
       const migratedItems = items.map((it) => {
         const base = getBaseUnitPriceCents(it);
         return { ...it, basePriceCents: base, priceCents: base };
@@ -172,7 +213,8 @@ export default function CartClient() {
         const discounted = unitPriceForItem(it, normalized) * it.quantity;
         return sum + Math.max(0, base - discounted);
       }, 0);
-      saveCart({ items: migratedItems, discountCode: normalized, shippingInsurance });
+      saveCart({ items: migratedItems, discountCode: null, shippingInsurance });
+      setDiscountCode(normalized);
       setInputValue("");
       setMessage(
         savings > 0
@@ -187,12 +229,13 @@ export default function CartClient() {
   };
 
   const clearDiscount = () => {
-    clearDiscountUrgencySession();
+    clearDiscountSession();
     const migratedItems = items.map((it) => {
       const base = getBaseUnitPriceCents(it);
       return { ...it, basePriceCents: base, priceCents: base };
     });
     saveCart({ items: migratedItems, discountCode: null, shippingInsurance });
+    setDiscountCode(null);
     setInputValue("");
     setMessage("Discount removed.");
     setTimeout(clearMessage, 3000);
@@ -201,17 +244,17 @@ export default function CartClient() {
   function remove(itemId: string) {
     const newItems = items.filter(item => item.id !== itemId);
     const nextInsurance = cartHasInsurableItems(newItems) ? shippingInsurance : false;
-    saveCart({ items: newItems, discountCode, shippingInsurance: nextInsurance });
+    saveCart({ items: newItems, discountCode: null, shippingInsurance: nextInsurance });
   }
 
   function updateQuantity(itemId: string, nextQty: number) {
     const qty = Math.min(99, Math.max(1, Number(nextQty) || 1));
     const newItems = items.map((it) => (it.id === itemId ? { ...it, quantity: qty } : it));
-    saveCart({ items: newItems, discountCode, shippingInsurance });
+    saveCart({ items: newItems, discountCode: null, shippingInsurance });
   }
 
   function toggleShippingInsurance(next: boolean) {
-    saveCart({ items, discountCode, shippingInsurance: next });
+    saveCart({ items, discountCode: null, shippingInsurance: next });
   }
 
   const subtotalBeforeDiscount = items.reduce((sum, it) => {
@@ -321,7 +364,9 @@ export default function CartClient() {
         {discountCode ? (
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4">
             <p className="text-sm font-semibold text-emerald-900">
-              Discount &quot;{discountCode}&quot; is ready in your cart
+              {isLinkOnlyDiscountCode(discountCode)
+                ? `${getDiscountCodeShopperLabel(discountCode)} is ready in your cart`
+                : `Discount "${discountCode}" is ready in your cart`}
             </p>
             <p className="mt-1 text-sm text-emerald-800/80">
               Add products and it will apply automatically at checkout.
@@ -606,7 +651,9 @@ export default function CartClient() {
             {discountCode && (
               <div className="mt-2 text-sm text-green-700 flex justify-between items-center gap-3 bg-emerald-50 p-2 rounded-md border border-green-200">
                 <span>
-                  Discount &quot;{discountCode}&quot; applied
+                  {isLinkOnlyDiscountCode(discountCode)
+                    ? `${getDiscountCodeShopperLabel(discountCode)} applied`
+                    : `Discount "${discountCode}" applied`}
                   {discountSavings > 0 ? ` — you save ${formatCentsAsCurrency(discountSavings)}` : ""}
                 </span>
                 <button onClick={clearDiscount} className="text-sm underline shrink-0">Remove</button>

@@ -15,6 +15,7 @@ import { LATTICE_INSOLES_SLUG } from "@/lib/latticeInsoles";
 import {
   APPAREL_CATALOG,
   APPAREL_COLLECTION_SUBCATEGORIES,
+  collapseApparelListings,
   getStandaloneApparelItems,
 } from "@/lib/apparel";
 import ApparelProductGrid, {
@@ -202,13 +203,29 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
 
   const showApparelContinuation = category === "footwear" && !searchQuery;
 
-  const apparelContinuationProducts = useMemo((): ApparelGridProduct[] => {
+  const apparelCollectionProducts = useMemo((): ApparelGridProduct[] => {
     if (!showApparelContinuation) return [];
-    const collections = APPAREL_CATALOG.filter((item) =>
-      APPAREL_COLLECTION_SUBCATEGORIES.some((sub) => sub.id === item.subcategory),
-    );
-    const accessories = getStandaloneApparelItems();
-    return [...collections, ...accessories].map((item) => ({
+    return collapseApparelListings(
+      APPAREL_CATALOG.filter((item) =>
+        APPAREL_COLLECTION_SUBCATEGORIES.some((sub) => sub.id === item.subcategory),
+      ),
+    ).map((item) => ({
+      id: `catalog-${item.slug}`,
+      slug: item.slug,
+      name: item.name,
+      description: item.description,
+      priceCents: item.priceCents,
+      currency: "usd",
+      cover: item.image,
+      colors: item.colors,
+      sizes: item.sizes,
+      subcategory: item.subcategory,
+    }));
+  }, [showApparelContinuation]);
+
+  const apparelAccessoryProducts = useMemo((): ApparelGridProduct[] => {
+    if (!showApparelContinuation) return [];
+    return getStandaloneApparelItems().map((item) => ({
       id: `catalog-${item.slug}`,
       slug: item.slug,
       name: item.name,
@@ -479,37 +496,64 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
         )}
 
         {/* ── Continues into Apparel after footwear ── */}
-        {showApparelContinuation && apparelContinuationProducts.length > 0 && (
+        {showApparelContinuation &&
+          (apparelCollectionProducts.length > 0 || apparelAccessoryProducts.length > 0) && (
           <section
             id="apparel"
             aria-labelledby="footwear-apparel-heading"
-            className="mt-24 sm:mt-32 lg:mt-40"
+            className="mt-16 sm:mt-20"
           >
-            <div className="mb-10 sm:mb-14 border-t border-neutral-200 pt-16 sm:pt-20 lg:pt-24">
-              <p className="text-[11px] sm:text-xs uppercase tracking-[0.4em] text-neutral-400 mb-4 sm:mb-6">
-                Next section
-              </p>
-              <h2
-                id="footwear-apparel-heading"
-                className="text-6xl sm:text-8xl lg:text-[7.5rem] xl:text-[9rem] font-semibold tracking-[-0.04em] leading-[0.85] text-neutral-900"
-              >
-                Apparel
-              </h2>
-              <div className="mt-6 sm:mt-8 flex flex-wrap items-end justify-between gap-4">
-                <p className="max-w-lg text-sm sm:text-base text-neutral-500 leading-relaxed">
-                  Built different people need built different apparel — shirts, layers,
-                  and accessories continue below.
-                </p>
-                <Link
-                  href="/apparel"
-                  className="text-sm font-medium text-neutral-900 underline underline-offset-4 hover:no-underline shrink-0"
-                >
-                  Browse full Apparel →
-                </Link>
-              </div>
-            </div>
+            {apparelCollectionProducts.length > 0 && (
+              <>
+                <div className="mb-12">
+                  <div className="flex items-end justify-between gap-4">
+                    <div>
+                      <h2
+                        id="footwear-apparel-heading"
+                        className="text-3xl font-semibold tracking-tight text-neutral-900"
+                      >
+                        Apparel
+                      </h2>
+                      <p className="mt-2 text-sm text-neutral-500 max-w-md">
+                        Built different people need built different apparel — shirts,
+                        layers, and essentials continue below.
+                      </p>
+                    </div>
+                    <Link
+                      href="/apparel"
+                      className="text-xs font-medium text-neutral-500 hover:text-neutral-900 transition-colors hidden sm:block shrink-0"
+                    >
+                      Browse full Apparel →
+                    </Link>
+                  </div>
+                  <div className="mt-6 h-px bg-neutral-200" />
+                </div>
 
-            <ApparelProductGrid products={apparelContinuationProducts} />
+                <ApparelProductGrid
+                  products={apparelCollectionProducts}
+                  hideSubcategoryBadge
+                />
+              </>
+            )}
+
+            {apparelAccessoryProducts.length > 0 && (
+              <section
+                id="accessories"
+                aria-labelledby="footwear-accessories-heading"
+                className="mt-16 sm:mt-20 lg:mt-24"
+              >
+                <h2
+                  id="footwear-accessories-heading"
+                  className="text-3xl font-semibold tracking-tight text-neutral-900 mb-8 sm:mb-10"
+                >
+                  Accessories
+                </h2>
+                <ApparelProductGrid
+                  products={apparelAccessoryProducts}
+                  hideSubcategoryBadge
+                />
+              </section>
+            )}
           </section>
         )}
       </div>

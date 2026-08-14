@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import {
   APPAREL_CATALOG,
   APPAREL_COLLECTION_SUBCATEGORIES,
+  collapseApparelListings,
   getStandaloneApparelItems,
 } from "@/lib/apparel";
 import ApparelProductGrid, {
@@ -36,8 +37,10 @@ export default function ApparelHubContent() {
 
   const collectionProducts = useMemo(
     () =>
-      APPAREL_CATALOG.filter((item) =>
-        APPAREL_COLLECTION_SUBCATEGORIES.some((sub) => sub.id === item.subcategory),
+      collapseApparelListings(
+        APPAREL_CATALOG.filter((item) =>
+          APPAREL_COLLECTION_SUBCATEGORIES.some((sub) => sub.id === item.subcategory),
+        ),
       ).map(toGridProduct),
     [],
   );
