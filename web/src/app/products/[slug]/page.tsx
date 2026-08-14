@@ -80,6 +80,7 @@ const OBSOLETE_APPAREL_PRODUCT_REDIRECTS: Record<string, string> = {
   "voronyz-charm-bracelet": "/apparel/accessories",
   "voronyz-keychain": "/apparel/accessories",
   "voronyz-necklace": "/apparel/accessories",
+  "voronyz-rc-car-stickers": "/apparel/accessories",
 };
 
 type Media = {

@@ -698,33 +698,38 @@ export async function ensureLatticeInsoles(): Promise<void> {
   }
 }
 
+/** Drop removed apparel products (and their variants/cart rows) from the DB. */
+export async function purgeObsoleteApparelProducts(): Promise<void> {
+  if (OBSOLETE_APPAREL_SLUGS.length === 0) return;
+
+  const obsolete = await prisma.product.findMany({
+    where: { slug: { in: [...OBSOLETE_APPAREL_SLUGS] } },
+    select: { id: true },
+  });
+  const obsoleteIds = obsolete.map((product) => product.id);
+  if (obsoleteIds.length === 0) return;
+
+  const variants = await prisma.variant.findMany({
+    where: { productId: { in: obsoleteIds } },
+    select: { id: true },
+  });
+  const variantIds = variants.map((variant) => variant.id);
+  if (variantIds.length > 0) {
+    await prisma.cartItem.deleteMany({
+      where: { variantId: { in: variantIds } },
+    });
+    await prisma.variant.deleteMany({
+      where: { id: { in: variantIds } },
+    });
+  }
+  await prisma.product.deleteMany({
+    where: { id: { in: obsoleteIds } },
+  });
+}
+
 /** Idempotently upsert apparel catalog products (coming soon / pre-order, stock 0). */
 export async function ensureApparelProducts(): Promise<void> {
-  if (OBSOLETE_APPAREL_SLUGS.length > 0) {
-    const obsolete = await prisma.product.findMany({
-      where: { slug: { in: [...OBSOLETE_APPAREL_SLUGS] } },
-      select: { id: true },
-    });
-    const obsoleteIds = obsolete.map((product) => product.id);
-    if (obsoleteIds.length > 0) {
-      const variants = await prisma.variant.findMany({
-        where: { productId: { in: obsoleteIds } },
-        select: { id: true },
-      });
-      const variantIds = variants.map((variant) => variant.id);
-      if (variantIds.length > 0) {
-        await prisma.cartItem.deleteMany({
-          where: { variantId: { in: variantIds } },
-        });
-        await prisma.variant.deleteMany({
-          where: { id: { in: variantIds } },
-        });
-      }
-      await prisma.product.deleteMany({
-        where: { id: { in: obsoleteIds } },
-      });
-    }
-  }
+  await purgeObsoleteApparelProducts();
 
   for (const item of APPAREL_CATALOG) {
     const existing = await prisma.product.findUnique({ where: { slug: item.slug } });
@@ -856,6 +861,9 @@ export async function ensureFootwearCatalog(): Promise<void> {
   footwearEnsureInFlight = (async () => {
     try {
       await ensureProductCategoryColumns();
+      // Purge removed apparel leftovers (e.g. RC Car Stickers) so they cannot
+      // leak into All Footwear when apparel sync is skipped on this path.
+      await purgeObsoleteApparelProducts();
       await ensureFootwearProducts();
       await ensureFootwearStock();
       await ensureGators();
