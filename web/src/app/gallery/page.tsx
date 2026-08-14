@@ -1,14 +1,33 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { GALLERY_PHOTOS } from "@/lib/gallery";
+import { listApprovedGalleryPhotos } from "@/lib/gallerySubmission";
+import GalleryUploadClient from "./GalleryUploadClient";
 
 export const metadata: Metadata = {
   title: "Gallery – Voronyz",
-  description: "A growing collection of Voronyz moments, places, and people.",
+  description:
+    "Voronyz moments and customer review photos. Upload yours — we approve before they go live.",
 };
 
-export default function GalleryPage() {
-  const count = GALLERY_PHOTOS.length;
+export const dynamic = "force-dynamic";
+
+export default async function GalleryPage() {
+  const approvedReviews = await listApprovedGalleryPhotos(100);
+  const photos = [
+    ...approvedReviews.map((p) => ({
+      id: p.id,
+      src: p.src,
+      alt: p.alt,
+      caption: p.caption,
+      unoptimized: true,
+    })),
+    ...GALLERY_PHOTOS.map((p) => ({
+      ...p,
+      unoptimized: false,
+    })),
+  ];
+  const count = photos.length;
 
   return (
     <div className="bg-texture-white min-h-[80vh]">
@@ -23,7 +42,8 @@ export default function GalleryPage() {
                 Gallery
               </h1>
               <p className="mt-2 text-sm text-neutral-500 max-w-xl">
-                A living collection of pictures — more on the way.
+                Official shots and community review photos. Upload yours below —
+                every submission is reviewed before it appears here.
               </p>
             </div>
             <span className="text-xs tabular-nums text-neutral-400">
@@ -33,8 +53,12 @@ export default function GalleryPage() {
           <div className="mt-6 h-px bg-neutral-200" />
         </div>
 
+        <div className="mb-10 lg:mb-12">
+          <GalleryUploadClient />
+        </div>
+
         <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
-          {GALLERY_PHOTOS.map((photo) => (
+          {photos.map((photo) => (
             <figure
               key={photo.id}
               className="group relative aspect-square overflow-hidden rounded-lg sm:rounded-xl bg-neutral-100 ring-1 ring-black/5"
@@ -45,7 +69,8 @@ export default function GalleryPage() {
                 fill
                 className="object-cover transition duration-300 group-hover:scale-[1.03]"
                 sizes="(max-width: 1024px) 33vw, 20vw"
-                priority={photo.id === GALLERY_PHOTOS[0]?.id}
+                priority={photo.id === photos[0]?.id}
+                unoptimized={photo.unoptimized}
               />
               {photo.caption ? (
                 <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent px-2.5 pb-2 pt-8 text-[11px] sm:text-xs text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:px-3 sm:pb-2.5">
