@@ -72,10 +72,11 @@ import { redirect } from "next/navigation";
 // This page is rendered on-demand.
 export const dynamic = "force-dynamic";
 
-/** Old pants / sweats product pages → single joggers listing. */
+/** Old pants / sweats product pages → single joggers listing; removed accessories → Accessories. */
 const OBSOLETE_APPAREL_PRODUCT_REDIRECTS: Record<string, string> = {
   "voronyz-technical-pants": "/products/voronyz-joggers",
   "voronyz-lounge-sweats": "/products/voronyz-joggers",
+  "voronyz-lattice-shoe-trees": "/apparel/accessories",
 };
 
 type Media = {
