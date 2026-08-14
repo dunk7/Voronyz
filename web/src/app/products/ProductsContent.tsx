@@ -202,13 +202,27 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
 
   const showApparelContinuation = category === "footwear" && !searchQuery;
 
-  const apparelContinuationProducts = useMemo((): ApparelGridProduct[] => {
+  const apparelCollectionProducts = useMemo((): ApparelGridProduct[] => {
     if (!showApparelContinuation) return [];
-    const collections = APPAREL_CATALOG.filter((item) =>
+    return APPAREL_CATALOG.filter((item) =>
       APPAREL_COLLECTION_SUBCATEGORIES.some((sub) => sub.id === item.subcategory),
-    );
-    const accessories = getStandaloneApparelItems();
-    return [...collections, ...accessories].map((item) => ({
+    ).map((item) => ({
+      id: `catalog-${item.slug}`,
+      slug: item.slug,
+      name: item.name,
+      description: item.description,
+      priceCents: item.priceCents,
+      currency: "usd",
+      cover: item.image,
+      colors: item.colors,
+      sizes: item.sizes,
+      subcategory: item.subcategory,
+    }));
+  }, [showApparelContinuation]);
+
+  const apparelAccessoryProducts = useMemo((): ApparelGridProduct[] => {
+    if (!showApparelContinuation) return [];
+    return getStandaloneApparelItems().map((item) => ({
       id: `catalog-${item.slug}`,
       slug: item.slug,
       name: item.name,
@@ -479,7 +493,9 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
         )}
 
         {/* ── Continues into Apparel after footwear ── */}
-        {showApparelContinuation && apparelContinuationProducts.length > 0 && (
+        {showApparelContinuation &&
+          (apparelCollectionProducts.length > 0 ||
+            apparelAccessoryProducts.length > 0) && (
           <section
             id="apparel"
             aria-labelledby="footwear-apparel-heading"
@@ -509,7 +525,43 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
               </div>
             </div>
 
-            <ApparelProductGrid products={apparelContinuationProducts} />
+            {apparelCollectionProducts.length > 0 && (
+              <ApparelProductGrid products={apparelCollectionProducts} />
+            )}
+
+            {apparelAccessoryProducts.length > 0 && (
+              <section
+                id="accessories"
+                aria-labelledby="footwear-accessories-heading"
+                className="mt-16 sm:mt-20 lg:mt-24"
+              >
+                <div className="mb-8 sm:mb-10 border-t border-neutral-200 pt-12 sm:pt-14">
+                  <div className="flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                      <h2
+                        id="footwear-accessories-heading"
+                        className="text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-[-0.03em] leading-[0.9] text-neutral-900"
+                      >
+                        Accessories
+                      </h2>
+                      <p className="mt-3 sm:mt-4 max-w-lg text-sm sm:text-base text-neutral-500 leading-relaxed">
+                        Hats, bottles, shades, jewelry, and other accessory pieces.
+                      </p>
+                    </div>
+                    <Link
+                      href="/apparel/accessories"
+                      className="text-sm font-medium text-neutral-900 underline underline-offset-4 hover:no-underline shrink-0"
+                    >
+                      View all accessories →
+                    </Link>
+                  </div>
+                </div>
+                <ApparelProductGrid
+                  products={apparelAccessoryProducts}
+                  hideSubcategoryBadge
+                />
+              </section>
+            )}
           </section>
         )}
       </div>
