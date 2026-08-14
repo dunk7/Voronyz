@@ -51,6 +51,12 @@
   status = 200
   force = true
 
+[[redirects]]
+  from = "/products/voronyz-rc-car-stickers"
+  to = "/apparel/accessories"
+  status = 301
+  force = true
+
 [[headers]]
   for = "/tinkercad/v4.stl"
   [headers.values]
