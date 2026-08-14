@@ -78,7 +78,7 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "accessories",
     label: "Accessories",
-    description: "Hats, bottles, shades, jewelry, keychains, drone & RC gear",
+    description: "Hats, bottles, shades, jewelry, drone & RC gear",
     listing: "standalone",
   },
 ];
@@ -118,6 +118,9 @@ export const OBSOLETE_APPAREL_SLUGS = [
   "voronyz-technical-pants",
   "voronyz-lounge-sweats",
   "voronyz-lattice-shoe-trees",
+  "voronyz-charm-bracelet",
+  "voronyz-keychain",
+  "voronyz-necklace",
 ] as const;
 
 /**
@@ -288,30 +291,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     comingSoon: true,
   },
   {
-    slug: "voronyz-necklace",
-    subcategory: "accessories",
-    name: "Voronyz Necklace",
-    description: "Faceted Voronyz pendant on a clean chain — printed jewelry with everyday weight.",
-    priceCents: 5400,
-    colors: ["black", "gold", "silver"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/voronyz-necklace.jpg",
-    skuPrefix: "APP-NCKL",
-    comingSoon: true,
-  },
-  {
-    slug: "voronyz-keychain",
-    subcategory: "accessories",
-    name: "Voronyz Keychain",
-    description: "Durable 3D-printed keychain mark — pocket-ready Voronyz branding.",
-    priceCents: 1800,
-    colors: ["black", "grey", "orange"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/voronyz-keychain.jpg",
-    skuPrefix: "APP-KEY",
-    comingSoon: true,
-  },
-  {
     slug: "voronyz-jewelry-collab",
     subcategory: "accessories",
     name: "Jewelry Collab",
@@ -345,18 +324,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_ONE_SIZE],
     image: "/products/apparel/lace-locks.jpg",
     skuPrefix: "APP-LACE",
-    comingSoon: true,
-  },
-  {
-    slug: "voronyz-charm-bracelet",
-    subcategory: "accessories",
-    name: "Charm Bracelet",
-    description: "Modular charm bracelet with interchangeable Voronyz lattice charms.",
-    priceCents: 4600,
-    colors: ["black", "silver"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/charm-bracelet.jpg",
-    skuPrefix: "APP-CHAR",
     comingSoon: true,
   },
 ];
