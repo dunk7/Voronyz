@@ -4,6 +4,7 @@ import {
   type GalleryStatus,
   updateGallerySubmissionStatus,
 } from "@/lib/gallerySubmission";
+import { ensureGallerySubmissionTable } from "@/lib/ensureGallerySubmissionTable";
 import {
   isOrdersAdminAuthenticated,
   isOrdersAdminConfigured,
@@ -29,6 +30,16 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
   if (!process.env.DATABASE_URL?.trim()) {
     return NextResponse.json({ error: "Database not configured." }, { status: 503 });
+  }
+
+  try {
+    await ensureGallerySubmissionTable();
+  } catch (schemaErr) {
+    console.error("Gallery schema ensure failed:", schemaErr);
+    return NextResponse.json(
+      { error: "Gallery database is not ready yet." },
+      { status: 503 }
+    );
   }
 
   const { id } = await context.params;

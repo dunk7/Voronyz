@@ -12,6 +12,7 @@ import {
   normalizeUploadEmail,
   normalizeUploadName,
 } from "@/lib/stlUploadValidation";
+import { ensureGallerySubmissionTable } from "@/lib/ensureGallerySubmissionTable";
 
 export type GalleryUploadFieldsInput = {
   honeypot: string;
@@ -94,6 +95,8 @@ export async function validateGalleryUploadFields(
 export async function checkGalleryUploadRateLimit(
   ipHash: string
 ): Promise<{ error: string; status: number } | null> {
+  await ensureGallerySubmissionTable();
+
   const now = Date.now();
   const hourAgo = new Date(now - 60 * 60 * 1000);
   const dayAgo = new Date(now - 24 * 60 * 60 * 1000);
