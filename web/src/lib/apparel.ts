@@ -117,6 +117,7 @@ export function getApparelImages(item: ApparelCatalogItem): string[] {
 export const OBSOLETE_APPAREL_SLUGS = [
   "voronyz-technical-pants",
   "voronyz-lounge-sweats",
+  "voronyz-lattice-shoe-trees",
 ] as const;
 
 /**
