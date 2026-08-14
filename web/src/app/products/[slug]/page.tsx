@@ -5,7 +5,7 @@ import FAQ from "@/components/FAQ";
 import { Suspense } from "react";
 import Link from "next/link";
 import { Metadata } from "next";
-import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
+import { ensureCatalogProducts, ensureLatticeInsoles } from "@/lib/ensureCatalogProducts";
 import {
   MAGIKID_SHOES_THUMBNAIL_URL,
   MAGIKID_SHOES_DESCRIPTION,
@@ -62,20 +62,27 @@ import {
   apparelProductShopLabel,
   getApparelItem,
   getApparelImages,
+  getApparelStyleOptions,
   getApparelSubcategory,
   isObsoleteApparelSlug,
 } from "@/lib/apparel";
 import LogoLoader from "@/components/ui/LogoLoader";
+import ApparelStyleSwitcher from "@/components/apparel/ApparelStyleSwitcher";
 import { redirect } from "next/navigation";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
 // This page is rendered on-demand.
 export const dynamic = "force-dynamic";
 
-/** Old pants / sweats product pages → single joggers listing. */
+/** Old pants / sweats product pages → single joggers listing; removed accessories → accessories hub. */
 const OBSOLETE_APPAREL_PRODUCT_REDIRECTS: Record<string, string> = {
   "voronyz-technical-pants": "/products/voronyz-joggers",
   "voronyz-lounge-sweats": "/products/voronyz-joggers",
+  "voronyz-necklace": "/apparel/accessories",
+  "voronyz-keychain": "/apparel/accessories",
+  "voronyz-rc-car-stickers": "/apparel/accessories",
+  "voronyz-charm-bracelet": "/apparel/accessories",
+  "voronyz-lattice-shoe-trees": "/apparel/accessories",
 };
 
 type Media = {
@@ -116,6 +123,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   let product: ProductWithVariants;
   try {
     await ensureCatalogProducts();
+    // Always re-sync Lattice Insoles on its PDP so legacy APP-INSL-* stock-0
+    // rows are migrated even if the catalog ensure TTL skipped a failed run.
+    if (slug === LATTICE_INSOLES_SLUG) {
+      await ensureLatticeInsoles();
+    }
     product = await prisma.product.findUnique({ 
       where: { slug }, 
       include: { 
@@ -231,6 +243,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isLatticeInsoles = slug === LATTICE_INSOLES_SLUG;
   const apparelItem = getApparelItem(slug);
   const isApparel = Boolean(apparelItem);
+  const apparelStyleOptions = apparelItem ? getApparelStyleOptions(slug) : [];
   const shopHref = isAccessorySlug(slug)
     ? "/accessories"
     : isHealthSlug(slug)
@@ -401,6 +414,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
           <div className="lg:col-span-5">
             <div className="lg:sticky lg:top-20 space-y-6">
+              {isApparel && apparelStyleOptions.length > 1 && (
+                <ApparelStyleSwitcher
+                  options={apparelStyleOptions}
+                  activeSlug={slug}
+                />
+              )}
               <Suspense fallback={
                 <div className="h-[48px] rounded-full bg-neutral-100 flex items-center justify-center">
                   <LogoLoader size="sm" showBar={false} className="!gap-0 scale-75" />
@@ -558,7 +577,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Does it come in sizes?", a: "No sizes — pick the animal style you want." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isApparel ? [
-              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Hats, scarves, bottles, cool shades, jewelry, keychains, lace locks, drone parts, and RC stickers are One Size. Socks use S–XL. Lattice Shoe Trees use S–L sizing." },
+              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Hats, scarves, bottles, cool shades, jewelry, lace locks, and drone parts are One Size. Socks use S–XL." },
               { q: "Can I pre-order coming soon pieces?", a: "Yes. Choose your color and size, then pay now to join the waitlist. We ship your order when that product arrives — timing can be a day or much longer depending on the drop." },
               { q: "When will my pre-order ship?", a: "As soon as we receive the product. You'll get updates by email. Pre-orders are paid reservations, not instant ship." },
               { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, Scarves, and more. Accessories (hats, water bottles, shades, jewelry) live under their own Apparel section. Engineering is separate. Lattice Insoles are on All Footwear." },

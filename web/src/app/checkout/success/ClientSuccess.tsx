@@ -3,6 +3,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { OrderDetails, OrderSuccessContent } from "@/app/checkout/success/OrderSuccessContent";
+import { clearDiscountSession } from "@/lib/discountSession";
+
+function clearShopperCart() {
+  localStorage.removeItem("cart");
+  clearDiscountSession();
+  window.dispatchEvent(new Event("cartUpdated"));
+}
 
 export default function ClientSuccess() {
   const searchParams = useSearchParams();
@@ -54,7 +61,7 @@ export default function ClientSuccess() {
           if ((data as OrderDetails)?.success && (data as OrderDetails)?.order) {
             console.warn("Order confirmed but response had error status:", data);
             setOrder(data as OrderDetails);
-            localStorage.removeItem("cart");
+            clearShopperCart();
             return;
           }
           const maybeDetails = data as { error?: string; details?: string };
@@ -64,7 +71,7 @@ export default function ClientSuccess() {
         if ((data as OrderDetails)?.success) {
           setOrder(data as OrderDetails);
           // Clear cart only once we have a successful confirmation payload
-          localStorage.removeItem("cart");
+          clearShopperCart();
         } else {
           const maybeDetails = data as { error?: string; details?: string };
           throw new Error(maybeDetails.error || maybeDetails.details || "Order confirmation failed");

@@ -431,7 +431,7 @@ export default function DiscountCodesAdminPanel({
         </div>
 
         <div
-          className="flex gap-2 overflow-x-auto pb-1"
+          className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4"
           role="tablist"
           aria-label="Discount codes"
         >
@@ -440,7 +440,7 @@ export default function DiscountCodesAdminPanel({
             role="tab"
             aria-selected={selectedCode === "all"}
             onClick={() => setSelectedCode("all")}
-            className={`shrink-0 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
+            className={`inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
               selectedCode === "all"
                 ? "bg-black text-white"
                 : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
@@ -448,7 +448,7 @@ export default function DiscountCodesAdminPanel({
           >
             All codes
             <span
-              className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${
+              className={`shrink-0 rounded-md px-1.5 py-0.5 text-xs font-medium ${
                 selectedCode === "all"
                   ? "bg-white/20 text-white"
                   : "bg-white text-neutral-600"
@@ -467,15 +467,15 @@ export default function DiscountCodesAdminPanel({
                 setSelectedCode(group.code);
                 setCopied(false);
               }}
-              className={`shrink-0 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
+              className={`inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                 selectedCode === group.code
                   ? "bg-black text-white"
                   : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
               }`}
             >
-              <span className="font-mono">{group.code}</span>
+              <span className="truncate font-mono">{group.code}</span>
               <span
-                className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${
+                className={`shrink-0 rounded-md px-1.5 py-0.5 text-xs font-medium ${
                   selectedCode === group.code
                     ? "bg-white/20 text-white"
                     : "bg-white text-neutral-600"

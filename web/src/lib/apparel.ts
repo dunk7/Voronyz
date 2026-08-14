@@ -36,7 +36,7 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "shirts",
     label: "Shirts",
-    description: "Oversized tees, nice shirts, and more designs to come",
+    description: "Oversized tees and more cuts in one listing — switch styles on the product page",
     listing: "collection",
   },
   {
@@ -78,7 +78,7 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "accessories",
     label: "Accessories",
-    description: "Hats, bottles, shades, jewelry, keychains, drone & RC gear",
+    description: "Hats, bottles, shades, jewelry, lace locks, and drone parts",
     listing: "standalone",
   },
 ];
@@ -106,6 +106,17 @@ export type ApparelCatalogItem = {
    * waitlist; we ship when the product lands (could be days or longer).
    */
   comingSoon: boolean;
+  /**
+   * When set, sibling styles share one PLP card. The first catalog entry in
+   * the group is the default (card cover + first style shown on open).
+   */
+  listingGroup?: string;
+  /** Label in the on-product style switcher. Defaults to `name`. */
+  styleLabel?: string;
+  /** Name on the shared PLP card. Defaults to the representative item's name. */
+  listingName?: string;
+  /** Description on the shared PLP card. Defaults to the representative description. */
+  listingDescription?: string;
 };
 
 export function getApparelImages(item: ApparelCatalogItem): string[] {
@@ -117,6 +128,11 @@ export function getApparelImages(item: ApparelCatalogItem): string[] {
 export const OBSOLETE_APPAREL_SLUGS = [
   "voronyz-technical-pants",
   "voronyz-lounge-sweats",
+  "voronyz-necklace",
+  "voronyz-keychain",
+  "voronyz-rc-car-stickers",
+  "voronyz-charm-bracelet",
+  "voronyz-lattice-shoe-trees",
 ] as const;
 
 /**
@@ -125,8 +141,8 @@ export const OBSOLETE_APPAREL_SLUGS = [
  * (e.g. `shirts`). Collection subcategories are built for many products each.
  */
 export const APPAREL_CATALOG: ApparelCatalogItem[] = [
-  // ── Shirts (multi-product) ──────────────────────────────────────────────
-  // Oversized first: Apparel hub cover + shirts listing order follow catalog order.
+  // ── Shirts (one PLP card; styles switch on the product page) ─────────────
+  // Oversized first: shared listing card + default style when you open the tee.
   {
     slug: "voronyz-oversized-tee",
     subcategory: "shirts",
@@ -138,6 +154,11 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     image: "/products/apparel/shirt.jpg",
     skuPrefix: "APP-TEE",
     comingSoon: true,
+    listingGroup: "tees",
+    styleLabel: "Oversized",
+    listingName: "Tee Shirt",
+    listingDescription:
+      "Voronyz tees in multiple cuts — start with oversized, then switch styles.",
   },
   {
     slug: "voronyz-nice-shirt",
@@ -150,6 +171,8 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     image: "/products/apparel/nice-shirt.jpg",
     skuPrefix: "APP-NICE",
     comingSoon: true,
+    listingGroup: "tees",
+    styleLabel: "Nice Shirt",
   },
   // ── Sweaters (multi-product) ────────────────────────────────────────────
   {
@@ -287,30 +310,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     comingSoon: true,
   },
   {
-    slug: "voronyz-necklace",
-    subcategory: "accessories",
-    name: "Voronyz Necklace",
-    description: "Faceted Voronyz pendant on a clean chain — printed jewelry with everyday weight.",
-    priceCents: 5400,
-    colors: ["black", "gold", "silver"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/voronyz-necklace.jpg",
-    skuPrefix: "APP-NCKL",
-    comingSoon: true,
-  },
-  {
-    slug: "voronyz-keychain",
-    subcategory: "accessories",
-    name: "Voronyz Keychain",
-    description: "Durable 3D-printed keychain mark — pocket-ready Voronyz branding.",
-    priceCents: 1800,
-    colors: ["black", "grey", "orange"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/voronyz-keychain.jpg",
-    skuPrefix: "APP-KEY",
-    comingSoon: true,
-  },
-  {
     slug: "voronyz-jewelry-collab",
     subcategory: "accessories",
     name: "Jewelry Collab",
@@ -335,18 +334,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     comingSoon: true,
   },
   {
-    slug: "voronyz-rc-car-stickers",
-    subcategory: "accessories",
-    name: "RC Car Stickers",
-    description: "Vinyl RC car sticker pack with Voronyz marks and lattice motifs.",
-    priceCents: 1200,
-    colors: ["black", "white", "orange"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/rc-car-stickers.jpg",
-    skuPrefix: "APP-RCST",
-    comingSoon: true,
-  },
-  {
     slug: "voronyz-lace-locks",
     subcategory: "accessories",
     name: "Lace Locks",
@@ -356,30 +343,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_ONE_SIZE],
     image: "/products/apparel/lace-locks.jpg",
     skuPrefix: "APP-LACE",
-    comingSoon: true,
-  },
-  {
-    slug: "voronyz-charm-bracelet",
-    subcategory: "accessories",
-    name: "Charm Bracelet",
-    description: "Modular charm bracelet with interchangeable Voronyz lattice charms.",
-    priceCents: 4600,
-    colors: ["black", "silver"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/charm-bracelet.jpg",
-    skuPrefix: "APP-CHAR",
-    comingSoon: true,
-  },
-  {
-    slug: "voronyz-lattice-shoe-trees",
-    subcategory: "accessories",
-    name: "Lattice Shoe Trees",
-    description: "Breathable 3D-printed shoe trees that hold shape and air out your pairs.",
-    priceCents: 3400,
-    colors: ["black", "white"],
-    sizes: ["S", "M", "L"],
-    image: "/products/apparel/lattice-shoe-trees.jpg",
-    skuPrefix: "APP-TREE",
     comingSoon: true,
   },
 ];
@@ -431,6 +394,64 @@ export function isStandaloneSubcategory(id: string | null | undefined): boolean 
 /** All catalog items in a subcategory (ordered as in APPAREL_CATALOG). */
 export function getApparelBySubcategory(id: ApparelSubcategoryId): ApparelCatalogItem[] {
   return APPAREL_CATALOG.filter((item) => item.subcategory === id);
+}
+
+/** First catalog entry for a listing group (default style + shared PLP card). */
+export function getApparelListingRepresentative(
+  listingGroup: string | null | undefined,
+): ApparelCatalogItem | null {
+  const key = (listingGroup || "").trim();
+  if (!key) return null;
+  return APPAREL_CATALOG.find((item) => item.listingGroup === key) ?? null;
+}
+
+/** Style options that share a PLP card (ordered as in APPAREL_CATALOG). */
+export function getApparelStyleOptions(
+  slug: string | null | undefined,
+): ApparelCatalogItem[] {
+  const item = getApparelItem(slug);
+  if (!item) return [];
+  if (!item.listingGroup) return [item];
+  return APPAREL_CATALOG.filter((entry) => entry.listingGroup === item.listingGroup);
+}
+
+/** PLP display fields for a catalog item (uses shared listing name when grouped). */
+export function toApparelListingItem(item: ApparelCatalogItem): ApparelCatalogItem {
+  if (!item.listingGroup) return item;
+  const rep = getApparelListingRepresentative(item.listingGroup) ?? item;
+  return {
+    ...rep,
+    name: rep.listingName ?? rep.name,
+    description: rep.listingDescription ?? rep.description,
+  };
+}
+
+/**
+ * Collapse style siblings into one listing card per `listingGroup`.
+ * Ungrouped items pass through unchanged. Order follows the input list.
+ */
+export function collapseApparelListings(
+  items: ApparelCatalogItem[],
+): ApparelCatalogItem[] {
+  const seenGroups = new Set<string>();
+  const out: ApparelCatalogItem[] = [];
+  for (const item of items) {
+    if (item.listingGroup) {
+      if (seenGroups.has(item.listingGroup)) continue;
+      seenGroups.add(item.listingGroup);
+      out.push(toApparelListingItem(item));
+      continue;
+    }
+    out.push(item);
+  }
+  return out;
+}
+
+/** Collection / subcategory PLP items with style groups collapsed. */
+export function getApparelListingBySubcategory(
+  id: ApparelSubcategoryId,
+): ApparelCatalogItem[] {
+  return collapseApparelListings(getApparelBySubcategory(id));
 }
 
 export function getStandaloneApparelItems(): ApparelCatalogItem[] {
