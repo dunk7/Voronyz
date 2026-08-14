@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { loadGalleryImageBytes } from "@/lib/gallerySubmission";
+import { ensureGallerySubmissionTable } from "@/lib/ensureGallerySubmissionTable";
 import {
   isOrdersAdminAuthenticated,
   isOrdersAdminConfigured,
@@ -21,6 +22,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }
 
   try {
+    await ensureGallerySubmissionTable();
     const image = await loadGalleryImageBytes(id);
     if (!image) {
       return NextResponse.json({ error: "Not found." }, { status: 404 });

@@ -8,6 +8,7 @@ import {
   notifyPersistedGalleryUpload,
   persistGalleryUpload,
 } from "@/lib/gallerySubmission";
+import { ensureGallerySubmissionTable } from "@/lib/ensureGallerySubmissionTable";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,6 +36,16 @@ export async function POST(request: NextRequest) {
     if (!process.env.DATABASE_URL?.trim()) {
       return NextResponse.json(
         { error: "Photo uploads are temporarily unavailable. Please try again later." },
+        { status: 503 }
+      );
+    }
+
+    try {
+      await ensureGallerySubmissionTable();
+    } catch (schemaErr) {
+      console.error("Gallery schema ensure failed:", schemaErr);
+      return NextResponse.json(
+        { error: "Photo uploads are not fully set up yet. Please try again shortly." },
         { status: 503 }
       );
     }

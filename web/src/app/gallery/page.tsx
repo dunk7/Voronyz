@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { GALLERY_PHOTOS } from "@/lib/gallery";
-import { listApprovedGalleryPhotos } from "@/lib/gallerySubmission";
+import { listApprovedGalleryPhotosSafe } from "@/lib/listApprovedGalleryPhotosSafe";
 import GalleryUploadClient from "./GalleryUploadClient";
 
 export const metadata: Metadata = {
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function GalleryPage() {
-  const approvedReviews = await listApprovedGalleryPhotos(100);
+  const approvedReviews = await listApprovedGalleryPhotosSafe(100);
   const photos = [
     ...approvedReviews.map((p) => ({
       id: p.id,

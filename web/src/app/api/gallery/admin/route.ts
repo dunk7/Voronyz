@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listGallerySubmissionsForAdmin } from "@/lib/gallerySubmission";
+import { ensureGallerySubmissionTable } from "@/lib/ensureGallerySubmissionTable";
 import {
   isOrdersAdminAuthenticated,
   isOrdersAdminConfigured,
@@ -26,6 +27,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    await ensureGallerySubmissionTable();
     const submissions = await listGallerySubmissionsForAdmin(200);
     const pendingCount = submissions.filter((s) => s.status === "pending").length;
     return NextResponse.json({ submissions, pendingCount });
