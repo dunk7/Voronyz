@@ -335,18 +335,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     comingSoon: true,
   },
   {
-    slug: "voronyz-rc-car-stickers",
-    subcategory: "accessories",
-    name: "RC Car Stickers",
-    description: "Vinyl RC car sticker pack with Voronyz marks and lattice motifs.",
-    priceCents: 1200,
-    colors: ["black", "white", "orange"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/rc-car-stickers.jpg",
-    skuPrefix: "APP-RCST",
-    comingSoon: true,
-  },
-  {
     slug: "voronyz-lace-locks",
     subcategory: "accessories",
     name: "Lace Locks",
