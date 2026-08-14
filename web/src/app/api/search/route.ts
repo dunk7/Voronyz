@@ -13,7 +13,7 @@ import { getAccessoryCatalogSeed } from "@/lib/filament";
 import {
   getHealthCatalogSeed,
 } from "@/lib/trailMix";
-import { APPAREL_CATALOG, getApparelImages } from "@/lib/apparel";
+import { APPAREL_CATALOG, getApparelImages, isObsoleteApparelSlug } from "@/lib/apparel";
 
 // Normalize text for better matching (remove hyphens, spaces, convert to lowercase)
 function normalizeText(text: string): string {
@@ -181,7 +181,9 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    products = applyCategoryFilter(products, category);
+    products = applyCategoryFilter(products, category).filter(
+      (product) => !isObsoleteApparelSlug(product.slug),
+    );
 
     // Single-product categories — never return/cache an empty listing.
     if (

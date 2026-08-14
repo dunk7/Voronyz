@@ -78,7 +78,7 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "accessories",
     label: "Accessories",
-    description: "Hats, bottles, shades, jewelry, drone & RC gear",
+    description: "Hats, bottles, shades, jewelry, and drone parts",
     listing: "standalone",
   },
 ];
@@ -121,6 +121,7 @@ export const OBSOLETE_APPAREL_SLUGS = [
   "voronyz-charm-bracelet",
   "voronyz-keychain",
   "voronyz-necklace",
+  "voronyz-rc-car-stickers",
 ] as const;
 
 /**
