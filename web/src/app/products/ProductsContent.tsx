@@ -515,7 +515,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                   <div className="mt-6 sm:mt-8 flex flex-wrap items-end justify-between gap-4">
                     <p className="max-w-lg text-sm sm:text-base text-neutral-500 leading-relaxed">
                       Built different people need built different apparel — shirts, layers,
-                      and more.
+                      and accessories continue below.
                     </p>
                     <Link
                       href="/apparel"
@@ -526,7 +526,10 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                   </div>
                 </div>
 
-                <ApparelProductGrid products={apparelCollectionProducts} />
+                <ApparelProductGrid
+                  products={apparelCollectionProducts}
+                  hideSubcategoryBadge
+                />
               </>
             )}
 
@@ -534,35 +537,14 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
               <section
                 id="accessories"
                 aria-labelledby="footwear-accessories-heading"
-                className={
-                  apparelCollectionProducts.length > 0
-                    ? "mt-24 sm:mt-32 lg:mt-40"
-                    : undefined
-                }
+                className="mt-16 sm:mt-20 lg:mt-24"
               >
-                <div className="mb-10 sm:mb-14 border-t border-neutral-200 pt-16 sm:pt-20 lg:pt-24">
-                  <p className="text-[11px] sm:text-xs uppercase tracking-[0.4em] text-neutral-400 mb-4 sm:mb-6">
-                    Next section
-                  </p>
-                  <h2
-                    id="footwear-accessories-heading"
-                    className="text-6xl sm:text-8xl lg:text-[7.5rem] xl:text-[9rem] font-semibold tracking-[-0.04em] leading-[0.85] text-neutral-900"
-                  >
-                    Accessories
-                  </h2>
-                  <div className="mt-6 sm:mt-8 flex flex-wrap items-end justify-between gap-4">
-                    <p className="max-w-lg text-sm sm:text-base text-neutral-500 leading-relaxed">
-                      Hats, bottles, shades, jewelry, and other accessory pieces.
-                    </p>
-                    <Link
-                      href="/apparel/accessories"
-                      className="text-sm font-medium text-neutral-900 underline underline-offset-4 hover:no-underline shrink-0"
-                    >
-                      View all accessories →
-                    </Link>
-                  </div>
-                </div>
-
+                <h2
+                  id="footwear-accessories-heading"
+                  className="text-3xl font-semibold tracking-tight text-neutral-900 mb-8 sm:mb-10"
+                >
+                  Accessories
+                </h2>
                 <ApparelProductGrid
                   products={apparelAccessoryProducts}
                   hideSubcategoryBadge
