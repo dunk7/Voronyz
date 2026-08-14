@@ -227,6 +227,27 @@ model AffiliateApplication {
   @@index([status])
 }
 
+/// Customer review photos submitted from /gallery (must be approved in /orders admin).
+model GallerySubmission {
+  id               String    @id @default(cuid())
+  name             String
+  email            String?
+  caption          String?
+  originalFileName String
+  storageKey       String    @unique
+  mimeType         String    @default("image/jpeg")
+  fileData         Bytes?
+  sizeBytes        Int
+  status           String    @default("pending") // pending | approved | rejected
+  ipHash           String?
+  createdAt        DateTime  @default(now())
+  reviewedAt       DateTime?
+
+  @@index([createdAt])
+  @@index([status, createdAt])
+  @@index([ipHash, createdAt])
+}
+
 model Message {
   id                   String       @id @default(cuid())
   conversationId       String

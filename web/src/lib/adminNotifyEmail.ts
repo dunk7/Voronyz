@@ -1,4 +1,9 @@
-import type { AffiliateApplication, Order, StlSubmission } from "@prisma/client";
+import type {
+  AffiliateApplication,
+  GallerySubmission,
+  Order,
+  StlSubmission,
+} from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
   formatShippingAddress,
@@ -189,6 +194,54 @@ async function notifyAffiliateApplicationAsync(
     `<p><strong>Niche</strong><br>${escapeHtml(application.niche).replace(/\n/g, "<br>")}</p>`,
     `<p><strong>Pitch</strong><br>${escapeHtml(application.pitch).replace(/\n/g, "<br>")}</p>`,
     `<p><a href="${escapeHtml(adminUrl)}">Open orders admin</a> · ID ${escapeHtml(application.id)}</p>`,
+  ]
+    .filter(Boolean)
+    .join("");
+
+  await sendAdminEmail(subject, text, html);
+}
+
+/** Fire-and-forget gallery review photo email. */
+export function notifyNewGalleryPhoto(submission: GallerySubmission): void {
+  void notifyNewGalleryPhotoAsync(submission).catch((err) => {
+    console.error("Admin notify gallery photo failed:", err);
+  });
+}
+
+async function notifyNewGalleryPhotoAsync(
+  submission: GallerySubmission
+): Promise<void> {
+  const adminUrl = `${siteBaseUrl()}/orders`;
+  const sizeKb = Math.max(1, Math.round(submission.sizeBytes / 1024));
+
+  const lines = [
+    `New review photo on voronyz.com/gallery`,
+    ``,
+    `Name: ${submission.name}`,
+    submission.email ? `Email: ${submission.email}` : null,
+    submission.caption ? `Caption: ${submission.caption}` : null,
+    `File: ${submission.originalFileName} (${sizeKb} KB)`,
+    `Submission ID: ${submission.id}`,
+    ``,
+    `Approve or reject in admin: ${adminUrl}`,
+  ].filter(Boolean) as string[];
+
+  const subject = `Review photo pending: ${submission.name}`;
+  const text = lines.join("\n");
+  const html = [
+    `<p><strong>New review photo</strong> waiting for approval on <a href="${escapeHtml(siteBaseUrl())}/gallery">voronyz.com/gallery</a></p>`,
+    `<ul>`,
+    `<li><strong>Name:</strong> ${escapeHtml(submission.name)}</li>`,
+    submission.email
+      ? `<li><strong>Email:</strong> ${escapeHtml(submission.email)}</li>`
+      : "",
+    submission.caption
+      ? `<li><strong>Caption:</strong> ${escapeHtml(submission.caption)}</li>`
+      : "",
+    `<li><strong>File:</strong> ${escapeHtml(submission.originalFileName)} (${sizeKb} KB)</li>`,
+    `<li><strong>ID:</strong> ${escapeHtml(submission.id)}</li>`,
+    `</ul>`,
+    `<p><a href="${escapeHtml(adminUrl)}">Open admin to approve or reject</a></p>`,
   ]
     .filter(Boolean)
     .join("");

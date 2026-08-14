@@ -12,6 +12,7 @@ import {
   Loader2,
   LogOut,
   MessageSquare,
+  ImageIcon,
   Package,
   Search,
   StickyNote,
@@ -26,6 +27,7 @@ import OrdersStatsPanel from "./OrdersStatsPanel";
 import UploadsAdminPanel from "./UploadsAdminPanel";
 import QuizResultsAdminPanel from "./QuizResultsAdminPanel";
 import AffiliatesAdminPanel from "./AffiliatesAdminPanel";
+import GalleryAdminPanel from "./GalleryAdminPanel";
 import { formatCentsAsCurrency } from "@/lib/money";
 import { VALID_DISCOUNT_CODES } from "@/lib/discountPricing";
 import {
@@ -36,7 +38,14 @@ import {
 
 type SortKey = "date" | "price" | "name" | "status";
 type SortDir = "asc" | "desc";
-type AdminTab = "orders" | "stats" | "discounts" | "uploads" | "quiz" | "affiliates";
+type AdminTab =
+  | "orders"
+  | "stats"
+  | "discounts"
+  | "uploads"
+  | "gallery"
+  | "quiz"
+  | "affiliates";
 type OrdersView = "open" | "completed" | "all";
 
 const MAX_ADMIN_NOTES_LENGTH = 4000;
@@ -248,6 +257,7 @@ export default function OrdersAdminClient() {
   const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null);
   const [tab, setTab] = useState<AdminTab>("orders");
   const [uploadsRefresh, setUploadsRefresh] = useState(0);
+  const [galleryRefresh, setGalleryRefresh] = useState(0);
   const [quizRefresh, setQuizRefresh] = useState(0);
   const [affiliatesRefresh, setAffiliatesRefresh] = useState(0);
   const [discountsRefresh, setDiscountsRefresh] = useState(0);
@@ -353,7 +363,8 @@ export default function OrdersAdminClient() {
     else if (tab === "discounts") {
       loadOrders();
       setDiscountsRefresh((n) => n + 1);
-    } else if (tab === "quiz") setQuizRefresh((n) => n + 1);
+    } else if (tab === "gallery") setGalleryRefresh((n) => n + 1);
+    else if (tab === "quiz") setQuizRefresh((n) => n + 1);
     else if (tab === "affiliates") setAffiliatesRefresh((n) => n + 1);
     else setUploadsRefresh((n) => n + 1);
     loadMessageSetting();
@@ -586,9 +597,13 @@ export default function OrdersAdminClient() {
                   ? "Revenue and order performance"
                   : tab === "discounts"
                   ? `${VALID_DISCOUNT_CODES.length} live codes · ${discountOrdersCount} used on orders`
-                  : tab === "quiz"
-                    ? "Take the Quiz poll results"
-                    : "Customer file uploads"}
+                  : tab === "gallery"
+                    ? "Approve customer review photos before they go live"
+                    : tab === "quiz"
+                      ? "Take the Quiz poll results"
+                      : tab === "affiliates"
+                        ? "Affiliate applications"
+                        : "Customer file uploads"}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -712,6 +727,18 @@ export default function OrdersAdminClient() {
             </button>
             <button
               type="button"
+              onClick={() => setTab("gallery")}
+              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
+                tab === "gallery"
+                  ? "bg-black text-white"
+                  : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
+              }`}
+            >
+              <ImageIcon className="h-4 w-4" />
+              Gallery
+            </button>
+            <button
+              type="button"
               onClick={() => setTab("quiz")}
               className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
                 tab === "quiz"
@@ -752,6 +779,13 @@ export default function OrdersAdminClient() {
               onAuthLost={() => setAuthenticated(false)}
             />
           </div>
+        ) : null}
+
+        {tab === "gallery" ? (
+          <GalleryAdminPanel
+            refreshToken={galleryRefresh}
+            onAuthLost={() => setAuthenticated(false)}
+          />
         ) : null}
 
         {tab === "quiz" ? (

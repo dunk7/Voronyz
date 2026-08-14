@@ -127,3 +127,26 @@ export async function prepareAvatarImage(file: File): Promise<File> {
 
   return downscaleLargeImage(prepared, 1024);
 }
+
+const GALLERY_REVIEW_MAX_BYTES = 8 * 1024 * 1024;
+const GALLERY_REVIEW_MAX_DIMENSION = 2048;
+
+/** Prepare a customer review photo for /gallery upload. */
+export async function prepareGalleryReviewImage(file: File): Promise<File> {
+  if (!isImageUploadFile(file)) {
+    throw new Error("Please choose a JPEG, PNG, WebP, or HEIC photo.");
+  }
+
+  let prepared = file;
+  if (isHeicUploadFile(file)) {
+    prepared = await convertHeicToJpeg(file);
+  }
+
+  prepared = await downscaleLargeImage(prepared, GALLERY_REVIEW_MAX_DIMENSION);
+
+  if (prepared.size > GALLERY_REVIEW_MAX_BYTES) {
+    throw new Error("Photo is too large after compression. Try a smaller image.");
+  }
+
+  return prepared;
+}
