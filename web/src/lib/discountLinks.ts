@@ -5,6 +5,7 @@ import {
   isValidDiscountCode,
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
+import { getInfluencerLinkForCode } from "@/lib/influencerLinks";
 
 let clickTableReady: Promise<void> | null = null;
 
@@ -49,11 +50,13 @@ export function getSiteOrigin(): string {
   return "https://voronyz.com";
 }
 
-/** Permanent public auto-apply link for an influencer bio, e.g. https://voronyz.com/aryan50 */
+/** Permanent public auto-apply link — prefers vanity bio slug when one exists. */
 export function getDiscountAutoApplyUrl(code: string): string | null {
   const normalized = normalizeDiscountCode(code);
   if (!normalized || !isValidDiscountCode(normalized)) return null;
-  return `${getSiteOrigin()}/${normalized}`;
+  const influencer = getInfluencerLinkForCode(normalized);
+  const path = influencer?.slug ?? normalized;
+  return `${getSiteOrigin()}/${path}`;
 }
 
 export async function recordDiscountCodeClick(input: {
