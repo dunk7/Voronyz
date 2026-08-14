@@ -29,6 +29,12 @@ const nextConfig: NextConfig = {
         destination: "/products/voronyz-joggers",
         permanent: true,
       },
+      // Removed RC Car Stickers listing — redirect to Accessories hub.
+      {
+        source: "/products/voronyz-rc-car-stickers",
+        destination: "/apparel/accessories",
+        permanent: true,
+      },
     ];
   },
 };

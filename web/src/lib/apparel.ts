@@ -78,7 +78,7 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "accessories",
     label: "Accessories",
-    description: "Hats, bottles, shades, jewelry, keychains, drone & RC gear",
+    description: "Hats, bottles, shades, jewelry, keychains, and drone parts",
     listing: "standalone",
   },
 ];
@@ -117,6 +117,7 @@ export function getApparelImages(item: ApparelCatalogItem): string[] {
 export const OBSOLETE_APPAREL_SLUGS = [
   "voronyz-technical-pants",
   "voronyz-lounge-sweats",
+  "voronyz-rc-car-stickers",
 ] as const;
 
 /**
@@ -332,18 +333,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_ONE_SIZE],
     image: "/products/apparel/drone-parts.jpg",
     skuPrefix: "APP-DRNE",
-    comingSoon: true,
-  },
-  {
-    slug: "voronyz-rc-car-stickers",
-    subcategory: "accessories",
-    name: "RC Car Stickers",
-    description: "Vinyl RC car sticker pack with Voronyz marks and lattice motifs.",
-    priceCents: 1200,
-    colors: ["black", "white", "orange"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/rc-car-stickers.jpg",
-    skuPrefix: "APP-RCST",
     comingSoon: true,
   },
   {
