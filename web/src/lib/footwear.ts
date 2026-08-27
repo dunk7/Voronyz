@@ -30,27 +30,10 @@ export type FootwearCatalogItem = {
 
 /**
  * Display order for All Footwear:
- * Magikid → Slides → Gators → Slip Ons → Sneakers (Dragonfly) → Lattice Insoles.
- * Gators stays in the grid — just not first. Lattice Insoles last.
+ * Slides → Gators → Slip Ons → Sneakers (Dragonfly) → Magikid → Lattice Insoles.
+ * Magikid sits after the other shoe listings. Lattice Insoles last.
  */
 export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
-  {
-    slug: "magikid-shoes",
-    name: "Magikid Shoes",
-    description: MAGIKID_SHOES_DESCRIPTION_SHORT,
-    priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
-    images: [
-      MAGIKID_SHOES_THUMBNAIL_URL,
-      "/products/slip-ons/InShot_20260405_203151152.jpg",
-      "/products/slip-ons/InShot_20260405_203425292.jpg",
-      "/products/slip-ons/InShot_20260405_203601045.jpg",
-      "/products/slip-ons/InShot_20260405_203736918.jpg",
-      "/products/slip-ons/InShot_20260405_203930832.jpg",
-      "/products/slip-ons/InShot_20260405_204113872.jpg",
-      "/products/slip-ons/InShot_20260405_204333303.jpg",
-      "/products/slip-ons/InShot_20260405_202911983.jpg",
-    ],
-  },
   {
     slug: "v3-slides",
     name: "V3 Slides",
@@ -110,6 +93,23 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
       "/products/dragonfly/InShot_20260212_155434004.jpg",
       "/products/dragonfly/InShot_20260212_155809942.jpg",
       "/products/dragonfly/InShot_20260212_160512335.jpg",
+    ],
+  },
+  {
+    slug: "magikid-shoes",
+    name: "Magikid Shoes",
+    description: MAGIKID_SHOES_DESCRIPTION_SHORT,
+    priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
+    images: [
+      MAGIKID_SHOES_THUMBNAIL_URL,
+      "/products/slip-ons/InShot_20260405_203151152.jpg",
+      "/products/slip-ons/InShot_20260405_203425292.jpg",
+      "/products/slip-ons/InShot_20260405_203601045.jpg",
+      "/products/slip-ons/InShot_20260405_203736918.jpg",
+      "/products/slip-ons/InShot_20260405_203930832.jpg",
+      "/products/slip-ons/InShot_20260405_204113872.jpg",
+      "/products/slip-ons/InShot_20260405_204333303.jpg",
+      "/products/slip-ons/InShot_20260405_202911983.jpg",
     ],
   },
   {
