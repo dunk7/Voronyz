@@ -6,7 +6,6 @@ import { useMemo, useState } from "react";
 import {
   APPAREL_CATALOG,
   APPAREL_COLLECTION_SUBCATEGORIES,
-  getStandaloneApparelItems,
 } from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
@@ -39,11 +38,6 @@ export default function ApparelHubContent() {
       APPAREL_CATALOG.filter((item) =>
         APPAREL_COLLECTION_SUBCATEGORIES.some((sub) => sub.id === item.subcategory),
       ).map(toGridProduct),
-    [],
-  );
-
-  const accessoryProducts = useMemo(
-    () => getStandaloneApparelItems().map(toGridProduct),
     [],
   );
 
@@ -109,37 +103,6 @@ export default function ApparelHubContent() {
             <ApparelProductGrid products={collectionProducts} />
           )}
         </section>
-
-        {accessoryProducts.length > 0 && (
-          <section className="mt-12 lg:mt-16" aria-labelledby="apparel-accessories-heading">
-            <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
-              <div>
-                <h2
-                  id="apparel-accessories-heading"
-                  className="text-xs uppercase tracking-[0.2em] text-neutral-500"
-                >
-                  Accessories
-                </h2>
-                <p className="mt-2 text-sm text-neutral-500 max-w-lg">
-                  Hats, bottles, shades, jewelry, and other accessory pieces.
-                </p>
-              </div>
-              <Link
-                href="/apparel/accessories"
-                onClick={(e) => go(e, "/apparel/accessories")}
-                className={`text-sm font-medium text-neutral-800 underline underline-offset-4 hover:no-underline ${
-                  navigatingHref === "/apparel/accessories" ? "pointer-events-none opacity-60" : ""
-                }`}
-              >
-                View all accessories →
-              </Link>
-            </div>
-            <ApparelProductGrid
-              products={accessoryProducts}
-              hideSubcategoryBadge
-            />
-          </section>
-        )}
       </div>
     </div>
   );
