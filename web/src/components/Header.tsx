@@ -337,13 +337,6 @@ export default function Header() {
                 <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/apparel") && !pathname?.startsWith("/apparel/accessories") ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
               <Link
-                href="/apparel/accessories"
-                className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/apparel/accessories") ? "text-white" : "text-white/70"}`}
-              >
-                <span>Accessories</span>
-                <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/apparel/accessories") ? "opacity-100" : "opacity-0"}`} aria-hidden />
-              </Link>
-              <Link
                 href="/accessories"
                 className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/accessories") ? "text-white" : "text-white/70"}`}
               >
@@ -559,9 +552,9 @@ export default function Header() {
                 <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white text-black px-1 text-xs font-medium">{cartCount}</span>
               )}
             </Link>
-            {/* Mobile menu toggle */}
+            {/* Menu toggle — Accessories lives here (not in the desktop top nav) */}
             <button
-              className="xl:hidden relative w-10 h-10 rounded-full ring-1 ring-white/15 text-white hover:bg-white/10 hover:ring-white/25 active:scale-95 transition-all duration-200 flex items-center justify-center"
+              className="relative w-10 h-10 rounded-full ring-1 ring-white/15 text-white hover:bg-white/10 hover:ring-white/25 active:scale-95 transition-all duration-200 flex items-center justify-center"
               onClick={() => setOpen(!open)}
               aria-label={open ? "Close menu" : "Open menu"}
               aria-expanded={open}
@@ -588,9 +581,9 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Mobile Menu Overlay */}
+      {/* Slide-down menu (Accessories and full site nav) */}
       <div
-        className={`fixed inset-0 z-[60] xl:hidden transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`fixed inset-0 z-[60] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           open ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
         }`}
       >

@@ -12,15 +12,17 @@ import LogoLoader from "@/components/ui/LogoLoader";
 import { GATORS_SLUG } from "@/lib/gators";
 import { FILAMENT_SLUG, getAccessoryCatalogSeed } from "@/lib/filament";
 import { LATTICE_INSOLES_SLUG } from "@/lib/latticeInsoles";
-import {
-  APPAREL_CATALOG,
-  APPAREL_COLLECTION_SUBCATEGORIES,
-  getStandaloneApparelItems,
-} from "@/lib/apparel";
+import { APPAREL_CATALOG } from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
 import { VIOLETTE_PONYBEAD_SLUG } from "@/lib/violettePonybeadAnimals";
+
+/** Homepage apparel teaser — a couple of highlights, not the full catalog. */
+const HOME_APPAREL_TEASER_SLUGS = [
+  "voronyz-oversized-tee",
+  "voronyz-performance-socks",
+] as const;
 
 type Product = FootwearListProduct;
 
@@ -202,38 +204,27 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
 
   const showApparelContinuation = category === "footwear" && !searchQuery;
 
-  const apparelCollectionProducts = useMemo((): ApparelGridProduct[] => {
+  const apparelTeaserProducts = useMemo((): ApparelGridProduct[] => {
     if (!showApparelContinuation) return [];
-    return APPAREL_CATALOG.filter((item) =>
-      APPAREL_COLLECTION_SUBCATEGORIES.some((sub) => sub.id === item.subcategory),
-    ).map((item) => ({
-      id: `catalog-${item.slug}`,
-      slug: item.slug,
-      name: item.name,
-      description: item.description,
-      priceCents: item.priceCents,
-      currency: "usd",
-      cover: item.image,
-      colors: item.colors,
-      sizes: item.sizes,
-      subcategory: item.subcategory,
-    }));
-  }, [showApparelContinuation]);
-
-  const apparelAccessoryProducts = useMemo((): ApparelGridProduct[] => {
-    if (!showApparelContinuation) return [];
-    return getStandaloneApparelItems().map((item) => ({
-      id: `catalog-${item.slug}`,
-      slug: item.slug,
-      name: item.name,
-      description: item.description,
-      priceCents: item.priceCents,
-      currency: "usd",
-      cover: item.image,
-      colors: item.colors,
-      sizes: item.sizes,
-      subcategory: item.subcategory,
-    }));
+    const bySlug = new Map(APPAREL_CATALOG.map((item) => [item.slug, item]));
+    return HOME_APPAREL_TEASER_SLUGS.flatMap((slug) => {
+      const item = bySlug.get(slug);
+      if (!item) return [];
+      return [
+        {
+          id: `catalog-${item.slug}`,
+          slug: item.slug,
+          name: item.name,
+          description: item.description,
+          priceCents: item.priceCents,
+          currency: "usd",
+          cover: item.image,
+          colors: item.colors,
+          sizes: item.sizes,
+          subcategory: item.subcategory,
+        },
+      ];
+    });
   }, [showApparelContinuation]);
 
   /* ── Logo loader only when we have nothing to show yet ── */
@@ -492,10 +483,8 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
           </div>
         )}
 
-        {/* ── Continues into Apparel after footwear ── */}
-        {showApparelContinuation &&
-          (apparelCollectionProducts.length > 0 ||
-            apparelAccessoryProducts.length > 0) && (
+        {/* ── Apparel teaser after footwear (full catalog lives on /apparel) ── */}
+        {showApparelContinuation && apparelTeaserProducts.length > 0 && (
           <section
             id="apparel"
             aria-labelledby="footwear-apparel-heading"
@@ -511,57 +500,22 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
               >
                 Apparel
               </h2>
-              <div className="mt-6 sm:mt-8 flex flex-wrap items-end justify-between gap-4">
-                <p className="max-w-lg text-sm sm:text-base text-neutral-500 leading-relaxed">
-                  Built different people need built different apparel — shirts, layers,
-                  and accessories continue below.
-                </p>
-                <Link
-                  href="/apparel"
-                  className="text-sm font-medium text-neutral-900 underline underline-offset-4 hover:no-underline shrink-0"
-                >
-                  Browse full Apparel →
-                </Link>
-              </div>
+              <p className="mt-6 sm:mt-8 max-w-lg text-sm sm:text-base text-neutral-500 leading-relaxed">
+                A couple of highlights from the lineup — open Apparel for the full
+                collection.
+              </p>
             </div>
 
-            {apparelCollectionProducts.length > 0 && (
-              <ApparelProductGrid products={apparelCollectionProducts} />
-            )}
+            <ApparelProductGrid products={apparelTeaserProducts} />
 
-            {apparelAccessoryProducts.length > 0 && (
-              <section
-                id="accessories"
-                aria-labelledby="footwear-accessories-heading"
-                className="mt-16 sm:mt-20 lg:mt-24"
+            <div className="mt-10 sm:mt-12 flex justify-center">
+              <Link
+                href="/apparel"
+                className="inline-flex items-center justify-center rounded-full bg-neutral-900 text-white px-7 py-3.5 text-sm font-semibold hover:bg-neutral-800 transition"
               >
-                <div className="mb-8 sm:mb-10 border-t border-neutral-200 pt-12 sm:pt-14">
-                  <div className="flex flex-wrap items-end justify-between gap-4">
-                    <div>
-                      <h2
-                        id="footwear-accessories-heading"
-                        className="text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-[-0.03em] leading-[0.9] text-neutral-900"
-                      >
-                        Accessories
-                      </h2>
-                      <p className="mt-3 sm:mt-4 max-w-lg text-sm sm:text-base text-neutral-500 leading-relaxed">
-                        Hats, bottles, shades, jewelry, and other accessory pieces.
-                      </p>
-                    </div>
-                    <Link
-                      href="/apparel/accessories"
-                      className="text-sm font-medium text-neutral-900 underline underline-offset-4 hover:no-underline shrink-0"
-                    >
-                      View all accessories →
-                    </Link>
-                  </div>
-                </div>
-                <ApparelProductGrid
-                  products={apparelAccessoryProducts}
-                  hideSubcategoryBadge
-                />
-              </section>
-            )}
+                View Apparel Section
+              </Link>
+            </div>
           </section>
         )}
       </div>
