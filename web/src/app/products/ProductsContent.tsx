@@ -9,14 +9,13 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
-import { GATORS_SLUG } from "@/lib/gators";
+import NewListingBadge from "@/components/NewListingBadge";
+import { isNewListing } from "@/lib/newListing";
 import { FILAMENT_SLUG, getAccessoryCatalogSeed } from "@/lib/filament";
-import { LATTICE_INSOLES_SLUG } from "@/lib/latticeInsoles";
 import { APPAREL_CATALOG } from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
-import { VIOLETTE_PONYBEAD_SLUG } from "@/lib/violettePonybeadAnimals";
 
 /** Homepage apparel teaser — a couple of highlights, not the full catalog. */
 const HOME_APPAREL_TEASER_SLUGS = [
@@ -27,38 +26,25 @@ const HOME_APPAREL_TEASER_SLUGS = [
 type Product = FootwearListProduct;
 
 /* ── per-product metadata (tags / alt images). “New” / “Best Seller” badges are rendered by slug below so only Slip Ons can show New. ── */
+/* Alt hover images only — no category pills on thumbnails (name already says what it is). */
 const productMeta: Record<string, {
-  tag?: string;
   promo?: string;
   altImage?: string;
 }> = {
   "v3-slides": {
-    tag: "Slides",
     altImage: "/products/v3-slides/InShot_20260212_193956953.jpg",
   },
   dragonfly: {
     altImage: "/products/dragonfly/InShot_20260212_153903491.jpg",
   },
   "slip-ons": {
-    tag: "Slip-ons",
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
   "magikid-shoes": {
-    tag: "Kids",
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
   "tpu-90a-filament": {
-    tag: "Filament",
     altImage: "/products/tpu-90a-filament/pink-tpu-90a-spool-angle.jpg",
-  },
-  "antioxidant-trail-mix": {
-    tag: "Collaborative",
-  },
-  [VIOLETTE_PONYBEAD_SLUG]: {
-    tag: "Collaborative",
-  },
-  [LATTICE_INSOLES_SLUG]: {
-    tag: "Insoles",
   },
 };
 
@@ -76,12 +62,6 @@ function cardMetaForSlug(slug: string) {
     case FILAMENT_SLUG:
     case "tpu-90a-filament":
       return productMeta["tpu-90a-filament"];
-    case "antioxidant-trail-mix":
-      return productMeta["antioxidant-trail-mix"];
-    case VIOLETTE_PONYBEAD_SLUG:
-      return productMeta[VIOLETTE_PONYBEAD_SLUG];
-    case LATTICE_INSOLES_SLUG:
-      return productMeta[LATTICE_INSOLES_SLUG];
     default:
       return productMeta[s] as (typeof productMeta)["v3-slides"] | undefined;
   }
@@ -361,36 +341,11 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                       />
                     )}
 
-                    {/* Top badges — slug-explicit so “New” / “New Listing” only appear on intended products */}
+                    {/* Status badges only — no category pills; New Listing is time-boxed (~1 week) */}
                     <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
                       {slugKey === "v3-slides" && (
                         <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-black text-white">
                           Best Seller
-                        </span>
-                      )}
-                      {slugKey === "slip-ons" && (
-                        <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
-                          New
-                        </span>
-                      )}
-                      {slugKey === GATORS_SLUG && (
-                        <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
-                          New Listing
-                        </span>
-                      )}
-                      {slugKey === FILAMENT_SLUG && (
-                        <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
-                          New Listing
-                        </span>
-                      )}
-                      {slugKey === LATTICE_INSOLES_SLUG && (
-                        <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
-                          New Listing
-                        </span>
-                      )}
-                      {slugKey === VIOLETTE_PONYBEAD_SLUG && (
-                        <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
-                          New Listing
                         </span>
                       )}
                       {slugKey === TRAIL_MIX_SLUG && (
@@ -398,12 +353,11 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                           Sold Out
                         </span>
                       )}
-                      {meta?.tag && (
-                        <span className="rounded-full bg-white/90 backdrop-blur-sm px-3 py-1 text-[11px] font-medium text-neutral-600 shadow-sm ring-1 ring-black/5">
-                          {meta.tag}
-                        </span>
-                      )}
                     </div>
+
+                    {isNewListing(slugKey, p.createdAt) && (
+                      <NewListingBadge animated />
+                    )}
 
                     {/* Promo ribbon */}
                     {meta?.promo && (
