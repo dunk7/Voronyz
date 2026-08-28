@@ -424,7 +424,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                     )}
                   </div>
 
-                  {/* Card info */}
+                  {/* Card info — details (description, processing, colors, sizes) live on the product page */}
                   <div className="mt-4 px-0.5">
                     <div className="flex items-baseline justify-between gap-3">
                       <h2 className="text-[15px] font-semibold text-neutral-900 group-hover:text-black transition-colors truncate">
@@ -437,44 +437,6 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                           p.currency
                         )}
                       </span>
-                    </div>
-                    <p className="mt-1 text-[13px] leading-relaxed text-neutral-500 line-clamp-1">
-                      {p.description}
-                    </p>
-                    {/* Quick info chips */}
-                    <div className="mt-2.5 flex flex-wrap gap-1.5">
-                      {slugKey === TRAIL_MIX_SLUG ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-neutral-900 px-2.5 py-0.5 text-[11px] font-medium text-white">
-                          Sold Out
-                        </span>
-                      ) : slugKey === VIOLETTE_PONYBEAD_SLUG ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-0.5 text-[11px] text-neutral-500">
-                          $10 each · in stock
-                        </span>
-                      ) : slugKey === FILAMENT_SLUG ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-0.5 text-[11px] text-neutral-500">
-                          1kg spool · in stock
-                        </span>
-                      ) : slugKey === LATTICE_INSOLES_SLUG ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-0.5 text-[11px] text-neutral-500">
-                          S–XL · in stock
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2.5 py-0.5 text-[11px] text-neutral-500">
-                          <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          {slugKey === "magikid-shoes" ? "Made in <7 days" : "Ships in 1-2 days"}
-                        </span>
-                      )}
-                      {slugKey !== TRAIL_MIX_SLUG && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700">
-                          <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
-                          </svg>
-                          {slugKey === "magikid-shoes" ? "+$7 shipping" : "Free US shipping"}
-                        </span>
-                      )}
                     </div>
                   </div>
                 </Link>

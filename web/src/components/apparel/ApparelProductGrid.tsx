@@ -24,20 +24,6 @@ export type ApparelGridProduct = {
   subcategory: ApparelSubcategoryId;
 };
 
-function colorSwatch(color: string) {
-  const map: Record<string, string> = {
-    black: "#111111",
-    grey: "#9ca3af",
-    gray: "#9ca3af",
-    white: "#f5f5f5",
-    beige: "#d6c6a8",
-    gold: "#d4af37",
-    silver: "#c0c0c0",
-    orange: "#f97316",
-  };
-  return map[color.toLowerCase()] ?? color;
-}
-
 type ApparelProductGridProps = {
   products: ApparelGridProduct[];
   /** Hide the subcategory pill when already on a subcategory page. */
@@ -105,25 +91,6 @@ export default function ApparelProductGrid({
                 </h3>
                 <span className="text-[15px] font-semibold tabular-nums text-neutral-900 shrink-0">
                   {formatCentsAsCurrency(product.priceCents, product.currency)}
-                </span>
-              </div>
-              <p className="mt-1 text-[13px] leading-relaxed text-neutral-500 line-clamp-2">
-                {product.description}
-              </p>
-              <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-                <span className="inline-flex items-center rounded-full bg-neutral-900 px-2.5 py-0.5 text-[11px] font-medium text-white">
-                  Pre-order
-                </span>
-                {product.colors.slice(0, 4).map((color) => (
-                  <span
-                    key={`${product.slug}-${color}`}
-                    title={color}
-                    className="h-3.5 w-3.5 rounded-full ring-1 ring-black/10"
-                    style={{ backgroundColor: colorSwatch(color) }}
-                  />
-                ))}
-                <span className="ml-1 text-[11px] text-neutral-400">
-                  {product.sizes.join(" · ")}
                 </span>
               </div>
             </div>
