@@ -26,80 +26,20 @@ export default function Home() {
         {/* Hero content */}
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-20 sm:py-24 md:py-28 lg:py-12 xl:py-14 2xl:py-16 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-10 sm:gap-12 lg:gap-16">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             {/* Text / CTA Column */}
-            <div className="lg:col-span-4 space-y-5 sm:space-y-6 md:space-y-7 order-2 lg:order-1">
-
-              {/* Eyebrow badge */}
-              <div className="hero-stagger-1 flex items-center gap-2.5">
-                <span className="inline-block h-px w-6 bg-white/30" />
-                <p className="uppercase tracking-[0.3em] text-[10px] sm:text-xs font-medium text-neutral-400">
-                  Voronyz Engineering
-                </p>
-              </div>
+            <div className="lg:col-span-4 space-y-5 sm:space-y-6 order-2 lg:order-1">
+              {/* Brand mark */}
+              <p className="hero-stagger-1 uppercase tracking-[0.18em] text-[11px] sm:text-xs font-medium text-neutral-300">
+                Voronyz Engineering
+              </p>
 
               {/* Main headline */}
               <h1 className="hero-stagger-2 text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-semibold leading-[1.08] sm:leading-[1.1] tracking-tight text-white">
                 3D Printed<br className="hidden sm:block" /> Footwear
               </h1>
 
-              {/* Subheadline */}
-              <p className="hero-stagger-3 text-neutral-400 text-sm sm:text-base md:text-lg max-w-md leading-relaxed">
-                Otherworldly comfort, precision-engineered performance, and bold style — all 3D-printed to your exact fit. Explore our latest models below.
-
-
-              </p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
               {/* CTA buttons */}
-              <div className="hero-stagger-4 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 sm:gap-3 pt-1">
+              <div className="hero-stagger-3 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 sm:gap-3 pt-1">
                 <Link
                   href="/products/slip-ons"
                   className="group btn-shimmer inline-flex items-center justify-center gap-2 rounded-full bg-white text-black px-6 py-3 text-sm font-semibold shadow-lg shadow-white/10 hover:shadow-white/20 transition-all duration-200 text-center"
@@ -151,7 +91,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-      
+
       {/* Video Section */}
       <section className="bg-texture-white border-t border-neutral-200">
         <div className="container py-16 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
