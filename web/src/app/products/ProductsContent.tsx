@@ -188,7 +188,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
       ? "Engineered materials — TPU-90A filament, made for makers."
       : category === "health"
       ? "Helping the small businesses we support and stand for grow and be seen on the Voronyz marketplace."
-      : "3D-printed, scan-calibrated footwear — engineered for comfort, built to last.";
+      : "Each pair engineered for its purpose, built to last.";
   const emptyHref =
     category === "accessories"
       ? "/accessories"
