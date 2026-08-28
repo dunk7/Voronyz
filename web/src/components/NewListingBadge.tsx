@@ -18,10 +18,10 @@ export default function NewListingBadge({
   if (animated) {
     return (
       <div
-        className={`pointer-events-none absolute inset-x-0 top-3 z-10 overflow-hidden ${className}`.trim()}
+        className={`pointer-events-none absolute inset-x-0 top-3 z-20 h-8 overflow-hidden ${className}`.trim()}
         aria-hidden="true"
       >
-        <span className="new-listing-slide-pill absolute top-0 left-3 inline-flex items-center rounded-full bg-white/45 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-900 shadow-sm ring-1 ring-white/40 backdrop-blur-md">
+        <span className="new-listing-slide-pill absolute top-0 inline-flex items-center rounded-full bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-900 shadow-md ring-1 ring-black/10 backdrop-blur-md">
           New Listing
         </span>
       </div>
@@ -30,7 +30,7 @@ export default function NewListingBadge({
 
   return (
     <span
-      className={`inline-flex items-center rounded-full bg-white/55 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-neutral-900 shadow-sm ring-1 ring-black/5 backdrop-blur-md ${className}`.trim()}
+      className={`inline-flex items-center rounded-full bg-white/70 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-neutral-900 shadow-sm ring-1 ring-black/10 backdrop-blur-md ${className}`.trim()}
     >
       New Listing
     </span>
