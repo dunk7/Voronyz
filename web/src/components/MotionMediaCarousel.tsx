@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useMemo } from "react";
 
 type VideoSlide = {
   type: "video";
@@ -33,10 +33,41 @@ export const MOTION_MEDIA_SLIDES: MediaSlide[] = [
   },
 ];
 
-/** How long to linger on each slide before sliding. */
-const HOLD_MS = 5000;
-/** Duration of the slow horizontal slide between slides. */
-const SLIDE_MS = 3200;
+/** Seconds for one hold + slide step between neighboring slides. */
+const SECONDS_PER_STEP = 7;
+
+/**
+ * Build a ping-pong pan: 0 → 1 → … → n-1 → … → 1 → 0.
+ * Track is sized to `n * 100%` of the viewport, so slide `i` is at `-(i / n) * 100%`.
+ */
+function buildPingPongKeyframes(slideCount: number, animationName: string): string {
+  if (slideCount <= 1) {
+    return `@keyframes ${animationName}{0%,100%{transform:translate3d(0,0,0)}}`;
+  }
+
+  const path: number[] = [];
+  for (let i = 0; i < slideCount; i++) path.push(i);
+  for (let i = slideCount - 2; i >= 0; i--) path.push(i);
+
+  const segments = path.length - 1;
+  const holdFraction = 0.45;
+  const frames: string[] = [];
+
+  for (let s = 0; s < segments; s++) {
+    const segStart = (s / segments) * 100;
+    const segEnd = ((s + 1) / segments) * 100;
+    const holdEnd = segStart + (segEnd - segStart) * holdFraction;
+    const fromPct = (path[s] / slideCount) * 100;
+    const toPct = (path[s + 1] / slideCount) * 100;
+
+    frames.push(
+      `${segStart.toFixed(3)}%,${holdEnd.toFixed(3)}%{transform:translate3d(-${fromPct}%,0,0)}`
+    );
+    frames.push(`${segEnd.toFixed(3)}%{transform:translate3d(-${toPct}%,0,0)}`);
+  }
+
+  return `@keyframes ${animationName}{${frames.join("")}}`;
+}
 
 type MotionMediaCarouselProps = {
   slides?: MediaSlide[];
@@ -47,34 +78,25 @@ export default function MotionMediaCarousel({
   slides = MOTION_MEDIA_SLIDES,
   className = "",
 }: MotionMediaCarouselProps) {
-  const [index, setIndex] = useState(0);
-  const [reduceMotion, setReduceMotion] = useState(false);
-  const directionRef = useRef(1);
+  const reactId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
+  const animationName = `motion-media-pan-${reactId}`;
   const count = Math.max(slides.length, 1);
+  const durationSec = Math.max(count - 1, 1) * 2 * SECONDS_PER_STEP;
+  const keyframes = useMemo(
+    () => buildPingPongKeyframes(count, animationName),
+    [count, animationName]
+  );
 
+  // Inject keyframes once into document.head so React re-renders don't reset the animation.
   useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduceMotion(mq.matches);
-    const onChange = () => setReduceMotion(mq.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-
-  useEffect(() => {
-    if (count <= 1 || reduceMotion) return;
-
-    const id = window.setInterval(() => {
-      setIndex((current) => {
-        let dir = directionRef.current;
-        if (current >= count - 1) dir = -1;
-        else if (current <= 0) dir = 1;
-        directionRef.current = dir;
-        return current + dir;
-      });
-    }, HOLD_MS + SLIDE_MS);
-
-    return () => window.clearInterval(id);
-  }, [count, reduceMotion]);
+    const style = document.createElement("style");
+    style.setAttribute("data-motion-media", animationName);
+    style.textContent = keyframes;
+    document.head.appendChild(style);
+    return () => {
+      style.remove();
+    };
+  }, [keyframes, animationName]);
 
   return (
     <div
@@ -84,10 +106,10 @@ export default function MotionMediaCarousel({
         className="motion-media-track flex h-full will-change-transform"
         style={{
           width: `${count * 100}%`,
-          transform: `translate3d(-${(index / count) * 100}%, 0, 0)`,
-          transition: reduceMotion
-            ? undefined
-            : `transform ${SLIDE_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`,
+          animation:
+            count > 1
+              ? `${animationName} ${durationSec}s cubic-bezier(0.4, 0, 0.2, 1) infinite`
+              : undefined,
         }}
       >
         {slides.map((slide, slideIndex) => (
