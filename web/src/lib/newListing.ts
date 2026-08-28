@@ -14,7 +14,7 @@ const NEW_LISTING_MS = NEW_LISTING_DAYS * 24 * 60 * 60 * 1000;
  */
 export const PRODUCT_LISTED_AT: Record<string, string> = {
   // Public drop window for The Gators — badge auto-clears after NEW_LISTING_DAYS.
-  [GATORS_SLUG]: "2026-08-28T12:00:00.000Z",
+  [GATORS_SLUG]: "2026-08-28T00:00:00.000Z",
 };
 
 /** Fallback for catalog seeds of established products (never “new”). */
