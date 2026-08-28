@@ -453,9 +453,6 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
             className="mt-24 sm:mt-32 lg:mt-40"
           >
             <div className="mb-10 sm:mb-14 border-t border-neutral-200 pt-16 sm:pt-20 lg:pt-24">
-              <p className="text-[11px] sm:text-xs uppercase tracking-[0.4em] text-neutral-400 mb-4 sm:mb-6">
-                Next section
-              </p>
               <h2
                 id="footwear-apparel-heading"
                 className="text-6xl sm:text-8xl lg:text-[7.5rem] xl:text-[9rem] font-semibold tracking-[-0.04em] leading-[0.85] text-neutral-900"
