@@ -90,6 +90,8 @@ function cardMetaForSlug(slug: string) {
 type ProductsContentProps = {
   /** Default "footwear" keeps Engineering/Collaborative products out of the All Footwear grid. */
   category?: "footwear" | "accessories" | "health" | "all";
+  /** When true (home page), show a bounce arrow under the bold heading as a scroll cue. */
+  showScrollCue?: boolean;
 };
 
 function categorySeed(category: ProductsContentProps["category"]): Product[] {
@@ -99,7 +101,10 @@ function categorySeed(category: ProductsContentProps["category"]): Product[] {
   return [];
 }
 
-export default function ProductsContent({ category = "footwear" }: ProductsContentProps) {
+export default function ProductsContent({
+  category = "footwear",
+  showScrollCue = false,
+}: ProductsContentProps) {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q");
   const router = useRouter();
@@ -236,6 +241,18 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
             <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
               {heading}
             </h1>
+            {showScrollCue && !searchQuery && (
+              <svg
+                className="mt-2 h-4 w-4 animate-bounce text-neutral-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                aria-hidden
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              </svg>
+            )}
             {!searchQuery && (
               <p className="mt-2 text-sm text-neutral-500 max-w-md">
                 {subheading}
@@ -279,6 +296,18 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
               <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
                 {heading}
               </h1>
+              {showScrollCue && !searchQuery && (
+                <svg
+                  className="mt-2 h-4 w-4 animate-bounce text-neutral-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  aria-hidden
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                </svg>
+              )}
               {!searchQuery && (
                 <p className="mt-2 text-sm text-neutral-500 max-w-md">
                   {subheading}
