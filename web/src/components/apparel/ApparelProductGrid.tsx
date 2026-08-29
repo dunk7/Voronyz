@@ -67,16 +67,13 @@ export default function ApparelProductGrid({
                 }`}
                 sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
               />
-              <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-1.5">
-                {!hideSubcategoryBadge && (
+              {!hideSubcategoryBadge && (
+                <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-1.5">
                   <span className="rounded-full bg-white/90 backdrop-blur-sm px-3 py-1 text-[11px] font-medium text-neutral-600 shadow-sm ring-1 ring-black/5">
                     {subcategory?.label ?? "Apparel"}
                   </span>
-                )}
-                <span className="rounded-full bg-neutral-900 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white shadow-sm">
-                  Pre-order
-                </span>
-              </div>
+                </div>
+              )}
               {isNavigating && (
                 <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
                   <LogoLoader size="sm" tone="light" showBar={false} className="!gap-0" />
