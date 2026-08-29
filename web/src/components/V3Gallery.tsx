@@ -324,9 +324,8 @@ export default function V3Gallery({
       <video
         ref={isActive ? videoRef : undefined}
         src={m.src}
-        poster={m.poster}
-        className="h-full w-full object-contain object-[60%_50%] pointer-events-none"
-        preload="metadata"
+        className="h-full w-full object-contain object-[60%_50%] pointer-events-none bg-neutral-50"
+        preload="auto"
         playsInline
         muted
         loop

@@ -223,6 +223,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     galleryMedia.push({
       type: "video",
       src: "/products/slip-ons/C1150.mp4",
+      // Thumbnail only — main player does not use poster (avoids LQ still flash).
       poster: "/products/slip-ons/InShot_20260405_203151152.jpg",
     });
   }
