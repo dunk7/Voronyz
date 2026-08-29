@@ -8,7 +8,14 @@ import {
   KNOWN_DISCOUNTED_UNIT_PRICES,
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
-import { clearDiscountUrgencySession } from "@/lib/discountUrgencySession";
+import {
+  activateDiscountSession,
+  bootDiscountSession,
+  clearDiscountSession,
+  getActiveDiscountCode,
+  stripPersistedCartDiscountCode,
+  subscribeDiscountSession,
+} from "@/lib/discountSession";
 import { resolveIsPreOrder } from "@/lib/preorder";
 import {
   cartHasInsurableItems,
@@ -69,7 +76,10 @@ export default function CartClient() {
     });
 
   useEffect(() => {
-    // Load cart from localStorage
+    bootDiscountSession();
+    stripPersistedCartDiscountCode();
+
+    // Load cart items from localStorage; discount lives in session only.
     try {
       const cartDataStr = localStorage.getItem("cart");
       if (cartDataStr) {
@@ -79,22 +89,18 @@ export default function CartClient() {
           // Legacy array format, migrate
           loadedItems = parsed.map((item: unknown) => ({ ...(item as CartItem) }));
           setItems(loadedItems);
-          setDiscountCode(null);
           setShippingInsurance(false);
           saveCart({ items: loadedItems, discountCode: null, shippingInsurance: false });
         } else {
-          const normalizedCode = normalizeDiscountCode(parsed.discountCode);
           const loadedInsurance = isShippingInsuranceRequested(parsed.shippingInsurance);
           loadedItems = (parsed.items || []).map((it) => {
             // Migrate to always have a base unit price.
             const base = typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
 
             // Heuristic: older carts used to overwrite `priceCents` when a coupon was applied.
-            // If we have a coupon and the stored "base" looks like one of the coupon prices,
-            // restore the typical base price so clearing the coupon works as expected.
+            // If the stored "base" looks like one of the coupon prices, restore the typical base.
             const looksLikeCouponPrice = KNOWN_DISCOUNTED_UNIT_PRICES.has(base);
-            const repairedBase =
-              normalizedCode && isValidDiscountCode(normalizedCode) && looksLikeCouponPrice ? 7500 : base;
+            const repairedBase = looksLikeCouponPrice ? 7500 : base;
 
             return {
               ...it,
@@ -103,12 +109,11 @@ export default function CartClient() {
             };
           });
           setItems(loadedItems);
-          setDiscountCode(normalizedCode);
           setShippingInsurance(loadedInsurance);
-          // Persist the normalized/migrated shape so pricing stays consistent.
+          // Never persist discount codes in localStorage — session-only.
           saveCart({
             items: loadedItems,
-            discountCode: normalizedCode,
+            discountCode: null,
             shippingInsurance: loadedInsurance,
           });
         }
@@ -117,7 +122,19 @@ export default function CartClient() {
       console.error("Failed to load cart from localStorage:", error);
       localStorage.removeItem("cart");
     }
+
+    setDiscountCode(getActiveDiscountCode());
     setIsLoading(false);
+
+    const syncSessionCode = () => {
+      setDiscountCode(getActiveDiscountCode());
+    };
+    const unsubscribe = subscribeDiscountSession(syncSessionCode);
+    window.addEventListener("cartUpdated", syncSessionCode);
+    return () => {
+      unsubscribe();
+      window.removeEventListener("cartUpdated", syncSessionCode);
+    };
   }, []);
 
   // Optional ?discount= toast (bio links now land on home; cart may still receive this param).
@@ -145,10 +162,18 @@ export default function CartClient() {
   const clearMessage = () => setMessage("");
   const saveCart = (cartData: CartData) => {
     setItems(cartData.items);
-    setDiscountCode(cartData.discountCode);
+    // Discount is session-only — never write it into localStorage.
+    setDiscountCode(getActiveDiscountCode());
     setShippingInsurance(Boolean(cartData.shippingInsurance));
     try {
-      localStorage.setItem("cart", JSON.stringify(cartData));
+      localStorage.setItem(
+        "cart",
+        JSON.stringify({
+          items: cartData.items,
+          discountCode: null,
+          shippingInsurance: Boolean(cartData.shippingInsurance),
+        })
+      );
       // Dispatch event to update cart count in header
       window.dispatchEvent(new Event('cartUpdated'));
     } catch (error) {
@@ -160,9 +185,9 @@ export default function CartClient() {
     clearMessage();
     const normalized = normalizeDiscountCode(inputValue);
     if (isValidDiscountCode(normalized)) {
-      // Manual cart entry must not unlock the short-link urgency timer.
-      clearDiscountUrgencySession();
-      // Do NOT mutate stored item prices; compute discounted totals from `discountCode` so UI can't desync.
+      // Manual cart entry activates the same visible code + timer as a short link.
+      activateDiscountSession(normalized, "manual");
+      // Do NOT mutate stored item prices; compute discounted totals from session code.
       const migratedItems = items.map((it) => {
         const base = getBaseUnitPriceCents(it);
         return { ...it, basePriceCents: base, priceCents: base };
@@ -172,7 +197,8 @@ export default function CartClient() {
         const discounted = unitPriceForItem(it, normalized) * it.quantity;
         return sum + Math.max(0, base - discounted);
       }, 0);
-      saveCart({ items: migratedItems, discountCode: normalized, shippingInsurance });
+      saveCart({ items: migratedItems, discountCode: null, shippingInsurance });
+      setDiscountCode(normalized);
       setInputValue("");
       setMessage(
         savings > 0
@@ -187,12 +213,13 @@ export default function CartClient() {
   };
 
   const clearDiscount = () => {
-    clearDiscountUrgencySession();
+    clearDiscountSession();
     const migratedItems = items.map((it) => {
       const base = getBaseUnitPriceCents(it);
       return { ...it, basePriceCents: base, priceCents: base };
     });
     saveCart({ items: migratedItems, discountCode: null, shippingInsurance });
+    setDiscountCode(null);
     setInputValue("");
     setMessage("Discount removed.");
     setTimeout(clearMessage, 3000);
@@ -201,17 +228,17 @@ export default function CartClient() {
   function remove(itemId: string) {
     const newItems = items.filter(item => item.id !== itemId);
     const nextInsurance = cartHasInsurableItems(newItems) ? shippingInsurance : false;
-    saveCart({ items: newItems, discountCode, shippingInsurance: nextInsurance });
+    saveCart({ items: newItems, discountCode: null, shippingInsurance: nextInsurance });
   }
 
   function updateQuantity(itemId: string, nextQty: number) {
     const qty = Math.min(99, Math.max(1, Number(nextQty) || 1));
     const newItems = items.map((it) => (it.id === itemId ? { ...it, quantity: qty } : it));
-    saveCart({ items: newItems, discountCode, shippingInsurance });
+    saveCart({ items: newItems, discountCode: null, shippingInsurance });
   }
 
   function toggleShippingInsurance(next: boolean) {
-    saveCart({ items, discountCode, shippingInsurance: next });
+    saveCart({ items, discountCode: null, shippingInsurance: next });
   }
 
   const subtotalBeforeDiscount = items.reduce((sum, it) => {

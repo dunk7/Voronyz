@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { applyDiscountCodeToCartStorage } from "@/lib/applyDiscountToCart";
-import { markDiscountUrgencyFromShortLink } from "@/lib/discountUrgencySession";
 
 type ApplyDiscountRedirectProps = {
   code: string;
@@ -11,8 +10,8 @@ type ApplyDiscountRedirectProps = {
 };
 
 /**
- * Writes the influencer discount into the local cart, then sends the shopper
- * to the storefront with the code already active.
+ * Activates the influencer discount for this browser session, then sends the
+ * shopper to the storefront with the code + timer already visible.
  */
 export default function ApplyDiscountRedirect({
   code,
@@ -23,7 +22,7 @@ export default function ApplyDiscountRedirect({
 
   useEffect(() => {
     try {
-      const applied = applyDiscountCodeToCartStorage(code);
+      const applied = applyDiscountCodeToCartStorage(code, "link");
       if (!applied) {
         setError("Could not apply this discount. Continuing to the store…");
         const timer = window.setTimeout(() => {
@@ -31,7 +30,6 @@ export default function ApplyDiscountRedirect({
         }, 1200);
         return () => window.clearTimeout(timer);
       }
-      markDiscountUrgencyFromShortLink(applied);
       router.replace(redirectTo);
     } catch (err) {
       console.error("Failed to auto-apply discount code:", err);

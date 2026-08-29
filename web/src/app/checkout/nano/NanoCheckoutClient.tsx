@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { formatCentsAsCurrency } from "@/lib/money";
+import { clearDiscountSession } from "@/lib/discountSession";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -109,6 +110,7 @@ export default function NanoCheckoutClient() {
 
       if (data.status === "paid" || data.status === "preorder") {
         localStorage.removeItem("cart");
+        clearDiscountSession();
         window.dispatchEvent(new Event("cartUpdated"));
       }
     } catch (err) {
