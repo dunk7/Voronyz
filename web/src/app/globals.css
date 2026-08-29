@@ -111,6 +111,16 @@ video {
   position: relative;
 }
 
+/* Slow seamless drift — shifts by one tile so the hex pattern never jumps */
+@keyframes hex-texture-drift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 50px 43px;
+  }
+}
+
 .bg-texture-white::before {
   content: '';
   position: absolute;
@@ -120,6 +130,7 @@ video {
   background-size: 50px 43px;
   background-position: 0 0;
   background-repeat: repeat;
+  animation: hex-texture-drift 120s linear infinite;
   pointer-events: none;
   z-index: 0;
 }
@@ -204,6 +215,10 @@ video {
   .logo-loader-bar-fill {
     width: 55%;
     left: 22.5%;
+  }
+
+  .bg-texture-white::before {
+    animation: none;
   }
 
   .motion-media-track {
