@@ -431,10 +431,6 @@ export default function ProductsContent({
               >
                 Apparel
               </h2>
-              <p className="mt-6 sm:mt-8 max-w-lg text-sm sm:text-base text-neutral-500 leading-relaxed">
-                A couple of highlights from the lineup — open Apparel for the full
-                collection.
-              </p>
             </div>
 
             <ApparelProductGrid products={apparelTeaserProducts} />
