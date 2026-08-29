@@ -59,9 +59,6 @@ export default function ApparelHubContent() {
               <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
                 Apparel
               </h1>
-              <p className="mt-2 text-sm text-neutral-500 max-w-xl">
-                Built different people need built different apparel.
-              </p>
             </div>
             <span className="text-xs tabular-nums text-neutral-400">
               {collectionProducts.length} listing

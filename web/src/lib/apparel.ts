@@ -135,8 +135,8 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
   {
     slug: "voronyz-oversized-tee",
     subcategory: "shirts",
-    name: "Oversized Shirt",
-    description: "Relaxed oversized shirt with a soft hand-feel and clean drape.",
+    name: "Oversized Tee",
+    description: "Built big on purpose — soft, roomy, and easy to wear.",
     priceCents: 4800,
     colors: ["black", "white", "grey"],
     sizes: [...APPAREL_SIZES],

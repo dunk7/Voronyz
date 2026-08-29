@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import HeroParallax from "@/components/HeroParallax";
+import MotionMediaCarousel from "@/components/MotionMediaCarousel";
 import { ArrowRight } from "lucide-react";
 import { Suspense } from "react";
 import ProductsContent from "@/app/products/ProductsContent";
@@ -26,80 +27,20 @@ export default function Home() {
         {/* Hero content */}
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-20 sm:py-24 md:py-28 lg:py-12 xl:py-14 2xl:py-16 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-10 sm:gap-12 lg:gap-16">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             {/* Text / CTA Column */}
-            <div className="lg:col-span-4 space-y-5 sm:space-y-6 md:space-y-7 order-2 lg:order-1">
-
-              {/* Eyebrow badge */}
-              <div className="hero-stagger-1 flex items-center gap-2.5">
-                <span className="inline-block h-px w-6 bg-white/30" />
-                <p className="uppercase tracking-[0.3em] text-[10px] sm:text-xs font-medium text-neutral-400">
-                  Voronyz Engineering
-                </p>
-              </div>
+            <div className="lg:col-span-4 space-y-5 sm:space-y-6 order-2 lg:order-1">
+              {/* Brand mark */}
+              <p className="hero-stagger-1 uppercase tracking-[0.18em] text-[11px] sm:text-xs font-medium text-neutral-300">
+                Voronyz Engineering
+              </p>
 
               {/* Main headline */}
               <h1 className="hero-stagger-2 text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-semibold leading-[1.08] sm:leading-[1.1] tracking-tight text-white">
                 3D Printed<br className="hidden sm:block" /> Footwear
               </h1>
 
-              {/* Subheadline */}
-              <p className="hero-stagger-3 text-neutral-400 text-sm sm:text-base md:text-lg max-w-md leading-relaxed">
-                Otherworldly comfort, precision-engineered performance, and bold style — all 3D-printed to your exact fit. Explore our latest models below.
-
-
-              </p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
               {/* CTA buttons */}
-              <div className="hero-stagger-4 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 sm:gap-3 pt-1">
+              <div className="hero-stagger-3 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 sm:gap-3 pt-1">
                 <Link
                   href="/products/slip-ons"
                   className="group btn-shimmer inline-flex items-center justify-center gap-2 rounded-full bg-white text-black px-6 py-3 text-sm font-semibold shadow-lg shadow-white/10 hover:shadow-white/20 transition-all duration-200 text-center"
@@ -151,52 +92,15 @@ export default function Home() {
           </div>
         </div>
       </section>
-      
-      {/* Video Section */}
-      <section className="bg-texture-white border-t border-neutral-200">
-        <div className="container py-16 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-          <div className="lg:col-span-7">
-            <div className="lg:col-span-7">
-              <div className="relative aspect-video w-full overflow-hidden rounded-2xl ring-1 ring-neutral-200 shadow-lg bg-neutral-100">
-                <video
-                  src="/products/slip-ons/C1150.mp4"
-                  poster="/products/slip-ons/InShot_20260405_203151152.jpg"
-                  className="h-full w-full object-cover"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="lg:col-span-5 space-y-4">
-            <h3 className="text-xl font-semibold text-neutral-900">See it in motion</h3>
-            <p className="text-neutral-600">A glimpse at the Slip Ons in action — flexible lattice sole, clean silhouette, all 3D-printed to your fit.</p>
-            <div className="flex items-center gap-3">
-              <Link href="/products/slip-ons" className="rounded-full bg-black text-white px-5 py-3 text-sm font-medium hover:bg-neutral-800 transition">Shop Slip Ons</Link>
-              <Link href="/products" className="rounded-full ring-1 ring-neutral-800 px-5 py-3 text-sm font-medium hover:bg-neutral-50 transition text-neutral-700">Explore All</Link>
-            </div>
-          </div>
-        </div>
 
-        {/* Divider with scroll cue */}
-        <div className="container">
-          <div className="relative flex items-center gap-4 pb-2">
-            <div className="flex-1 h-px bg-neutral-200" />
-            <div className="flex flex-col items-center gap-1 text-neutral-400">
-              <span className="text-[11px] uppercase tracking-[0.2em] font-medium">All Footwear</span>
-              <svg className="h-4 w-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-              </svg>
-            </div>
-            <div className="flex-1 h-px bg-neutral-200" />
-          </div>
+      {/* Video Section — looping video + photo carousel */}
+      <section className="bg-texture-white border-t border-neutral-200">
+        <div className="container py-16">
+          <MotionMediaCarousel />
         </div>
       </section>
 
-      {/* All Footwear — seamless continuation */}
+      {/* All Footwear — seamless continuation (heading + scroll arrow live in ProductsContent) */}
       <Suspense fallback={
         <div className="bg-texture-white">
           <div className="container flex min-h-[40vh] items-center justify-center py-16">
@@ -204,7 +108,7 @@ export default function Home() {
           </div>
         </div>
       }>
-        <ProductsContent />
+        <ProductsContent showScrollCue />
       </Suspense>
     </div>
   );

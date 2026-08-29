@@ -65,7 +65,7 @@ async function main() {
           slug: "v3-slides",
           name: "V3 Slides",
           description:
-            "World-class FDM printed slides with TPU lattice lowers and breathable uppers. Engineered from precision 3D scans.",
+            "Engineered for comfort, built to last. World-class FDM printed slides with TPU lattice lowers and breathable uppers.",
           priceCents: 7500,
           currency: "usd",
           images: [
@@ -167,7 +167,7 @@ async function main() {
           slug: "dragonfly",
           name: "The Dragonfly's",
           description:
-            "Lightweight, breathable 3D-printed sneakers with a custom lattice sole and interchangeable laces. Engineered for all-day comfort.",
+            "Engineered for walking and active days, built to last. Lightweight, breathable 3D-printed sneakers with a custom lattice sole and interchangeable laces.",
           priceCents: 6500,
           currency: "usd",
           images: [
@@ -204,7 +204,7 @@ async function main() {
         data: {
           name: "The Dragonfly's",
           description:
-            "Lightweight, breathable 3D-printed sneakers with a custom lattice sole and interchangeable laces. Engineered for all-day comfort.",
+            "Engineered for walking and active days, built to last. Lightweight, breathable 3D-printed sneakers with a custom lattice sole and interchangeable laces.",
           priceCents: 6500,
           images: [
             "/products/dragonfly/InShot_20260212_153516456.jpg",
@@ -267,7 +267,7 @@ async function main() {
           slug: "slip-ons",
           name: "Slip Ons",
           description:
-            "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
+            "Engineered for easy everyday wear, built to last. Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
           priceCents: 6000,
           currency: "usd",
           images: slipOnImages,
@@ -294,7 +294,7 @@ async function main() {
         data: {
           name: "Slip Ons",
           description:
-            "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
+            "Engineered for easy everyday wear, built to last. Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
           priceCents: 6000,
           images: slipOnImages,
           primaryColors: ["black", "grey", "white", "orange", "pink"],

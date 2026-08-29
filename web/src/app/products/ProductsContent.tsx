@@ -1,22 +1,19 @@
 "use client";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { formatCentsAsCurrency } from "@/lib/money";
-import { MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
 import { filterAccessoryProducts, filterFootwearProducts, filterHealthProducts } from "@/lib/productCategories";
 import { getFootwearCatalogSeed, type FootwearListProduct } from "@/lib/footwear";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
-import { GATORS_SLUG } from "@/lib/gators";
+import NewListingBadge from "@/components/NewListingBadge";
+import { isNewListing } from "@/lib/newListing";
 import { FILAMENT_SLUG, getAccessoryCatalogSeed } from "@/lib/filament";
-import { LATTICE_INSOLES_SLUG } from "@/lib/latticeInsoles";
 import { APPAREL_CATALOG } from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
-import { VIOLETTE_PONYBEAD_SLUG } from "@/lib/violettePonybeadAnimals";
 
 /** Homepage apparel teaser — a couple of highlights, not the full catalog. */
 const HOME_APPAREL_TEASER_SLUGS = [
@@ -27,38 +24,25 @@ const HOME_APPAREL_TEASER_SLUGS = [
 type Product = FootwearListProduct;
 
 /* ── per-product metadata (tags / alt images). “New” / “Best Seller” badges are rendered by slug below so only Slip Ons can show New. ── */
+/* Alt hover images only — no category pills on thumbnails (name already says what it is). */
 const productMeta: Record<string, {
-  tag?: string;
   promo?: string;
   altImage?: string;
 }> = {
   "v3-slides": {
-    tag: "Slides",
     altImage: "/products/v3-slides/InShot_20260212_193956953.jpg",
   },
   dragonfly: {
     altImage: "/products/dragonfly/InShot_20260212_153903491.jpg",
   },
   "slip-ons": {
-    tag: "Slip-ons",
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
   "magikid-shoes": {
-    tag: "Kids",
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
   "tpu-90a-filament": {
-    tag: "Filament",
     altImage: "/products/tpu-90a-filament/pink-tpu-90a-spool-angle.jpg",
-  },
-  "antioxidant-trail-mix": {
-    tag: "Collaborative",
-  },
-  [VIOLETTE_PONYBEAD_SLUG]: {
-    tag: "Collaborative",
-  },
-  [LATTICE_INSOLES_SLUG]: {
-    tag: "Insoles",
   },
 };
 
@@ -76,12 +60,6 @@ function cardMetaForSlug(slug: string) {
     case FILAMENT_SLUG:
     case "tpu-90a-filament":
       return productMeta["tpu-90a-filament"];
-    case "antioxidant-trail-mix":
-      return productMeta["antioxidant-trail-mix"];
-    case VIOLETTE_PONYBEAD_SLUG:
-      return productMeta[VIOLETTE_PONYBEAD_SLUG];
-    case LATTICE_INSOLES_SLUG:
-      return productMeta[LATTICE_INSOLES_SLUG];
     default:
       return productMeta[s] as (typeof productMeta)["v3-slides"] | undefined;
   }
@@ -90,6 +68,8 @@ function cardMetaForSlug(slug: string) {
 type ProductsContentProps = {
   /** Default "footwear" keeps Engineering/Collaborative products out of the All Footwear grid. */
   category?: "footwear" | "accessories" | "health" | "all";
+  /** When true (home page), show a bounce arrow under the bold heading as a scroll cue. */
+  showScrollCue?: boolean;
 };
 
 function categorySeed(category: ProductsContentProps["category"]): Product[] {
@@ -99,7 +79,10 @@ function categorySeed(category: ProductsContentProps["category"]): Product[] {
   return [];
 }
 
-export default function ProductsContent({ category = "footwear" }: ProductsContentProps) {
+export default function ProductsContent({
+  category = "footwear",
+  showScrollCue = false,
+}: ProductsContentProps) {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q");
   const router = useRouter();
@@ -188,7 +171,7 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
       ? "Engineered materials — TPU-90A filament, made for makers."
       : category === "health"
       ? "Helping the small businesses we support and stand for grow and be seen on the Voronyz marketplace."
-      : "3D-printed, scan-calibrated footwear — engineered for comfort, built to last.";
+      : "Each pair engineered for its purpose, built to last.";
   const emptyHref =
     category === "accessories"
       ? "/accessories"
@@ -236,6 +219,18 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
             <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
               {heading}
             </h1>
+            {showScrollCue && !searchQuery && (
+              <svg
+                className="mt-2 h-4 w-4 animate-bounce text-neutral-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                aria-hidden
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+              </svg>
+            )}
             {!searchQuery && (
               <p className="mt-2 text-sm text-neutral-500 max-w-md">
                 {subheading}
@@ -279,6 +274,18 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
               <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
                 {heading}
               </h1>
+              {showScrollCue && !searchQuery && (
+                <svg
+                  className="mt-2 h-4 w-4 animate-bounce text-neutral-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  aria-hidden
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                </svg>
+              )}
               {!searchQuery && (
                 <p className="mt-2 text-sm text-neutral-500 max-w-md">
                   {subheading}
@@ -361,36 +368,11 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                       />
                     )}
 
-                    {/* Top badges — slug-explicit so “New” / “New Listing” only appear on intended products */}
+                    {/* Status badges only — no category pills; New Listing is time-boxed (~1 week) */}
                     <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
                       {slugKey === "v3-slides" && (
                         <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-black text-white">
                           Best Seller
-                        </span>
-                      )}
-                      {slugKey === "slip-ons" && (
-                        <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
-                          New
-                        </span>
-                      )}
-                      {slugKey === GATORS_SLUG && (
-                        <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
-                          New Listing
-                        </span>
-                      )}
-                      {slugKey === FILAMENT_SLUG && (
-                        <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
-                          New Listing
-                        </span>
-                      )}
-                      {slugKey === LATTICE_INSOLES_SLUG && (
-                        <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
-                          New Listing
-                        </span>
-                      )}
-                      {slugKey === VIOLETTE_PONYBEAD_SLUG && (
-                        <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-emerald-600 text-white">
-                          New Listing
                         </span>
                       )}
                       {slugKey === TRAIL_MIX_SLUG && (
@@ -398,12 +380,11 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                           Sold Out
                         </span>
                       )}
-                      {meta?.tag && (
-                        <span className="rounded-full bg-white/90 backdrop-blur-sm px-3 py-1 text-[11px] font-medium text-neutral-600 shadow-sm ring-1 ring-black/5">
-                          {meta.tag}
-                        </span>
-                      )}
                     </div>
+
+                    {isNewListing(slugKey, p.createdAt) && (
+                      <NewListingBadge animated />
+                    )}
 
                     {/* Promo ribbon */}
                     {meta?.promo && (
@@ -424,20 +405,11 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                     )}
                   </div>
 
-                  {/* Card info — details (description, processing, colors, sizes) live on the product page */}
+                  {/* Card info — name only; price and details live on the product page */}
                   <div className="mt-4 px-0.5">
-                    <div className="flex items-baseline justify-between gap-3">
-                      <h2 className="text-[15px] font-semibold text-neutral-900 group-hover:text-black transition-colors truncate">
-                        {p.name}
-                      </h2>
-                      <span className="text-[15px] font-semibold tabular-nums text-neutral-900 whitespace-nowrap shrink-0">
-                        {p.slug === "dragonfly" || p.slug === "magikid-shoes" ? "From " : ""}
-                        {formatCentsAsCurrency(
-                          p.slug === "dragonfly" ? 6000 : p.slug === "magikid-shoes" ? MAGIKID_SHOES_BASE_PRICE_CENTS : p.priceCents,
-                          p.currency
-                        )}
-                      </span>
-                    </div>
+                    <h2 className="text-[15px] font-semibold text-neutral-900 group-hover:text-black transition-colors line-clamp-2">
+                      {p.name}
+                    </h2>
                   </div>
                 </Link>
               );
@@ -453,9 +425,6 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
             className="mt-24 sm:mt-32 lg:mt-40"
           >
             <div className="mb-10 sm:mb-14 border-t border-neutral-200 pt-16 sm:pt-20 lg:pt-24">
-              <p className="text-[11px] sm:text-xs uppercase tracking-[0.4em] text-neutral-400 mb-4 sm:mb-6">
-                Next section
-              </p>
               <h2
                 id="footwear-apparel-heading"
                 className="text-6xl sm:text-8xl lg:text-[7.5rem] xl:text-[9rem] font-semibold tracking-[-0.04em] leading-[0.85] text-neutral-900"

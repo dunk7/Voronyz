@@ -18,6 +18,7 @@ import {
   LATTICE_INSOLES_SLUG,
 } from "@/lib/latticeInsoles";
 import { getProductThumbnail } from "@/lib/productImages";
+import { catalogSeedListedAt } from "@/lib/newListing";
 
 /** Core footwear catalog — used as an immediate client seed when /api/search is slow or down. */
 export type FootwearCatalogItem = {
@@ -38,7 +39,7 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     slug: "v3-slides",
     name: "V3 Slides",
     description:
-      "World-class FDM printed slides with TPU lattice lowers and breathable uppers. Engineered from precision 3D scans.",
+      "Engineered for comfort, built to last. World-class FDM printed slides with TPU lattice lowers and breathable uppers.",
     priceCents: 7500,
     images: [
       "/products/v3-slides/InShot_20260212_194352014.jpg",
@@ -57,7 +58,7 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     slug: "slip-ons",
     name: "Slip Ons",
     description:
-      "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
+      "Engineered for easy everyday wear, built to last. Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
     priceCents: 6000,
     images: [
       "/products/slip-ons/InShot_20260405_203151152.jpg",
@@ -81,7 +82,7 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     slug: "dragonfly",
     name: "The Dragonfly's",
     description:
-      "Lightweight, breathable 3D-printed sneakers with a custom lattice sole and interchangeable laces. Engineered for all-day comfort.",
+      "Engineered for walking and active days, built to last. Lightweight, breathable 3D-printed sneakers with a custom lattice sole and interchangeable laces.",
     priceCents: 6500,
     images: [
       "/products/dragonfly/InShot_20260212_153516456.jpg",
@@ -138,17 +139,19 @@ export type FootwearListProduct = {
 
 /** Instant grid seed so home / All Footwear never flash empty while the API loads. */
 export function getFootwearCatalogSeed(): FootwearListProduct[] {
-  const now = new Date().toISOString();
-  return FOOTWEAR_CATALOG.map((item) => ({
-    id: `catalog-${item.slug}`,
-    slug: item.slug,
-    name: item.name,
-    description: item.description,
-    priceCents: item.priceCents,
-    currency: "usd",
-    images: item.images,
-    thumbnail: getProductThumbnail({ slug: item.slug, images: item.images }),
-    createdAt: now,
-    updatedAt: now,
-  }));
+  return FOOTWEAR_CATALOG.map((item) => {
+    const listedAt = catalogSeedListedAt(item.slug);
+    return {
+      id: `catalog-${item.slug}`,
+      slug: item.slug,
+      name: item.name,
+      description: item.description,
+      priceCents: item.priceCents,
+      currency: "usd",
+      images: item.images,
+      thumbnail: getProductThumbnail({ slug: item.slug, images: item.images }),
+      createdAt: listedAt,
+      updatedAt: listedAt,
+    };
+  });
 }

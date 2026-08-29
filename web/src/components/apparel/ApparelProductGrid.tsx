@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { formatCentsAsCurrency } from "@/lib/money";
 import {
   getApparelSubcategory,
   type ApparelSubcategoryId,
@@ -85,14 +84,9 @@ export default function ApparelProductGrid({
               )}
             </div>
             <div className="mt-4 px-0.5">
-              <div className="flex items-baseline justify-between gap-3">
-                <h3 className="text-[15px] font-semibold text-neutral-900 truncate">
-                  {product.name}
-                </h3>
-                <span className="text-[15px] font-semibold tabular-nums text-neutral-900 shrink-0">
-                  {formatCentsAsCurrency(product.priceCents, product.currency)}
-                </span>
-              </div>
+              <h3 className="text-[15px] font-semibold text-neutral-900 line-clamp-2">
+                {product.name}
+              </h3>
             </div>
           </Link>
         );

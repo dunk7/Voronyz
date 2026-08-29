@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { formatCentsAsCurrency } from "@/lib/money";
 import { getProductThumbnail } from "@/lib/productImages";
 import LogoLoader, { LogoMark } from "@/components/ui/LogoLoader";
 
@@ -301,8 +300,11 @@ export default function Header() {
   return (
     <>
       {routeLoading && (
-        <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center">
-          <LogoLoader size="md" tone="light" label="Loading" className="bg-transparent" />
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black"
+          style={{ background: "#000000" }}
+        >
+          <LogoLoader size="md" tone="light" label="Loading" />
         </div>
       )}
       <header className={`sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/70 bg-neutral-950/80 border-b border-white/10 transition-transform duration-300 ${hide ? "-translate-y-full" : "translate-y-0"}`}>
@@ -310,15 +312,7 @@ export default function Header() {
           {/* Left cluster: brand + nav */}
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-3" aria-label="Voronyz home">
-              <Image
-                src="/logo.png"
-                alt="Voronyz"
-                width={40}
-                height={40}
-                priority
-                className="bg-transparent"
-                style={{ background: "transparent" }}
-              />
+              <LogoMark size={40} tone="light" animate={false} priority />
               <span className="text-lg sm:text-xl font-semibold tracking-[0.2em] text-white">VORONYZ</span>
             </Link>
             <nav className="hidden xl:flex items-center gap-1 ml-2 min-w-0">
@@ -502,11 +496,8 @@ export default function Header() {
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="text-sm font-medium text-white truncate group-hover:text-white/95">{product.name}</div>
+                              <div className="text-sm font-medium text-white line-clamp-2 group-hover:text-white/95">{product.name}</div>
                               <div className="text-xs text-white/70 truncate group-hover:text-white/80">{product.description}</div>
-                            </div>
-                            <div className="text-sm font-semibold text-white group-hover:text-white/95 transition-colors">
-                              {formatCentsAsCurrency(product.priceCents, product.currency)}
                             </div>
                           </button>
                         );

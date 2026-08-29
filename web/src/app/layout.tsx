@@ -31,6 +31,12 @@ export const metadata: Metadata = {
   description:
     "Futuristic footwear engineered with 3D scanning, TPU lattices, and performance uppers. Shop the V3 Slides and more.",
   metadataBase: new URL(siteUrl),
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Voronyz",
+  },
   icons: {
     icon: [
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
@@ -66,9 +72,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" style={{ background: "#000000" }}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        style={{ background: "#000000" }}
         suppressHydrationWarning
       >
         <DiscountUrgencyBanner />

@@ -62,10 +62,11 @@ import {
   apparelProductShopLabel,
   getApparelItem,
   getApparelImages,
-  getApparelSubcategory,
   isObsoleteApparelSlug,
 } from "@/lib/apparel";
 import LogoLoader from "@/components/ui/LogoLoader";
+import NewListingBadge from "@/components/NewListingBadge";
+import { isNewListing } from "@/lib/newListing";
 import { redirect } from "next/navigation";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
@@ -262,15 +263,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             ? LATTICE_INSOLES_NAME
           : product.name;
 
-  // Product-specific descriptions
+  // Product-specific descriptions (oversized tee skips the top blurb — size picker covers fit)
   const displayDescription = slug === "v3-slides" 
-    ? "World-class FDM printed slides with TPU 90A lattice lowers and breathable uppers. Engineered from precision 3D scans."
+    ? "Engineered for comfort, built to last. World-class FDM printed slides with TPU 90A lattice lowers and breathable uppers."
     : slug === "dragonfly"
-    ? "Lightweight, breathable 3D-printed sneakers featuring a custom lattice sole for unmatched cushioning and style. Available in five stunning colorways with fully customizable lace colors."
+    ? "Engineered for walking and active days, built to last. Lightweight, breathable 3D-printed sneakers featuring a custom lattice sole for unmatched cushioning and style. Available in five stunning colorways with fully customizable lace colors."
     : isMagikidShoes
     ? MAGIKID_SHOES_DESCRIPTION
     : isSlipOns
-    ? "Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — black, grey, orange, and pink in stock; white temporarily unavailable."
+    ? "Engineered for easy everyday wear, built to last. Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — black, grey, orange, and pink in stock; white temporarily unavailable."
     : isTrailMix
     ? TRAIL_MIX_DESCRIPTION
     : isViolettePonybead
@@ -281,6 +282,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? FILAMENT_DESCRIPTION
     : isLatticeInsoles
     ? LATTICE_INSOLES_DESCRIPTION
+    : apparelItem?.slug === "voronyz-oversized-tee"
+    ? ""
     : product.description;
 
   const trailMixColors = isTrailMix
@@ -303,7 +306,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         </div>
         
         <div className="mb-8 space-y-4">
-          <p className="text-neutral-700 leading-relaxed">{displayDescription}</p>
+          {displayDescription ? (
+            <p className="text-neutral-700 leading-relaxed">{displayDescription}</p>
+          ) : null}
           <div className="flex flex-wrap gap-2">
             {isTrailMix ? (
               <span className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-white">
@@ -321,29 +326,21 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
               </span>
             )}
+            {isNewListing(slug, product.createdAt) && <NewListingBadge />}
             {isViolettePonybead && (
               <>
-                <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
-                  New Listing
-                </span>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">$10 each</span>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">4 animals</span>
               </>
             )}
             {isFilament && (
               <>
-                <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
-                  New Listing
-                </span>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">1kg spool</span>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU-90A</span>
               </>
             )}
             {isGators && (
               <>
-                <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
-                  New Listing
-                </span>
                 <span className="rounded-full bg-amber-600 px-3 py-1 text-xs font-semibold text-white">
                   Low Stock
                 </span>
@@ -351,9 +348,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             )}
             {isLatticeInsoles && (
               <>
-                <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
-                  New Listing
-                </span>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU lattice</span>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">S · M · L · XL</span>
               </>
@@ -365,16 +359,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             )}
             {!isMagikidShoes && !isTrailMix && !isApparel && !isFilament && !isLatticeInsoles && !isViolettePonybead && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
-            )}
-            {isApparel && apparelItem && (
-              <>
-                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
-                  {getApparelSubcategory(apparelItem.subcategory)?.label ?? "Apparel"}
-                </span>
-                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
-                  {apparelItem.sizes.join(" · ")}
-                </span>
-              </>
             )}
             {isTrailMix && (
               <>
@@ -520,8 +504,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? TRAIL_MIX_HOW_ITS_MADE
               : isViolettePonybead
               ? VIOLETTE_PONYBEAD_HOW_ITS_MADE
+              : apparelItem?.slug === "voronyz-oversized-tee"
+              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Pre-order now; we ship when this drop lands."
               : isApparel
-              ? "Voronyz Apparel is designed for a clean modern fit — consistent fabrics, considered proportions, and colorways that work across the full lineup. These pieces are available for pre-order: pay now to join the waitlist, and we'll ship when the drop arrives."
+              ? "Pre-order Voronyz Apparel — pay now to join the waitlist, and we ship when the drop arrives."
               : isGators
               ? GATORS_HOW_ITS_MADE
               : isFilament
