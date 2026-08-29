@@ -156,7 +156,7 @@ video {
   touch-action: manipulation;
 }
 
-/* Voronyz logo loader — real /logo.png mark + progress bar (no square frame) */
+/* Voronyz logo loader — pulsing /logo.png mark (bar optional, off by default) */
 @keyframes logo-mark-breathe {
   0%,
   100% {

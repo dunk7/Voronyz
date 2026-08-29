@@ -10,7 +10,7 @@ export default function Loading() {
       aria-live="polite"
       aria-label="Loading"
     >
-      <LogoLoader size="lg" tone="light" label="Loading" />
+      <LogoLoader size="lg" tone="light" />
     </div>
   );
 }

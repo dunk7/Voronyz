@@ -5,9 +5,12 @@ import Image from "next/image";
 type LogoLoaderProps = {
   /** Visual size of the logo mark */
   size?: "sm" | "md" | "lg";
-  /** Optional label under the mark */
+  /**
+   * Accessible status label (screen readers / aria only).
+   * Not shown visually — loading UI is the pulsing logo alone.
+   */
   label?: string;
-  /** Show the animated progress bar under the logo */
+  /** Show the animated progress bar under the logo (off by default) */
   showBar?: boolean;
   /** Light mark on dark overlays vs dark mark on light backgrounds */
   tone?: "dark" | "light";
@@ -34,18 +37,17 @@ function logoSrc(tone: "dark" | "light") {
   return tone === "light" ? LOGO_LIGHT : LOGO_DARK;
 }
 
-/** Animated Voronyz logo (same /logo.png as the header) with a flowing progress bar. */
+/** Animated Voronyz logo (same /logo.png as the header) — pulsing mark only. */
 export default function LogoLoader({
   size = "md",
   label,
-  showBar = true,
+  showBar = false,
   tone = "dark",
   className = "",
 }: LogoLoaderProps) {
   const dims = SIZE_MAP[size];
   const fill = tone === "light" ? "#ffffff" : "#0e0e0e";
   const barTrack = tone === "light" ? "rgba(255,255,255,0.18)" : "rgba(14,14,14,0.1)";
-  const labelColor = tone === "light" ? "text-white/70" : "text-neutral-500";
 
   return (
     <div
@@ -84,11 +86,7 @@ export default function LogoLoader({
         </div>
       )}
 
-      {label ? (
-        <p className={`text-xs tracking-[0.22em] uppercase ${labelColor}`}>{label}</p>
-      ) : (
-        <span className="sr-only">Loading</span>
-      )}
+      <span className="sr-only">{label || "Loading"}</span>
     </div>
   );
 }
