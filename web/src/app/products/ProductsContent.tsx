@@ -15,6 +15,9 @@ import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
 
+/** Homepage footwear teaser — slides + slip-ons only; full catalog on /products. */
+const HOME_FOOTWEAR_TEASER_SLUGS = ["v3-slides", "slip-ons"] as const;
+
 /** Homepage apparel teaser — a couple of highlights, not the full catalog. */
 const HOME_APPAREL_TEASER_SLUGS = [
   "voronyz-oversized-tee",
@@ -158,6 +161,21 @@ export default function ProductsContent({
     };
   }, [searchQuery, category]);
 
+  const isHomeFootwearTeaser =
+    showScrollCue && category === "footwear" && !searchQuery;
+  const showApparelContinuation = category === "footwear" && !searchQuery;
+
+  const displayProducts = useMemo(() => {
+    if (!isHomeFootwearTeaser) return products;
+    const bySlug = new Map(
+      products.map((p) => [(p.slug || "").trim().toLowerCase(), p]),
+    );
+    return HOME_FOOTWEAR_TEASER_SLUGS.flatMap((slug) => {
+      const product = bySlug.get(slug);
+      return product ? [product] : [];
+    });
+  }, [isHomeFootwearTeaser, products]);
+
   const heading =
     searchQuery
       ? `Results for "${searchQuery}"`
@@ -165,12 +183,16 @@ export default function ProductsContent({
       ? "Engineering"
       : category === "health"
       ? "Collaborative"
+      : isHomeFootwearTeaser
+      ? "Footwear"
       : "All Footwear";
   const subheading =
     category === "accessories"
       ? "Engineered materials — TPU-90A filament, made for makers."
       : category === "health"
       ? "Helping the small businesses we support and stand for grow and be seen on the Voronyz marketplace."
+      : isHomeFootwearTeaser
+      ? "A couple of highlights from the lineup — open Footwear for the full collection."
       : "Each pair engineered for its purpose, built to last.";
   const emptyHref =
     category === "accessories"
@@ -184,8 +206,6 @@ export default function ProductsContent({
       : category === "health"
         ? "View Collaborative"
         : "View all products";
-
-  const showApparelContinuation = category === "footwear" && !searchQuery;
 
   const apparelTeaserProducts = useMemo((): ApparelGridProduct[] => {
     if (!showApparelContinuation) return [];
@@ -293,14 +313,14 @@ export default function ProductsContent({
               )}
             </div>
             <span className="text-xs tabular-nums text-neutral-400 hidden sm:block">
-              {products.length} product{products.length === 1 ? "" : "s"}
+              {displayProducts.length} product{displayProducts.length === 1 ? "" : "s"}
             </span>
           </div>
           <div className="mt-6 h-px bg-neutral-200" />
         </div>
 
         {/* ── Empty state ── */}
-        {products.length === 0 && searchQuery ? (
+        {displayProducts.length === 0 && searchQuery ? (
           <div className="text-center py-20">
             <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
               <svg className="h-7 w-7 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -320,8 +340,9 @@ export default function ProductsContent({
           </div>
         ) : (
           /* ── Product grid ── */
+          <>
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {products.map((p) => {
+            {displayProducts.map((p) => {
               const slugKey = (p.slug || "").trim().toLowerCase();
               const { cover, alt } = getImages(p);
               const meta = cardMetaForSlug(slugKey);
@@ -415,6 +436,18 @@ export default function ProductsContent({
               );
             })}
           </div>
+
+          {isHomeFootwearTeaser && (
+            <div className="mt-10 sm:mt-12 flex justify-center">
+              <Link
+                href="/products"
+                className="inline-flex items-center justify-center rounded-full bg-neutral-900 text-white px-5 py-2.5 text-sm font-semibold hover:bg-neutral-800 transition"
+              >
+                Shop all footwear
+              </Link>
+            </div>
+          )}
+          </>
         )}
 
         {/* ── Apparel teaser after footwear (full catalog lives on /apparel) ── */}
