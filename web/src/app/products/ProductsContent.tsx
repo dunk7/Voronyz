@@ -210,29 +210,33 @@ export default function ProductsContent({
     });
   }, [showApparelContinuation]);
 
+  const sectionHeadingClass =
+    "text-3xl font-semibold tracking-tight text-neutral-900 text-center";
+  const scrollCue = showScrollCue && !searchQuery && (
+    <svg
+      className="mx-auto mt-2 h-4 w-4 animate-bounce text-neutral-400"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      aria-hidden
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+    </svg>
+  );
+
   /* ── Logo loader only when we have nothing to show yet ── */
   if (loading && products.length === 0) {
     return (
       <div className="bg-texture-white min-h-[80vh]">
         <div className="container py-16">
-          <div className="mb-12">
-            <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
+          <div className="mb-12 text-center">
+            <h1 className={sectionHeadingClass}>
               {heading}
             </h1>
-            {showScrollCue && !searchQuery && (
-              <svg
-                className="mt-2 h-4 w-4 animate-bounce text-neutral-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                aria-hidden
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-              </svg>
-            )}
+            {scrollCue}
             {!searchQuery && (
-              <p className="mt-2 text-sm text-neutral-500 max-w-md">
+              <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
                 {subheading}
               </p>
             )}
@@ -268,34 +272,19 @@ export default function ProductsContent({
     <div className="bg-texture-white min-h-[80vh]">
       <div className="container py-16">
         {/* ── Header ── */}
-        <div className="mb-12">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
-                {heading}
-              </h1>
-              {showScrollCue && !searchQuery && (
-                <svg
-                  className="mt-2 h-4 w-4 animate-bounce text-neutral-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  aria-hidden
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                </svg>
-              )}
-              {!searchQuery && (
-                <p className="mt-2 text-sm text-neutral-500 max-w-md">
-                  {subheading}
-                </p>
-              )}
-            </div>
-            <span className="text-xs tabular-nums text-neutral-400 hidden sm:block">
-              {products.length} product{products.length === 1 ? "" : "s"}
-            </span>
-          </div>
+        <div className="mb-12 text-center">
+          <h1 className={sectionHeadingClass}>
+            {heading}
+          </h1>
+          {scrollCue}
+          {!searchQuery && (
+            <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
+              {subheading}
+            </p>
+          )}
+          <p className="mt-3 text-xs tabular-nums text-neutral-400 hidden sm:block">
+            {products.length} product{products.length === 1 ? "" : "s"}
+          </p>
           <div className="mt-6 h-px bg-neutral-200" />
         </div>
 
@@ -424,14 +413,15 @@ export default function ProductsContent({
             aria-labelledby="footwear-apparel-heading"
             className="mt-24 sm:mt-32 lg:mt-40"
           >
-            <div className="mb-10 sm:mb-14 border-t border-neutral-200 pt-16 sm:pt-20 lg:pt-24">
+            <div className="mb-10 sm:mb-14 border-t border-neutral-200 pt-16 sm:pt-20 lg:pt-24 text-center">
               <h2
                 id="footwear-apparel-heading"
-                className="text-6xl sm:text-8xl lg:text-[7.5rem] xl:text-[9rem] font-semibold tracking-[-0.04em] leading-[0.85] text-neutral-900"
+                className={sectionHeadingClass}
               >
                 Apparel
               </h2>
-              <p className="mt-6 sm:mt-8 max-w-lg text-sm sm:text-base text-neutral-500 leading-relaxed">
+              {scrollCue}
+              <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto leading-relaxed">
                 A couple of highlights from the lineup — open Apparel for the full
                 collection.
               </p>
