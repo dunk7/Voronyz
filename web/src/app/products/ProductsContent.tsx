@@ -1,8 +1,6 @@
 "use client";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { formatCentsAsCurrency } from "@/lib/money";
-import { MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
 import { filterAccessoryProducts, filterFootwearProducts, filterHealthProducts } from "@/lib/productCategories";
 import { getFootwearCatalogSeed, type FootwearListProduct } from "@/lib/footwear";
 import { useEffect, useMemo, useState, useCallback } from "react";
@@ -424,20 +422,11 @@ export default function ProductsContent({ category = "footwear" }: ProductsConte
                     )}
                   </div>
 
-                  {/* Card info — details (description, processing, colors, sizes) live on the product page */}
+                  {/* Card info — name only; price and details live on the product page */}
                   <div className="mt-4 px-0.5">
-                    <div className="flex items-baseline justify-between gap-3">
-                      <h2 className="text-[15px] font-semibold text-neutral-900 group-hover:text-black transition-colors truncate">
-                        {p.name}
-                      </h2>
-                      <span className="text-[15px] font-semibold tabular-nums text-neutral-900 whitespace-nowrap shrink-0">
-                        {p.slug === "dragonfly" || p.slug === "magikid-shoes" ? "From " : ""}
-                        {formatCentsAsCurrency(
-                          p.slug === "dragonfly" ? 6000 : p.slug === "magikid-shoes" ? MAGIKID_SHOES_BASE_PRICE_CENTS : p.priceCents,
-                          p.currency
-                        )}
-                      </span>
-                    </div>
+                    <h2 className="text-[15px] font-semibold text-neutral-900 group-hover:text-black transition-colors line-clamp-2">
+                      {p.name}
+                    </h2>
                   </div>
                 </Link>
               );

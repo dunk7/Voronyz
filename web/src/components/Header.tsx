@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { formatCentsAsCurrency } from "@/lib/money";
 import { getProductThumbnail } from "@/lib/productImages";
 import LogoLoader, { LogoMark } from "@/components/ui/LogoLoader";
 
@@ -497,11 +496,8 @@ export default function Header() {
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="text-sm font-medium text-white truncate group-hover:text-white/95">{product.name}</div>
+                              <div className="text-sm font-medium text-white line-clamp-2 group-hover:text-white/95">{product.name}</div>
                               <div className="text-xs text-white/70 truncate group-hover:text-white/80">{product.description}</div>
-                            </div>
-                            <div className="text-sm font-semibold text-white group-hover:text-white/95 transition-colors">
-                              {formatCentsAsCurrency(product.priceCents, product.currency)}
                             </div>
                           </button>
                         );
