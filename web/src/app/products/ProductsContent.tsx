@@ -14,6 +14,7 @@ import { APPAREL_CATALOG } from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
+import FootwearBrowse from "@/components/footwear/FootwearBrowse";
 
 /** Homepage apparel teaser — a couple of highlights, not the full catalog. */
 const HOME_APPAREL_TEASER_SLUGS = [
@@ -171,7 +172,7 @@ export default function ProductsContent({
       ? "Engineered materials — TPU-90A filament, made for makers."
       : category === "health"
       ? "Helping the small businesses we support and stand for grow and be seen on the Voronyz marketplace."
-      : "Each pair engineered for its purpose, built to last.";
+      : "Scroll through each pair — take your time, find the one that feels like yours.";
   const emptyHref =
     category === "accessories"
       ? "/accessories"
@@ -186,6 +187,8 @@ export default function ProductsContent({
         : "View all products";
 
   const showApparelContinuation = category === "footwear" && !searchQuery;
+  /** Immersive one-at-a-time browse for All Footwear; keep grids for Engineering / Collaborative / search. */
+  const useFootwearBrowse = category === "footwear" && !searchQuery;
 
   const apparelTeaserProducts = useMemo((): ApparelGridProduct[] => {
     if (!showApparelContinuation) return [];
@@ -318,8 +321,11 @@ export default function ProductsContent({
               {emptyLabel}
             </Link>
           </div>
+        ) : useFootwearBrowse ? (
+          /* ── Immersive footwear browse: one large image + description per product ── */
+          <FootwearBrowse products={products} getImages={getImages} />
         ) : (
-          /* ── Product grid ── */
+          /* ── Product grid (Engineering / Collaborative / search) ── */
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {products.map((p) => {
               const slugKey = (p.slug || "").trim().toLowerCase();
