@@ -94,30 +94,18 @@ export default function Home() {
 
       {/* Video Section */}
       <section className="bg-texture-white border-t border-neutral-200">
-        <div className="container py-16 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-          <div className="lg:col-span-7">
-            <div className="lg:col-span-7">
-              <div className="relative aspect-video w-full overflow-hidden rounded-2xl ring-1 ring-neutral-200 shadow-lg bg-neutral-100">
-                <video
-                  src="/products/slip-ons/C1150.mp4"
-                  poster="/products/slip-ons/InShot_20260405_203151152.jpg"
-                  className="h-full w-full object-cover"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="lg:col-span-5 space-y-4">
-            <h3 className="text-xl font-semibold text-neutral-900">See it in motion</h3>
-            <p className="text-neutral-600">A glimpse at the Slip Ons in action — flexible lattice sole, clean silhouette, all 3D-printed to your fit.</p>
-            <div className="flex items-center gap-3">
-              <Link href="/products/slip-ons" className="rounded-full bg-black text-white px-5 py-3 text-sm font-medium hover:bg-neutral-800 transition">Shop Slip Ons</Link>
-              <Link href="/products" className="rounded-full ring-1 ring-neutral-800 px-5 py-3 text-sm font-medium hover:bg-neutral-50 transition text-neutral-700">Explore All</Link>
-            </div>
+        <div className="container py-16">
+          <div className="relative aspect-video w-full overflow-hidden rounded-2xl ring-1 ring-neutral-200 shadow-lg bg-neutral-100">
+            <video
+              src="/products/slip-ons/C1150.mp4"
+              poster="/products/slip-ons/InShot_20260405_203151152.jpg"
+              className="h-full w-full object-cover"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+            />
           </div>
         </div>
 
