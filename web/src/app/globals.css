@@ -130,7 +130,7 @@ video {
   background-size: 50px 43px;
   background-position: 0 0;
   background-repeat: repeat;
-  animation: hex-texture-drift 120s linear infinite;
+  animation: hex-texture-drift 60s linear infinite;
   pointer-events: none;
   z-index: 0;
 }
