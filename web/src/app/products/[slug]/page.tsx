@@ -368,8 +368,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="bg-texture-white">
-      <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 pt-3 pb-12 lg:pt-5">
-        <div className="mb-4 lg:mb-5">
+      <div className="mx-auto w-full max-w-[1500px] pt-3 pb-12 lg:pt-5 lg:px-6">
+        <div className="mb-3 lg:mb-5 px-4 sm:px-6 lg:px-0">
           <Link
             href={shopHref}
             className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 transition-colors"
@@ -384,11 +384,18 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         </div>
 
         {/* Gallery-first retail layout: large photos lead, buy box sits beside */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          <div className="lg:col-span-7 xl:col-span-8">
-            <V3Gallery media={galleryMedia} aspect="square" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 xl:gap-12 items-start">
+          <div className="lg:col-span-8">
+            {/* Full-bleed on mobile so product photos dominate the viewport */}
+            <div className="lg:rounded-none -mx-0 sm:mx-0">
+              <V3Gallery
+                media={galleryMedia}
+                aspect="square"
+                className="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
+              />
+            </div>
           </div>
-          <div className="lg:col-span-5 xl:col-span-4">
+          <div className="lg:col-span-4 px-4 sm:px-6 lg:px-0">
             <div className="lg:sticky lg:top-20 space-y-5">
               <div className="space-y-3">
                 <h1 className="text-2xl sm:text-3xl font-semibold text-neutral-900 tracking-tight leading-tight">

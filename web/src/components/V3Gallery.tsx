@@ -315,10 +315,10 @@ export default function V3Gallery({
           src={m.src}
           alt={m.alt || "Product image"}
           fill
-          className="object-cover object-center pointer-events-none"
+          className="object-cover object-center scale-[1.06] pointer-events-none"
           priority={index <= 1}
           loading={index <= 2 ? "eager" : "lazy"}
-          sizes="(max-width: 1024px) 100vw, 70vw"
+          sizes="(max-width: 1024px) 100vw, 75vw"
           draggable={false}
         />
       );
@@ -328,7 +328,7 @@ export default function V3Gallery({
         ref={isActive ? videoRef : undefined}
         src={m.src}
         poster={m.poster}
-        className="h-full w-full object-cover object-center pointer-events-none"
+        className="h-full w-full object-cover object-center scale-[1.06] pointer-events-none"
         preload="metadata"
         playsInline
         muted
