@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { applyDiscountCodeToCartStorage } from "@/lib/applyDiscountToCart";
 import { getDiscountCodeShopperDescription } from "@/lib/discountPricing";
-import { markDiscountUrgencyFromShortLink } from "@/lib/discountUrgencySession";
 import LogoLoader from "@/components/ui/LogoLoader";
 
 type InfluencerDiscountLandingProps = {
@@ -15,8 +14,8 @@ type InfluencerDiscountLandingProps = {
 };
 
 /**
- * Bio-link landing: stash the influencer discount in the cart, then send
- * first-time shoppers to the home page (cart would be empty) with the code active.
+ * Bio-link landing: activate the influencer discount for this session, then send
+ * first-time shoppers to the home page with the code + timer visible.
  */
 export default function InfluencerDiscountLanding({
   slug,
@@ -28,13 +27,11 @@ export default function InfluencerDiscountLanding({
   const benefit = getDiscountCodeShopperDescription(code);
 
   useEffect(() => {
-    const applied = applyDiscountCodeToCartStorage(code);
+    const applied = applyDiscountCodeToCartStorage(code, "link");
     if (!applied) {
       setStatus("error");
       return;
     }
-    // Unlock storefront urgency timer only for short-link arrivals.
-    markDiscountUrgencyFromShortLink(applied);
     setStatus("done");
     const timer = window.setTimeout(() => {
       router.replace("/");
