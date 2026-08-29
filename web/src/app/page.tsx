@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import HeroParallax from "@/components/HeroParallax";
+import MotionMediaCarousel from "@/components/MotionMediaCarousel";
 import { ArrowRight } from "lucide-react";
 import { Suspense } from "react";
 import ProductsContent from "@/app/products/ProductsContent";
@@ -92,23 +93,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Video Section */}
+      {/* Video Section — looping video + photo carousel */}
       <section className="bg-texture-white border-t border-neutral-200">
         <div className="container py-16">
-          <div className="relative aspect-video w-full overflow-hidden rounded-2xl ring-1 ring-neutral-200 shadow-lg bg-neutral-100">
-            <video
-              src="/products/slip-ons/C1150.mp4"
-              poster="/products/slip-ons/InShot_20260405_203151152.jpg"
-              className="h-full w-full object-cover"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-            />
-          </div>
+          <MotionMediaCarousel />
         </div>
-
       </section>
 
       {/* All Footwear — seamless continuation (heading + scroll arrow live in ProductsContent) */}

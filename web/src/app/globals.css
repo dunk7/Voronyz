@@ -205,6 +205,11 @@ video {
     width: 55%;
     left: 22.5%;
   }
+
+  .motion-media-track {
+    animation: none !important;
+    transform: none !important;
+  }
 }
 
 /* Product thumbnail: translucent “New Listing” slides right → left, then loops */
