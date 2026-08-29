@@ -22,25 +22,36 @@ export default function ApplyDiscountRedirect({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      const applied = applyDiscountCodeToCartStorage(code);
-      if (!applied) {
+    let cancelled = false;
+    let timer: number | undefined;
+
+    (async () => {
+      try {
+        const applied = await applyDiscountCodeToCartStorage(code);
+        if (cancelled) return;
+        if (!applied) {
+          setError("Could not apply this discount. Continuing to the store…");
+          timer = window.setTimeout(() => {
+            router.replace(redirectTo);
+          }, 1200);
+          return;
+        }
+        markDiscountUrgencyFromShortLink(applied);
+        router.replace(redirectTo);
+      } catch (err) {
+        console.error("Failed to auto-apply discount code:", err);
+        if (cancelled) return;
         setError("Could not apply this discount. Continuing to the store…");
-        const timer = window.setTimeout(() => {
+        timer = window.setTimeout(() => {
           router.replace(redirectTo);
         }, 1200);
-        return () => window.clearTimeout(timer);
       }
-      markDiscountUrgencyFromShortLink(applied);
-      router.replace(redirectTo);
-    } catch (err) {
-      console.error("Failed to auto-apply discount code:", err);
-      setError("Could not apply this discount. Continuing to the store…");
-      const timer = window.setTimeout(() => {
-        router.replace(redirectTo);
-      }, 1200);
-      return () => window.clearTimeout(timer);
-    }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (timer) window.clearTimeout(timer);
+    };
   }, [code, redirectTo, router]);
 
   return (

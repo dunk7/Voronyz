@@ -204,6 +204,12 @@ model DiscountCodeClick {
   @@index([createdAt])
 }
 
+/// Discount codes soft-deleted from /orders admin — no longer accepted on the site.
+model DiscountCodeDisabled {
+  code       String   @id
+  disabledAt DateTime @default(now())
+}
+
 /// Public affiliate / influencer applications from /affiliates.
 model AffiliateApplication {
   id            String   @id @default(cuid())
