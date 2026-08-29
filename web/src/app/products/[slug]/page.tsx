@@ -62,7 +62,6 @@ import {
   apparelProductShopLabel,
   getApparelItem,
   getApparelImages,
-  getApparelSubcategory,
   isObsoleteApparelSlug,
 } from "@/lib/apparel";
 import LogoLoader from "@/components/ui/LogoLoader";
@@ -264,7 +263,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             ? LATTICE_INSOLES_NAME
           : product.name;
 
-  // Product-specific descriptions
+  // Product-specific descriptions (oversized tee skips the top blurb — size picker covers fit)
   const displayDescription = slug === "v3-slides" 
     ? "Engineered for comfort, built to last. World-class FDM printed slides with TPU 90A lattice lowers and breathable uppers."
     : slug === "dragonfly"
@@ -283,6 +282,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? FILAMENT_DESCRIPTION
     : isLatticeInsoles
     ? LATTICE_INSOLES_DESCRIPTION
+    : apparelItem?.slug === "voronyz-oversized-tee"
+    ? ""
     : product.description;
 
   const trailMixColors = isTrailMix
@@ -305,7 +306,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         </div>
         
         <div className="mb-8 space-y-4">
-          <p className="text-neutral-700 leading-relaxed">{displayDescription}</p>
+          {displayDescription ? (
+            <p className="text-neutral-700 leading-relaxed">{displayDescription}</p>
+          ) : null}
           <div className="flex flex-wrap gap-2">
             {isTrailMix ? (
               <span className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-white">
@@ -356,16 +359,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             )}
             {!isMagikidShoes && !isTrailMix && !isApparel && !isFilament && !isLatticeInsoles && !isViolettePonybead && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
-            )}
-            {isApparel && apparelItem && (
-              <>
-                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
-                  {getApparelSubcategory(apparelItem.subcategory)?.label ?? "Apparel"}
-                </span>
-                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
-                  {apparelItem.sizes.join(" · ")}
-                </span>
-              </>
             )}
             {isTrailMix && (
               <>
@@ -511,8 +504,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? TRAIL_MIX_HOW_ITS_MADE
               : isViolettePonybead
               ? VIOLETTE_PONYBEAD_HOW_ITS_MADE
+              : apparelItem?.slug === "voronyz-oversized-tee"
+              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Pre-order now; we ship when this drop lands."
               : isApparel
-              ? "Voronyz Apparel is designed for a clean modern fit — consistent fabrics, considered proportions, and colorways that work across the full lineup. These pieces are available for pre-order: pay now to join the waitlist, and we'll ship when the drop arrives."
+              ? "Pre-order Voronyz Apparel — pay now to join the waitlist, and we ship when the drop arrives."
               : isGators
               ? GATORS_HOW_ITS_MADE
               : isFilament
