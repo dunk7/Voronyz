@@ -1,3 +1,5 @@
+import { catalogSeedListedAt } from "@/lib/newListing";
+
 export const FILAMENT_SLUG = "tpu-90a-filament";
 export const FILAMENT_NAME = "TPU-90A Filament";
 export const FILAMENT_PRICE_CENTS = 3000; // $30 per 1kg spool
@@ -47,7 +49,7 @@ export type AccessoryListProduct = {
 
 /** Instant Engineering seed so filament appears while the API loads. */
 export function getAccessoryCatalogSeed(): AccessoryListProduct[] {
-  const now = new Date().toISOString();
+  const listedAt = catalogSeedListedAt(FILAMENT_SLUG);
   return [
     {
       id: `catalog-${FILAMENT_SLUG}`,
@@ -58,8 +60,8 @@ export function getAccessoryCatalogSeed(): AccessoryListProduct[] {
       currency: "usd",
       images: [...FILAMENT_IMAGES],
       thumbnail: FILAMENT_THUMBNAIL_URL,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: listedAt,
+      updatedAt: listedAt,
     },
   ];
 }

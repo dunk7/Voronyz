@@ -18,6 +18,7 @@ import {
   LATTICE_INSOLES_SLUG,
 } from "@/lib/latticeInsoles";
 import { getProductThumbnail } from "@/lib/productImages";
+import { catalogSeedListedAt } from "@/lib/newListing";
 
 /** Core footwear catalog — used as an immediate client seed when /api/search is slow or down. */
 export type FootwearCatalogItem = {
@@ -138,17 +139,19 @@ export type FootwearListProduct = {
 
 /** Instant grid seed so home / All Footwear never flash empty while the API loads. */
 export function getFootwearCatalogSeed(): FootwearListProduct[] {
-  const now = new Date().toISOString();
-  return FOOTWEAR_CATALOG.map((item) => ({
-    id: `catalog-${item.slug}`,
-    slug: item.slug,
-    name: item.name,
-    description: item.description,
-    priceCents: item.priceCents,
-    currency: "usd",
-    images: item.images,
-    thumbnail: getProductThumbnail({ slug: item.slug, images: item.images }),
-    createdAt: now,
-    updatedAt: now,
-  }));
+  return FOOTWEAR_CATALOG.map((item) => {
+    const listedAt = catalogSeedListedAt(item.slug);
+    return {
+      id: `catalog-${item.slug}`,
+      slug: item.slug,
+      name: item.name,
+      description: item.description,
+      priceCents: item.priceCents,
+      currency: "usd",
+      images: item.images,
+      thumbnail: getProductThumbnail({ slug: item.slug, images: item.images }),
+      createdAt: listedAt,
+      updatedAt: listedAt,
+    };
+  });
 }

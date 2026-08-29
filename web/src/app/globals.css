@@ -206,3 +206,47 @@ video {
     left: 22.5%;
   }
 }
+
+/* Product thumbnail: translucent “New Listing” slides right → left, then loops */
+@keyframes new-listing-slide {
+  0% {
+    left: 100%;
+    transform: translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  30% {
+    left: 0.75rem; /* left-3 */
+    transform: translateX(0);
+    opacity: 1;
+  }
+  60% {
+    left: 0.75rem;
+    transform: translateX(0);
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    left: 0;
+    transform: translateX(-110%);
+    opacity: 0;
+  }
+}
+
+.new-listing-slide-pill {
+  left: 0.75rem;
+  animation: new-listing-slide 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: left, transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .new-listing-slide-pill {
+    animation: none;
+    transform: none;
+    opacity: 1;
+  }
+}

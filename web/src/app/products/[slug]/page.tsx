@@ -66,6 +66,8 @@ import {
   isObsoleteApparelSlug,
 } from "@/lib/apparel";
 import LogoLoader from "@/components/ui/LogoLoader";
+import NewListingBadge from "@/components/NewListingBadge";
+import { isNewListing } from "@/lib/newListing";
 import { redirect } from "next/navigation";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
@@ -321,29 +323,21 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
               </span>
             )}
+            {isNewListing(slug, product.createdAt) && <NewListingBadge />}
             {isViolettePonybead && (
               <>
-                <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
-                  New Listing
-                </span>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">$10 each</span>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">4 animals</span>
               </>
             )}
             {isFilament && (
               <>
-                <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
-                  New Listing
-                </span>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">1kg spool</span>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU-90A</span>
               </>
             )}
             {isGators && (
               <>
-                <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
-                  New Listing
-                </span>
                 <span className="rounded-full bg-amber-600 px-3 py-1 text-xs font-semibold text-white">
                   Low Stock
                 </span>
@@ -351,9 +345,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             )}
             {isLatticeInsoles && (
               <>
-                <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white">
-                  New Listing
-                </span>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU lattice</span>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">S · M · L · XL</span>
               </>
