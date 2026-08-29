@@ -386,7 +386,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           <div className="lg:col-span-7">
-            <V3Gallery media={galleryMedia} />
+            <V3Gallery media={galleryMedia} aspect={isApparel ? "square" : "landscape"} />
           </div>
           <div className="lg:col-span-5">
             <div className="lg:sticky lg:top-20 space-y-6">

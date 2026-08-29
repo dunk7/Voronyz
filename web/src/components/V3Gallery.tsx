@@ -20,10 +20,17 @@ type Media = {
 export default function V3Gallery({
   media,
   className = "",
+  /** Square fills apparel photos edge-to-edge; landscape keeps the 4:3 footwear frame. */
+  aspect = "landscape",
 }: {
   media: Media[];
   className?: string;
+  aspect?: "square" | "landscape";
 }) {
+  const isSquare = aspect === "square";
+  const mediaFitClass = isSquare
+    ? "object-cover object-center pointer-events-none"
+    : "object-contain object-[60%_50%] pointer-events-none";
   const [activeIndex, setActiveIndex] = useState(0);
   const [fadeKey, setFadeKey] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -312,7 +319,7 @@ export default function V3Gallery({
           src={m.src}
           alt={m.alt || "Product image"}
           fill
-          className="object-contain object-[60%_50%] pointer-events-none"
+          className={mediaFitClass}
           priority={index <= 1}
           loading={index <= 2 ? "eager" : "lazy"}
           sizes="(max-width: 1024px) 100vw, 50vw"
@@ -325,7 +332,7 @@ export default function V3Gallery({
         ref={isActive ? videoRef : undefined}
         src={m.src}
         poster={m.poster}
-        className="h-full w-full object-contain object-[60%_50%] pointer-events-none"
+        className={`h-full w-full ${mediaFitClass}`}
         preload="metadata"
         playsInline
         muted
@@ -355,7 +362,7 @@ export default function V3Gallery({
       {/* Viewport */}
       <div
         ref={containerRef}
-        className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-neutral-100 ring-1 ring-black/5 group select-none"
+        className={`relative ${isSquare ? "aspect-square" : "aspect-[4/3]"} w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-neutral-100 ring-1 ring-black/5 group select-none`}
         style={{ touchAction: "pan-y pinch-zoom" }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
