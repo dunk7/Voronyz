@@ -20,9 +20,12 @@ type Media = {
 export default function V3Gallery({
   media,
   className = "",
+  /** Square fills more of the viewport like retail PDPs; landscape is the legacy 4:3 frame. */
+  aspect = "square",
 }: {
   media: Media[];
   className?: string;
+  aspect?: "square" | "landscape";
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [fadeKey, setFadeKey] = useState(0);
@@ -312,10 +315,10 @@ export default function V3Gallery({
           src={m.src}
           alt={m.alt || "Product image"}
           fill
-          className="object-contain object-[60%_50%] pointer-events-none"
+          className="object-cover object-center pointer-events-none"
           priority={index <= 1}
           loading={index <= 2 ? "eager" : "lazy"}
-          sizes="(max-width: 1024px) 100vw, 50vw"
+          sizes="(max-width: 1024px) 100vw, 70vw"
           draggable={false}
         />
       );
@@ -325,7 +328,7 @@ export default function V3Gallery({
         ref={isActive ? videoRef : undefined}
         src={m.src}
         poster={m.poster}
-        className="h-full w-full object-contain object-[60%_50%] pointer-events-none"
+        className="h-full w-full object-cover object-center pointer-events-none"
         preload="metadata"
         playsInline
         muted
@@ -352,10 +355,12 @@ export default function V3Gallery({
         }
       `}</style>
 
-      {/* Viewport */}
+      {/* Viewport — square by default so product photos dominate like premium retail PDPs */}
       <div
         ref={containerRef}
-        className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-neutral-100 ring-1 ring-black/5 group select-none"
+        className={`relative w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-neutral-100 ring-1 ring-black/5 group select-none ${
+          aspect === "landscape" ? "aspect-[4/3]" : "aspect-square"
+        }`}
         style={{ touchAction: "pan-y pinch-zoom" }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -478,7 +483,7 @@ export default function V3Gallery({
             <button
               key={`thumb-${m.type}-${m.src}`}
               onClick={() => goTo(i)}
-              className={`group/thumb relative aspect-square w-[72px] rounded-xl overflow-hidden ring-1 transition-all duration-200 flex-shrink-0 focus:outline-none focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-2 ${
+              className={`group/thumb relative aspect-square w-20 rounded-xl overflow-hidden ring-1 transition-all duration-200 flex-shrink-0 focus:outline-none focus-visible:outline-2 focus-visible:outline-black focus-visible:outline-offset-2 ${
                 i === activeIndex
                   ? "ring-2 ring-black shadow-sm"
                   : "ring-black/10 hover:ring-black/30"
@@ -490,9 +495,9 @@ export default function V3Gallery({
                   src={m.src}
                   alt={m.alt || "Thumb"}
                   fill
-                  className="object-cover object-[60%_50%] transition-transform duration-200 group-hover/thumb:scale-105"
+                  className="object-cover object-center transition-transform duration-200 group-hover/thumb:scale-105"
                   loading={i < 4 ? "eager" : "lazy"}
-                  sizes="72px"
+                  sizes="80px"
                   draggable={false}
                 />
               ) : (
@@ -502,9 +507,9 @@ export default function V3Gallery({
                       src={m.poster}
                       alt="Video poster"
                       fill
-                      className="object-cover object-[60%_50%]"
+                      className="object-cover object-center"
                       loading="lazy"
-                      sizes="72px"
+                      sizes="80px"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-neutral-100 text-xs text-neutral-500">

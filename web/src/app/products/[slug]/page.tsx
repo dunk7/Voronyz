@@ -292,104 +292,114 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? VIOLETTE_PONYBEAD_ANIMALS.map((animal) => animal.id)
     : (product.primaryColors as string[]);
 
+  const productBadges = (
+    <div className="flex flex-wrap gap-2">
+      {isTrailMix ? (
+        <span className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-white">
+          Sold Out
+        </span>
+      ) : isApparel ? (
+        <span className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-white">
+          Pre-order
+        </span>
+      ) : (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-medium text-emerald-700">
+          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
+          </svg>
+          {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
+        </span>
+      )}
+      {isNewListing(slug, product.createdAt) && <NewListingBadge />}
+      {isViolettePonybead && (
+        <>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">$10 each</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">4 animals</span>
+        </>
+      )}
+      {isFilament && (
+        <>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">1kg spool</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU-90A</span>
+        </>
+      )}
+      {isGators && (
+        <span className="rounded-full bg-amber-600 px-3 py-1 text-xs font-semibold text-white">
+          Low Stock
+        </span>
+      )}
+      {isLatticeInsoles && (
+        <>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU lattice</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">S · M · L · XL</span>
+        </>
+      )}
+      {!isTrailMix && !isApparel && !isFilament && !isLatticeInsoles && !isViolettePonybead && (
+        <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
+          {isMagikidShoes ? "Made to order in <7 days" : "Made to order in <2 days"}
+        </span>
+      )}
+      {!isMagikidShoes && !isTrailMix && !isApparel && !isFilament && !isLatticeInsoles && !isViolettePonybead && (
+        <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
+      )}
+      {isTrailMix && (
+        <>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">$60</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">3 flavors</span>
+        </>
+      )}
+      {isGators && (
+        <>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Comfort clog</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">$85</span>
+        </>
+      )}
+      {isDragonfly && (
+        <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Custom lace colors</span>
+      )}
+      {isSlipOns && (
+        <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Single-tone upper</span>
+      )}
+      {isMagikidShoes && (
+        <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Magikid Lab pickup available</span>
+      )}
+    </div>
+  );
+
   return (
     <div className="bg-texture-white">
-      <div className="container pt-4 pb-12">
-        <div className="flex items-center gap-3 mb-6">
-          <Link href={shopHref} className="inline-flex items-center justify-center rounded-full p-2 ring-1 ring-black/10 hover:bg-black/5 text-neutral-600 hover:text-neutral-900 transition-colors bg-white" aria-label={shopLabel}>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
+      <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 pt-3 pb-12 lg:pt-5">
+        <div className="mb-4 lg:mb-5">
+          <Link
+            href={shopHref}
+            className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-900 transition-colors"
+          >
+            <span className="inline-flex items-center justify-center rounded-full p-1.5 ring-1 ring-black/10 hover:bg-black/5 bg-white">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </span>
+            {shopLabel}
           </Link>
-          <span className="w-px h-5 bg-neutral-200" aria-hidden="true" />
-          <h1 className="text-xl font-semibold text-neutral-900 tracking-tight">{displayName}</h1>
-        </div>
-        
-        <div className="mb-8 space-y-4">
-          {displayDescription ? (
-            <p className="text-neutral-700 leading-relaxed">{displayDescription}</p>
-          ) : null}
-          <div className="flex flex-wrap gap-2">
-            {isTrailMix ? (
-              <span className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-white">
-                Sold Out
-              </span>
-            ) : isApparel ? (
-              <span className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-white">
-                Pre-order
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-medium text-emerald-700">
-                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
-                </svg>
-                {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
-              </span>
-            )}
-            {isNewListing(slug, product.createdAt) && <NewListingBadge />}
-            {isViolettePonybead && (
-              <>
-                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">$10 each</span>
-                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">4 animals</span>
-              </>
-            )}
-            {isFilament && (
-              <>
-                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">1kg spool</span>
-                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU-90A</span>
-              </>
-            )}
-            {isGators && (
-              <>
-                <span className="rounded-full bg-amber-600 px-3 py-1 text-xs font-semibold text-white">
-                  Low Stock
-                </span>
-              </>
-            )}
-            {isLatticeInsoles && (
-              <>
-                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU lattice</span>
-                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">S · M · L · XL</span>
-              </>
-            )}
-            {!isTrailMix && !isApparel && !isFilament && !isLatticeInsoles && !isViolettePonybead && (
-              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
-                {isMagikidShoes ? "Made to order in <7 days" : "Made to order in <2 days"}
-              </span>
-            )}
-            {!isMagikidShoes && !isTrailMix && !isApparel && !isFilament && !isLatticeInsoles && !isViolettePonybead && (
-              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
-            )}
-            {isTrailMix && (
-              <>
-                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">$60</span>
-                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">3 flavors</span>
-              </>
-            )}
-            {isGators && (
-              <>
-                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Comfort clog</span>
-                <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">$85</span>
-              </>
-            )}
-            {isDragonfly && (
-              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Custom lace colors</span>
-            )}
-            {isSlipOns && (
-              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Single-tone upper</span>
-            )}
-            {isMagikidShoes && (
-              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Magikid Lab pickup available</span>
-            )}
-          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          <div className="lg:col-span-7">
-            <V3Gallery media={galleryMedia} />
+        {/* Gallery-first retail layout: large photos lead, buy box sits beside */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          <div className="lg:col-span-7 xl:col-span-8">
+            <V3Gallery media={galleryMedia} aspect="square" />
           </div>
-          <div className="lg:col-span-5">
-            <div className="lg:sticky lg:top-20 space-y-6">
+          <div className="lg:col-span-5 xl:col-span-4">
+            <div className="lg:sticky lg:top-20 space-y-5">
+              <div className="space-y-3">
+                <h1 className="text-2xl sm:text-3xl font-semibold text-neutral-900 tracking-tight leading-tight">
+                  {displayName}
+                </h1>
+                {productBadges}
+                {displayDescription ? (
+                  <p className="text-neutral-600 leading-relaxed text-[15px]">{displayDescription}</p>
+                ) : null}
+              </div>
+
               <Suspense fallback={
                 <div className="h-[48px] rounded-full bg-neutral-100 flex items-center justify-center">
                   <LogoLoader size="sm" showBar={false} className="!gap-0 scale-75" />
