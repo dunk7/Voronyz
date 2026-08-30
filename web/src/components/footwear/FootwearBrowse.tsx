@@ -70,31 +70,33 @@ function BrowseItem({
         onClick={handleClick}
         className={`group block outline-none ${navigating ? "pointer-events-none" : ""}`}
       >
-        {/* Square frame matches catalog photos; object-contain keeps every edge visible */}
+        {/* Square frame with inset padding so tight product photos aren’t edge-clipped */}
         <div className="relative -mx-6 aspect-square w-[calc(100%+3rem)] overflow-hidden bg-neutral-50">
-          <SoftImage
-            key={cover}
-            src={cover}
-            alt={product.name}
-            fill
-            className={`object-contain object-center transition-all duration-700 ease-out ${
-              alt ? "group-hover:opacity-0" : ""
-            } ${navigating ? "brightness-90" : ""}`}
-            sizes="100vw"
-            priority={index === 0}
-          />
-          {alt && (
+          <div className="absolute inset-5 sm:inset-8 md:inset-10 lg:inset-12">
             <SoftImage
-              key={alt}
-              src={alt}
-              alt={`${product.name} – alternate view`}
+              key={cover}
+              src={cover}
+              alt={product.name}
               fill
-              showLogoPlaceholder={false}
-              className="object-contain object-center opacity-0 transition-all duration-700 ease-out group-hover:opacity-100"
+              className={`object-contain object-center transition-all duration-700 ease-out ${
+                alt ? "group-hover:opacity-0" : ""
+              } ${navigating ? "brightness-90" : ""}`}
               sizes="100vw"
-              loading="lazy"
+              priority={index === 0}
             />
-          )}
+            {alt && (
+              <SoftImage
+                key={alt}
+                src={alt}
+                alt={`${product.name} – alternate view`}
+                fill
+                showLogoPlaceholder={false}
+                className="object-contain object-center opacity-0 transition-all duration-700 ease-out group-hover:opacity-100"
+                sizes="100vw"
+                loading="lazy"
+              />
+            )}
+          </div>
 
           <div className="absolute top-4 left-4 sm:top-6 sm:left-6 flex flex-wrap gap-1.5 z-10">
             {slugKey === "v3-slides" && (
