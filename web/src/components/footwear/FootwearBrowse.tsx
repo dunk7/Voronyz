@@ -96,18 +96,13 @@ function BrowseItem({
             />
           )}
 
-          <div className="absolute top-4 left-4 sm:top-6 sm:left-6 flex flex-wrap gap-1.5 z-10">
-            {slugKey === "v3-slides" && (
-              <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-black text-white">
-                Best Seller
-              </span>
-            )}
-            {slugKey === TRAIL_MIX_SLUG && (
+          {slugKey === TRAIL_MIX_SLUG && (
+            <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10">
               <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-neutral-900 text-white">
                 Sold Out
               </span>
-            )}
-          </div>
+            </div>
+          )}
 
           {isNewListing(slugKey, product.createdAt) && (
             <NewListingBadge animated />

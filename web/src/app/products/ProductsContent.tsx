@@ -25,8 +25,7 @@ const HOME_APPAREL_TEASER_SLUGS = [
 
 type Product = FootwearListProduct;
 
-/* ── per-product metadata (tags / alt images). “New” / “Best Seller” badges are rendered by slug below so only Slip Ons can show New. ── */
-/* Alt hover images only — no category pills on thumbnails (name already says what it is). */
+/* Alt hover images only — no marketing / category pills on thumbnails (name already says what it is). */
 const productMeta: Record<string, {
   promo?: string;
   altImage?: string;
@@ -383,19 +382,14 @@ export default function ProductsContent({
                       />
                     )}
 
-                    {/* Status badges only — no category pills */}
-                    <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
-                      {slugKey === "v3-slides" && (
-                        <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-black text-white">
-                          Best Seller
-                        </span>
-                      )}
-                      {slugKey === TRAIL_MIX_SLUG && (
+                    {/* Availability only — no Best Seller / category pills */}
+                    {slugKey === TRAIL_MIX_SLUG && (
+                      <div className="absolute top-3 left-3 z-10">
                         <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-neutral-900 text-white">
                           Sold Out
                         </span>
-                      )}
-                    </div>
+                      </div>
+                    )}
 
                     {/* Promo ribbon */}
                     {meta?.promo && (
