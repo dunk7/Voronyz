@@ -70,15 +70,15 @@ function BrowseItem({
         onClick={handleClick}
         className={`group block outline-none ${navigating ? "pointer-events-none" : ""}`}
       >
-        {/* Square frame with inset padding so tight product photos aren’t edge-clipped */}
-        <div className="relative -mx-6 aspect-square w-[calc(100%+3rem)] overflow-hidden bg-neutral-50">
-          <div className="absolute inset-5 sm:inset-8 md:inset-10 lg:inset-12">
+        {/* Square frame with % padding so tightly framed catalog shots keep heel/toe clear of edges */}
+        <div className="relative -mx-6 aspect-square w-[calc(100%+3rem)] overflow-hidden bg-neutral-50 p-[10%] sm:p-[12%] md:p-[14%]">
+          <div className="relative h-full w-full">
             <SoftImage
               key={cover}
               src={cover}
               alt={product.name}
               fill
-              className={`object-contain object-center transition-all duration-700 ease-out ${
+              className={`object-contain object-center transition-opacity duration-700 ease-out ${
                 alt ? "group-hover:opacity-0" : ""
               } ${navigating ? "brightness-90" : ""}`}
               sizes="100vw"
@@ -91,7 +91,7 @@ function BrowseItem({
                 alt={`${product.name} – alternate view`}
                 fill
                 showLogoPlaceholder={false}
-                className="object-contain object-center opacity-0 transition-all duration-700 ease-out group-hover:opacity-100"
+                className="object-contain object-center opacity-0 transition-opacity duration-700 ease-out group-hover:opacity-100"
                 sizes="100vw"
                 loading="lazy"
               />
