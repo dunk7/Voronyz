@@ -8,6 +8,8 @@ import {
   ArrowUpDown,
   BarChart3,
   Check,
+  ChevronDown,
+  ChevronUp,
   Copy,
   Loader2,
   LogOut,
@@ -254,7 +256,9 @@ export default function OrdersAdminClient() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
   const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null);
+  /** Orders list starts collapsed; click the Orders header (or Orders button) to expand. */
   const [tab, setTab] = useState<AdminTab>("orders");
+  const [ordersOpen, setOrdersOpen] = useState(false);
   const [uploadsRefresh, setUploadsRefresh] = useState(0);
   const [galleryRefresh, setGalleryRefresh] = useState(0);
   const [quizRefresh, setQuizRefresh] = useState(0);
@@ -355,6 +359,21 @@ export default function OrdersAdminClient() {
     setOrders([]);
     setExpandedId(null);
     setTab("orders");
+    setOrdersOpen(false);
+  }
+
+  function selectTab(next: AdminTab) {
+    if (next === "orders") {
+      if (tab === "orders") {
+        setOrdersOpen((open) => !open);
+        return;
+      }
+      setTab("orders");
+      setOrdersOpen(false);
+      return;
+    }
+    setTab(next);
+    setOrdersOpen(false);
   }
 
   function handleRefresh() {
@@ -591,7 +610,9 @@ export default function OrdersAdminClient() {
             <h1 className="text-xl font-semibold tracking-tight">Admin</h1>
             <p className="text-sm text-neutral-500">
               {tab === "orders"
-                ? `${filteredOrders.length} shown · ${openOrdersCount} open · ${completedOrdersCount} completed`
+                ? ordersOpen
+                  ? `${filteredOrders.length} shown · ${openOrdersCount} open · ${completedOrdersCount} completed`
+                  : `${openOrdersCount} open · ${completedOrdersCount} completed — click to expand`
                 : tab === "stats"
                   ? "Revenue and order performance"
                   : tab === "discounts"
@@ -667,7 +688,12 @@ export default function OrdersAdminClient() {
           <div className="container grid min-w-0 grid-cols-2 gap-2 py-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7">
             {(
               [
-                { id: "orders" as const, label: "Orders", icon: Package },
+                {
+                  id: "orders" as const,
+                  label: "Orders",
+                  icon: Package,
+                  badge: orders.length > 0 ? openOrdersCount : undefined,
+                },
                 { id: "stats" as const, label: "Stats", icon: TrendingUp },
                 {
                   id: "discounts" as const,
@@ -692,11 +718,14 @@ export default function OrdersAdminClient() {
               }[]
             ).map(({ id, label, icon: Icon, badge }) => {
               const active = tab === id;
+              const ordersExpanded = id === "orders" && ordersOpen;
               return (
                 <button
                   key={id}
                   type="button"
-                  onClick={() => setTab(id)}
+                  onClick={() => selectTab(id)}
+                  aria-pressed={id === "orders" ? ordersOpen : active}
+                  aria-expanded={id === "orders" ? ordersOpen : undefined}
                   className={`inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                     active
                       ? "bg-black text-white"
@@ -715,6 +744,13 @@ export default function OrdersAdminClient() {
                     >
                       {badge}
                     </span>
+                  ) : null}
+                  {id === "orders" ? (
+                    ordersExpanded ? (
+                      <ChevronUp className="h-3.5 w-3.5 shrink-0 opacity-80" />
+                    ) : (
+                      <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-80" />
+                    )
                   ) : null}
                 </button>
               );
@@ -773,7 +809,42 @@ export default function OrdersAdminClient() {
         ) : null}
 
         {tab === "orders" ? (
-        <>
+        <div className="rounded-2xl bg-white ring-1 ring-black/5 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setOrdersOpen((prev) => !prev)}
+            aria-expanded={ordersOpen}
+            className="w-full flex items-start justify-between gap-3 px-4 sm:px-5 py-4 text-left hover:bg-neutral-50 transition-colors print:hidden"
+          >
+            <div className="min-w-0">
+              <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                <Package className="h-3.5 w-3.5" />
+                Orders
+              </div>
+              <h2 className="mt-1 text-base font-semibold text-neutral-900">
+                Open and completed orders
+              </h2>
+              <p className="mt-1 text-sm text-neutral-500 max-w-2xl">
+                {openOrdersCount} open · {completedOrdersCount} completed.{" "}
+                {ordersOpen
+                  ? "Scroll the list below to fulfill or review an order."
+                  : "Click to open the full order list when you need it."}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0 text-neutral-500 pt-1">
+              <span className="rounded-md bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600">
+                {orders.length}
+              </span>
+              {ordersOpen ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </div>
+          </button>
+
+          {ordersOpen ? (
+            <div className="border-t border-black/5 px-4 sm:px-5 pb-4 sm:pb-5 pt-4 space-y-4 print:border-0">
         <div
           className="flex flex-wrap gap-2 print:hidden"
           role="tablist"
@@ -1094,7 +1165,9 @@ export default function OrdersAdminClient() {
             })}
           </div>
         )}
-        </>
+          </div>
+          ) : null}
+        </div>
         ) : null}
       </div>
     </div>
