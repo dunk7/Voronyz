@@ -448,10 +448,6 @@ export default function ProductsContent({
                 Apparel
               </h2>
               {scrollCue}
-              <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto leading-relaxed">
-                A couple of highlights from the lineup — open Apparel for the full
-                collection.
-              </p>
             </div>
 
             <ApparelProductGrid products={apparelTeaserProducts} />
