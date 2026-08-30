@@ -189,10 +189,7 @@ export default function ApparelSubcategoryContent({
             </div>
           )
         ) : (
-          <ApparelProductGrid
-            products={enriched}
-            hideSubcategoryBadge
-          />
+          <ApparelProductGrid products={enriched} />
         )}
       </div>
     </div>
