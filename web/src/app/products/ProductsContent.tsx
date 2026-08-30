@@ -12,6 +12,7 @@ import { APPAREL_CATALOG } from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
+import FootwearBrowse from "@/components/footwear/FootwearBrowse";
 
 /** Homepage footwear teaser — slides + slip-ons only; full catalog on /products. */
 const HOME_FOOTWEAR_TEASER_SLUGS = ["v3-slides", "slip-ons"] as const;
@@ -162,6 +163,9 @@ export default function ProductsContent({
   const isHomeFootwearTeaser =
     showScrollCue && category === "footwear" && !searchQuery;
   const showApparelContinuation = category === "footwear" && !searchQuery;
+  /** Immersive browse on All Footwear; home keeps the slides/slip-ons teaser grid. */
+  const useFootwearBrowse =
+    category === "footwear" && !searchQuery && !isHomeFootwearTeaser;
 
   const displayProducts = useMemo(() => {
     if (!isHomeFootwearTeaser) return products;
@@ -191,7 +195,7 @@ export default function ProductsContent({
       ? "Helping the small businesses we support and stand for grow and be seen on the Voronyz marketplace."
       : isHomeFootwearTeaser
       ? "A couple of highlights from the lineup — open Footwear for the full collection."
-      : "Each pair engineered for its purpose, built to last.";
+      : "Scroll through each pair — take your time, find the one that feels like yours.";
   const emptyHref =
     category === "accessories"
       ? "/accessories"
@@ -325,8 +329,11 @@ export default function ProductsContent({
               {emptyLabel}
             </Link>
           </div>
+        ) : useFootwearBrowse ? (
+          /* ── Immersive footwear browse: one large image + description per product ── */
+          <FootwearBrowse products={products} getImages={getImages} />
         ) : (
-          /* ── Product grid ── */
+          /* ── Product grid (home teaser / Engineering / Collaborative / search) ── */
           <>
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {displayProducts.map((p) => {
