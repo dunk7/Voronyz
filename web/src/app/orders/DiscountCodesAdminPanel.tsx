@@ -2,7 +2,16 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, Copy, Link2, Package, Search, Tag } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  Link2,
+  Package,
+  Search,
+  Tag,
+} from "lucide-react";
 import { formatCentsAsCurrency } from "@/lib/money";
 import {
   VALID_DISCOUNT_CODES,
@@ -123,81 +132,111 @@ function CopyLinkButton({ text, label }: { text: string; label?: string }) {
 }
 
 function InfluencerLinksPanel() {
-  return (
-    <div className="rounded-2xl bg-white p-4 sm:p-5 ring-1 ring-black/5 space-y-4">
-      <div>
-        <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
-          <Link2 className="h-3.5 w-3.5" />
-          Influencer bio links
-        </div>
-        <h2 className="mt-1 text-base font-semibold text-neutral-900">
-          Share these with creators
-        </h2>
-        <p className="mt-1 text-sm text-neutral-500 max-w-2xl">
-          Give each influencer their short Voronyz link for Instagram / TikTok bios.
-          When a shopper opens it, their discount code is applied in the cart automatically
-          (example: <span className="font-mono text-neutral-700">voronyz.com/arabella</span> →{" "}
-          <span className="font-mono text-neutral-700">Arabella50</span>).
-        </p>
-      </div>
+  const [open, setOpen] = useState(false);
+  const count = INFLUENCER_DISCOUNT_LINKS.length;
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-black/10 text-xs uppercase tracking-[0.14em] text-neutral-500">
-              <th className="py-2 pr-4 font-medium">Influencer</th>
-              <th className="py-2 pr-4 font-medium">Code</th>
-              <th className="py-2 pr-4 font-medium">Status</th>
-              <th className="py-2 pr-4 font-medium">Bio link</th>
-              <th className="py-2 font-medium">Copy</th>
-            </tr>
-          </thead>
-          <tbody>
-            {INFLUENCER_DISCOUNT_LINKS.map((link) => {
-              const url = buildInfluencerDiscountUrl(link.slug);
-              return (
-                <tr
-                  key={link.slug}
-                  className="border-b border-black/5 last:border-0 align-middle"
-                >
-                  <td className="py-3 pr-4 font-semibold text-neutral-900">
-                    {link.label}
-                  </td>
-                  <td className="py-3 pr-4">
-                    <span className="inline-flex rounded-md bg-neutral-100 px-2 py-1 font-mono text-xs font-semibold uppercase tracking-wide text-neutral-800">
-                      {link.code}
-                    </span>
-                  </td>
-                  <td className="py-3 pr-4">
-                    <span className="inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800 ring-1 ring-emerald-200">
-                      Live
-                    </span>
-                  </td>
-                  <td className="py-3 pr-4">
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-mono text-xs sm:text-sm text-neutral-800 underline underline-offset-2 hover:text-black break-all"
-                    >
-                      {url}
-                    </a>
-                    <div className="mt-0.5 text-xs text-neutral-500">
-                      Path: /{link.slug}
-                    </div>
-                  </td>
-                  <td className="py-3">
-                    <div className="flex flex-wrap gap-2">
-                      <CopyLinkButton text={url} label="Copy link" />
-                      <CopyLinkButton text={link.code} label="Copy code" />
-                    </div>
-                  </td>
+  return (
+    <div className="rounded-2xl bg-white ring-1 ring-black/5 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        aria-expanded={open}
+        className="w-full flex items-start justify-between gap-3 px-4 sm:px-5 py-4 text-left hover:bg-neutral-50 transition-colors"
+      >
+        <div className="min-w-0">
+          <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+            <Link2 className="h-3.5 w-3.5" />
+            Influencer bio links
+          </div>
+          <h2 className="mt-1 text-base font-semibold text-neutral-900">
+            Share these with creators
+          </h2>
+          <p className="mt-1 text-sm text-neutral-500 max-w-2xl">
+            {count} short links for Instagram / TikTok bios.{" "}
+            {open
+              ? "Scroll the list below to copy a creator's link."
+              : "Click to open the full list when you need it."}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 text-neutral-500 pt-1">
+          <span className="rounded-md bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600">
+            {count}
+          </span>
+          {open ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </div>
+      </button>
+
+      {open ? (
+        <div className="border-t border-black/5 px-4 sm:px-5 pb-4 sm:pb-5 pt-3 space-y-3">
+          <p className="text-sm text-neutral-500 max-w-2xl">
+            When a shopper opens a link, their discount code is applied in the cart
+            automatically (example:{" "}
+            <span className="font-mono text-neutral-700">voronyz.com/arabella</span> →{" "}
+            <span className="font-mono text-neutral-700">Arabella50</span>).
+          </p>
+          <div className="max-h-[min(50vh,28rem)] overflow-auto overscroll-contain rounded-xl ring-1 ring-black/5">
+            <table className="min-w-full text-left text-sm">
+              <thead className="sticky top-0 bg-white z-10">
+                <tr className="border-b border-black/10 text-xs uppercase tracking-[0.14em] text-neutral-500">
+                  <th className="py-2 px-3 font-medium">Influencer</th>
+                  <th className="py-2 pr-4 font-medium">Code</th>
+                  <th className="py-2 pr-4 font-medium">Status</th>
+                  <th className="py-2 pr-4 font-medium">Bio link</th>
+                  <th className="py-2 pr-3 font-medium">Copy</th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody>
+                {INFLUENCER_DISCOUNT_LINKS.map((link) => {
+                  const url = buildInfluencerDiscountUrl(link.slug);
+                  return (
+                    <tr
+                      key={link.slug}
+                      className="border-b border-black/5 last:border-0 align-middle"
+                    >
+                      <td className="py-3 px-3 font-semibold text-neutral-900">
+                        {link.label}
+                      </td>
+                      <td className="py-3 pr-4">
+                        <span className="inline-flex rounded-md bg-neutral-100 px-2 py-1 font-mono text-xs font-semibold uppercase tracking-wide text-neutral-800">
+                          {link.code}
+                        </span>
+                      </td>
+                      <td className="py-3 pr-4">
+                        <span className="inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800 ring-1 ring-emerald-200">
+                          Live
+                        </span>
+                      </td>
+                      <td className="py-3 pr-4">
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-mono text-xs sm:text-sm text-neutral-800 underline underline-offset-2 hover:text-black break-all"
+                        >
+                          {url}
+                        </a>
+                        <div className="mt-0.5 text-xs text-neutral-500">
+                          Path: /{link.slug}
+                        </div>
+                      </td>
+                      <td className="py-3 pr-3">
+                        <div className="flex flex-wrap gap-2">
+                          <CopyLinkButton text={url} label="Copy link" />
+                          <CopyLinkButton text={link.code} label="Copy code" />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
