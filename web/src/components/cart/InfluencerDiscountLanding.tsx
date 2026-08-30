@@ -28,18 +28,28 @@ export default function InfluencerDiscountLanding({
   const benefit = getDiscountCodeShopperDescription(code);
 
   useEffect(() => {
-    const applied = applyDiscountCodeToCartStorage(code);
-    if (!applied) {
-      setStatus("error");
-      return;
-    }
-    // Unlock storefront urgency timer only for short-link arrivals.
-    markDiscountUrgencyFromShortLink(applied);
-    setStatus("done");
-    const timer = window.setTimeout(() => {
-      router.replace("/");
-    }, 400);
-    return () => window.clearTimeout(timer);
+    let cancelled = false;
+    let timer: number | undefined;
+
+    (async () => {
+      const applied = await applyDiscountCodeToCartStorage(code);
+      if (cancelled) return;
+      if (!applied) {
+        setStatus("error");
+        return;
+      }
+      // Unlock storefront urgency timer only for short-link arrivals.
+      markDiscountUrgencyFromShortLink(applied);
+      setStatus("done");
+      timer = window.setTimeout(() => {
+        router.replace("/");
+      }, 400);
+    })();
+
+    return () => {
+      cancelled = true;
+      if (timer) window.clearTimeout(timer);
+    };
   }, [code, router]);
 
   return (

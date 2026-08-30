@@ -29,7 +29,6 @@ import QuizResultsAdminPanel from "./QuizResultsAdminPanel";
 import AffiliatesAdminPanel from "./AffiliatesAdminPanel";
 import GalleryAdminPanel from "./GalleryAdminPanel";
 import { formatCentsAsCurrency } from "@/lib/money";
-import { VALID_DISCOUNT_CODES } from "@/lib/discountPricing";
 import {
   formatShippingAddress,
   type AdminOrder,
@@ -596,7 +595,7 @@ export default function OrdersAdminClient() {
                 : tab === "stats"
                   ? "Revenue and order performance"
                   : tab === "discounts"
-                  ? `${VALID_DISCOUNT_CODES.length} live codes · ${discountOrdersCount} used on orders`
+                  ? `${discountOrdersCount} used on orders`
                   : tab === "gallery"
                     ? "Approve customer review photos before they go live"
                     : tab === "quiz"

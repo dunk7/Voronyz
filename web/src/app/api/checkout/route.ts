@@ -4,8 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 import {
   getDiscountedUnitPriceCents,
-  normalizeDiscountCode,
 } from "@/lib/discountPricing";
+import { resolveActiveDiscountCode } from "@/lib/discountDisabled";
 import { cartHasPreOrder, resolveIsPreOrder } from "@/lib/preorder";
 import {
   buildStripeCartItemsMetadata,
@@ -102,6 +102,9 @@ export async function POST(request: NextRequest) {
       console.log(`Processing ${items.length} items for checkout`);
     }
 
+    // Deleted/disabled codes must not reduce checkout prices.
+    const activeDiscountCode = await resolveActiveDiscountCode(discountCode);
+
     // Get variant details from database
     const lineItems = [];
     for (const [index, item] of items.entries()) {
@@ -136,7 +139,7 @@ export async function POST(request: NextRequest) {
             : 7500;
         const unitAmount = getDiscountedUnitPriceCents(
           baseUnitAmount,
-          normalizeDiscountCode(discountCode),
+          activeDiscountCode,
           {
             productSlug,
             productName: productNameForDiscount,
@@ -196,7 +199,7 @@ export async function POST(request: NextRequest) {
         const fallbackProductName = item.productName || '';
         const unitAmount = getDiscountedUnitPriceCents(
           typeof item.priceCents === "number" && item.priceCents > 0 ? item.priceCents : 7500,
-          normalizeDiscountCode(discountCode),
+          activeDiscountCode,
           {
             productSlug: fallbackSlug,
             productName: fallbackProductName,
@@ -298,7 +301,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         itemCount: items.length.toString(),
         paymentMethod,
-        ...(discountCode && { discountCode }),
+        ...(activeDiscountCode && { discountCode: activeDiscountCode }),
         ...(hasPickupOnly && { fulfillment: 'pickup' }),
         ...(hasPreOrder && { hasPreOrder: 'true' }),
         ...(wantsInsurance && {

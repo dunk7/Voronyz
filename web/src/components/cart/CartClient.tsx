@@ -56,7 +56,18 @@ export default function CartClient() {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [isCardCheckingOut, setIsCardCheckingOut] = useState(false);
   const [isNanoCheckingOut, setIsNanoCheckingOut] = useState(false);
+  const [activeDiscountCodes, setActiveDiscountCodes] = useState<Set<string> | null>(
+    null
+  );
   const stripeBusy = isCheckingOut || isCardCheckingOut;
+
+  const codeIsActive = (code: string | null | undefined) => {
+    const normalized = normalizeDiscountCode(code);
+    if (!normalized || !isValidDiscountCode(normalized)) return false;
+    // Until the live list loads, allow catalog codes; checkout still enforces.
+    if (!activeDiscountCodes) return true;
+    return activeDiscountCodes.has(normalized);
+  };
 
   const getBaseUnitPriceCents = (it: CartItem) => {
     return typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
@@ -120,13 +131,51 @@ export default function CartClient() {
     setIsLoading(false);
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/discounts/active");
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || cancelled) return;
+        const codes = Array.isArray(data.codes)
+          ? (data.codes as unknown[]).filter(
+              (c): c is string => typeof c === "string"
+            )
+          : [];
+        if (!cancelled) {
+          setActiveDiscountCodes(new Set(codes.map((c) => c.toLowerCase())));
+        }
+      } catch {
+        /* keep null — catalog validation until next load */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Drop deleted codes that were already sitting in the cart.
+  useEffect(() => {
+    if (!activeDiscountCodes || !discountCode) return;
+    if (activeDiscountCodes.has(discountCode)) return;
+    const migratedItems = items.map((it) => {
+      const base = getBaseUnitPriceCents(it);
+      return { ...it, basePriceCents: base, priceCents: base };
+    });
+    saveCart({ items: migratedItems, discountCode: null, shippingInsurance });
+    setMessage("That discount code is no longer active.");
+    setTimeout(clearMessage, 3000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-check when active list arrives/changes
+  }, [activeDiscountCodes, discountCode]);
+
   // Optional ?discount= toast (bio links now land on home; cart may still receive this param).
   useEffect(() => {
     if (isLoading) return;
     try {
       const params = new URLSearchParams(window.location.search);
       const fromLink = normalizeDiscountCode(params.get("discount"));
-      if (!fromLink || !isValidDiscountCode(fromLink)) return;
+      if (!fromLink || !codeIsActive(fromLink)) return;
       if (discountCode === fromLink) {
         setInputValue(fromLink);
         setMessage(`Discount "${fromLink}" applied from your link!`);
@@ -159,7 +208,7 @@ export default function CartClient() {
   const applyDiscount = () => {
     clearMessage();
     const normalized = normalizeDiscountCode(inputValue);
-    if (isValidDiscountCode(normalized)) {
+    if (codeIsActive(normalized)) {
       // Manual cart entry must not unlock the short-link urgency timer.
       clearDiscountUrgencySession();
       // Do NOT mutate stored item prices; compute discounted totals from `discountCode` so UI can't desync.

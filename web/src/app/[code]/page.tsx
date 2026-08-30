@@ -3,10 +3,8 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import ApplyDiscountRedirect from "@/components/discount/ApplyDiscountRedirect";
 import InfluencerDiscountLanding from "@/components/cart/InfluencerDiscountLanding";
-import {
-  isValidDiscountCode,
-  normalizeDiscountCode,
-} from "@/lib/discountPricing";
+import { normalizeDiscountCode } from "@/lib/discountPricing";
+import { isActiveDiscountCode } from "@/lib/discountDisabled";
 import {
   hashDiscountClickIp,
   recordDiscountCodeClick,
@@ -31,7 +29,7 @@ function safeRedirectPath(raw: string | undefined): string {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { code: raw } = await params;
   const influencer = getInfluencerLinkBySlug(raw);
-  if (influencer) {
+  if (influencer && (await isActiveDiscountCode(influencer.code))) {
     return {
       title: `${influencer.label} discount – Voronyz`,
       description: `Shop Voronyz with ${influencer.label}'s discount code ${influencer.code}.`,
@@ -39,7 +37,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
   const code = normalizeDiscountCode(raw);
-  if (code && isValidDiscountCode(code)) {
+  if (code && (await isActiveDiscountCode(code))) {
     return {
       title: `Discount ${code} – Voronyz`,
       robots: { index: false, follow: false },
@@ -59,7 +57,7 @@ export default async function DiscountAutoApplyPage({
   const influencer = getInfluencerLinkBySlug(rawToken);
   const code = influencer?.code ?? normalizeDiscountCode(rawToken);
 
-  if (!code || !isValidDiscountCode(code)) {
+  if (!code || !(await isActiveDiscountCode(code))) {
     notFound();
   }
 
