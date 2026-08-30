@@ -70,16 +70,16 @@ function BrowseItem({
         onClick={handleClick}
         className={`group block outline-none ${navigating ? "pointer-events-none" : ""}`}
       >
-        {/* Full-bleed image plane within the page — large enough to feel like discovery, not a thumbnail */}
-        <div className="relative -mx-6 aspect-[3/4] sm:aspect-[4/5] md:aspect-[5/4] lg:aspect-[16/10] w-[calc(100%+3rem)] overflow-hidden bg-neutral-100">
+        {/* Square frame matches catalog photos; object-contain keeps every edge visible */}
+        <div className="relative -mx-6 aspect-square w-[calc(100%+3rem)] overflow-hidden bg-neutral-50">
           <SoftImage
             key={cover}
             src={cover}
             alt={product.name}
             fill
-            className={`object-cover transition-all duration-700 ease-out ${
-              alt ? "group-hover:opacity-0" : "group-hover:scale-[1.03]"
-            } ${navigating ? "scale-[1.03] brightness-90" : ""}`}
+            className={`object-contain object-center transition-all duration-700 ease-out ${
+              alt ? "group-hover:opacity-0" : ""
+            } ${navigating ? "brightness-90" : ""}`}
             sizes="100vw"
             priority={index === 0}
           />
@@ -90,7 +90,7 @@ function BrowseItem({
               alt={`${product.name} – alternate view`}
               fill
               showLogoPlaceholder={false}
-              className="object-cover opacity-0 transition-all duration-700 ease-out group-hover:opacity-100 group-hover:scale-[1.03]"
+              className="object-contain object-center opacity-0 transition-all duration-700 ease-out group-hover:opacity-100"
               sizes="100vw"
               loading="lazy"
             />
