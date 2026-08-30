@@ -304,7 +304,7 @@ export default function Header() {
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black"
           style={{ background: "#000000" }}
         >
-          <LogoLoader size="md" tone="light" label="Loading" />
+          <LogoLoader size="md" tone="light" />
         </div>
       )}
       <header className={`sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/70 bg-neutral-950/80 border-b border-white/10 transition-transform duration-300 ${hide ? "-translate-y-full" : "translate-y-0"}`}>
