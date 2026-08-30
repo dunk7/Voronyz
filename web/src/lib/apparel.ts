@@ -142,7 +142,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/shirt.jpg",
     skuPrefix: "APP-TEE",
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     slug: "voronyz-nice-shirt",
@@ -181,7 +181,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     image: "/products/apparel/socks-plain-banded.jpg",
     images: ["/products/apparel/socks-plain-banded.jpg"],
     skuPrefix: "APP-SOCK",
-    comingSoon: true,
+    comingSoon: false,
   },
   // ── Shorts (multi-product) ──────────────────────────────────────────────
   {

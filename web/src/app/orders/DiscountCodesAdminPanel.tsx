@@ -1,13 +1,20 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, Copy, Link2, Package, Search, Tag } from "lucide-react";
-import { formatCentsAsCurrency } from "@/lib/money";
+import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "react";
 import {
-  VALID_DISCOUNT_CODES,
-  getDiscountCodeDescription,
-} from "@/lib/discountPricing";
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  Link2,
+  Package,
+  Search,
+  Tag,
+  Trash2,
+} from "lucide-react";
+import { formatCentsAsCurrency } from "@/lib/money";
+import { getDiscountCodeDescription } from "@/lib/discountPricing";
 import {
   formatShippingAddress,
   type AdminOrder,
@@ -122,82 +129,184 @@ function CopyLinkButton({ text, label }: { text: string; label?: string }) {
   );
 }
 
-function InfluencerLinksPanel() {
+function DeleteDiscountConfirmModal({
+  code,
+  deleting,
+  error,
+  onCancel,
+  onConfirm,
+}: {
+  code: string;
+  deleting: boolean;
+  error: string | null;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
   return (
-    <div className="rounded-2xl bg-white p-4 sm:p-5 ring-1 ring-black/5 space-y-4">
-      <div>
-        <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
-          <Link2 className="h-3.5 w-3.5" />
-          Influencer bio links
-        </div>
-        <h2 className="mt-1 text-base font-semibold text-neutral-900">
-          Share these with creators
-        </h2>
-        <p className="mt-1 text-sm text-neutral-500 max-w-2xl">
-          Give each influencer their short Voronyz link for Instagram / TikTok bios.
-          When a shopper opens it, their discount code is applied in the cart automatically
-          (example: <span className="font-mono text-neutral-700">voronyz.com/arabella</span> →{" "}
-          <span className="font-mono text-neutral-700">Arabella50</span>).
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="delete-discount-title"
+      onClick={onCancel}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl ring-1 ring-black/10"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3
+          id="delete-discount-title"
+          className="text-base font-semibold text-neutral-900"
+        >
+          Delete discount code?
+        </h3>
+        <p className="mt-2 text-sm text-neutral-600">
+          Are you sure you want to delete{" "}
+          <span className="font-mono font-semibold text-neutral-900">{code}</span>?
+          It will stop working on the site and disappear from this list. Past
+          orders that used it stay in history.
         </p>
+        {error ? (
+          <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </p>
+        ) : null}
+        <div className="mt-5 flex flex-wrap justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={deleting}
+            className="rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-50 disabled:opacity-50"
+          >
+            No
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={deleting}
+            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+          >
+            {deleting ? "Deleting…" : "Yes, delete"}
+          </button>
+        </div>
       </div>
+    </div>
+  );
+}
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-black/10 text-xs uppercase tracking-[0.14em] text-neutral-500">
-              <th className="py-2 pr-4 font-medium">Influencer</th>
-              <th className="py-2 pr-4 font-medium">Code</th>
-              <th className="py-2 pr-4 font-medium">Status</th>
-              <th className="py-2 pr-4 font-medium">Bio link</th>
-              <th className="py-2 font-medium">Copy</th>
-            </tr>
-          </thead>
-          <tbody>
-            {INFLUENCER_DISCOUNT_LINKS.map((link) => {
-              const url = buildInfluencerDiscountUrl(link.slug);
-              return (
-                <tr
-                  key={link.slug}
-                  className="border-b border-black/5 last:border-0 align-middle"
-                >
-                  <td className="py-3 pr-4 font-semibold text-neutral-900">
-                    {link.label}
-                  </td>
-                  <td className="py-3 pr-4">
-                    <span className="inline-flex rounded-md bg-neutral-100 px-2 py-1 font-mono text-xs font-semibold uppercase tracking-wide text-neutral-800">
-                      {link.code}
-                    </span>
-                  </td>
-                  <td className="py-3 pr-4">
-                    <span className="inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800 ring-1 ring-emerald-200">
-                      Live
-                    </span>
-                  </td>
-                  <td className="py-3 pr-4">
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-mono text-xs sm:text-sm text-neutral-800 underline underline-offset-2 hover:text-black break-all"
-                    >
-                      {url}
-                    </a>
-                    <div className="mt-0.5 text-xs text-neutral-500">
-                      Path: /{link.slug}
-                    </div>
-                  </td>
-                  <td className="py-3">
-                    <div className="flex flex-wrap gap-2">
-                      <CopyLinkButton text={url} label="Copy link" />
-                      <CopyLinkButton text={link.code} label="Copy code" />
-                    </div>
-                  </td>
+function InfluencerLinksPanel({ activeCodes }: { activeCodes: Set<string> }) {
+  const [open, setOpen] = useState(false);
+  const liveLinks = INFLUENCER_DISCOUNT_LINKS.filter((link) =>
+    activeCodes.has(link.code.toLowerCase())
+  );
+  const count = liveLinks.length;
+
+  if (count === 0) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-2xl bg-white ring-1 ring-black/5 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        aria-expanded={open}
+        className="w-full flex items-start justify-between gap-3 px-4 sm:px-5 py-4 text-left hover:bg-neutral-50 transition-colors"
+      >
+        <div className="min-w-0">
+          <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+            <Link2 className="h-3.5 w-3.5" />
+            Influencer bio links
+          </div>
+          <h2 className="mt-1 text-base font-semibold text-neutral-900">
+            Share these with creators
+          </h2>
+          <p className="mt-1 text-sm text-neutral-500 max-w-2xl">
+            {count} short link{count === 1 ? "" : "s"} for Instagram / TikTok bios.{" "}
+            {open
+              ? "Scroll the list below to copy a creator's link."
+              : "Click to open the full list when you need it."}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 text-neutral-500 pt-1">
+          <span className="rounded-md bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600">
+            {count}
+          </span>
+          {open ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </div>
+      </button>
+
+      {open ? (
+        <div className="border-t border-black/5 px-4 sm:px-5 pb-4 sm:pb-5 pt-3 space-y-3">
+          <p className="text-sm text-neutral-500 max-w-2xl">
+            When a shopper opens a link, their discount code is applied in the cart
+            automatically (example:{" "}
+            <span className="font-mono text-neutral-700">voronyz.com/arabella</span> →{" "}
+            <span className="font-mono text-neutral-700">Arabella50</span>).
+          </p>
+          <div className="max-h-[min(50vh,28rem)] overflow-auto overscroll-contain rounded-xl ring-1 ring-black/5">
+            <table className="min-w-full text-left text-sm">
+              <thead className="sticky top-0 bg-white z-10">
+                <tr className="border-b border-black/10 text-xs uppercase tracking-[0.14em] text-neutral-500">
+                  <th className="py-2 px-3 font-medium">Influencer</th>
+                  <th className="py-2 pr-4 font-medium">Code</th>
+                  <th className="py-2 pr-4 font-medium">Status</th>
+                  <th className="py-2 pr-4 font-medium">Bio link</th>
+                  <th className="py-2 pr-3 font-medium">Copy</th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody>
+                {liveLinks.map((link) => {
+                  const url = buildInfluencerDiscountUrl(link.slug);
+                  return (
+                    <tr
+                      key={link.slug}
+                      className="border-b border-black/5 last:border-0 align-middle"
+                    >
+                      <td className="py-3 px-3 font-semibold text-neutral-900">
+                        {link.label}
+                      </td>
+                      <td className="py-3 pr-4">
+                        <span className="inline-flex rounded-md bg-neutral-100 px-2 py-1 font-mono text-xs font-semibold uppercase tracking-wide text-neutral-800">
+                          {link.code}
+                        </span>
+                      </td>
+                      <td className="py-3 pr-4">
+                        <span className="inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800 ring-1 ring-emerald-200">
+                          Live
+                        </span>
+                      </td>
+                      <td className="py-3 pr-4">
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-mono text-xs sm:text-sm text-neutral-800 underline underline-offset-2 hover:text-black break-all"
+                        >
+                          {url}
+                        </a>
+                        <div className="mt-0.5 text-xs text-neutral-500">
+                          Path: /{link.slug}
+                        </div>
+                      </td>
+                      <td className="py-3 pr-3">
+                        <div className="flex flex-wrap gap-2">
+                          <CopyLinkButton text={url} label="Copy link" />
+                          <CopyLinkButton text={link.code} label="Copy code" />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -212,8 +321,17 @@ export default function DiscountCodesAdminPanel({
   const [linkMetaByCode, setLinkMetaByCode] = useState<Record<string, DiscountLinkMeta>>(
     {}
   );
+  const [activeCodes, setActiveCodes] = useState<string[]>([]);
   const [linksLoading, setLinksLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [pendingDeleteCode, setPendingDeleteCode] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const activeCodeSet = useMemo(
+    () => new Set(activeCodes.map((c) => c.toLowerCase())),
+    [activeCodes]
+  );
 
   const loadLinkStats = useCallback(async () => {
     setLinksLoading(true);
@@ -223,26 +341,19 @@ export default function DiscountCodesAdminPanel({
       if (!res.ok) {
         throw new Error(data.error || "Failed to load discount links");
       }
+      const rows = (data.codes || []) as DiscountLinkMeta[];
       const next: Record<string, DiscountLinkMeta> = {};
-      for (const row of (data.codes || []) as DiscountLinkMeta[]) {
+      const codes: string[] = [];
+      for (const row of rows) {
         next[row.code] = row;
+        codes.push(row.code);
       }
       setLinkMetaByCode(next);
+      setActiveCodes(codes);
     } catch (err) {
       console.error(err);
-      // Fall back to known codes with zero clicks so the admin can still copy links.
-      const next: Record<string, DiscountLinkMeta> = {};
-      for (const code of VALID_DISCOUNT_CODES) {
-        const influencer = getInfluencerLinkForCode(code);
-        next[code] = {
-          code,
-          clicks: 0,
-          autoApplyUrl: fallbackAutoApplyUrl(code),
-          influencerSlug: influencer?.slug ?? null,
-          influencerLabel: influencer?.label ?? null,
-        };
-      }
-      setLinkMetaByCode(next);
+      setLinkMetaByCode({});
+      setActiveCodes([]);
     } finally {
       setLinksLoading(false);
     }
@@ -251,6 +362,12 @@ export default function DiscountCodesAdminPanel({
   useEffect(() => {
     void loadLinkStats();
   }, [loadLinkStats, refreshToken]);
+
+  useEffect(() => {
+    if (selectedCode !== "all" && !activeCodeSet.has(selectedCode)) {
+      setSelectedCode("all");
+    }
+  }, [activeCodeSet, selectedCode]);
 
   const discountedOrders = useMemo(
     () =>
@@ -266,7 +383,7 @@ export default function DiscountCodesAdminPanel({
   const groups = useMemo(() => {
     const map = new Map<string, DiscountGroup>();
 
-    for (const code of VALID_DISCOUNT_CODES) {
+    for (const code of activeCodes) {
       const meta = linkMetaByCode[code];
       const influencer = getInfluencerLinkForCode(code);
       map.set(code, {
@@ -285,6 +402,8 @@ export default function DiscountCodesAdminPanel({
     for (const order of discountedOrders) {
       const code = (order.discountCode || "").trim().toLowerCase();
       if (!code) continue;
+      // Only attach order history to codes that are still live.
+      if (!activeCodeSet.has(code)) continue;
 
       const existing = map.get(code);
       const itemCount = order.lineItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -310,7 +429,6 @@ export default function DiscountCodesAdminPanel({
       }
     }
 
-    // Keep click counts fresh if meta loaded after groups seeded.
     for (const [code, group] of map) {
       const meta = linkMetaByCode[code];
       if (meta) {
@@ -325,7 +443,6 @@ export default function DiscountCodesAdminPanel({
       }
     }
 
-    // Prefer influencer codes (Arabella first), then alphabetical — unused codes stay visible.
     return Array.from(map.values()).sort((a, b) => {
       if (a.code === "arabella50") return -1;
       if (b.code === "arabella50") return 1;
@@ -336,7 +453,7 @@ export default function DiscountCodesAdminPanel({
       if (aInf !== bInf) return aInf - bInf;
       return a.code.localeCompare(b.code);
     });
-  }, [discountedOrders, linkMetaByCode]);
+  }, [activeCodes, activeCodeSet, discountedOrders, linkMetaByCode]);
 
   const selectedGroup = useMemo(
     () => groups.find((g) => g.code === selectedCode) ?? null,
@@ -347,7 +464,9 @@ export default function DiscountCodesAdminPanel({
     const q = search.trim().toLowerCase();
     let list =
       selectedCode === "all"
-        ? discountedOrders
+        ? discountedOrders.filter((o) =>
+            activeCodeSet.has((o.discountCode || "").trim().toLowerCase())
+          )
         : discountedOrders.filter(
             (o) => (o.discountCode || "").trim().toLowerCase() === selectedCode
           );
@@ -372,7 +491,7 @@ export default function DiscountCodesAdminPanel({
     }
 
     return list;
-  }, [discountedOrders, selectedCode, search]);
+  }, [discountedOrders, selectedCode, search, activeCodeSet]);
 
   const visibleItemCount = useMemo(
     () =>
@@ -394,10 +513,45 @@ export default function DiscountCodesAdminPanel({
     }
   }
 
+  function requestDelete(code: string, e?: MouseEvent) {
+    e?.stopPropagation();
+    e?.preventDefault();
+    setDeleteError(null);
+    setPendingDeleteCode(code);
+  }
+
+  async function confirmDelete() {
+    if (!pendingDeleteCode) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch("/api/orders/admin/discounts", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: pendingDeleteCode }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Could not delete discount code");
+      }
+      const deleted = pendingDeleteCode;
+      setPendingDeleteCode(null);
+      if (selectedCode === deleted) {
+        setSelectedCode("all");
+      }
+      await loadLinkStats();
+    } catch (err) {
+      setDeleteError(
+        err instanceof Error ? err.message : "Could not delete discount code"
+      );
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   if (loading && orders.length === 0 && linksLoading) {
     return (
       <div className="space-y-4">
-        <InfluencerLinksPanel />
         <div className="flex justify-center py-20 text-neutral-400 text-sm">
           Loading discount codes…
         </div>
@@ -407,15 +561,28 @@ export default function DiscountCodesAdminPanel({
 
   return (
     <div className="space-y-4">
-      <InfluencerLinksPanel />
+      {pendingDeleteCode ? (
+        <DeleteDiscountConfirmModal
+          code={pendingDeleteCode}
+          deleting={deleting}
+          error={deleteError}
+          onCancel={() => {
+            if (deleting) return;
+            setPendingDeleteCode(null);
+            setDeleteError(null);
+          }}
+          onConfirm={() => void confirmDelete()}
+        />
+      ) : null}
+
+      <InfluencerLinksPanel activeCodes={activeCodeSet} />
       <div className="rounded-2xl bg-white p-4 ring-1 ring-black/5 space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-base font-semibold">Discount codes</h2>
             <p className="text-sm text-neutral-500">
-              Every live code is listed here — including ones with{" "}
-              <span className="font-medium text-neutral-700">0 used</span>. Click a
-              code to copy its influencer short link.
+              Live codes only — delete unused ones so the list stays easy to scan.
+              Click a code to copy its influencer short link.
             </p>
           </div>
           <div className="relative w-full sm:w-72">
@@ -530,6 +697,14 @@ export default function DiscountCodesAdminPanel({
                     </>
                   )}
                 </button>
+                <button
+                  type="button"
+                  onClick={() => requestDelete(selectedGroup.code)}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 transition-colors"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete discount code
+                </button>
               </div>
               <p className="text-xs text-amber-900/80">
                 {selectedGroup.orders.length === 0
@@ -577,32 +752,51 @@ export default function DiscountCodesAdminPanel({
           </div>
         ) : (
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 border-t border-black/5 pt-3">
+            {groups.length === 0 && !linksLoading ? (
+              <p className="text-sm text-neutral-500 sm:col-span-2 lg:col-span-3 py-4">
+                No live discount codes left. Deleted codes are inactive on the site.
+              </p>
+            ) : null}
             {groups.map((group) => (
-              <button
+              <div
                 key={group.code}
-                type="button"
-                onClick={() => {
-                  setSelectedCode(group.code);
-                  setCopied(false);
-                }}
-                className="rounded-xl border border-black/5 bg-neutral-50 px-4 py-3 text-left hover:bg-neutral-100 transition-colors"
+                className="rounded-xl border border-black/5 bg-neutral-50 px-4 py-3 text-left"
               >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-mono text-sm font-semibold">{group.code}</p>
-                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800 ring-1 ring-emerald-200">
-                    Live
-                  </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedCode(group.code);
+                    setCopied(false);
+                  }}
+                  className="w-full text-left hover:opacity-90 transition-opacity"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-mono text-sm font-semibold">{group.code}</p>
+                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800 ring-1 ring-emerald-200">
+                      Live
+                    </span>
+                  </div>
+                  <p className="text-xs text-neutral-600 mt-1">{group.description}</p>
+                  <p className="text-xs text-neutral-500 mt-1">
+                    {usesLabel(group.orders.length)} · {group.clicks} click
+                    {group.clicks === 1 ? "" : "s"} ·{" "}
+                    {formatCentsAsCurrency(group.totalCents, "usd")}
+                  </p>
+                  <p className="text-[11px] text-neutral-400 mt-1 truncate font-mono">
+                    {group.autoApplyUrl || fallbackAutoApplyUrl(group.code)}
+                  </p>
+                </button>
+                <div className="mt-3 pt-2 border-t border-black/5">
+                  <button
+                    type="button"
+                    onClick={(e) => requestDelete(group.code, e)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Delete discount code
+                  </button>
                 </div>
-                <p className="text-xs text-neutral-600 mt-1">{group.description}</p>
-                <p className="text-xs text-neutral-500 mt-1">
-                  {usesLabel(group.orders.length)} · {group.clicks} click
-                  {group.clicks === 1 ? "" : "s"} ·{" "}
-                  {formatCentsAsCurrency(group.totalCents, "usd")}
-                </p>
-                <p className="text-[11px] text-neutral-400 mt-1 truncate font-mono">
-                  {group.autoApplyUrl || fallbackAutoApplyUrl(group.code)}
-                </p>
-              </button>
+              </div>
             ))}
           </div>
         )}
@@ -616,10 +810,8 @@ export default function DiscountCodesAdminPanel({
               <p className="font-medium text-neutral-700">No discount code orders yet</p>
               <p className="text-sm mt-1">
                 Codes are live even at{" "}
-                <span className="font-medium text-neutral-800">0 used</span>. Open{" "}
-                <span className="font-mono text-neutral-800">arabella50</span> above to
-                copy Arabella&apos;s short link (
-                <span className="font-mono text-neutral-800">voronyz.com/arabella</span>).
+                <span className="font-medium text-neutral-800">0 used</span>. Open a
+                code above to copy its short link.
               </p>
             </>
           ) : selectedCode !== "all" && selectedGroup && selectedGroup.orders.length === 0 ? (

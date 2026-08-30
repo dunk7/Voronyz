@@ -9,17 +9,49 @@ type StoredCart = {
   shippingInsurance?: boolean;
 };
 
+let activeCodesCache: Set<string> | null = null;
+let activeCodesFetch: Promise<Set<string>> | null = null;
+
+async function fetchActiveDiscountCodes(): Promise<Set<string>> {
+  if (activeCodesCache) return activeCodesCache;
+  if (!activeCodesFetch) {
+    activeCodesFetch = (async () => {
+      try {
+        const res = await fetch("/api/discounts/active");
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error("Failed to load active discount codes");
+        const codes = Array.isArray(data.codes)
+          ? (data.codes as unknown[]).filter(
+              (c): c is string => typeof c === "string"
+            )
+          : [];
+        activeCodesCache = new Set(codes.map((c) => c.toLowerCase()));
+        return activeCodesCache;
+      } catch {
+        activeCodesFetch = null;
+        // Fall back to catalog validity if the public list is unavailable.
+        return new Set();
+      }
+    })();
+  }
+  return activeCodesFetch;
+}
+
 /**
  * Write a validated discount code into localStorage cart (same shape CartClient uses).
- * Returns the normalized code when applied, or null if invalid.
+ * Returns the normalized code when applied, or null if invalid / deleted.
  */
-export function applyDiscountCodeToCartStorage(
+export async function applyDiscountCodeToCartStorage(
   code: string | null | undefined
-): string | null {
+): Promise<string | null> {
   if (typeof window === "undefined") return null;
 
   const normalized = normalizeDiscountCode(code);
   if (!normalized || !isValidDiscountCode(normalized)) return null;
+
+  const active = await fetchActiveDiscountCodes();
+  // Empty set from a failed fetch: allow catalog codes; checkout still enforces.
+  if (active.size > 0 && !active.has(normalized)) return null;
 
   let cart: StoredCart = {
     items: [],

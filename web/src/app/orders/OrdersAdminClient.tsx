@@ -29,7 +29,6 @@ import QuizResultsAdminPanel from "./QuizResultsAdminPanel";
 import AffiliatesAdminPanel from "./AffiliatesAdminPanel";
 import GalleryAdminPanel from "./GalleryAdminPanel";
 import { formatCentsAsCurrency } from "@/lib/money";
-import { VALID_DISCOUNT_CODES } from "@/lib/discountPricing";
 import {
   formatShippingAddress,
   type AdminOrder,
@@ -596,7 +595,7 @@ export default function OrdersAdminClient() {
                 : tab === "stats"
                   ? "Revenue and order performance"
                   : tab === "discounts"
-                  ? `${VALID_DISCOUNT_CODES.length} live codes · ${discountOrdersCount} used on orders`
+                  ? `${discountOrdersCount} used on orders`
                   : tab === "gallery"
                     ? "Approve customer review photos before they go live"
                     : tab === "quiz"
@@ -662,105 +661,64 @@ export default function OrdersAdminClient() {
           </div>
         </div>
         <nav
-          className="border-t border-black/5 bg-neutral-50"
+          className="min-w-0 border-t border-black/5 bg-neutral-50"
           aria-label="Admin sections"
         >
-          <div className="container grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 py-3">
-            <button
-              type="button"
-              onClick={() => setTab("orders")}
-              className={`inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                tab === "orders"
-                  ? "bg-black text-white"
-                  : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
-              }`}
-            >
-              <Package className="h-4 w-4 shrink-0" />
-              <span className="truncate">Orders</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("stats")}
-              className={`inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                tab === "stats"
-                  ? "bg-black text-white"
-                  : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
-              }`}
-            >
-              <TrendingUp className="h-4 w-4 shrink-0" />
-              <span className="truncate">Stats</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("discounts")}
-              className={`inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                tab === "discounts"
-                  ? "bg-black text-white"
-                  : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
-              }`}
-            >
-              <Tag className="h-4 w-4 shrink-0" />
-              <span className="truncate">Discount codes</span>
-              {discountOrdersCount > 0 ? (
-                <span
-                  className={`shrink-0 rounded-md px-1.5 py-0.5 text-xs font-medium ${
-                    tab === "discounts"
-                      ? "bg-white/20 text-white"
-                      : "bg-neutral-100 text-neutral-600"
+          <div className="container grid min-w-0 grid-cols-2 gap-2 py-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7">
+            {(
+              [
+                { id: "orders" as const, label: "Orders", icon: Package },
+                { id: "stats" as const, label: "Stats", icon: TrendingUp },
+                {
+                  id: "discounts" as const,
+                  label: "Discount codes",
+                  icon: Tag,
+                  badge:
+                    discountOrdersCount > 0 ? discountOrdersCount : undefined,
+                },
+                { id: "uploads" as const, label: "Uploads", icon: Upload },
+                { id: "gallery" as const, label: "Gallery", icon: ImageIcon },
+                { id: "quiz" as const, label: "Quiz results", icon: BarChart3 },
+                {
+                  id: "affiliates" as const,
+                  label: "Affiliates",
+                  icon: Users,
+                },
+              ] satisfies {
+                id: AdminTab;
+                label: string;
+                icon: typeof Package;
+                badge?: number;
+              }[]
+            ).map(({ id, label, icon: Icon, badge }) => {
+              const active = tab === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setTab(id)}
+                  className={`inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+                    active
+                      ? "bg-black text-white"
+                      : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
                   }`}
                 >
-                  {discountOrdersCount}
-                </span>
-              ) : null}
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("uploads")}
-              className={`inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                tab === "uploads"
-                  ? "bg-black text-white"
-                  : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
-              }`}
-            >
-              <Upload className="h-4 w-4 shrink-0" />
-              <span className="truncate">Uploads</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("gallery")}
-              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
-                tab === "gallery"
-                  ? "bg-black text-white"
-                  : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
-              }`}
-            >
-              <ImageIcon className="h-4 w-4" />
-              Gallery
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("quiz")}
-              className={`inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                tab === "quiz"
-                  ? "bg-black text-white"
-                  : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
-              }`}
-            >
-              <BarChart3 className="h-4 w-4 shrink-0" />
-              <span className="truncate">Quiz results</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("affiliates")}
-              className={`inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                tab === "affiliates"
-                  ? "bg-black text-white"
-                  : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
-              }`}
-            >
-              <Users className="h-4 w-4 shrink-0" />
-              <span className="truncate">Affiliates</span>
-            </button>
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{label}</span>
+                  {badge != null ? (
+                    <span
+                      className={`shrink-0 rounded-md px-1.5 py-0.5 text-xs font-medium ${
+                        active
+                          ? "bg-white/20 text-white"
+                          : "bg-neutral-100 text-neutral-600"
+                      }`}
+                    >
+                      {badge}
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
           </div>
         </nav>
       </header>

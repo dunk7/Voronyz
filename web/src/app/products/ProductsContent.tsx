@@ -7,13 +7,15 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
-import NewListingBadge from "@/components/NewListingBadge";
-import { isNewListing } from "@/lib/newListing";
 import { FILAMENT_SLUG, getAccessoryCatalogSeed } from "@/lib/filament";
 import { APPAREL_CATALOG } from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
+import FootwearBrowse from "@/components/footwear/FootwearBrowse";
+
+/** Homepage footwear teaser — slides + slip-ons only; full catalog on /products. */
+const HOME_FOOTWEAR_TEASER_SLUGS = ["v3-slides", "slip-ons"] as const;
 
 /** Homepage apparel teaser — a couple of highlights, not the full catalog. */
 const HOME_APPAREL_TEASER_SLUGS = [
@@ -158,6 +160,24 @@ export default function ProductsContent({
     };
   }, [searchQuery, category]);
 
+  const isHomeFootwearTeaser =
+    showScrollCue && category === "footwear" && !searchQuery;
+  const showApparelContinuation = category === "footwear" && !searchQuery;
+  /** Immersive browse on All Footwear; home keeps the slides/slip-ons teaser grid. */
+  const useFootwearBrowse =
+    category === "footwear" && !searchQuery && !isHomeFootwearTeaser;
+
+  const displayProducts = useMemo(() => {
+    if (!isHomeFootwearTeaser) return products;
+    const bySlug = new Map(
+      products.map((p) => [(p.slug || "").trim().toLowerCase(), p]),
+    );
+    return HOME_FOOTWEAR_TEASER_SLUGS.flatMap((slug) => {
+      const product = bySlug.get(slug);
+      return product ? [product] : [];
+    });
+  }, [isHomeFootwearTeaser, products]);
+
   const heading =
     searchQuery
       ? `Results for "${searchQuery}"`
@@ -165,13 +185,17 @@ export default function ProductsContent({
       ? "Engineering"
       : category === "health"
       ? "Collaborative"
+      : isHomeFootwearTeaser
+      ? "Footwear"
       : "All Footwear";
   const subheading =
     category === "accessories"
       ? "Engineered materials — TPU-90A filament, made for makers."
       : category === "health"
       ? "Helping the small businesses we support and stand for grow and be seen on the Voronyz marketplace."
-      : "Each pair engineered for its purpose, built to last.";
+      : isHomeFootwearTeaser
+      ? "A couple of highlights from the lineup — open Footwear for the full collection."
+      : "Scroll through each pair — take your time, find the one that feels like yours.";
   const emptyHref =
     category === "accessories"
       ? "/accessories"
@@ -184,8 +208,6 @@ export default function ProductsContent({
       : category === "health"
         ? "View Collaborative"
         : "View all products";
-
-  const showApparelContinuation = category === "footwear" && !searchQuery;
 
   const apparelTeaserProducts = useMemo((): ApparelGridProduct[] => {
     if (!showApparelContinuation) return [];
@@ -210,29 +232,33 @@ export default function ProductsContent({
     });
   }, [showApparelContinuation]);
 
+  const sectionHeadingClass =
+    "text-3xl font-semibold tracking-tight text-neutral-900 text-center";
+  const scrollCue = showScrollCue && !searchQuery && (
+    <svg
+      className="mx-auto mt-2 h-4 w-4 animate-bounce text-neutral-400"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      aria-hidden
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+    </svg>
+  );
+
   /* ── Logo loader only when we have nothing to show yet ── */
   if (loading && products.length === 0) {
     return (
       <div className="bg-texture-white min-h-[80vh]">
         <div className="container py-16">
-          <div className="mb-12">
-            <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
+          <div className="mb-12 text-center">
+            <h1 className={sectionHeadingClass}>
               {heading}
             </h1>
-            {showScrollCue && !searchQuery && (
-              <svg
-                className="mt-2 h-4 w-4 animate-bounce text-neutral-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                aria-hidden
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-              </svg>
-            )}
+            {scrollCue}
             {!searchQuery && (
-              <p className="mt-2 text-sm text-neutral-500 max-w-md">
+              <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
                 {subheading}
               </p>
             )}
@@ -268,39 +294,24 @@ export default function ProductsContent({
     <div className="bg-texture-white min-h-[80vh]">
       <div className="container py-16">
         {/* ── Header ── */}
-        <div className="mb-12">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">
-                {heading}
-              </h1>
-              {showScrollCue && !searchQuery && (
-                <svg
-                  className="mt-2 h-4 w-4 animate-bounce text-neutral-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  aria-hidden
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                </svg>
-              )}
-              {!searchQuery && (
-                <p className="mt-2 text-sm text-neutral-500 max-w-md">
-                  {subheading}
-                </p>
-              )}
-            </div>
-            <span className="text-xs tabular-nums text-neutral-400 hidden sm:block">
-              {products.length} product{products.length === 1 ? "" : "s"}
-            </span>
-          </div>
+        <div className="mb-12 text-center">
+          <h1 className={sectionHeadingClass}>
+            {heading}
+          </h1>
+          {scrollCue}
+          {!searchQuery && (
+            <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
+              {subheading}
+            </p>
+          )}
+          <p className="mt-3 text-xs tabular-nums text-neutral-400 hidden sm:block">
+            {displayProducts.length} product{displayProducts.length === 1 ? "" : "s"}
+          </p>
           <div className="mt-6 h-px bg-neutral-200" />
         </div>
 
         {/* ── Empty state ── */}
-        {products.length === 0 && searchQuery ? (
+        {displayProducts.length === 0 && searchQuery ? (
           <div className="text-center py-20">
             <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
               <svg className="h-7 w-7 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -318,10 +329,14 @@ export default function ProductsContent({
               {emptyLabel}
             </Link>
           </div>
+        ) : useFootwearBrowse ? (
+          /* ── Immersive footwear browse: one large image + description per product ── */
+          <FootwearBrowse products={products} getImages={getImages} />
         ) : (
-          /* ── Product grid ── */
+          /* ── Product grid (home teaser / Engineering / Collaborative / search) ── */
+          <>
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {products.map((p) => {
+            {displayProducts.map((p) => {
               const slugKey = (p.slug || "").trim().toLowerCase();
               const { cover, alt } = getImages(p);
               const meta = cardMetaForSlug(slugKey);
@@ -368,7 +383,7 @@ export default function ProductsContent({
                       />
                     )}
 
-                    {/* Status badges only — no category pills; New Listing is time-boxed (~1 week) */}
+                    {/* Status badges only — no category pills */}
                     <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
                       {slugKey === "v3-slides" && (
                         <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-black text-white">
@@ -381,10 +396,6 @@ export default function ProductsContent({
                         </span>
                       )}
                     </div>
-
-                    {isNewListing(slugKey, p.createdAt) && (
-                      <NewListingBadge animated />
-                    )}
 
                     {/* Promo ribbon */}
                     {meta?.promo && (
@@ -415,6 +426,18 @@ export default function ProductsContent({
               );
             })}
           </div>
+
+          {isHomeFootwearTeaser && (
+            <div className="mt-10 sm:mt-12 flex justify-center">
+              <Link
+                href="/products"
+                className="inline-flex items-center justify-center rounded-full bg-neutral-900 text-white px-5 py-2.5 text-sm font-semibold hover:bg-neutral-800 transition"
+              >
+                Shop all footwear
+              </Link>
+            </div>
+          )}
+          </>
         )}
 
         {/* ── Apparel teaser after footwear (full catalog lives on /apparel) ── */}
@@ -424,17 +447,14 @@ export default function ProductsContent({
             aria-labelledby="footwear-apparel-heading"
             className="mt-24 sm:mt-32 lg:mt-40"
           >
-            <div className="mb-10 sm:mb-14 border-t border-neutral-200 pt-16 sm:pt-20 lg:pt-24">
+            <div className="mb-10 sm:mb-14 border-t border-neutral-200 pt-16 sm:pt-20 lg:pt-24 text-center">
               <h2
                 id="footwear-apparel-heading"
-                className="text-6xl sm:text-8xl lg:text-[7.5rem] xl:text-[9rem] font-semibold tracking-[-0.04em] leading-[0.85] text-neutral-900"
+                className={sectionHeadingClass}
               >
                 Apparel
               </h2>
-              <p className="mt-6 sm:mt-8 max-w-lg text-sm sm:text-base text-neutral-500 leading-relaxed">
-                A couple of highlights from the lineup — open Apparel for the full
-                collection.
-              </p>
+              {scrollCue}
             </div>
 
             <ApparelProductGrid products={apparelTeaserProducts} />
