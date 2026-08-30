@@ -20,17 +20,12 @@ type ImageSlide = {
 
 export type MediaSlide = VideoSlide | ImageSlide;
 
-/** Add more photos here — they appear to the right of the video and join the slow loop. */
+/** Homepage motion media — video only (no slide-to-photo pan). */
 export const MOTION_MEDIA_SLIDES: MediaSlide[] = [
   {
     type: "video",
     src: "/products/slip-ons/C1150.mp4",
     alt: "Slip Ons in motion",
-  },
-  {
-    type: "image",
-    src: "/products/slip-ons/cloud-slides-boat.jpg",
-    alt: "Cloud Slides on the water",
   },
 ];
 

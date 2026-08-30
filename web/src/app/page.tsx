@@ -93,7 +93,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Video Section — looping video + photo carousel */}
+      {/* Video Section — looping product video */}
       <section className="bg-texture-white border-t border-neutral-200">
         <div className="container py-16">
           <MotionMediaCarousel />
