@@ -1,37 +1,28 @@
-import { GATORS_SLUG } from "@/lib/gators";
-
 /** How long a listing stays “new” on product thumbnails. */
 export const NEW_LISTING_DAYS = 7;
 
 const NEW_LISTING_MS = NEW_LISTING_DAYS * 24 * 60 * 60 * 1000;
 
 /**
- * Public launch dates for listings whose DB `createdAt` may predate the drop
- * (e.g. seeded early, then announced later). Prefer this over `createdAt` when set.
+ * Public launch dates for listings that should show the “New Listing” bubble.
+ * Prefer this over DB `createdAt` when set.
  *
- * When adding a new listing: either create it in the DB (createdAt = now) or
- * add an ISO date here if the row already existed. After one week the badge stops.
+ * Empty for now — no products show the badge. Re-add a slug → ISO date to
+ * turn it back on for up to NEW_LISTING_DAYS after that launch.
  */
-export const PRODUCT_LISTED_AT: Record<string, string> = {
-  // Public drop window for The Gators — badge auto-clears after NEW_LISTING_DAYS.
-  [GATORS_SLUG]: "2026-08-28T00:00:00.000Z",
-};
+export const PRODUCT_LISTED_AT: Record<string, string> = {};
 
 /** Fallback for catalog seeds of established products (never “new”). */
 export const CATALOG_LEGACY_LISTED_AT = "2025-01-01T00:00:00.000Z";
 
 export function listingDateForProduct(
   slug: string | null | undefined,
-  createdAt?: string | Date | null,
+  _createdAt?: string | Date | null,
 ): Date | null {
   const key = (slug || "").trim().toLowerCase();
   const override = key ? PRODUCT_LISTED_AT[key] : undefined;
-  if (override) {
-    const d = new Date(override);
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-  if (createdAt == null) return null;
-  const d = createdAt instanceof Date ? createdAt : new Date(createdAt);
+  if (!override) return null;
+  const d = new Date(override);
   return Number.isNaN(d.getTime()) ? null : d;
 }
 

@@ -65,8 +65,6 @@ import {
   isObsoleteApparelSlug,
 } from "@/lib/apparel";
 import LogoLoader from "@/components/ui/LogoLoader";
-import NewListingBadge from "@/components/NewListingBadge";
-import { isNewListing } from "@/lib/newListing";
 import { redirect } from "next/navigation";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
@@ -315,11 +313,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <span className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-white">
                 Sold Out
               </span>
-            ) : isApparel ? (
-              <span className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-white">
-                Pre-order
-              </span>
-            ) : (
+            ) : isApparel && apparelItem?.comingSoon ? null : (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-medium text-emerald-700">
                 <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
@@ -327,7 +321,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
               </span>
             )}
-            {isNewListing(slug, product.createdAt) && <NewListingBadge />}
             {isViolettePonybead && (
               <>
                 <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">$10 each</span>
@@ -440,7 +433,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   })}
                   {...(isApparel && {
                     useCatalogSizes: true,
-                    preOrder: true,
+                    preOrder: Boolean(apparelItem?.comingSoon),
                     hideSizeSelector: apparelItem?.sizes.length === 1,
                   })}
                   sizes={product.sizes as string[]}
@@ -452,17 +445,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
               <div className="flex items-center gap-4 text-xs text-neutral-500">
                 <Link href={shopHref} className="underline hover:no-underline">← {shopLabel}</Link>
-                {!isTrailMix && !isApparel && (
+                {!isTrailMix && !(isApparel && apparelItem?.comingSoon) && (
                   <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
                     <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
-                  </span>
-                )}
-                {isApparel && (
-                  <span className="inline-flex items-center gap-1 text-neutral-600 font-medium">
-                    Pre-order · ships when ready
                   </span>
                 )}
               </div>
@@ -506,9 +494,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               : isViolettePonybead
               ? VIOLETTE_PONYBEAD_HOW_ITS_MADE
               : apparelItem?.slug === "voronyz-oversized-tee"
-              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Pre-order now; we ship when this drop lands."
-              : isApparel
+              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Ready to ship in your size and color."
+              : apparelItem?.slug === "voronyz-performance-socks"
+              ? "Cushioned crew socks built for all-day wear and recovery. Pick your size and color — ready to ship."
+              : isApparel && apparelItem?.comingSoon
               ? "Pre-order Voronyz Apparel — pay now to join the waitlist, and we ship when the drop arrives."
+              : isApparel
+              ? "Voronyz Apparel — soft hand-feel, clean fits, and free US shipping on domestic orders."
               : isGators
               ? GATORS_HOW_ITS_MADE
               : isFilament
@@ -549,6 +541,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "How much do they cost?", a: "$10 per animal." },
               { q: "Does it come in sizes?", a: "No sizes — pick the animal style you want." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
+            ] : isApparel && !apparelItem?.comingSoon ? [
+              { q: "What sizes are available?", a: apparelItem?.slug === "voronyz-performance-socks" ? "Socks run S–XL." : "This piece runs XS–XXL." },
+              { q: "When will my order ship?", a: "Orders typically ship within a few business days. You'll get updates by email." },
+              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, Scarves, and more. Accessories (hats, water bottles, shades, jewelry) live under their own Apparel section." },
+              { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isApparel ? [
               { q: "What sizes are available?", a: "Most pieces run XS–XXL. Hats, scarves, bottles, cool shades, jewelry, lace locks, and drone parts are One Size. Socks use S–XL." },
               { q: "Can I pre-order coming soon pieces?", a: "Yes. Choose your color and size, then pay now to join the waitlist. We ship your order when that product arrives — timing can be a day or much longer depending on the drop." },
@@ -557,7 +554,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders once your pre-order ships." },
             ] : isGators ? [
               { q: "What is The Gators?", a: "A comfort clog named for the alligator 🐊 — closed toe, open back, thick cushioned platform, and easy slip-on wear for all-day comfort." },
-              { q: "What colors are available?", a: "Black, pink, grey, and skin-tone tan. This is a new listing with low stock, so grab your size while pairs last." },
+              { q: "What colors are available?", a: "Black, pink, grey, and skin-tone tan. Limited stock — grab your size while pairs last." },
               { q: "How much do they cost?", a: "$85 per pair." },
               { q: "Are they true to size?", a: "Yes — use Men's, Women's, or Kids' sizing and pick your usual US size for a comfortable clog fit." },
               { q: "How long does production take?", a: "Printed to order in about 1–2 days, then ships the next business day." },

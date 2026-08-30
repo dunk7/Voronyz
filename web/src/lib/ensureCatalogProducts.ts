@@ -752,7 +752,7 @@ export async function removeRcCarStickers(): Promise<void> {
   await prisma.product.delete({ where: { id: existing.id } });
 }
 
-/** Idempotently upsert apparel catalog products (coming soon / pre-order, stock 0). */
+/** Idempotently upsert apparel catalog products (live stock or coming-soon stock 0). */
 export async function ensureApparelProducts(): Promise<void> {
   await purgeObsoleteApparelProducts();
 
@@ -761,7 +761,8 @@ export async function ensureApparelProducts(): Promise<void> {
     const variants = item.colors.map((color) => ({
       color,
       sku: apparelSku(item.skuPrefix, color),
-      stock: 0,
+      // Live listings are buyable now; coming-soon stays at 0 (pre-order path).
+      stock: item.comingSoon ? 0 : 999,
     }));
 
     if (!existing) {

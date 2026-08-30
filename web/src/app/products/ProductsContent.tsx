@@ -7,8 +7,6 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
-import NewListingBadge from "@/components/NewListingBadge";
-import { isNewListing } from "@/lib/newListing";
 import { FILAMENT_SLUG, getAccessoryCatalogSeed } from "@/lib/filament";
 import { APPAREL_CATALOG } from "@/lib/apparel";
 import ApparelProductGrid, {
@@ -368,7 +366,7 @@ export default function ProductsContent({
                       />
                     )}
 
-                    {/* Status badges only — no category pills; New Listing is time-boxed (~1 week) */}
+                    {/* Status badges only — no category pills */}
                     <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
                       {slugKey === "v3-slides" && (
                         <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-black text-white">
@@ -381,10 +379,6 @@ export default function ProductsContent({
                         </span>
                       )}
                     </div>
-
-                    {isNewListing(slugKey, p.createdAt) && (
-                      <NewListingBadge animated />
-                    )}
 
                     {/* Promo ribbon */}
                     {meta?.promo && (
