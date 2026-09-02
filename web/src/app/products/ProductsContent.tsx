@@ -187,14 +187,13 @@ export default function ProductsContent({
       : isHomeFootwearTeaser
       ? "Footwear"
       : "All Footwear";
+  /** Footwear stays heading-only (like Apparel on home) — no supporting paragraph. */
   const subheading =
     category === "accessories"
       ? "Engineered materials — TPU-90A filament, made for makers."
       : category === "health"
       ? "Helping the small businesses we support and stand for grow and be seen on the Voronyz marketplace."
-      : isHomeFootwearTeaser
-      ? "A couple of highlights from the lineup — open Footwear for the full collection."
-      : "Scroll through each pair — take your time, find the one that feels like yours.";
+      : null;
   const emptyHref =
     category === "accessories"
       ? "/accessories"
@@ -256,7 +255,7 @@ export default function ProductsContent({
               {heading}
             </h1>
             {scrollCue}
-            {!searchQuery && (
+            {!searchQuery && subheading && (
               <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
                 {subheading}
               </p>
@@ -298,7 +297,7 @@ export default function ProductsContent({
             {heading}
           </h1>
           {scrollCue}
-          {!searchQuery && (
+          {!searchQuery && subheading && (
             <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
               {subheading}
             </p>
