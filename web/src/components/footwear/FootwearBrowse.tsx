@@ -70,31 +70,33 @@ function BrowseItem({
         onClick={handleClick}
         className={`group block outline-none ${navigating ? "pointer-events-none" : ""}`}
       >
-        {/* Full-bleed image plane within the page — large enough to feel like discovery, not a thumbnail */}
-        <div className="relative -mx-6 aspect-[3/4] sm:aspect-[4/5] md:aspect-[5/4] lg:aspect-[16/10] w-[calc(100%+3rem)] overflow-hidden bg-neutral-100">
-          <SoftImage
-            key={cover}
-            src={cover}
-            alt={product.name}
-            fill
-            className={`object-cover transition-all duration-700 ease-out ${
-              alt ? "group-hover:opacity-0" : "group-hover:scale-[1.03]"
-            } ${navigating ? "scale-[1.03] brightness-90" : ""}`}
-            sizes="100vw"
-            priority={index === 0}
-          />
-          {alt && (
+        {/* Square frame with % padding so tightly framed catalog shots keep heel/toe clear of edges */}
+        <div className="relative -mx-6 aspect-square w-[calc(100%+3rem)] overflow-hidden bg-neutral-50 p-[10%] sm:p-[12%] md:p-[14%]">
+          <div className="relative h-full w-full">
             <SoftImage
-              key={alt}
-              src={alt}
-              alt={`${product.name} – alternate view`}
+              key={cover}
+              src={cover}
+              alt={product.name}
               fill
-              showLogoPlaceholder={false}
-              className="object-cover opacity-0 transition-all duration-700 ease-out group-hover:opacity-100 group-hover:scale-[1.03]"
+              className={`object-contain object-center transition-opacity duration-700 ease-out ${
+                alt ? "group-hover:opacity-0" : ""
+              } ${navigating ? "brightness-90" : ""}`}
               sizes="100vw"
-              loading="lazy"
+              priority={index === 0}
             />
-          )}
+            {alt && (
+              <SoftImage
+                key={alt}
+                src={alt}
+                alt={`${product.name} – alternate view`}
+                fill
+                showLogoPlaceholder={false}
+                className="object-contain object-center opacity-0 transition-opacity duration-700 ease-out group-hover:opacity-100"
+                sizes="100vw"
+                loading="lazy"
+              />
+            )}
+          </div>
 
           {slugKey === TRAIL_MIX_SLUG && (
             <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10">
