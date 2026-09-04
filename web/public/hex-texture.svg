@@ -1,12 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="52" height="90" viewBox="0 0 52 90">
+<svg xmlns="http://www.w3.org/2000/svg" width="104" height="180" viewBox="0 0 52 90">
   <path
     fill="none"
     stroke="#000"
-    stroke-opacity="0.1"
-    stroke-width="1"
+    stroke-opacity="0.11"
+    stroke-width="1.15"
     stroke-linecap="butt"
     stroke-linejoin="miter"
     shape-rendering="geometricPrecision"
-    d="M26 0L52 15L52 45L26 60M0 45L26 60L26 90L0 105"
+    d="M26 0L52 15L52 45L26 60L0 45L0 15Z M26 60L26 90"
   />
 </svg>

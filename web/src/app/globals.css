@@ -145,6 +145,8 @@ video {
   will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  /* Soften rasterized diagonals so the slide doesn't crawl in 1px steps */
+  filter: blur(0.35px);
   pointer-events: none;
   z-index: 0;
 }
