@@ -65,6 +65,8 @@ export function getDiscountCodeDescription(
     case "aryan50":
     case "arabella50":
       return "$5 off any item";
+    case "arabella50":
+      return "$5 off entire cart";
     case "super20":
       return "$20 fixed unit price";
     case "chud25":
@@ -107,6 +109,8 @@ export function getDiscountCodeShopperDescription(
     case "aryan50":
     case "arabella50":
       return "$5 off every item";
+    case "arabella50":
+      return "$5 off your entire cart";
     case "emptyaus":
       return "Dragonfly for only $20";
     case "aryan10":
@@ -116,6 +120,84 @@ export function getDiscountCodeShopperDescription(
     default:
       return "Your discount is locked in";
   }
+}
+
+/** Fixed amount off the whole cart (not per unit). Returns 0 when unused. */
+export function getCartFixedDiscountCents(
+  discountCode: string | null | undefined
+): number {
+  const normalized = normalizeDiscountCode(discountCode);
+  if (normalized === "arabella50") return 500;
+  return 0;
+}
+
+/** Cart-level fixed off, capped so the product subtotal never goes negative. */
+export function cappedCartFixedDiscountCents(
+  productSubtotalCents: number,
+  discountCode: string | null | undefined
+): number {
+  const off = getCartFixedDiscountCents(discountCode);
+  if (off <= 0 || productSubtotalCents <= 0) return 0;
+  return Math.min(off, productSubtotalCents);
+}
+
+type PricedLine = { unitAmount: number; quantity: number };
+
+/**
+ * Apply a fixed cart discount exactly across priced lines by reducing
+ * individual units from the start of the list (splits qty when needed).
+ */
+export function applyFixedCartDiscountToLines<T extends PricedLine>(
+  lines: T[],
+  discountCents: number
+): T[] {
+  if (discountCents <= 0) return lines.map((line) => ({ ...line }));
+
+  let remaining = discountCents;
+  const out: T[] = [];
+
+  for (const line of lines) {
+    if (remaining <= 0 || line.quantity <= 0 || line.unitAmount <= 0) {
+      out.push({ ...line });
+      continue;
+    }
+
+    let qtyLeft = line.quantity;
+    const unit = line.unitAmount;
+    let groupQty = 0;
+    let groupUnit = unit;
+
+    const flushGroup = () => {
+      if (groupQty <= 0) return;
+      out.push({ ...line, quantity: groupQty, unitAmount: groupUnit });
+      groupQty = 0;
+      groupUnit = unit;
+    };
+
+    while (qtyLeft > 0 && remaining > 0) {
+      const take = Math.min(remaining, unit);
+      const discountedUnit = unit - take;
+      if (groupQty === 0) {
+        groupUnit = discountedUnit;
+        groupQty = 1;
+      } else if (discountedUnit === groupUnit) {
+        groupQty += 1;
+      } else {
+        flushGroup();
+        groupUnit = discountedUnit;
+        groupQty = 1;
+      }
+      remaining -= take;
+      qtyLeft -= 1;
+    }
+
+    flushGroup();
+    if (qtyLeft > 0) {
+      out.push({ ...line, quantity: qtyLeft, unitAmount: unit });
+    }
+  }
+
+  return out;
 }
 
 function isSlidesProduct(productSlug?: string, productName?: string): boolean {
