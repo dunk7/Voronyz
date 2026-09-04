@@ -141,7 +141,7 @@ video {
   background-size: var(--hex-tile-w) var(--hex-tile-h);
   background-position: 0 0;
   background-repeat: repeat;
-  animation: hex-texture-drift 22s linear infinite;
+  animation: hex-texture-drift 18s linear infinite;
   will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
