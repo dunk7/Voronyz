@@ -132,7 +132,10 @@ export default function ApparelHubContent() {
                       role="menuitem"
                       href={`/apparel/${sub.id}`}
                       tabIndex={filtersOpen ? 0 : -1}
-                      onClick={(e) => go(e, `/apparel/${sub.id}`)}
+                      onClick={(e) => {
+                        setFiltersOpen(false);
+                        go(e, `/apparel/${sub.id}`);
+                      }}
                       className={`block rounded-xl px-3 py-2 text-[13px] font-medium text-neutral-700 transition hover:bg-neutral-900 hover:text-white ${
                         navigatingHref === `/apparel/${sub.id}`
                           ? "pointer-events-none opacity-60"
