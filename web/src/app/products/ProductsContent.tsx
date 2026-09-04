@@ -260,7 +260,7 @@ export default function ProductsContent({
                 {subheading}
               </p>
             )}
-            <div className="mt-6 h-px bg-neutral-200" />
+            {!showScrollCue && <div className="mt-6 h-px bg-neutral-200" />}
           </div>
           <div className="flex min-h-[40vh] items-center justify-center py-16">
             <LogoLoader size="lg" label="Loading" />
@@ -305,7 +305,7 @@ export default function ProductsContent({
           <p className="mt-3 text-xs tabular-nums text-neutral-400 hidden sm:block">
             {displayProducts.length} product{displayProducts.length === 1 ? "" : "s"}
           </p>
-          <div className="mt-6 h-px bg-neutral-200" />
+          {!showScrollCue && <div className="mt-6 h-px bg-neutral-200" />}
         </div>
 
         {/* ── Empty state ── */}
