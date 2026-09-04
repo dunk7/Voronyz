@@ -107,30 +107,46 @@ video {
 }
 
 .bg-texture-white {
+  /* Pointy-top hex tile: R=30, width rounded to 52px (√3·R ≈ 51.96) so repeat seams stay on whole pixels. */
+  --hex-tile-w: 52px;
+  --hex-tile-h: 90px;
   background-color: #ffffff !important;
   position: relative;
+  isolation: isolate;
+  overflow-x: clip;
 }
 
-/* Slow seamless drift — shifts by one tile so the hex pattern never jumps */
+/*
+  Seamless honeycomb: each tile draws 3 unique edges per hex so shared
+  walls are never stroked twice (no overlays) and neighbors complete
+  the clipped halves.
+*/
 @keyframes hex-texture-drift {
-  0% {
-    background-position: 0 0;
+  from {
+    transform: translate3d(0, 0, 0);
   }
-  100% {
-    background-position: 50px 43px;
+  to {
+    transform: translate3d(calc(-1 * var(--hex-tile-w)), 0, 0);
   }
 }
 
 .bg-texture-white::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background-image: 
-    url("data:image/svg+xml,%3Csvg width='120' height='104' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='0.08' stroke-width='0.8'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: 50px 43px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: calc(100% + var(--hex-tile-w));
+  background-image: url("/hex-texture.svg");
+  background-size: var(--hex-tile-w) var(--hex-tile-h);
   background-position: 0 0;
   background-repeat: repeat;
-  animation: hex-texture-drift 60s linear infinite;
+  animation: hex-texture-drift 18s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* Soften rasterized diagonals so the slide doesn't crawl in 1px steps */
+  filter: blur(0.35px);
   pointer-events: none;
   z-index: 0;
 }
@@ -138,6 +154,17 @@ video {
 .bg-texture-white > * {
   position: relative;
   z-index: 1;
+}
+
+/* Nested texture wrappers share the parent's continuous grid */
+.bg-texture-white .bg-texture-white {
+  background-color: transparent !important;
+  overflow-x: visible;
+}
+
+.bg-texture-white .bg-texture-white::before {
+  content: none;
+  animation: none;
 }
 
 /* Messenger: allow copying bubble text (site default is select-none) */
@@ -219,6 +246,7 @@ video {
 
   .bg-texture-white::before {
     animation: none;
+    transform: none;
   }
 
   .motion-media-track {
