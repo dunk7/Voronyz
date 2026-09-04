@@ -26,6 +26,7 @@ export default function V3Gallery({
    * Cover crops to fill the frame (apparel / default).
    * Contain shows the full photo — footwear listings use this so tightly
    * framed shots (e.g. the first V3 Slides image) aren't clipped on the sides.
+   * Contain slides also get a small inset so the toe/heel clear the rounded frame.
    */
   fit = "cover",
 }: {
@@ -388,22 +389,34 @@ export default function V3Gallery({
           onTransitionEnd={handleTransitionEnd}
         >
           {/* Previous slide */}
-          <div className="relative h-full flex-shrink-0" style={{ width: "33.3333%" }}>
-            {prevIndex !== null && renderMedia(media[prevIndex], prevIndex, false)}
+          <div
+            className={`relative h-full flex-shrink-0 ${fit === "contain" ? "box-border p-[6%] sm:p-[7%]" : ""}`}
+            style={{ width: "33.3333%" }}
+          >
+            <div className="relative h-full w-full">
+              {prevIndex !== null && renderMedia(media[prevIndex], prevIndex, false)}
+            </div>
           </div>
 
           {/* Active slide */}
           <div
             key={fadeKey}
-            className="relative h-full flex-shrink-0 gallery-enter"
+            className={`relative h-full flex-shrink-0 gallery-enter ${fit === "contain" ? "box-border p-[6%] sm:p-[7%]" : ""}`}
             style={{ width: "33.3333%" }}
           >
-            {renderMedia(active, activeIndex, true)}
+            <div className="relative h-full w-full">
+              {renderMedia(active, activeIndex, true)}
+            </div>
           </div>
 
           {/* Next slide */}
-          <div className="relative h-full flex-shrink-0" style={{ width: "33.3333%" }}>
-            {nextIndex !== null && renderMedia(media[nextIndex], nextIndex, false)}
+          <div
+            className={`relative h-full flex-shrink-0 ${fit === "contain" ? "box-border p-[6%] sm:p-[7%]" : ""}`}
+            style={{ width: "33.3333%" }}
+          >
+            <div className="relative h-full w-full">
+              {nextIndex !== null && renderMedia(media[nextIndex], nextIndex, false)}
+            </div>
           </div>
         </div>
 
