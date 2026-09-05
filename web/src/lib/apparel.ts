@@ -131,7 +131,8 @@ export const OBSOLETE_APPAREL_SLUGS = [
  */
 export const APPAREL_CATALOG: ApparelCatalogItem[] = [
   // ── Shirts (multi-product) ──────────────────────────────────────────────
-  // Oversized first: Apparel hub cover + shirts listing order follow catalog order.
+  // Oversized first: shirts listing order follows catalog order within the
+  // shirts subcategory. Apparel hub listings follow this full-catalog order.
   {
     slug: "voronyz-oversized-tee",
     subcategory: "shirts",
@@ -142,6 +143,21 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/shirt.jpg",
     skuPrefix: "APP-TEE",
+    comingSoon: false,
+  },
+  // ── Socks (multi-product) ───────────────────────────────────────────────
+  // Socks before Nice Shirt on the Apparel hub grid.
+  {
+    slug: "voronyz-performance-socks",
+    subcategory: "socks",
+    name: "Socks",
+    description: "Cushioned crew socks built for all-day wear and recovery.",
+    priceCents: 2800,
+    colors: ["black", "grey", "white"],
+    sizes: ["S", "M", "L", "XL"],
+    image: "/products/apparel/socks-plain-banded.jpg",
+    images: ["/products/apparel/socks-plain-banded.jpg"],
+    skuPrefix: "APP-SOCK",
     comingSoon: false,
   },
   {
@@ -168,20 +184,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     image: "/products/apparel/hoodie.jpg",
     skuPrefix: "APP-HOOD",
     comingSoon: true,
-  },
-  // ── Socks (multi-product) ───────────────────────────────────────────────
-  {
-    slug: "voronyz-performance-socks",
-    subcategory: "socks",
-    name: "Socks",
-    description: "Cushioned crew socks built for all-day wear and recovery.",
-    priceCents: 2800,
-    colors: ["black", "grey", "white"],
-    sizes: ["S", "M", "L", "XL"],
-    image: "/products/apparel/socks-plain-banded.jpg",
-    images: ["/products/apparel/socks-plain-banded.jpg"],
-    skuPrefix: "APP-SOCK",
-    comingSoon: false,
   },
   // ── Shorts (multi-product) ──────────────────────────────────────────────
   {
