@@ -26,7 +26,8 @@ export default function V3Gallery({
    * Cover crops to fill the frame (apparel / default).
    * Contain shows the full photo — footwear listings use this so tightly
    * framed shots (e.g. the first V3 Slides image) aren't clipped on the sides.
-   * Contain slides also get a small inset so the toe/heel clear the rounded frame.
+   * Contain slides also get a modest inset so the toe/heel clear the rounded frame
+   * without looking zoomed out.
    */
   fit = "cover",
 }: {
@@ -317,6 +318,7 @@ export default function V3Gallery({
 
   const objectFitClass =
     fit === "contain" ? "object-contain object-center" : "object-cover object-center";
+  const containSlidePad = fit === "contain" ? "box-border p-[4%] sm:p-[5%]" : "";
 
   const renderMedia = (m: Media, index: number, isActive: boolean) => {
     if (m.type === "image") {
@@ -390,7 +392,7 @@ export default function V3Gallery({
         >
           {/* Previous slide */}
           <div
-            className={`relative h-full flex-shrink-0 ${fit === "contain" ? "box-border p-[6%] sm:p-[7%]" : ""}`}
+            className={`relative h-full flex-shrink-0 ${containSlidePad}`}
             style={{ width: "33.3333%" }}
           >
             <div className="relative h-full w-full">
@@ -401,7 +403,7 @@ export default function V3Gallery({
           {/* Active slide */}
           <div
             key={fadeKey}
-            className={`relative h-full flex-shrink-0 gallery-enter ${fit === "contain" ? "box-border p-[6%] sm:p-[7%]" : ""}`}
+            className={`relative h-full flex-shrink-0 gallery-enter ${containSlidePad}`}
             style={{ width: "33.3333%" }}
           >
             <div className="relative h-full w-full">
@@ -411,7 +413,7 @@ export default function V3Gallery({
 
           {/* Next slide */}
           <div
-            className={`relative h-full flex-shrink-0 ${fit === "contain" ? "box-border p-[6%] sm:p-[7%]" : ""}`}
+            className={`relative h-full flex-shrink-0 ${containSlidePad}`}
             style={{ width: "33.3333%" }}
           >
             <div className="relative h-full w-full">
