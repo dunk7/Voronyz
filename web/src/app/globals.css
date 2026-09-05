@@ -136,8 +136,11 @@ video {
   bottom: 0;
   left: 0;
   width: calc(100% + var(--hex-tile-w));
-  /* Native tile 52×90 (2× display). Two hexes + horizontal wrap = continuous mesh. */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='90' viewBox='0 0 52 90'%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='0.08' stroke-width='0.8' stroke-linejoin='round'%3E%3Cpath d='M26 0L52 15L52 45L26 60L0 45L0 15Z'/%3E%3Cpath d='M0 45L26 60L26 90L0 105L-26 90L-26 60Z'/%3E%3Cpath d='M52 45L78 60L78 90L52 105L26 90L26 60Z'/%3E%3C/g%3E%3C/svg%3E");
+  /*
+    Native tile 52×90 (shown at 26×45). One top hex + one staggered hex;
+    horizontal/vertical repeats complete the honeycomb without double-drawn edges.
+  */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='90' viewBox='0 0 52 90'%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='0.08' stroke-width='0.8' stroke-linejoin='round'%3E%3Cpath d='M26 0L52 15L52 45L26 60L0 45L0 15Z'/%3E%3Cpath d='M0 45L26 60L26 90L0 105L-26 90L-26 60Z'/%3E%3C/g%3E%3C/svg%3E");
   background-size: var(--hex-tile-w) var(--hex-tile-h);
   background-position: 0 0;
   background-repeat: repeat;
