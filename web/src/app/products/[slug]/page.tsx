@@ -71,7 +71,7 @@ import { redirect } from "next/navigation";
 // This page is rendered on-demand.
 export const dynamic = "force-dynamic";
 
-/** Old pants / sweats product pages → single joggers listing; removed accessories → Accessories. */
+/** Retired apparel product pages → remaining listing or Accessories hub. */
 const OBSOLETE_APPAREL_PRODUCT_REDIRECTS: Record<string, string> = {
   "voronyz-technical-pants": "/products/voronyz-joggers",
   "voronyz-lounge-sweats": "/products/voronyz-joggers",
@@ -80,6 +80,7 @@ const OBSOLETE_APPAREL_PRODUCT_REDIRECTS: Record<string, string> = {
   "voronyz-keychain": "/apparel/accessories",
   "voronyz-necklace": "/apparel/accessories",
   "voronyz-rc-car-stickers": "/apparel/accessories",
+  "voronyz-nice-shirt": "/products/voronyz-oversized-tee",
 };
 
 type Media = {
