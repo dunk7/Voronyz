@@ -237,6 +237,12 @@ model AffiliateApplication {
   @@index([status])
 }
 
+/// Site catalog photos hidden from /gallery via admin delete.
+model GalleryPhotoHidden {
+  photoId   String   @id
+  hiddenAt  DateTime @default(now())
+}
+
 /// Customer review photos submitted from /gallery (must be approved in /orders admin).
 model GallerySubmission {
   id               String    @id @default(cuid())

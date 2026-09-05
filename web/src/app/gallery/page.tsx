@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { GALLERY_PHOTOS } from "@/lib/gallery";
+import {
+  getHiddenGalleryPhotoIds,
+  listVisibleCatalogPhotos,
+} from "@/lib/galleryHidden";
 import { listApprovedGalleryPhotosSafe } from "@/lib/listApprovedGalleryPhotosSafe";
 import GalleryUploadClient from "./GalleryUploadClient";
 
@@ -12,7 +15,10 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function GalleryPage() {
-  const approvedReviews = await listApprovedGalleryPhotosSafe(100);
+  const [approvedReviews, hiddenIds] = await Promise.all([
+    listApprovedGalleryPhotosSafe(100),
+    getHiddenGalleryPhotoIds(),
+  ]);
   const photos = [
     ...approvedReviews.map((p) => ({
       id: p.id,
@@ -20,7 +26,7 @@ export default async function GalleryPage() {
       alt: p.alt,
       unoptimized: true,
     })),
-    ...GALLERY_PHOTOS.map((p) => ({
+    ...listVisibleCatalogPhotos(hiddenIds).map((p) => ({
       id: p.id,
       src: p.src,
       alt: p.alt,
