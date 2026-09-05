@@ -8,6 +8,10 @@ import {
   KNOWN_DISCOUNTED_UNIT_PRICES,
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
+import {
+  AFFILIATE_ORDER_DISCOUNT_CENTS,
+  applyOrderLevelDiscountCents,
+} from "@/lib/affiliateApproveLogic";
 import { clearDiscountUrgencySession } from "@/lib/discountUrgencySession";
 import { resolveIsPreOrder } from "@/lib/preorder";
 import {
@@ -59,14 +63,17 @@ export default function CartClient() {
   const [activeDiscountCodes, setActiveDiscountCodes] = useState<Set<string> | null>(
     null
   );
+  const [affiliateDiscountCodes, setAffiliateDiscountCodes] = useState<Set<string>>(
+    new Set()
+  );
   const stripeBusy = isCheckingOut || isCardCheckingOut;
 
   const codeIsActive = (code: string | null | undefined) => {
     const normalized = normalizeDiscountCode(code);
-    if (!normalized || !isValidDiscountCode(normalized)) return false;
+    if (!normalized) return false;
+    if (activeDiscountCodes) return activeDiscountCodes.has(normalized);
     // Until the live list loads, allow catalog codes; checkout still enforces.
-    if (!activeDiscountCodes) return true;
-    return activeDiscountCodes.has(normalized);
+    return isValidDiscountCode(normalized);
   };
 
   const getBaseUnitPriceCents = (it: CartItem) => {
@@ -145,6 +152,14 @@ export default function CartClient() {
           : [];
         if (!cancelled) {
           setActiveDiscountCodes(new Set(codes.map((c) => c.toLowerCase())));
+          const affiliateCodes = Array.isArray(data.affiliateCodes)
+            ? (data.affiliateCodes as unknown[]).filter(
+                (c): c is string => typeof c === "string"
+              )
+            : [];
+          setAffiliateDiscountCodes(
+            new Set(affiliateCodes.map((c) => c.toLowerCase()))
+          );
         }
       } catch {
         /* keep null — catalog validation until next load */
@@ -216,11 +231,19 @@ export default function CartClient() {
         const base = getBaseUnitPriceCents(it);
         return { ...it, basePriceCents: base, priceCents: base };
       });
-      const savings = migratedItems.reduce((sum, it) => {
+      const itemSavings = migratedItems.reduce((sum, it) => {
         const base = getBaseUnitPriceCents(it) * it.quantity;
         const discounted = unitPriceForItem(it, normalized) * it.quantity;
         return sum + Math.max(0, base - discounted);
       }, 0);
+      const itemSubtotal = migratedItems.reduce(
+        (sum, it) => sum + unitPriceForItem(it, normalized) * it.quantity,
+        0
+      );
+      const orderOff = affiliateDiscountCodes.has(normalized || "")
+        ? applyOrderLevelDiscountCents(itemSubtotal, AFFILIATE_ORDER_DISCOUNT_CENTS)
+        : 0;
+      const savings = itemSavings + orderOff;
       saveCart({ items: migratedItems, discountCode: normalized, shippingInsurance });
       setInputValue("");
       setMessage(
@@ -266,9 +289,17 @@ export default function CartClient() {
   const subtotalBeforeDiscount = items.reduce((sum, it) => {
     return sum + getBaseUnitPriceCents(it) * it.quantity;
   }, 0);
-  const subtotal = items.reduce((sum, it) => {
+  const itemDiscountedSubtotal = items.reduce((sum, it) => {
     return sum + unitPriceForItem(it, discountCode) * it.quantity;
   }, 0);
+  const orderLevelOff =
+    discountCode && affiliateDiscountCodes.has(discountCode)
+      ? applyOrderLevelDiscountCents(
+          itemDiscountedSubtotal,
+          AFFILIATE_ORDER_DISCOUNT_CENTS
+        )
+      : 0;
+  const subtotal = itemDiscountedSubtotal - orderLevelOff;
   const discountSavings = Math.max(0, subtotalBeforeDiscount - subtotal);
   const canOfferShippingInsurance = cartHasInsurableItems(items);
   const insuranceEnabled = canOfferShippingInsurance && shippingInsurance;
@@ -656,6 +687,7 @@ export default function CartClient() {
               <div className="mt-2 text-sm text-green-700 flex justify-between items-center gap-3 bg-emerald-50 p-2 rounded-md border border-green-200">
                 <span>
                   Discount &quot;{discountCode}&quot; applied
+                  {orderLevelOff > 0 ? " — $5 off the whole order" : ""}
                   {discountSavings > 0 ? ` — you save ${formatCentsAsCurrency(discountSavings)}` : ""}
                 </span>
                 <button onClick={clearDiscount} className="text-sm underline shrink-0">Remove</button>

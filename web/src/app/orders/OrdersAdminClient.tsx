@@ -793,6 +793,7 @@ export default function OrdersAdminClient() {
           <AffiliatesAdminPanel
             refreshToken={affiliatesRefresh}
             onAuthLost={() => setAuthenticated(false)}
+            onCodesChanged={() => setDiscountsRefresh((n) => n + 1)}
           />
         ) : null}
 

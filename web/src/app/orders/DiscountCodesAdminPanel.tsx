@@ -38,6 +38,9 @@ type DiscountLinkMeta = {
   autoApplyUrl: string | null;
   influencerSlug?: string | null;
   influencerLabel?: string | null;
+  recentlyApproved?: boolean;
+  approvedAt?: string | null;
+  source?: "catalog" | "affiliate";
 };
 
 function formatDate(iso: string) {
@@ -87,6 +90,8 @@ type DiscountGroup = {
   autoApplyUrl: string | null;
   influencerSlug: string | null;
   influencerLabel: string | null;
+  recentlyApproved: boolean;
+  source: "catalog" | "affiliate";
 };
 
 function fallbackAutoApplyUrl(code: string): string {
@@ -194,11 +199,38 @@ function DeleteDiscountConfirmModal({
   );
 }
 
-function InfluencerLinksPanel({ activeCodes }: { activeCodes: Set<string> }) {
+function InfluencerLinksPanel({
+  activeCodes,
+  affiliateLinks,
+}: {
+  activeCodes: Set<string>;
+  affiliateLinks: Array<{
+    slug: string;
+    code: string;
+    label: string;
+    recentlyApproved: boolean;
+  }>;
+}) {
   const [open, setOpen] = useState(false);
-  const liveLinks = INFLUENCER_DISCOUNT_LINKS.filter((link) =>
+  const catalogLinks = INFLUENCER_DISCOUNT_LINKS.filter((link) =>
     activeCodes.has(link.code.toLowerCase())
-  );
+  ).map((link) => ({
+    slug: link.slug,
+    code: link.code,
+    label: link.label,
+    recentlyApproved: false,
+  }));
+  const seen = new Set(catalogLinks.map((link) => link.slug.toLowerCase()));
+  const extra = affiliateLinks.filter((link) => {
+    if (!activeCodes.has(link.code.toLowerCase())) return false;
+    if (seen.has(link.slug.toLowerCase())) return false;
+    seen.add(link.slug.toLowerCase());
+    return true;
+  });
+  const liveLinks = [...extra, ...catalogLinks].sort((a, b) => {
+    if (a.recentlyApproved !== b.recentlyApproved) return a.recentlyApproved ? -1 : 1;
+    return a.label.localeCompare(b.label);
+  });
   const count = liveLinks.length;
 
   if (count === 0) {
@@ -265,10 +297,19 @@ function InfluencerLinksPanel({ activeCodes }: { activeCodes: Set<string> }) {
                   return (
                     <tr
                       key={link.slug}
-                      className="border-b border-black/5 last:border-0 align-middle"
+                      className={`border-b border-black/5 last:border-0 align-middle ${
+                        link.recentlyApproved ? "bg-amber-50/80" : ""
+                      }`}
                     >
                       <td className="py-3 px-3 font-semibold text-neutral-900">
-                        {link.label}
+                        <div className="flex flex-wrap items-center gap-2">
+                          {link.label}
+                          {link.recentlyApproved ? (
+                            <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-950 ring-1 ring-amber-400">
+                              Just approved
+                            </span>
+                          ) : null}
+                        </div>
                       </td>
                       <td className="py-3 pr-4">
                         <span className="inline-flex rounded-md bg-neutral-100 px-2 py-1 font-mono text-xs font-semibold uppercase tracking-wide text-neutral-800">
@@ -295,7 +336,7 @@ function InfluencerLinksPanel({ activeCodes }: { activeCodes: Set<string> }) {
                       </td>
                       <td className="py-3 pr-3">
                         <div className="flex flex-wrap gap-2">
-                          <CopyLinkButton text={url} label="Copy link" />
+                          <CopyLinkButton text={url} label="Copy short link" />
                           <CopyLinkButton text={link.code} label="Copy code" />
                         </div>
                       </td>
@@ -396,6 +437,8 @@ export default function DiscountCodesAdminPanel({
         autoApplyUrl: meta?.autoApplyUrl ?? fallbackAutoApplyUrl(code),
         influencerSlug: meta?.influencerSlug ?? influencer?.slug ?? null,
         influencerLabel: meta?.influencerLabel ?? influencer?.label ?? null,
+        recentlyApproved: Boolean(meta?.recentlyApproved),
+        source: meta?.source === "affiliate" ? "affiliate" : "catalog",
       });
     }
 
@@ -425,6 +468,8 @@ export default function DiscountCodesAdminPanel({
           autoApplyUrl: meta?.autoApplyUrl ?? fallbackAutoApplyUrl(code),
           influencerSlug: meta?.influencerSlug ?? influencer?.slug ?? null,
           influencerLabel: meta?.influencerLabel ?? influencer?.label ?? null,
+          recentlyApproved: Boolean(meta?.recentlyApproved),
+          source: meta?.source === "affiliate" ? "affiliate" : "catalog",
         });
       }
     }
@@ -440,10 +485,13 @@ export default function DiscountCodesAdminPanel({
         if (meta.influencerLabel !== undefined) {
           group.influencerLabel = meta.influencerLabel ?? group.influencerLabel;
         }
+        group.recentlyApproved = Boolean(meta.recentlyApproved);
+        if (meta.source) group.source = meta.source;
       }
     }
 
     return Array.from(map.values()).sort((a, b) => {
+      if (a.recentlyApproved !== b.recentlyApproved) return a.recentlyApproved ? -1 : 1;
       if (a.code === "arabella50") return -1;
       if (b.code === "arabella50") return 1;
       if (a.code === "aryan50") return -1;
@@ -575,7 +623,17 @@ export default function DiscountCodesAdminPanel({
         />
       ) : null}
 
-      <InfluencerLinksPanel activeCodes={activeCodeSet} />
+      <InfluencerLinksPanel
+        activeCodes={activeCodeSet}
+        affiliateLinks={groups
+          .filter((group) => group.source === "affiliate" && group.influencerSlug)
+          .map((group) => ({
+            slug: group.influencerSlug as string,
+            code: group.code,
+            label: group.influencerLabel || group.code,
+            recentlyApproved: group.recentlyApproved,
+          }))}
+      />
       <div className="rounded-2xl bg-white p-4 ring-1 ring-black/5 space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -637,10 +695,23 @@ export default function DiscountCodesAdminPanel({
               className={`shrink-0 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
                 selectedCode === group.code
                   ? "bg-black text-white"
-                  : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+                  : group.recentlyApproved
+                    ? "bg-amber-100 text-amber-950 ring-1 ring-amber-300 hover:bg-amber-200"
+                    : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
               }`}
             >
               <span className="font-mono">{group.code}</span>
+              {group.recentlyApproved ? (
+                <span
+                  className={`rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                    selectedCode === group.code
+                      ? "bg-amber-300 text-amber-950"
+                      : "bg-amber-200 text-amber-950"
+                  }`}
+                >
+                  New
+                </span>
+              ) : null}
               <span
                 className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${
                   selectedCode === group.code
@@ -657,7 +728,9 @@ export default function DiscountCodesAdminPanel({
         {selectedCode !== "all" && selectedGroup ? (
           <div className="space-y-3 border-t border-black/5 pt-3">
             <div className="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 space-y-2">
-              <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-amber-950">
+              <div className={`flex flex-wrap items-center gap-2 text-sm font-medium ${
+                selectedGroup.recentlyApproved ? "text-amber-950" : "text-amber-950"
+              }`}>
                 <Link2 className="h-4 w-4 shrink-0" />
                 {selectedGroup.influencerSlug
                   ? `Influencer short link for `
@@ -666,6 +739,11 @@ export default function DiscountCodesAdminPanel({
                 <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800">
                   Live
                 </span>
+                {selectedGroup.recentlyApproved ? (
+                  <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-950 ring-1 ring-amber-400">
+                    Just approved
+                  </span>
+                ) : null}
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
@@ -693,7 +771,7 @@ export default function DiscountCodesAdminPanel({
                   ) : (
                     <>
                       <Copy className="h-4 w-4" />
-                      Copy link
+                      Copy short link
                     </>
                   )}
                 </button>
@@ -760,7 +838,11 @@ export default function DiscountCodesAdminPanel({
             {groups.map((group) => (
               <div
                 key={group.code}
-                className="rounded-xl border border-black/5 bg-neutral-50 px-4 py-3 text-left"
+                className={`rounded-xl px-4 py-3 text-left ${
+                  group.recentlyApproved
+                    ? "border-2 border-amber-400 bg-amber-50 shadow-sm"
+                    : "border border-black/5 bg-neutral-50"
+                }`}
               >
                 <button
                   type="button"
@@ -772,9 +854,17 @@ export default function DiscountCodesAdminPanel({
                 >
                   <div className="flex items-center justify-between gap-2">
                     <p className="font-mono text-sm font-semibold">{group.code}</p>
-                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800 ring-1 ring-emerald-200">
-                      Live
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      {group.recentlyApproved ? (
+                        <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-950 ring-1 ring-amber-400">
+                          Just approved
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800 ring-1 ring-emerald-200">
+                          Live
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <p className="text-xs text-neutral-600 mt-1">{group.description}</p>
                   <p className="text-xs text-neutral-500 mt-1">

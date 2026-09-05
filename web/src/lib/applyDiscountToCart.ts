@@ -47,11 +47,15 @@ export async function applyDiscountCodeToCartStorage(
   if (typeof window === "undefined") return null;
 
   const normalized = normalizeDiscountCode(code);
-  if (!normalized || !isValidDiscountCode(normalized)) return null;
+  if (!normalized) return null;
 
   const active = await fetchActiveDiscountCodes();
-  // Empty set from a failed fetch: allow catalog codes; checkout still enforces.
-  if (active.size > 0 && !active.has(normalized)) return null;
+  if (active.size > 0) {
+    if (!active.has(normalized)) return null;
+  } else if (!isValidDiscountCode(normalized)) {
+    // Active list unavailable: still allow hardcoded catalog codes.
+    return null;
+  }
 
   let cart: StoredCart = {
     items: [],

@@ -1,7 +1,4 @@
-import {
-  isValidDiscountCode,
-  normalizeDiscountCode,
-} from "@/lib/discountPricing";
+import { normalizeDiscountCode } from "@/lib/discountPricing";
 
 /** sessionStorage: code that unlocked the storefront urgency timer via a short link. */
 export const DISCOUNT_URGENCY_FROM_SHORT_LINK_KEY = "discountUrgencyFromShortLink";
@@ -17,7 +14,7 @@ export function markDiscountUrgencyFromShortLink(
 ): void {
   if (typeof window === "undefined") return;
   const normalized = normalizeDiscountCode(code);
-  if (!normalized || !isValidDiscountCode(normalized)) return;
+  if (!normalized) return;
   try {
     sessionStorage.setItem(DISCOUNT_URGENCY_FROM_SHORT_LINK_KEY, normalized);
   } catch {
@@ -42,7 +39,7 @@ export function getDiscountUrgencyShortLinkCode(): string | null {
   try {
     const raw = sessionStorage.getItem(DISCOUNT_URGENCY_FROM_SHORT_LINK_KEY);
     const normalized = normalizeDiscountCode(raw);
-    if (!normalized || !isValidDiscountCode(normalized)) return null;
+    if (!normalized) return null;
     return normalized;
   } catch {
     return null;

@@ -9,6 +9,7 @@ import {
   hashDiscountClickIp,
   recordDiscountCodeClick,
 } from "@/lib/discountLinks";
+import { getApprovedAffiliateBySlugOrCode } from "@/lib/affiliateDiscounts";
 import { getInfluencerLinkBySlug } from "@/lib/influencerLinks";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +37,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       robots: { index: false, follow: false },
     };
   }
+  const affiliate = await getApprovedAffiliateBySlugOrCode(raw);
+  if (affiliate && (await isActiveDiscountCode(affiliate.code))) {
+    return {
+      title: `${affiliate.label} discount – Voronyz`,
+      description: `Shop Voronyz with ${affiliate.label}'s discount — $5 off your whole order.`,
+      robots: { index: false, follow: false },
+    };
+  }
   const code = normalizeDiscountCode(raw);
   if (code && (await isActiveDiscountCode(code))) {
     return {
@@ -55,7 +64,9 @@ export default async function DiscountAutoApplyPage({
 
   // Vanity bio links (e.g. /aryan → aryan50) take priority over raw code paths.
   const influencer = getInfluencerLinkBySlug(rawToken);
-  const code = influencer?.code ?? normalizeDiscountCode(rawToken);
+  const affiliate = influencer ? null : await getApprovedAffiliateBySlugOrCode(rawToken);
+  const code =
+    influencer?.code ?? affiliate?.code ?? normalizeDiscountCode(rawToken);
 
   if (!code || !(await isActiveDiscountCode(code))) {
     notFound();
@@ -80,6 +91,16 @@ export default async function DiscountAutoApplyPage({
         slug={influencer.slug}
         code={influencer.code}
         label={influencer.label}
+      />
+    );
+  }
+
+  if (affiliate) {
+    return (
+      <InfluencerDiscountLanding
+        slug={affiliate.slug}
+        code={affiliate.code}
+        label={affiliate.label}
       />
     );
   }

@@ -2,7 +2,6 @@ import { createHash } from "crypto";
 import { prisma } from "@/lib/prisma";
 import {
   VALID_DISCOUNT_CODES,
-  isValidDiscountCode,
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
 
@@ -52,7 +51,7 @@ export function getSiteOrigin(): string {
 /** Permanent public auto-apply link for an influencer bio, e.g. https://voronyz.com/aryan50 */
 export function getDiscountAutoApplyUrl(code: string): string | null {
   const normalized = normalizeDiscountCode(code);
-  if (!normalized || !isValidDiscountCode(normalized)) return null;
+  if (!normalized) return null;
   return `${getSiteOrigin()}/${normalized}`;
 }
 
@@ -61,7 +60,7 @@ export async function recordDiscountCodeClick(input: {
   ipHash?: string | null;
 }): Promise<boolean> {
   const normalized = normalizeDiscountCode(input.code);
-  if (!normalized || !isValidDiscountCode(normalized)) return false;
+  if (!normalized) return false;
 
   try {
     await ensureDiscountClickStore();

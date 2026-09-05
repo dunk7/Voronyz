@@ -6,6 +6,8 @@ import {
   getDiscountedUnitPriceCents,
 } from "@/lib/discountPricing";
 import { resolveActiveDiscountCode } from "@/lib/discountDisabled";
+import { getOrderLevelDiscountCentsForCode } from "@/lib/affiliateDiscounts";
+import { applyOrderLevelDiscountCents } from "@/lib/affiliateApproveLogic";
 import { cartHasPreOrder, resolveIsPreOrder } from "@/lib/preorder";
 import {
   buildShippingInsuranceLineItem,
@@ -124,6 +126,12 @@ export async function POST(request: NextRequest) {
     if (productSubtotalCents <= 0) {
       return NextResponse.json({ error: "Invalid order total" }, { status: 400 });
     }
+
+    const affiliateOrderOff = applyOrderLevelDiscountCents(
+      productSubtotalCents,
+      await getOrderLevelDiscountCentsForCode(normalizedDiscountCode)
+    );
+    productSubtotalCents -= affiliateOrderOff;
 
     const hasPreOrder = cartHasPreOrder(items);
     const insuranceQty = getInsurableItemQuantity(items);

@@ -6,6 +6,12 @@ import {
   getDiscountedUnitPriceCents,
 } from "@/lib/discountPricing";
 import { resolveActiveDiscountCode } from "@/lib/discountDisabled";
+import { getOrderLevelDiscountCentsForCode } from "@/lib/affiliateDiscounts";
+import {
+  applyOrderLevelDiscountCents,
+  subtractOrderLevelDiscountFromLineItems,
+} from "@/lib/affiliateApproveLogic";
+import { ensureAffiliateOrderCoupon } from "@/lib/stripeAffiliateCoupon";
 import { cartHasPreOrder, resolveIsPreOrder } from "@/lib/preorder";
 import {
   buildStripeCartItemsMetadata,
@@ -269,6 +275,31 @@ export async function POST(request: NextRequest) {
     }
 
     const isAch = paymentMethod === "ach";
+    const productSubtotalCents = lineItems.reduce((sum, item) => {
+      const unit = item.price_data?.unit_amount ?? 0;
+      const qty = item.quantity ?? 1;
+      return sum + unit * qty;
+    }, 0);
+    const insuranceLineCents = wantsInsurance
+      ? buildShippingInsuranceLineItem(1).unitCents * insuranceQty
+      : 0;
+    const productOnlyCents = productSubtotalCents - insuranceLineCents;
+    const orderLevelOff = applyOrderLevelDiscountCents(
+      productOnlyCents,
+      await getOrderLevelDiscountCentsForCode(activeDiscountCode)
+    );
+
+    let sessionDiscounts: { coupon: string }[] | undefined;
+    if (orderLevelOff > 0 && productOnlyCents - orderLevelOff >= 50) {
+      const couponId = await ensureAffiliateOrderCoupon(stripe);
+      if (couponId) {
+        sessionDiscounts = [{ coupon: couponId }];
+      } else {
+        const productLines = wantsInsurance ? lineItems.slice(0, -1) : lineItems;
+        subtractOrderLevelDiscountFromLineItems(productLines, orderLevelOff);
+      }
+    }
+
     const session = await stripe.checkout.sessions.create({
       // Explicit method types so cart can lead with ACH and offer card as a secondary path.
       payment_method_types: isAch ? ["us_bank_account"] : ["card"],
@@ -284,6 +315,7 @@ export async function POST(request: NextRequest) {
       }),
       line_items: lineItems,
       mode: 'payment',
+      ...(sessionDiscounts && { discounts: sessionDiscounts }),
       ...(!hasPickupOnly && {
         shipping_address_collection: {
           // ACH Direct Debit is US-only; card checkout keeps broader shipping.

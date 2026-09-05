@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   getDiscountCodeShopperDescription,
-  isValidDiscountCode,
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
 import {
@@ -24,7 +23,6 @@ function readActiveDiscountCode(): string | null {
     const code = normalizeDiscountCode(
       (parsed as { discountCode?: unknown }).discountCode as string | null
     );
-    if (!code || !isValidDiscountCode(code)) return null;
     return code;
   } catch {
     return null;
