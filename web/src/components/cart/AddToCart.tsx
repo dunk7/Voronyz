@@ -544,7 +544,7 @@ export default function AddToCart({
           </div>
         )}
 
-        {/* Flavor / style options (trail mix, ponybead animals, …) */}
+        {/* Flavor / style options (trail mix, keychain animals, …) */}
         {hasFlavorOptions ? (
           <div className="grid gap-2">
             <label className="text-sm text-neutral-700">{flavorLabel}</label>

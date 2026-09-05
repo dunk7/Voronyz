@@ -35,6 +35,11 @@ const nextConfig: NextConfig = {
         destination: "/apparel/accessories",
         permanent: true,
       },
+      {
+        source: "/products/violette-ponybead-animals",
+        destination: "/products/keychain",
+        permanent: true,
+      },
     ];
   },
 };

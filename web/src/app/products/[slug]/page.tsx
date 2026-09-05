@@ -24,10 +24,12 @@ import {
   TRAIL_MIX_THUMBNAIL_URL,
 } from "@/lib/trailMix";
 import {
+  isViolettePonybeadSlug,
   VIOLETTE_PONYBEAD_ANIMALS,
   VIOLETTE_PONYBEAD_DESCRIPTION,
   VIOLETTE_PONYBEAD_HOW_ITS_MADE,
   VIOLETTE_PONYBEAD_IMAGES,
+  VIOLETTE_PONYBEAD_LEGACY_SLUG,
   VIOLETTE_PONYBEAD_NAME,
   VIOLETTE_PONYBEAD_SLUG,
   VIOLETTE_PONYBEAD_THUMBNAIL_URL,
@@ -113,6 +115,9 @@ type ProductWithVariants = {
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  if (slug.trim().toLowerCase() === VIOLETTE_PONYBEAD_LEGACY_SLUG) {
+    redirect(`/products/${VIOLETTE_PONYBEAD_SLUG}`);
+  }
   const obsoleteRedirect = OBSOLETE_APPAREL_PRODUCT_REDIRECTS[slug.trim().toLowerCase()];
   if (obsoleteRedirect || isObsoleteApparelSlug(slug)) {
     redirect(obsoleteRedirect ?? "/products/voronyz-joggers");
@@ -205,7 +210,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? magikidShoesImages
     : slug === TRAIL_MIX_SLUG
     ? [...TRAIL_MIX_IMAGES]
-    : slug === VIOLETTE_PONYBEAD_SLUG
+    : isViolettePonybeadSlug(slug)
     ? [...VIOLETTE_PONYBEAD_IMAGES]
     : slug === GATORS_SLUG
     ? [...GATORS_IMAGES]
@@ -229,7 +234,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isSlipOns = slug === "slip-ons";
   const isMagikidShoes = slug === "magikid-shoes";
   const isTrailMix = slug === TRAIL_MIX_SLUG;
-  const isViolettePonybead = slug === VIOLETTE_PONYBEAD_SLUG;
+  const isViolettePonybead = isViolettePonybeadSlug(slug);
   const isGators = slug === GATORS_SLUG;
   const isFilament = slug === FILAMENT_SLUG;
   const isLatticeInsoles = slug === LATTICE_INSOLES_SLUG;
@@ -658,7 +663,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     };
   }
 
-  if (slug === VIOLETTE_PONYBEAD_SLUG) {
+  if (isViolettePonybeadSlug(slug)) {
     const title = `${VIOLETTE_PONYBEAD_NAME} – Voronyz`;
     const description = VIOLETTE_PONYBEAD_DESCRIPTION;
     const images = [VIOLETTE_PONYBEAD_THUMBNAIL_URL];

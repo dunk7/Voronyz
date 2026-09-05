@@ -14,6 +14,7 @@ import {
   VIOLETTE_PONYBEAD_ANIMAL_IDS,
   VIOLETTE_PONYBEAD_DESCRIPTION_SHORT,
   VIOLETTE_PONYBEAD_IMAGES,
+  VIOLETTE_PONYBEAD_LEGACY_SLUG,
   VIOLETTE_PONYBEAD_NAME,
   VIOLETTE_PONYBEAD_PRICE_CENTS,
   VIOLETTE_PONYBEAD_SIZES,
@@ -433,9 +434,12 @@ export async function ensureTrailMix(): Promise<void> {
   });
 }
 
-/** Idempotently upsert Violette Ponybead Animals so Collaborative shows it without a manual seed. */
+/** Idempotently upsert Keychain so Collaborative shows it without a manual seed. */
 export async function ensureViolettePonybeadAnimals(): Promise<void> {
   let existing = await prisma.product.findUnique({ where: { slug: VIOLETTE_PONYBEAD_SLUG } });
+  if (!existing) {
+    existing = await prisma.product.findUnique({ where: { slug: VIOLETTE_PONYBEAD_LEGACY_SLUG } });
+  }
 
   if (!existing) {
     try {
@@ -458,6 +462,9 @@ export async function ensureViolettePonybeadAnimals(): Promise<void> {
       return;
     } catch (error) {
       existing = await prisma.product.findUnique({ where: { slug: VIOLETTE_PONYBEAD_SLUG } });
+      if (!existing) {
+        existing = await prisma.product.findUnique({ where: { slug: VIOLETTE_PONYBEAD_LEGACY_SLUG } });
+      }
       if (!existing) throw error;
     }
   }
@@ -465,6 +472,7 @@ export async function ensureViolettePonybeadAnimals(): Promise<void> {
   await prisma.product.update({
     where: { id: existing.id },
     data: {
+      slug: VIOLETTE_PONYBEAD_SLUG,
       name: VIOLETTE_PONYBEAD_NAME,
       description: VIOLETTE_PONYBEAD_DESCRIPTION_SHORT,
       priceCents: VIOLETTE_PONYBEAD_PRICE_CENTS,

@@ -25,7 +25,7 @@ import Image from "next/image";
 import Link from "next/link";
 import LogoLoader from "@/components/ui/LogoLoader";
 import { trailMixFlavorLabel } from "@/lib/trailMix";
-import { violetteAnimalLabel, VIOLETTE_PONYBEAD_SLUG } from "@/lib/violettePonybeadAnimals";
+import { violetteAnimalLabel, isViolettePonybeadSlug, VIOLETTE_PONYBEAD_NAME, VIOLETTE_PONYBEAD_SLUG } from "@/lib/violettePonybeadAnimals";
 
 interface CartItem {
   id: string;
@@ -429,21 +429,21 @@ export default function CartClient() {
           >
             <Link 
               href={
-                it.productSlug 
-                  ? `/products/${it.productSlug}?primary=${encodeURIComponent(it.variant?.name || '')}${it.attributes?.size ? `&size=${it.attributes.size}` : ''}${it.attributes?.color ? `&secondary=${encodeURIComponent(it.attributes.color)}` : ''}`
+                it.productSlug
+                  ? `/products/${isViolettePonybeadSlug(it.productSlug) ? VIOLETTE_PONYBEAD_SLUG : it.productSlug}?primary=${encodeURIComponent(it.variant?.name || '')}${it.attributes?.size ? `&size=${it.attributes.size}` : ''}${it.attributes?.color ? `&secondary=${encodeURIComponent(it.attributes.color)}` : ''}`
                   : "/products"
               } 
               className="flex items-start gap-3 lg:gap-4 min-w-0 hover:opacity-80 transition-opacity cursor-pointer flex-1 lg:flex-auto"
             >
               <div className="relative h-14 w-14 lg:h-16 lg:w-16 overflow-hidden rounded-xl ring-1 ring-black/5 flex-shrink-0">
                 {it.image ? (
-                  <Image src={it.image} alt={it.productName || it.variant?.name || "Item"} fill className="object-cover" />
+                  <Image src={it.image} alt={isViolettePonybeadSlug(it.productSlug) ? VIOLETTE_PONYBEAD_NAME : (it.productName || it.variant?.name || "Item")} fill className="object-cover" />
                 ) : (
                   <div className="h-full w-full bg-black/5" />
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm lg:text-base font-medium text-neutral-900">{it.productName || it.variant?.name || "Item"}</div>
+                <div className="truncate text-sm lg:text-base font-medium text-neutral-900">{isViolettePonybeadSlug(it.productSlug) ? VIOLETTE_PONYBEAD_NAME : (it.productName || it.variant?.name || "Item")}</div>
                 <div className="mt-1 flex flex-wrap items-center gap-1 lg:gap-2 text-xs text-neutral-700">
                   {resolveIsPreOrder({
                     isPreOrder: it.isPreOrder,
@@ -456,7 +456,7 @@ export default function CartClient() {
                   {it.variant?.name && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-black/5 px-2 py-0.5 capitalize">
                       {it.productSlug !== "antioxidant-trail-mix" &&
-                        it.productSlug !== VIOLETTE_PONYBEAD_SLUG && (
+                        !isViolettePonybeadSlug(it.productSlug) && (
                         <span
                           className="inline-block h-3 w-3 rounded-full ring-1 ring-black/10"
                           style={{ backgroundColor: it.variant.name }}
@@ -464,14 +464,14 @@ export default function CartClient() {
                       )}
                       {it.productSlug === "antioxidant-trail-mix"
                         ? trailMixFlavorLabel(it.variant.name)
-                        : it.productSlug === VIOLETTE_PONYBEAD_SLUG
+                        : isViolettePonybeadSlug(it.productSlug)
                           ? violetteAnimalLabel(it.variant.name)
                           : it.variant.name}
                     </span>
                   )}
                   {it.attributes?.size !== undefined &&
                     it.productSlug !== "antioxidant-trail-mix" &&
-                    it.productSlug !== VIOLETTE_PONYBEAD_SLUG && (
+                    !isViolettePonybeadSlug(it.productSlug) && (
                     <span className="rounded-full bg-black/5 px-2 py-0.5">
                       {it.productSlug === "tpu-90a-filament"
                         ? "1kg spool"
