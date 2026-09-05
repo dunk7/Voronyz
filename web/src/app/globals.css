@@ -107,18 +107,25 @@ video {
 }
 
 .bg-texture-white {
+  /*
+    Integer tile (26×45) so background-repeat stays pixel-aligned.
+    Geometry: pointy-top hex, row step = 3/4 of hex height (correct honeycomb).
+    The old 50×43 / spacing-52 tile cut hexes mid-edge and left visible patches.
+  */
+  --hex-tile-w: 26px;
+  --hex-tile-h: 45px;
   background-color: #ffffff !important;
   position: relative;
   overflow-x: clip;
 }
 
-/* Slide the hex layer left by one tile; loop is seamless */
+/* Slide left by exactly one tile width so the loop stays seamless */
 @keyframes hex-texture-drift {
   from {
     transform: translateX(0);
   }
   to {
-    transform: translateX(-50px);
+    transform: translateX(calc(-1 * var(--hex-tile-w)));
   }
 }
 
@@ -128,10 +135,10 @@ video {
   top: 0;
   bottom: 0;
   left: 0;
-  width: calc(100% + 50px);
-  background-image: 
-    url("data:image/svg+xml,%3Csvg width='120' height='104' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='0.08' stroke-width='0.8'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: 50px 43px;
+  width: calc(100% + var(--hex-tile-w));
+  /* Native tile 52×90 (2× display). Two hexes + horizontal wrap = continuous mesh. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='90' viewBox='0 0 52 90'%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='0.08' stroke-width='0.8' stroke-linejoin='round'%3E%3Cpath d='M26 0L52 15L52 45L26 60L0 45L0 15Z'/%3E%3Cpath d='M0 45L26 60L26 90L0 105L-26 90L-26 60Z'/%3E%3Cpath d='M52 45L78 60L78 90L52 105L26 90L26 60Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: var(--hex-tile-w) var(--hex-tile-h);
   background-position: 0 0;
   background-repeat: repeat;
   animation: hex-texture-drift 18s linear infinite;
