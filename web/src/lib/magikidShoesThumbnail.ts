@@ -6,22 +6,22 @@ export const MAGIKID_SHOES_THUMBNAIL_FALLBACK =
 
 export const MAGIKID_SHOES_KIDS_SIZES = ["1", "2", "3", "4", "5", "6", "7"];
 
-export const MAGIKID_SHOES_BASE_PRICE_CENTS = 3000;
+export const MAGIKID_SHOES_BASE_PRICE_CENTS = 16000; // $160
 export const MAGIKID_SHOES_SHIPPING_FEE_CENTS = 700;
 export const MAGIKID_SHOES_SHIPPED_PRICE_CENTS =
   MAGIKID_SHOES_BASE_PRICE_CENTS + MAGIKID_SHOES_SHIPPING_FEE_CENTS;
 
 export const MAGIKID_SHOES_DESCRIPTION =
-  "Engineered for kids' custom designs, built to last. Your 3D-printed slip-ons with a flexible lattice sole. Black, grey, and pink in stock — $30 per pair, plus $7 shipping or free pickup at Magikid Lab.";
+  "Engineered for kids' custom designs, built to last. Your 3D-printed slip-ons with a flexible lattice sole. Black, grey, and pink in stock — $160 per pair, plus $7 shipping or free pickup at Magikid Lab.";
 
 export const MAGIKID_SHOES_DESCRIPTION_SHORT =
-  "Engineered for kids' custom designs, built to last. Your 3D-printed slip-ons with a flexible lattice sole. Pick black, grey, or pink — $30, plus $7 shipping or pickup at Magikid Lab at no extra cost.";
+  "Engineered for kids' custom designs, built to last. Your 3D-printed slip-ons with a flexible lattice sole. Pick black, grey, or pink — $160, plus $7 shipping or pickup at Magikid Lab at no extra cost.";
 
 export const MAGIKID_SHOES_HOW_ITS_MADE =
-  "You're buying your own custom-designed 3D-printed slip-ons — printed to order in one piece per colorway. Every pair is $30. Add $7 if you want us to ship it, or pick it up in person at Magikid Lab at no extra charge.";
+  "You're buying your own custom-designed 3D-printed slip-ons — printed to order in one piece per colorway. Every pair is $160. Add $7 if you want us to ship it, or pick it up in person at Magikid Lab at no extra charge.";
 
 export const MAGIKID_SHOES_META_DESCRIPTION =
-  "Your custom-designed 3D-printed slip-ons. $30 per pair, plus $7 shipping or free pickup at Magikid Lab. Black, grey, and pink in stock.";
+  "Your custom-designed 3D-printed slip-ons. $160 per pair, plus $7 shipping or free pickup at Magikid Lab. Black, grey, and pink in stock.";
 
 export const MAGIKID_STUDENT_NAME_MIN = 2;
 export const MAGIKID_STUDENT_NAME_MAX = 80;
