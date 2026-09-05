@@ -433,13 +433,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                         id: "pickup",
                         label: "Magikid Lab pickup",
                         priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
-                        description: "$30 — no shipping fee",
+                        description: "$160 — no shipping fee",
                       },
                       {
                         id: "shipping",
                         label: "Ship to me",
                         priceCents: MAGIKID_SHOES_SHIPPED_PRICE_CENTS,
-                        description: "$30 shoe + $7 shipping",
+                        description: "$160 shoe + $7 shipping",
                       },
                     ],
                   })}
@@ -556,8 +556,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Can I wash them?", a: "Absolutely. The lattice sole and upper are fully washable — toss them in the washer on a gentle cycle." },
             ] : isMagikidShoes ? [
               { q: "What colors can I order?", a: "Black, grey, and pink are in stock. White and orange are listed but currently out of stock." },
-              { q: "How does Magikid Lab pickup work?", a: "Choose pickup at checkout — you pay $30 for the shoes with no shipping fee. We'll email you when your pair is ready to collect in person at Magikid Lab." },
-              { q: "How does shipping work?", a: "The shoes are $30. Shipping is an extra $7. Pickup at Magikid Lab is $30 with no shipping fee." },
+              { q: "How does Magikid Lab pickup work?", a: "Choose pickup at checkout — you pay $160 for the shoes with no shipping fee. We'll email you when your pair is ready to collect in person at Magikid Lab." },
+              { q: "How does shipping work?", a: "The shoes are $160. Shipping is an extra $7. Pickup at Magikid Lab is $160 with no shipping fee." },
               { q: "How long does production take?", a: "Made to order in under 7 days, then we ship or hold for pickup." },
             ] : isSlipOns ? [
               { q: "What colors can I order?", a: "Black, grey, orange, and pink are in stock — white is currently out of stock. Each pair is one solid body color (no two-tone option)." },
