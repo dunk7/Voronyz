@@ -9,6 +9,7 @@ import {
   RECENTLY_APPROVED_WITHIN_MS,
   subtractOrderLevelDiscountFromLineItems,
 } from "./affiliateApproveLogic";
+import { getDiscountedUnitPriceCents } from "./discountPricing";
 
 test("approve allocation uses preferred code and slug", () => {
   const result = allocateAffiliateCodeAndSlug(
@@ -117,6 +118,14 @@ test("recently approved window is true only shortly after approve", () => {
     false
   );
   assert.equal(isRecentlyApproved(null, now), false);
+});
+
+test("affiliate codes do not take $5 off each product", () => {
+  assert.equal(getDiscountedUnitPriceCents(7500, "newcreator"), 7500);
+  assert.equal(getDiscountedUnitPriceCents(7500, "aryan50"), 7000);
+  const twoItemOrder = 7500 * 2;
+  assert.equal(applyOrderLevelDiscountCents(twoItemOrder), 500);
+  assert.notEqual(applyOrderLevelDiscountCents(twoItemOrder), 500 * 2);
 });
 
 test("approve record shape keeps original application fields", () => {
