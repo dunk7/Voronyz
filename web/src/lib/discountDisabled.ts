@@ -1,12 +1,21 @@
 import { prisma } from "@/lib/prisma";
 import { listApprovedAffiliateDiscountCodes } from "@/lib/affiliateDiscounts";
 import {
+  isProtectedCatalogDiscountCode,
+  omitProtectedCatalogCodes,
+} from "@/lib/discountCatalogProtect";
+import {
   VALID_DISCOUNT_CODES,
-  isValidDiscountCode,
   normalizeDiscountCode,
 } from "@/lib/discountPricing";
 
+export {
+  isProtectedCatalogDiscountCode,
+  omitProtectedCatalogCodes,
+} from "@/lib/discountCatalogProtect";
+
 let disabledTableReady: Promise<void> | null = null;
+let catalogRestore: Promise<string[]> | null = null;
 
 /** Create DiscountCodeDisabled storage if migrations have not been applied yet. */
 export async function ensureDiscountDisabledStore(): Promise<void> {
@@ -27,13 +36,44 @@ export async function ensureDiscountDisabledStore(): Promise<void> {
   await disabledTableReady;
 }
 
+/**
+ * Re-enable every hardcoded catalog code (Arabella50, Pedro30, Andy50, …).
+ * Approving a new affiliate must never leave those rows disabled.
+ */
+export async function restoreProtectedCatalogDiscountCodes(): Promise<string[]> {
+  if (!catalogRestore) {
+    catalogRestore = (async () => {
+      await ensureDiscountDisabledStore();
+      const existing = await prisma.discountCodeDisabled.findMany({
+        where: { code: { in: [...VALID_DISCOUNT_CODES] } },
+        select: { code: true },
+      });
+      if (existing.length === 0) return [];
+      await prisma.discountCodeDisabled.deleteMany({
+        where: { code: { in: [...VALID_DISCOUNT_CODES] } },
+      });
+      return existing.map((row) => row.code.toLowerCase());
+    })().catch((error) => {
+      catalogRestore = null;
+      throw error;
+    });
+  }
+  try {
+    return await catalogRestore;
+  } catch (err) {
+    console.error("Failed to restore catalog discount codes:", err);
+    return [];
+  }
+}
+
 export async function getDisabledDiscountCodes(): Promise<Set<string>> {
   try {
+    await restoreProtectedCatalogDiscountCodes();
     await ensureDiscountDisabledStore();
     const rows = await prisma.discountCodeDisabled.findMany({
       select: { code: true },
     });
-    return new Set(rows.map((row) => row.code.toLowerCase()));
+    return omitProtectedCatalogCodes(rows.map((row) => row.code));
   } catch (err) {
     console.error("Failed to load disabled discount codes:", err);
     return new Set();
@@ -45,25 +85,31 @@ export async function isDiscountCodeDisabled(
 ): Promise<boolean> {
   const normalized = normalizeDiscountCode(code);
   if (!normalized) return false;
+  if (isProtectedCatalogDiscountCode(normalized)) return false;
   const disabled = await getDisabledDiscountCodes();
   return disabled.has(normalized);
 }
 
-/** Catalog or approved-affiliate code that has not been soft-deleted in admin. */
+/** Catalog codes are always live. Approved-affiliate codes stay live unless admin-deleted. */
 export async function isActiveDiscountCode(
   code: string | null | undefined
 ): Promise<boolean> {
   const normalized = normalizeDiscountCode(code);
   if (!normalized) return false;
+  // Catalog short links (arabella, pedro, andy, …) cannot be turned off.
+  if (isProtectedCatalogDiscountCode(normalized)) {
+    await restoreProtectedCatalogDiscountCodes();
+    return true;
+  }
   if (await isDiscountCodeDisabled(normalized)) return false;
-  if (isValidDiscountCode(normalized)) return true;
   const affiliateCodes = await listApprovedAffiliateDiscountCodes();
   return affiliateCodes.includes(normalized);
 }
 
 export async function getActiveDiscountCodes(): Promise<string[]> {
+  await restoreProtectedCatalogDiscountCodes();
   const disabled = await getDisabledDiscountCodes();
-  const catalog = VALID_DISCOUNT_CODES.filter((code) => !disabled.has(code));
+  const catalog = [...VALID_DISCOUNT_CODES];
   const catalogSet = new Set<string>(catalog);
   const affiliates = (await listApprovedAffiliateDiscountCodes()).filter(
     (code) => !disabled.has(code) && !catalogSet.has(code)
@@ -72,8 +118,7 @@ export async function getActiveDiscountCodes(): Promise<string[]> {
 }
 
 /**
- * Soft-delete a configured discount code so it stops working on the site
- * and disappears from the admin live list.
+ * Soft-delete an approved-affiliate code. Catalog creator codes cannot be deleted.
  */
 export async function disableDiscountCode(
   code: string | null | undefined
@@ -82,8 +127,15 @@ export async function disableDiscountCode(
   if (!normalized) {
     return { ok: false, error: "Discount code is required." };
   }
+  if (isProtectedCatalogDiscountCode(normalized)) {
+    return {
+      ok: false,
+      error:
+        "This creator code and its short link stay live. Approving a new affiliate does not remove Arabella, Aryan, Pedro, or the other catalog codes.",
+    };
+  }
   const affiliateCodes = await listApprovedAffiliateDiscountCodes();
-  if (!isValidDiscountCode(normalized) && !affiliateCodes.includes(normalized)) {
+  if (!affiliateCodes.includes(normalized)) {
     return { ok: false, error: "Unknown discount code." };
   }
 
