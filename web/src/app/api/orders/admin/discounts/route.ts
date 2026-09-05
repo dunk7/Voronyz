@@ -7,6 +7,7 @@ import {
 import {
   disableDiscountCode,
   getActiveDiscountCodes,
+  restoreProtectedCatalogDiscountCodes,
 } from "@/lib/discountDisabled";
 import {
   getDiscountAutoApplyUrl,
@@ -42,6 +43,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    await restoreProtectedCatalogDiscountCodes();
     const activeCodes = await getActiveDiscountCodes();
     const clicksByCode = await getDiscountClickCounts(activeCodes);
     const affiliates = await listApprovedAffiliateDiscounts();
