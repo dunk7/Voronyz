@@ -17,11 +17,13 @@ import {
   buildInfluencerDiscountUrl,
   getInfluencerLinkForCode,
 } from "@/lib/influencerLinks";
+import { listApprovedAffiliateDiscounts } from "@/lib/affiliateDiscounts";
 import { normalizeDiscountCode } from "@/lib/discountPricing";
 
 export const dynamic = "force-dynamic";
 
-function preferredShareUrl(code: string): string | null {
+function preferredShareUrl(code: string, affiliateSlug?: string | null): string | null {
+  if (affiliateSlug) return buildInfluencerDiscountUrl(affiliateSlug);
   const influencer = getInfluencerLinkForCode(code);
   if (influencer) return buildInfluencerDiscountUrl(influencer.slug);
   return getDiscountAutoApplyUrl(code);
@@ -42,15 +44,23 @@ export async function GET(request: NextRequest) {
   try {
     const activeCodes = await getActiveDiscountCodes();
     const clicksByCode = await getDiscountClickCounts(activeCodes);
+    const affiliates = await listApprovedAffiliateDiscounts();
+    const affiliateByCode = new Map(affiliates.map((row) => [row.code, row]));
     const codes = activeCodes.map((code) => {
       const influencer = getInfluencerLinkForCode(code);
+      const affiliate = affiliateByCode.get(code);
+      const influencerSlug = influencer?.slug ?? affiliate?.slug ?? null;
+      const influencerLabel = influencer?.label ?? affiliate?.label ?? null;
       return {
         code,
         clicks: clicksByCode[code] ?? 0,
-        autoApplyUrl: preferredShareUrl(code),
+        autoApplyUrl: preferredShareUrl(code, influencerSlug),
         status: "live" as const,
-        influencerSlug: influencer?.slug ?? null,
-        influencerLabel: influencer?.label ?? null,
+        influencerSlug,
+        influencerLabel,
+        recentlyApproved: affiliate?.recentlyApproved ?? false,
+        approvedAt: affiliate?.approvedAt ?? null,
+        source: affiliate ? ("affiliate" as const) : ("catalog" as const),
       };
     });
 

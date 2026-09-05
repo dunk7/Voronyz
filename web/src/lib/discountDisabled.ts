@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { listApprovedAffiliateDiscountCodes } from "@/lib/affiliateDiscounts";
 import {
   VALID_DISCOUNT_CODES,
   isValidDiscountCode,
@@ -48,18 +49,26 @@ export async function isDiscountCodeDisabled(
   return disabled.has(normalized);
 }
 
-/** Configured catalog code that has not been soft-deleted in admin. */
+/** Catalog or approved-affiliate code that has not been soft-deleted in admin. */
 export async function isActiveDiscountCode(
   code: string | null | undefined
 ): Promise<boolean> {
   const normalized = normalizeDiscountCode(code);
-  if (!normalized || !isValidDiscountCode(normalized)) return false;
-  return !(await isDiscountCodeDisabled(normalized));
+  if (!normalized) return false;
+  if (await isDiscountCodeDisabled(normalized)) return false;
+  if (isValidDiscountCode(normalized)) return true;
+  const affiliateCodes = await listApprovedAffiliateDiscountCodes();
+  return affiliateCodes.includes(normalized);
 }
 
 export async function getActiveDiscountCodes(): Promise<string[]> {
   const disabled = await getDisabledDiscountCodes();
-  return VALID_DISCOUNT_CODES.filter((code) => !disabled.has(code));
+  const catalog = VALID_DISCOUNT_CODES.filter((code) => !disabled.has(code));
+  const catalogSet = new Set<string>(catalog);
+  const affiliates = (await listApprovedAffiliateDiscountCodes()).filter(
+    (code) => !disabled.has(code) && !catalogSet.has(code)
+  );
+  return [...catalog, ...affiliates];
 }
 
 /**
@@ -73,7 +82,8 @@ export async function disableDiscountCode(
   if (!normalized) {
     return { ok: false, error: "Discount code is required." };
   }
-  if (!isValidDiscountCode(normalized)) {
+  const affiliateCodes = await listApprovedAffiliateDiscountCodes();
+  if (!isValidDiscountCode(normalized) && !affiliateCodes.includes(normalized)) {
     return { ok: false, error: "Unknown discount code." };
   }
 

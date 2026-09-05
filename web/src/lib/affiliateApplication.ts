@@ -5,6 +5,13 @@ import {
   AFFILIATE_PLATFORMS,
   type AffiliateApplicationRecord,
 } from "@/lib/affiliateConstants";
+import {
+  allocateAffiliateCodeAndSlug,
+  cleanAffiliateCode,
+  cleanAffiliateSlug,
+} from "@/lib/affiliateApproveLogic";
+import { VALID_DISCOUNT_CODES } from "@/lib/discountPricing";
+import { INFLUENCER_DISCOUNT_LINKS } from "@/lib/influencerLinks";
 
 export type {
   AffiliateAudienceSize,
@@ -51,8 +58,23 @@ export async function ensureAffiliateApplicationStore(): Promise<void> {
           "status" TEXT NOT NULL DEFAULT 'pending',
           "ipHash" TEXT,
           "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "approvedCode" TEXT,
+          "approvedSlug" TEXT,
+          "approvedAt" TIMESTAMP(3),
           CONSTRAINT "AffiliateApplication_pkey" PRIMARY KEY ("id")
         )
+      `);
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "AffiliateApplication"
+        ADD COLUMN IF NOT EXISTS "approvedCode" TEXT
+      `);
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "AffiliateApplication"
+        ADD COLUMN IF NOT EXISTS "approvedSlug" TEXT
+      `);
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "AffiliateApplication"
+        ADD COLUMN IF NOT EXISTS "approvedAt" TIMESTAMP(3)
       `);
       await prisma.$executeRawUnsafe(`
         CREATE INDEX IF NOT EXISTS "AffiliateApplication_createdAt_idx"
@@ -65,6 +87,14 @@ export async function ensureAffiliateApplicationStore(): Promise<void> {
       await prisma.$executeRawUnsafe(`
         CREATE INDEX IF NOT EXISTS "AffiliateApplication_status_idx"
         ON "AffiliateApplication"("status")
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE UNIQUE INDEX IF NOT EXISTS "AffiliateApplication_approvedCode_key"
+        ON "AffiliateApplication"("approvedCode")
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE UNIQUE INDEX IF NOT EXISTS "AffiliateApplication_approvedSlug_key"
+        ON "AffiliateApplication"("approvedSlug")
       `);
     })().catch((error) => {
       affiliateTableReady = null;
@@ -98,24 +128,44 @@ function isEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) && value.length <= 254;
 }
 
-function cleanSlug(value: string): string | null {
-  const slug = value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9-]/g, "")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 32);
-  return slug || null;
-}
-
-function cleanCode(value: string): string | null {
-  const code = value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "")
-    .slice(0, 24);
-  return code || null;
+function toAffiliateApplicationRecord(row: {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string | null;
+  platform: string;
+  handleOrUrl: string;
+  audienceSize: string;
+  preferredSlug: string | null;
+  preferredCode: string | null;
+  niche: string;
+  pitch: string;
+  status: string;
+  createdAt: Date;
+  approvedCode: string | null;
+  approvedSlug: string | null;
+  approvedAt: Date | null;
+}): AffiliateApplicationRecord {
+  return {
+    id: row.id,
+    firstName: row.firstName,
+    lastName: row.lastName,
+    email: row.email,
+    phone: row.phone,
+    platform: row.platform,
+    handleOrUrl: row.handleOrUrl,
+    audienceSize: row.audienceSize,
+    preferredSlug: row.preferredSlug,
+    preferredCode: row.preferredCode,
+    niche: row.niche,
+    pitch: row.pitch,
+    status: row.status,
+    createdAt: row.createdAt.toISOString(),
+    approvedCode: row.approvedCode,
+    approvedSlug: row.approvedSlug,
+    approvedAt: row.approvedAt ? row.approvedAt.toISOString() : null,
+  };
 }
 
 export type AffiliateValidationResult =
@@ -132,8 +182,8 @@ export function validateAffiliateApplicationBody(
   const platform = cleanText(body.platform, 40);
   const handleOrUrl = cleanText(body.handleOrUrl, 240);
   const audienceSize = cleanText(body.audienceSize, 40);
-  const preferredSlug = cleanSlug(String(body.preferredSlug ?? ""));
-  const preferredCode = cleanCode(String(body.preferredCode ?? ""));
+  const preferredSlug = cleanAffiliateSlug(String(body.preferredSlug ?? ""));
+  const preferredCode = cleanAffiliateCode(String(body.preferredCode ?? ""));
   const niche = cleanMultiline(body.niche, 800);
   const pitch = cleanMultiline(body.pitch, 2000);
 
@@ -210,22 +260,123 @@ export async function listAffiliateApplications(limit = 200): Promise<AffiliateA
     orderBy: { createdAt: "desc" },
     take: Math.min(Math.max(limit, 1), 500),
   });
-  return rows.map((row) => ({
-    id: row.id,
-    firstName: row.firstName,
-    lastName: row.lastName,
-    email: row.email,
-    phone: row.phone,
-    platform: row.platform,
-    handleOrUrl: row.handleOrUrl,
-    audienceSize: row.audienceSize,
-    preferredSlug: row.preferredSlug,
-    preferredCode: row.preferredCode,
-    niche: row.niche,
-    pitch: row.pitch,
-    status: row.status,
-    createdAt: row.createdAt.toISOString(),
-  }));
+  const mapped = rows.map(toAffiliateApplicationRecord);
+  mapped.sort((a, b) => {
+    const aPending = a.status === "pending" ? 0 : 1;
+    const bPending = b.status === "pending" ? 0 : 1;
+    if (aPending !== bPending) return aPending - bPending;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+  return mapped;
+}
+
+async function takenAffiliateLinksExcluding(applicationId?: string) {
+  const others = await prisma.affiliateApplication.findMany({
+    where: {
+      status: "approved",
+      ...(applicationId ? { id: { not: applicationId } } : {}),
+    },
+    select: { approvedCode: true, approvedSlug: true },
+  });
+
+  const codes = new Set<string>(VALID_DISCOUNT_CODES);
+  const slugs = new Set<string>();
+  for (const link of INFLUENCER_DISCOUNT_LINKS) {
+    codes.add(link.code.toLowerCase());
+    slugs.add(link.slug.toLowerCase());
+  }
+  for (const row of others) {
+    if (row.approvedCode) codes.add(row.approvedCode.toLowerCase());
+    if (row.approvedSlug) slugs.add(row.approvedSlug.toLowerCase());
+  }
+  return { codes, slugs };
+}
+
+/**
+ * Approve a pending application: keep every submitted field, attach a live
+ * $5-off-order code + bio short link. Does not delete application data.
+ */
+export async function approveAffiliateApplication(
+  id: string
+): Promise<
+  | { ok: true; application: AffiliateApplicationRecord }
+  | { ok: false; error: string; status: number }
+> {
+  const trimmed = (id || "").trim();
+  if (!trimmed) {
+    return { ok: false, error: "Application id is required.", status: 400 };
+  }
+
+  await ensureAffiliateApplicationStore();
+  const existing = await prisma.affiliateApplication.findUnique({
+    where: { id: trimmed },
+  });
+  if (!existing) {
+    return { ok: false, error: "Application not found.", status: 404 };
+  }
+
+  if (existing.status === "approved" && existing.approvedCode && existing.approvedSlug) {
+    return { ok: true, application: toAffiliateApplicationRecord(existing) };
+  }
+
+  const taken = await takenAffiliateLinksExcluding(existing.id);
+  const allocated = allocateAffiliateCodeAndSlug(
+    {
+      id: existing.id,
+      firstName: existing.firstName,
+      lastName: existing.lastName,
+      preferredCode: existing.preferredCode,
+      preferredSlug: existing.preferredSlug,
+    },
+    taken
+  );
+  if (!allocated.ok) {
+    return { ok: false, error: allocated.error, status: 409 };
+  }
+
+  const updated = await prisma.affiliateApplication.update({
+    where: { id: existing.id },
+    data: {
+      status: "approved",
+      approvedCode: allocated.code,
+      approvedSlug: allocated.slug,
+      approvedAt: new Date(),
+    },
+  });
+
+  return { ok: true, application: toAffiliateApplicationRecord(updated) };
+}
+
+/**
+ * Reject deletes the application and does not create a discount code or short link.
+ */
+export async function rejectAffiliateApplication(
+  id: string
+): Promise<{ ok: true; id: string } | { ok: false; error: string; status: number }> {
+  const trimmed = (id || "").trim();
+  if (!trimmed) {
+    return { ok: false, error: "Application id is required.", status: 400 };
+  }
+
+  await ensureAffiliateApplicationStore();
+  const existing = await prisma.affiliateApplication.findUnique({
+    where: { id: trimmed },
+  });
+  if (!existing) {
+    return { ok: false, error: "Application not found.", status: 404 };
+  }
+
+  if (existing.status === "approved") {
+    return {
+      ok: false,
+      error:
+        "This application is already approved. Disable its code from the discount codes list instead of deleting the application.",
+      status: 400,
+    };
+  }
+
+  await prisma.affiliateApplication.delete({ where: { id: existing.id } });
+  return { ok: true, id: existing.id };
 }
 
 export async function countRecentAffiliateApplications(

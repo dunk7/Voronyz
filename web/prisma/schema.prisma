@@ -227,6 +227,10 @@ model AffiliateApplication {
   status        String   @default("pending")
   ipHash        String?
   createdAt     DateTime @default(now())
+  /// Set on approve only — original application fields are never cleared.
+  approvedCode  String?  @unique
+  approvedSlug  String?  @unique
+  approvedAt    DateTime?
 
   @@index([createdAt])
   @@index([email])

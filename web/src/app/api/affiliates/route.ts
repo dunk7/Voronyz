@@ -79,6 +79,9 @@ export async function POST(request: NextRequest) {
         status: "pending",
         ipHash: null,
         createdAt: new Date(),
+        approvedCode: null,
+        approvedSlug: null,
+        approvedAt: null,
       };
       notifyAffiliateApplication(stub);
       return NextResponse.json({

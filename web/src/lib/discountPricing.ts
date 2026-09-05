@@ -78,7 +78,7 @@ export function getDiscountCodeDescription(
     case "young":
       return "$20/spool TPU-90A (checkout-only)";
     default:
-      return "Active discount code";
+      return "$5 off the whole order";
   }
 }
 
@@ -114,7 +114,7 @@ export function getDiscountCodeShopperDescription(
     case "young":
       return "TPU-90A filament $20/spool";
     default:
-      return "Your discount is locked in";
+      return "$5 off your whole order";
   }
 }
 

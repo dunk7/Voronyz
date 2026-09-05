@@ -33,4 +33,7 @@ export type AffiliateApplicationRecord = {
   pitch: string;
   status: string;
   createdAt: string;
+  approvedCode: string | null;
+  approvedSlug: string | null;
+  approvedAt: string | null;
 };

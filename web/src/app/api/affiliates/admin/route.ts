@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { listAffiliateApplications } from "@/lib/affiliateApplication";
+import {
+  approveAffiliateApplication,
+  listAffiliateApplications,
+  rejectAffiliateApplication,
+} from "@/lib/affiliateApplication";
 import {
   isOrdersAdminAuthenticated,
   isOrdersAdminConfigured,
@@ -8,7 +12,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest) {
+function adminGuard(request: NextRequest) {
   if (!isOrdersAdminConfigured()) {
     return NextResponse.json(
       { error: "Admin is not configured on the server." },
@@ -24,6 +28,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Database not configured." }, { status: 503 });
   }
 
+  return null;
+}
+
+export async function GET(request: NextRequest) {
+  const blocked = adminGuard(request);
+  if (blocked) return blocked;
+
   try {
     const applications = await listAffiliateApplications(200);
     return NextResponse.json({ applications });
@@ -31,6 +42,62 @@ export async function GET(request: NextRequest) {
     console.error("Failed to list affiliate applications:", err);
     return NextResponse.json(
       { error: "Failed to load affiliate applications." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  const blocked = adminGuard(request);
+  if (blocked) return blocked;
+
+  let body: { id?: unknown; action?: unknown };
+  try {
+    body = (await request.json()) as { id?: unknown; action?: unknown };
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+  }
+
+  const id = typeof body.id === "string" ? body.id.trim() : "";
+  const action = typeof body.action === "string" ? body.action.trim().toLowerCase() : "";
+
+  if (!id) {
+    return NextResponse.json({ error: "Application id is required." }, { status: 400 });
+  }
+
+  try {
+    if (action === "approve") {
+      const result = await approveAffiliateApplication(id);
+      if (!result.ok) {
+        return NextResponse.json({ error: result.error }, { status: result.status });
+      }
+      return NextResponse.json({
+        ok: true,
+        action: "approve",
+        application: result.application,
+      });
+    }
+
+    if (action === "reject") {
+      const result = await rejectAffiliateApplication(id);
+      if (!result.ok) {
+        return NextResponse.json({ error: result.error }, { status: result.status });
+      }
+      return NextResponse.json({
+        ok: true,
+        action: "reject",
+        id: result.id,
+      });
+    }
+
+    return NextResponse.json(
+      { error: "Action must be approve or reject." },
+      { status: 400 }
+    );
+  } catch (err) {
+    console.error("Failed to update affiliate application:", err);
+    return NextResponse.json(
+      { error: "Failed to update affiliate application." },
       { status: 500 }
     );
   }
