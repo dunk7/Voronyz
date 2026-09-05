@@ -5,6 +5,11 @@ import {
   deleteGalleryFile,
   writeGalleryFile,
 } from "@/lib/galleryBlobStorage";
+import { GALLERY_PHOTOS } from "@/lib/gallery";
+import {
+  getHiddenGalleryPhotoIds,
+  listVisibleCatalogPhotos,
+} from "@/lib/galleryHidden";
 import { sanitizeUploadFileName } from "@/lib/stlUploadValidation";
 import { notifyNewGalleryPhoto } from "@/lib/adminNotifyEmail";
 
@@ -19,6 +24,8 @@ export type GallerySubmissionPublic = {
   caption?: string;
 };
 
+export type GalleryPhotoSource = "catalog" | "submission";
+
 export type GallerySubmissionAdmin = {
   id: string;
   name: string;
@@ -31,6 +38,7 @@ export type GallerySubmissionAdmin = {
   createdAt: string;
   reviewedAt: string | null;
   imageUrl: string;
+  source: GalleryPhotoSource;
 };
 
 function buildStorageKey(id: string, fileName: string): string {
@@ -60,6 +68,27 @@ export function toAdminGallerySubmission(
     createdAt: row.createdAt.toISOString(),
     reviewedAt: row.reviewedAt?.toISOString() ?? null,
     imageUrl: galleryImageUrl(row.id),
+    source: "submission",
+  };
+}
+
+function toAdminCatalogPhoto(
+  photo: (typeof GALLERY_PHOTOS)[number]
+): GallerySubmissionAdmin {
+  const fileName = photo.src.split("/").pop() || `${photo.id}.jpg`;
+  return {
+    id: photo.id,
+    name: "Site gallery",
+    email: null,
+    caption: photo.caption ?? null,
+    originalFileName: fileName,
+    mimeType: "image/jpeg",
+    sizeBytes: 0,
+    status: "approved",
+    createdAt: "2020-01-01T00:00:00.000Z",
+    reviewedAt: null,
+    imageUrl: photo.src,
+    source: "catalog",
   };
 }
 
@@ -95,18 +124,24 @@ export async function listApprovedGalleryPhotos(
 export async function listGallerySubmissionsForAdmin(
   take = 200
 ): Promise<GallerySubmissionAdmin[]> {
-  const rows = await prisma.gallerySubmission.findMany({
-    orderBy: { createdAt: "desc" },
-    take,
-  });
+  const [rows, hiddenIds] = await Promise.all([
+    prisma.gallerySubmission.findMany({
+      orderBy: { createdAt: "desc" },
+      take,
+    }),
+    getHiddenGalleryPhotoIds(),
+  ]);
   const mapped = rows.map(toAdminGallerySubmission);
+  const catalog = listVisibleCatalogPhotos(hiddenIds).map(toAdminCatalogPhoto);
   const rank = (status: GalleryStatus) =>
     status === "pending" ? 0 : status === "approved" ? 1 : 2;
-  return mapped.sort((a, b) => {
+  const submissions = mapped.sort((a, b) => {
     const byStatus = rank(a.status) - rank(b.status);
     if (byStatus !== 0) return byStatus;
     return b.createdAt.localeCompare(a.createdAt);
   });
+  // Site catalog photos first so they can be deleted even when mixed with uploads.
+  return [...catalog, ...submissions];
 }
 
 export type PersistGalleryUploadInput = {
@@ -195,6 +230,23 @@ export async function updateGallerySubmissionStatus(
     return toAdminGallerySubmission(row);
   } catch {
     return null;
+  }
+}
+
+export async function deleteGallerySubmission(id: string): Promise<boolean> {
+  try {
+    const row = await prisma.gallerySubmission.findUnique({
+      where: { id },
+      select: { storageKey: true },
+    });
+    if (!row) return false;
+
+    await prisma.gallerySubmission.delete({ where: { id } });
+    await deleteGalleryFile(row.storageKey).catch(() => undefined);
+    return true;
+  } catch (err) {
+    console.error("Failed to delete gallery submission:", err);
+    return false;
   }
 }
 
