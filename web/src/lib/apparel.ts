@@ -36,7 +36,7 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "shirts",
     label: "Shirts",
-    description: "Oversized tees, nice shirts, and more designs to come",
+    description: "Oversized tees and more designs to come",
     listing: "collection",
   },
   {
@@ -122,6 +122,7 @@ export const OBSOLETE_APPAREL_SLUGS = [
   "voronyz-keychain",
   "voronyz-necklace",
   "voronyz-rc-car-stickers",
+  "voronyz-nice-shirt",
 ] as const;
 
 /**
@@ -146,7 +147,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     comingSoon: false,
   },
   // ── Socks (multi-product) ───────────────────────────────────────────────
-  // Socks before Nice Shirt on the Apparel hub grid.
   {
     slug: "voronyz-performance-socks",
     subcategory: "socks",
@@ -159,18 +159,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     images: ["/products/apparel/socks-plain-banded.jpg"],
     skuPrefix: "APP-SOCK",
     comingSoon: false,
-  },
-  {
-    slug: "voronyz-nice-shirt",
-    subcategory: "shirts",
-    name: "Nice Shirt",
-    description: "Polished everyday shirt with a sharp collar and soft hand-feel.",
-    priceCents: 6800,
-    colors: ["black", "white", "grey"],
-    sizes: [...APPAREL_SIZES],
-    image: "/products/apparel/nice-shirt.jpg",
-    skuPrefix: "APP-NICE",
-    comingSoon: true,
   },
   // ── Sweaters (multi-product) ────────────────────────────────────────────
   {
