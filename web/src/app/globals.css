@@ -108,27 +108,28 @@ video {
 
 .bg-texture-white {
   /*
-    Small honeycomb (26×45 CSS px). Native geometry is 52×90:
-    pointy-top hex height 60, row step 45 (= ¾ height).
-    Keep every stroke inside the viewBox — a second hex that hangs
-    outside gets clipped and shows up as broken patches when tiled.
+    Two-scale honeycomb: a small 26×45 mesh nested inside a 52×90 mesh.
+    Native geometry is 52×90 (pointy-top hex height 60, row step 45).
+    Keep every stroke inside the viewBox so repeats stay a continuous grid.
   */
   --hex-tile-w: 26px;
   --hex-tile-h: 45px;
+  --hex-tile-w-lg: 52px;
+  --hex-tile-h-lg: 90px;
   --hex-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='104' height='180' viewBox='0 0 52 90'%3E%3Cpath fill='none' stroke='%23000000' stroke-opacity='0.08' stroke-width='0.8' stroke-linecap='butt' stroke-linejoin='miter' d='M26 0L52 15L52 45L26 60L0 45L0 15Z M26 60L26 90'/%3E%3C/svg%3E");
   background-color: #ffffff !important;
   position: relative;
   overflow-x: clip;
 }
 
-/* Slide left by exactly one tile width so the loop stays seamless */
+/* Same px/s on both layers so the nested grids stay locked while sliding */
 @keyframes hex-texture-drift {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(calc(-1 * var(--hex-tile-w)));
-  }
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-1 * var(--hex-tile-w))); }
+}
+@keyframes hex-texture-drift-lg {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-1 * var(--hex-tile-w-lg))); }
 }
 
 .bg-texture-white::before,
@@ -138,25 +139,24 @@ video {
   top: 0;
   bottom: 0;
   left: 0;
-  width: calc(100% + var(--hex-tile-w));
-  /*
-    2× SVG of one hex plus the vertical stem to the hex below.
-    Neighbors complete the staggered cells; nothing is drawn outside
-    the tile, so repeats stay a continuous mesh.
-  */
   background-image: var(--hex-image);
-  background-size: var(--hex-tile-w) var(--hex-tile-h);
   background-position: 0 0;
   background-repeat: repeat;
-  animation: hex-texture-drift 18s linear infinite;
   will-change: transform;
   pointer-events: none;
   z-index: 0;
 }
 
-/* Second mesh, shifted — double-lined hexes without clipping outside the tile */
+.bg-texture-white::before {
+  width: calc(100% + var(--hex-tile-w));
+  background-size: var(--hex-tile-w) var(--hex-tile-h);
+  animation: hex-texture-drift 18s linear infinite;
+}
+
 .bg-texture-white::after {
-  background-position: 5px 4px;
+  width: calc(100% + var(--hex-tile-w-lg));
+  background-size: var(--hex-tile-w-lg) var(--hex-tile-h-lg);
+  animation: hex-texture-drift-lg 36s linear infinite;
 }
 
 .bg-texture-white > * {
