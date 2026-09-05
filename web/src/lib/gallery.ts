@@ -8,7 +8,7 @@ export type GalleryPhoto = {
 
 /**
  * Photo gallery catalog.
- * Sourced from Instagram @voronyz — the /gallery page renders them all.
+ * Sourced from Instagram @voronyz — shown on /gallery unless hidden in admin.
  */
 export const GALLERY_PHOTOS: GalleryPhoto[] = [
   {
