@@ -115,6 +115,7 @@ video {
   */
   --hex-tile-w: 26px;
   --hex-tile-h: 45px;
+  --hex-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='104' height='180' viewBox='0 0 52 90'%3E%3Cpath fill='none' stroke='%23000000' stroke-opacity='0.08' stroke-width='0.8' stroke-linecap='butt' stroke-linejoin='miter' d='M26 0L52 15L52 45L26 60L0 45L0 15Z M26 60L26 90'/%3E%3C/svg%3E");
   background-color: #ffffff !important;
   position: relative;
   overflow-x: clip;
@@ -130,7 +131,8 @@ video {
   }
 }
 
-.bg-texture-white::before {
+.bg-texture-white::before,
+.bg-texture-white::after {
   content: '';
   position: absolute;
   top: 0;
@@ -142,7 +144,7 @@ video {
     Neighbors complete the staggered cells; nothing is drawn outside
     the tile, so repeats stay a continuous mesh.
   */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='104' height='180' viewBox='0 0 52 90'%3E%3Cpath fill='none' stroke='%23000000' stroke-opacity='0.08' stroke-width='0.8' stroke-linecap='butt' stroke-linejoin='miter' d='M26 0L52 15L52 45L26 60L0 45L0 15Z M26 60L26 90'/%3E%3C/svg%3E");
+  background-image: var(--hex-image);
   background-size: var(--hex-tile-w) var(--hex-tile-h);
   background-position: 0 0;
   background-repeat: repeat;
@@ -150,6 +152,11 @@ video {
   will-change: transform;
   pointer-events: none;
   z-index: 0;
+}
+
+/* Second mesh, shifted — double-lined hexes without clipping outside the tile */
+.bg-texture-white::after {
+  background-position: 5px 4px;
 }
 
 .bg-texture-white > * {
@@ -234,7 +241,8 @@ video {
     left: 22.5%;
   }
 
-  .bg-texture-white::before {
+  .bg-texture-white::before,
+  .bg-texture-white::after {
     animation: none;
     transform: none;
   }
