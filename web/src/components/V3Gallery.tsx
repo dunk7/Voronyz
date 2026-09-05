@@ -26,7 +26,9 @@ export default function V3Gallery({
    * Cover crops to fill the frame (apparel / default).
    * Contain shows the full photo — footwear listings use this so tightly
    * framed shots (e.g. the first V3 Slides image) aren't clipped on the sides.
-   * Contain slides also get a small inset so the toe/heel clear the rounded frame.
+   * Contain slides also get a modest inner inset so the photo corners clear the
+   * rounded frame without looking zoomed out. Padding lives on the inner box —
+   * percentage padding on the 300%-wide track would triple the inset.
    */
   fit = "cover",
 }: {
@@ -317,6 +319,8 @@ export default function V3Gallery({
 
   const objectFitClass =
     fit === "contain" ? "object-contain object-center" : "object-cover object-center";
+  // Pixel inset (not %) so it matches the frame radius and is not tripled by the 300% track.
+  const containInnerPad = fit === "contain" ? "p-4 sm:p-5 lg:p-6" : "";
 
   const renderMedia = (m: Media, index: number, isActive: boolean) => {
     if (m.type === "image") {
@@ -390,10 +394,10 @@ export default function V3Gallery({
         >
           {/* Previous slide */}
           <div
-            className={`relative h-full flex-shrink-0 ${fit === "contain" ? "box-border p-[6%] sm:p-[7%]" : ""}`}
+            className="relative h-full flex-shrink-0"
             style={{ width: "33.3333%" }}
           >
-            <div className="relative h-full w-full">
+            <div className={`relative h-full w-full box-border ${containInnerPad}`}>
               {prevIndex !== null && renderMedia(media[prevIndex], prevIndex, false)}
             </div>
           </div>
@@ -401,20 +405,20 @@ export default function V3Gallery({
           {/* Active slide */}
           <div
             key={fadeKey}
-            className={`relative h-full flex-shrink-0 gallery-enter ${fit === "contain" ? "box-border p-[6%] sm:p-[7%]" : ""}`}
+            className="relative h-full flex-shrink-0 gallery-enter"
             style={{ width: "33.3333%" }}
           >
-            <div className="relative h-full w-full">
+            <div className={`relative h-full w-full box-border ${containInnerPad}`}>
               {renderMedia(active, activeIndex, true)}
             </div>
           </div>
 
           {/* Next slide */}
           <div
-            className={`relative h-full flex-shrink-0 ${fit === "contain" ? "box-border p-[6%] sm:p-[7%]" : ""}`}
+            className="relative h-full flex-shrink-0"
             style={{ width: "33.3333%" }}
           >
-            <div className="relative h-full w-full">
+            <div className={`relative h-full w-full box-border ${containInnerPad}`}>
               {nextIndex !== null && renderMedia(media[nextIndex], nextIndex, false)}
             </div>
           </div>
