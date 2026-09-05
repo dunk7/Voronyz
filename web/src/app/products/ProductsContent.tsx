@@ -440,7 +440,7 @@ export default function ProductsContent({
             aria-labelledby="footwear-apparel-heading"
             className="mt-24 sm:mt-32 lg:mt-40"
           >
-            <div className="mb-10 sm:mb-14 border-t border-neutral-200 pt-16 sm:pt-20 lg:pt-24 text-center">
+            <div className="mb-10 sm:mb-14 text-center">
               <h2
                 id="footwear-apparel-heading"
                 className={sectionHeadingClass}
