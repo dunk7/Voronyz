@@ -35,6 +35,12 @@ const nextConfig: NextConfig = {
         destination: "/apparel/accessories",
         permanent: true,
       },
+      // Removed Nice Shirt — keep Oversized Tee as the shirts listing.
+      {
+        source: "/products/voronyz-nice-shirt",
+        destination: "/products/voronyz-oversized-tee",
+        permanent: true,
+      },
     ];
   },
 };
