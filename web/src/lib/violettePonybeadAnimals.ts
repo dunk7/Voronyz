@@ -1,5 +1,6 @@
-export const VIOLETTE_PONYBEAD_SLUG = "violette-ponybead-animals";
-export const VIOLETTE_PONYBEAD_NAME = "Violette Ponybead Animals";
+export const VIOLETTE_PONYBEAD_SLUG = "keychain";
+export const VIOLETTE_PONYBEAD_LEGACY_SLUG = "violette-ponybead-animals";
+export const VIOLETTE_PONYBEAD_NAME = "Keychain";
 export const VIOLETTE_PONYBEAD_PRICE_CENTS = 1000; // $10 per animal
 export const VIOLETTE_PONYBEAD_THUMBNAIL_URL =
   "/products/violette-ponybead-animals/violette-ponybead-animals.jpg";
@@ -8,10 +9,15 @@ export const VIOLETTE_PONYBEAD_DESCRIPTION_SHORT =
   "Handmade pony bead animal keychains — raccoon, chipmunk, skunk, and fox. $10 each.";
 
 export const VIOLETTE_PONYBEAD_DESCRIPTION =
-  "Violette ponybead animals — handmade keychain critters woven from classic pony beads with a silver lobster clasp. Pick your animal: raccoon, chipmunk, skunk, or fox. $10 per animal.";
+  "Handmade keychain critters woven from classic pony beads with a silver lobster clasp. Pick your animal: raccoon, chipmunk, skunk, or fox. $10 per animal.";
 
 export const VIOLETTE_PONYBEAD_HOW_ITS_MADE =
-  "Each Violette ponybead animal is hand-woven from plastic pony beads on clear cord in a flat lizard-shaped silhouette — triangular head, elongated body, four splayed legs, and a tapering tail — finished with a silver lobster clasp at the nose. Choose raccoon, chipmunk, skunk, or fox; every animal is $10.";
+  "Each keychain is hand-woven from plastic pony beads on clear cord in a flat lizard-shaped silhouette — triangular head, elongated body, four splayed legs, and a tapering tail — finished with a silver lobster clasp at the nose. Choose raccoon, chipmunk, skunk, or fox; every animal is $10.";
+
+export function isViolettePonybeadSlug(slug: string | null | undefined): boolean {
+  const key = (slug || "").trim().toLowerCase();
+  return key === VIOLETTE_PONYBEAD_SLUG || key === VIOLETTE_PONYBEAD_LEGACY_SLUG;
+}
 
 export const VIOLETTE_PONYBEAD_IMAGES = [VIOLETTE_PONYBEAD_THUMBNAIL_URL] as const;
 

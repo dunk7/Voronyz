@@ -14,6 +14,7 @@ import {
   VIOLETTE_PONYBEAD_ANIMAL_IDS,
   VIOLETTE_PONYBEAD_DESCRIPTION_SHORT,
   VIOLETTE_PONYBEAD_IMAGES,
+  VIOLETTE_PONYBEAD_LEGACY_SLUG,
   VIOLETTE_PONYBEAD_NAME,
   VIOLETTE_PONYBEAD_PRICE_CENTS,
   VIOLETTE_PONYBEAD_SIZES,
@@ -604,9 +605,12 @@ async function main() {
       console.log("Updated Antioxidant Trail Mix product and variants.");
     }
 
-    // ── Violette Ponybead Animals (Collaborative — not footwear) ──
-    const existingViolette = await prisma.product.findUnique({ where: { slug: VIOLETTE_PONYBEAD_SLUG } });
-    console.log("Violette Ponybead Animals product check:", existingViolette ? "Found" : "Not found");
+    // ── Keychain (Collaborative — not footwear) ──
+    let existingViolette = await prisma.product.findUnique({ where: { slug: VIOLETTE_PONYBEAD_SLUG } });
+    if (!existingViolette) {
+      existingViolette = await prisma.product.findUnique({ where: { slug: VIOLETTE_PONYBEAD_LEGACY_SLUG } });
+    }
+    console.log("Keychain product check:", existingViolette ? "Found" : "Not found");
     if (!existingViolette) {
       const violetteProduct = await prisma.product.create({
         data: {
@@ -627,10 +631,11 @@ async function main() {
       });
       console.log("Seeded product:", violetteProduct.slug);
     } else {
-      console.log("Updating existing Violette Ponybead Animals product...");
+      console.log("Updating existing Keychain product...");
       await prisma.product.update({
         where: { id: existingViolette.id },
         data: {
+          slug: VIOLETTE_PONYBEAD_SLUG,
           name: VIOLETTE_PONYBEAD_NAME,
           description: VIOLETTE_PONYBEAD_DESCRIPTION_SHORT,
           priceCents: VIOLETTE_PONYBEAD_PRICE_CENTS,
@@ -659,7 +664,7 @@ async function main() {
           sku: { notIn: [...keepVioletteSkus] },
         },
       });
-      console.log("Updated Violette Ponybead Animals product and variants.");
+      console.log("Updated Keychain product and variants.");
     }
 
     // ── The Gators (comfort clog footwear) ──

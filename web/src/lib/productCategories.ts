@@ -11,7 +11,7 @@ import { FOOTWEAR_SLUGS } from "@/lib/footwear";
 export const ACCESSORY_SLUGS = ["tpu-90a-filament"] as const;
 
 /** Product slugs in Collaborative (not footwear). */
-export const HEALTH_SLUGS = ["violette-ponybead-animals", "antioxidant-trail-mix"] as const;
+export const HEALTH_SLUGS = ["keychain", "violette-ponybead-animals", "antioxidant-trail-mix"] as const;
 
 export type AccessorySlug = (typeof ACCESSORY_SLUGS)[number];
 export type HealthSlug = (typeof HEALTH_SLUGS)[number];
