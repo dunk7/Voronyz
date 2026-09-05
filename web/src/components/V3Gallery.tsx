@@ -22,10 +22,18 @@ export default function V3Gallery({
   className = "",
   /** Square fills more of the viewport like retail PDPs; landscape is the legacy 4:3 frame. */
   aspect = "square",
+  /**
+   * Cover crops to fill the frame (apparel / default).
+   * Contain shows the full photo — footwear listings use this so tightly
+   * framed shots (e.g. the first V3 Slides image) aren't clipped on the sides.
+   * Contain slides also get a small inset so the toe/heel clear the rounded frame.
+   */
+  fit = "cover",
 }: {
   media: Media[];
   className?: string;
   aspect?: "square" | "landscape";
+  fit?: "cover" | "contain";
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [fadeKey, setFadeKey] = useState(0);
@@ -307,6 +315,9 @@ export default function V3Gallery({
 
   /* ── Render helpers ─────────────────────────────────────── */
 
+  const objectFitClass =
+    fit === "contain" ? "object-contain object-center" : "object-cover object-center";
+
   const renderMedia = (m: Media, index: number, isActive: boolean) => {
     if (m.type === "image") {
       return (
@@ -315,7 +326,7 @@ export default function V3Gallery({
           src={m.src}
           alt={m.alt || "Product image"}
           fill
-          className="object-cover object-center scale-[1.06] pointer-events-none"
+          className={`${objectFitClass} pointer-events-none`}
           priority={index <= 1}
           loading={index <= 2 ? "eager" : "lazy"}
           sizes="(max-width: 1024px) 100vw, 75vw"
@@ -328,7 +339,7 @@ export default function V3Gallery({
         ref={isActive ? videoRef : undefined}
         src={m.src}
         poster={m.poster}
-        className="h-full w-full object-cover object-center scale-[1.06] pointer-events-none bg-neutral-50"
+        className={`h-full w-full ${objectFitClass} pointer-events-none bg-neutral-50`}
         preload="auto"
         playsInline
         muted
@@ -378,22 +389,34 @@ export default function V3Gallery({
           onTransitionEnd={handleTransitionEnd}
         >
           {/* Previous slide */}
-          <div className="relative h-full flex-shrink-0" style={{ width: "33.3333%" }}>
-            {prevIndex !== null && renderMedia(media[prevIndex], prevIndex, false)}
+          <div
+            className={`relative h-full flex-shrink-0 ${fit === "contain" ? "box-border p-[6%] sm:p-[7%]" : ""}`}
+            style={{ width: "33.3333%" }}
+          >
+            <div className="relative h-full w-full">
+              {prevIndex !== null && renderMedia(media[prevIndex], prevIndex, false)}
+            </div>
           </div>
 
           {/* Active slide */}
           <div
             key={fadeKey}
-            className="relative h-full flex-shrink-0 gallery-enter"
+            className={`relative h-full flex-shrink-0 gallery-enter ${fit === "contain" ? "box-border p-[6%] sm:p-[7%]" : ""}`}
             style={{ width: "33.3333%" }}
           >
-            {renderMedia(active, activeIndex, true)}
+            <div className="relative h-full w-full">
+              {renderMedia(active, activeIndex, true)}
+            </div>
           </div>
 
           {/* Next slide */}
-          <div className="relative h-full flex-shrink-0" style={{ width: "33.3333%" }}>
-            {nextIndex !== null && renderMedia(media[nextIndex], nextIndex, false)}
+          <div
+            className={`relative h-full flex-shrink-0 ${fit === "contain" ? "box-border p-[6%] sm:p-[7%]" : ""}`}
+            style={{ width: "33.3333%" }}
+          >
+            <div className="relative h-full w-full">
+              {nextIndex !== null && renderMedia(media[nextIndex], nextIndex, false)}
+            </div>
           </div>
         </div>
 

@@ -56,7 +56,7 @@ import {
   LATTICE_INSOLES_SLUG,
   LATTICE_INSOLES_THUMBNAIL_URL,
 } from "@/lib/latticeInsoles";
-import { isAccessorySlug, isApparelSlug, isHealthSlug } from "@/lib/productCategories";
+import { isAccessorySlug, isApparelSlug, isFootwearSlug, isHealthSlug } from "@/lib/productCategories";
 import {
   apparelProductShopHref,
   apparelProductShopLabel,
@@ -389,6 +389,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               <V3Gallery
                 media={galleryMedia}
                 aspect="square"
+                fit={isFootwearSlug(slug) ? "contain" : "cover"}
                 className="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
               />
             </div>
