@@ -155,8 +155,11 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     priceCents: 2800,
     colors: ["black", "grey", "white"],
     sizes: ["S", "M", "L", "XL"],
-    image: "/products/apparel/socks-hang-card.jpg",
-    images: ["/products/apparel/socks-hang-card.jpg"],
+    image: "/products/apparel/socks-unfolded.jpg",
+    images: [
+      "/products/apparel/socks-unfolded.jpg",
+      "/products/apparel/socks-folded-hanger.jpg",
+    ],
     skuPrefix: "APP-SOCK",
     comingSoon: false,
   },
