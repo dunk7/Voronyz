@@ -320,7 +320,7 @@ export default function V3Gallery({
   const objectFitClass =
     fit === "contain" ? "object-contain object-center" : "object-cover object-center";
   // Pixel inset (not %) so it matches the frame radius and is not tripled by the 300% track.
-  const containInnerPad = fit === "contain" ? "p-2 sm:p-3" : "";
+  const containInnerPad = fit === "contain" ? "p-4 sm:p-5 lg:p-6" : "";
 
   const renderMedia = (m: Media, index: number, isActive: boolean) => {
     if (m.type === "image") {

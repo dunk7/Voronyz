@@ -67,7 +67,6 @@ import {
   isObsoleteApparelSlug,
 } from "@/lib/apparel";
 import LogoLoader from "@/components/ui/LogoLoader";
-import { studioCutoutSrc } from "@/lib/productImages";
 import { redirect } from "next/navigation";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
@@ -230,11 +229,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     : getApparelItem(slug)
     ? getApparelImages(getApparelItem(slug)!)
     : ((product.images as string[] | null) ?? defaultImages);
-  const galleryMedia: Media[] = images.map((src) => ({
-    type: "image" as const,
-    src: studioCutoutSrc(src),
-    alt: product.name,
-  }));
+  const galleryMedia: Media[] = images.map((src) => ({ type: "image" as const, src, alt: product.name }));
   if (slug === "slip-ons") {
     galleryMedia.push({
       type: "video",

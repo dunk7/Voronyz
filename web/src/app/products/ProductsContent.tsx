@@ -14,7 +14,6 @@ import ApparelProductGrid, {
 } from "@/components/apparel/ApparelProductGrid";
 import TakeTheQuizPromo from "@/components/apparel/TakeTheQuizPromo";
 import FootwearBrowse from "@/components/footwear/FootwearBrowse";
-import { studioCutoutSrc } from "@/lib/productImages";
 
 /** Homepage footwear teaser — slides + slip-ons only; full catalog on /products. */
 const HOME_FOOTWEAR_TEASER_SLUGS = ["v3-slides", "slip-ons"] as const;
@@ -287,17 +286,13 @@ export default function ProductsContent({
     const images = (p.images as string[] | null) ?? [];
     const isV3 = slugKey === "v3-slides";
 
-    const cover = studioCutoutSrc(
-      isV3
-        ? "/products/v3-slides/InShot_20260212_194352014.jpg"
-        : (p.thumbnail || images[0]),
-    );
+    const cover = isV3
+      ? "/products/v3-slides/InShot_20260212_194352014.jpg"
+      : (p.thumbnail || images[0]);
 
-    const alt = studioCutoutSrc(
-      meta?.altImage ?? (images[1] ? (
-        isV3 ? "/products/v3-slides/InShot_20260212_193956953.jpg" : images[1]
-      ) : undefined),
-    ) || undefined;
+    const alt = meta?.altImage ?? (images[1] ? (
+      isV3 ? "/products/v3-slides/InShot_20260212_193956953.jpg" : images[1]
+    ) : undefined);
 
     return { cover, alt };
   }
@@ -363,7 +358,7 @@ export default function ProductsContent({
                     isNavigating ? "pointer-events-none" : ""
                   }`}
                 >
-                  {/* Image container — footwear sits on the hex texture; other catalogs keep a card. */}
+                  {/* Image — footwear photos sit on the hex texture with no grey card. */}
                   <div
                     className={`relative aspect-square w-full overflow-hidden transition-all duration-300 ${
                       category === "footwear"
@@ -373,37 +368,31 @@ export default function ProductsContent({
                           }`
                     }`}
                   >
-                    <div className="relative h-full w-full">
-                      {/* Primary image */}
-                      <SoftImage
-                        key={cover}
-                        src={cover}
-                        alt={p.name}
-                        fill
-                        className={`${
-                          category === "footwear" ? "object-contain object-center" : "object-cover"
-                        } transition-all duration-500 ${
-                          alt ? "group-hover:opacity-0" : "group-hover:scale-105"
-                        } ${isNavigating ? "scale-105 brightness-90" : ""}`}
-                        sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                      />
+                    {/* Primary image */}
+                    <SoftImage
+                      key={cover}
+                      src={cover}
+                      alt={p.name}
+                      fill
+                      className={`object-cover transition-all duration-500 ${
+                        alt ? "group-hover:opacity-0" : "group-hover:scale-105"
+                      } ${isNavigating ? "scale-105 brightness-90" : ""}`}
+                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                    />
 
-                      {/* Hover alt image */}
-                      {alt && (
-                        <SoftImage
-                          key={alt}
-                          src={alt}
-                          alt={`${p.name} – alternate view`}
-                          fill
-                          showLogoPlaceholder={false}
-                          className={`${
-                            category === "footwear" ? "object-contain object-center" : "object-cover"
-                          } opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105`}
-                          sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                          loading="lazy"
-                        />
-                      )}
-                    </div>
+                    {/* Hover alt image */}
+                    {alt && (
+                      <SoftImage
+                        key={alt}
+                        src={alt}
+                        alt={`${p.name} – alternate view`}
+                        fill
+                        showLogoPlaceholder={false}
+                        className="object-cover opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
+                        sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                        loading="lazy"
+                      />
+                    )}
 
                     {/* Availability only — no Best Seller / category pills */}
                     {slugKey === TRAIL_MIX_SLUG && (
