@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { getActiveDiscountCodes } from "@/lib/discountDisabled";
+import {
+  getActiveDiscountCodes,
+  restoreProtectedCatalogDiscountCodes,
+} from "@/lib/discountDisabled";
 import { listApprovedAffiliateDiscounts } from "@/lib/affiliateDiscounts";
 
 export const dynamic = "force-dynamic";
@@ -7,6 +10,7 @@ export const dynamic = "force-dynamic";
 /** Public list of discount codes still accepted on the site (admin-deleted codes omitted). */
 export async function GET() {
   try {
+    await restoreProtectedCatalogDiscountCodes();
     const codes = await getActiveDiscountCodes();
     const active = new Set(codes);
     const affiliateCodes = (await listApprovedAffiliateDiscounts())
