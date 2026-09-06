@@ -73,16 +73,19 @@ import { redirect } from "next/navigation";
 // This page is rendered on-demand.
 export const dynamic = "force-dynamic";
 
-/** Retired apparel product pages → remaining listing or Accessories hub. */
+/** Retired apparel product pages → remaining listing or Apparel/Accessories hub. */
 const OBSOLETE_APPAREL_PRODUCT_REDIRECTS: Record<string, string> = {
-  "voronyz-technical-pants": "/products/voronyz-joggers",
-  "voronyz-lounge-sweats": "/products/voronyz-joggers",
+  "voronyz-technical-pants": "/apparel",
+  "voronyz-lounge-sweats": "/apparel",
   "voronyz-lattice-shoe-trees": "/apparel/accessories",
   "voronyz-charm-bracelet": "/apparel/accessories",
   "voronyz-keychain": "/apparel/accessories",
   "voronyz-necklace": "/apparel/accessories",
   "voronyz-rc-car-stickers": "/apparel/accessories",
   "voronyz-nice-shirt": "/products/voronyz-oversized-tee",
+  "voronyz-shorts": "/apparel",
+  "voronyz-joggers": "/apparel",
+  "voronyz-shell-jacket": "/apparel",
 };
 
 type Media = {
@@ -121,7 +124,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   }
   const obsoleteRedirect = OBSOLETE_APPAREL_PRODUCT_REDIRECTS[slug.trim().toLowerCase()];
   if (obsoleteRedirect || isObsoleteApparelSlug(slug)) {
-    redirect(obsoleteRedirect ?? "/products/voronyz-joggers");
+    redirect(obsoleteRedirect ?? "/apparel");
   }
   let product: ProductWithVariants;
   try {
