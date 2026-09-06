@@ -21,7 +21,8 @@ const nextConfig: NextConfig = {
       { source: "/apparel/shorts", destination: "/apparel", permanent: true },
       { source: "/apparel/joggers", destination: "/apparel", permanent: true },
       { source: "/apparel/outerwear", destination: "/apparel", permanent: true },
-      // Removed pants, sweats, joggers, shorts, and shell jacket listings.
+      { source: "/apparel/scarves", destination: "/apparel", permanent: true },
+      // Removed pants, sweats, joggers, shorts, shell jacket, and scarf listings.
       {
         source: "/products/voronyz-technical-pants",
         destination: "/apparel",
@@ -44,6 +45,11 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/products/voronyz-shell-jacket",
+        destination: "/apparel",
+        permanent: true,
+      },
+      {
+        source: "/products/voronyz-scarf",
         destination: "/apparel",
         permanent: true,
       },

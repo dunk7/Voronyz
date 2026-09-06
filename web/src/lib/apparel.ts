@@ -3,7 +3,7 @@ export const APPAREL_ONE_SIZE = ["One Size"] as const;
 
 /**
  * Apparel sub-sections.
- * - `collection`: multi-product listing pages (shirts, scarves, sweaters, …) —
+ * - `collection`: multi-product listing pages (shirts, sweaters, socks, …) —
  *   add new designs to APPAREL_CATALOG with the matching subcategory.
  * - `standalone`: Accessories only (hats, bottles, shades, jewelry, …) — never mixed
  *   into clothing collections, and never shown on Engineering `/accessories`.
@@ -12,7 +12,6 @@ export type ApparelSubcategoryId =
   | "shirts"
   | "sweaters"
   | "socks"
-  | "scarves"
   | "accessories";
 
 /** Legacy apparel collection paths that now live under Accessories. */
@@ -25,6 +24,7 @@ export const LEGACY_REMOVED_APPAREL_SUBCATEGORIES = [
   "outerwear",
   "sweats",
   "pants",
+  "scarves",
 ] as const;
 
 export type ApparelListingKind = "collection" | "standalone";
@@ -55,12 +55,6 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
     id: "socks",
     label: "Socks",
     description: "Performance and everyday sock designs",
-    listing: "collection",
-  },
-  {
-    id: "scarves",
-    label: "Scarves",
-    description: "Knit scarves and cool-weather neck layers",
     listing: "collection",
   },
   {
@@ -114,6 +108,7 @@ export const OBSOLETE_APPAREL_SLUGS = [
   "voronyz-shorts",
   "voronyz-joggers",
   "voronyz-shell-jacket",
+  "voronyz-scarf",
 ] as const;
 
 /**
@@ -162,23 +157,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/hoodie.jpg",
     skuPrefix: "APP-HOOD",
-    comingSoon: true,
-  },
-  // ── Scarves (multi-product) ─────────────────────────────────────────────
-  {
-    slug: "voronyz-scarf",
-    subcategory: "scarves",
-    name: "Scarf",
-    description: "Soft knit scarf with a clean drape for cool-weather layers.",
-    priceCents: 4200,
-    colors: ["black", "grey"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/scarf-product.jpg",
-    images: [
-      "/products/apparel/scarf-product.jpg",
-      "/products/apparel/scarf-snowboarder.jpg",
-    ],
-    skuPrefix: "APP-SCRF",
     comingSoon: true,
   },
   // ── Accessories only (never mixed into clothing collections) ────────────

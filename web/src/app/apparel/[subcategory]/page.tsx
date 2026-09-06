@@ -20,7 +20,7 @@ type PageProps = {
 export function generateStaticParams() {
   return [
     ...APPAREL_SUBCATEGORIES.map((sub) => ({ subcategory: sub.id })),
-    // Keep legacy hats/bottles paths buildable so they can redirect.
+    // Keep legacy hats/bottles and retired collection paths buildable so they can redirect.
     { subcategory: "hats" },
     { subcategory: "bottles" },
     ...LEGACY_REMOVED_APPAREL_SUBCATEGORIES.map((subcategory) => ({ subcategory })),
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (isLegacyRemovedApparelSubcategory(subcategory)) {
     return {
       title: "Apparel – Voronyz",
-      description: "Shop Voronyz Apparel by type: shirts, sweaters, socks, and scarves.",
+      description: "Shop Voronyz Apparel by type: shirts, sweaters, and socks.",
     };
   }
   const sub = getApparelSubcategory(subcategory);

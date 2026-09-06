@@ -76,7 +76,7 @@ export function filterApparelProducts<T extends { slug: string }>(products: T[])
 }
 
 /**
- * Filter apparel products to a single sub-section (shirts, scarves, accessories, …).
+ * Filter apparel products to a single sub-section (shirts, sweaters, accessories, …).
  * Clothing collections and Accessories are mutually exclusive by subcategory.
  */
 export function filterApparelBySubcategory<T extends { slug: string }>(
