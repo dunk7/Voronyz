@@ -35,8 +35,6 @@ export default function Header() {
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
-  const [routeLoading, setRouteLoading] = useState(false);
-  const routeKeyRef = useRef<string | null>(null);
 
   // Load cart count from localStorage
   useEffect(() => {
@@ -93,27 +91,13 @@ export default function Header() {
   const searchString = searchParams?.toString() ?? "";
   const currentRouteKey = `${pathname}${searchString ? `?${searchString}` : ""}`;
 
-  useEffect(() => {
-    // Clear any route-loading overlay once navigation completes.
-    if (routeKeyRef.current !== null && routeKeyRef.current !== currentRouteKey) {
-      setRouteLoading(false);
-    }
-    routeKeyRef.current = currentRouteKey;
-  }, [currentRouteKey]);
-
   const affiliatesActive = pathname?.startsWith("/affiliates");
   const apparelActive = Boolean(
     pathname?.startsWith("/apparel") && !pathname?.startsWith("/apparel/accessories")
   );
 
-  const navigateWithLoading = (href: string) => {
-    // If we're already at the destination (including query params), Next won't navigate,
-    // so don't show an indefinite loading overlay.
-    if (href === currentRouteKey) {
-      setRouteLoading(false);
-      return;
-    }
-    setRouteLoading(true);
+  const navigateTo = (href: string) => {
+    if (href === currentRouteKey) return;
     router.push(href);
   };
 
@@ -193,13 +177,13 @@ export default function Header() {
     e.preventDefault();
     if (searchResults.length > 0 && selectedResultIndex >= 0) {
       const selectedProduct = searchResults[selectedResultIndex];
-      navigateWithLoading(`/products/${selectedProduct.slug}`);
+      navigateTo(`/products/${selectedProduct.slug}`);
       setSearchQuery("");
       setSearchResults([]);
       setSearchFocused(false);
       searchInputRef.current?.blur();
     } else if (searchQuery.trim()) {
-      navigateWithLoading(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
+      navigateTo(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery("");
       setSearchResults([]);
       setSearchFocused(false);
@@ -225,7 +209,7 @@ export default function Header() {
         e.preventDefault();
         if (selectedResultIndex >= 0) {
           const selectedProduct = searchResults[selectedResultIndex];
-          navigateWithLoading(`/products/${selectedProduct.slug}`);
+          navigateTo(`/products/${selectedProduct.slug}`);
           setSearchQuery("");
           setSearchResults([]);
           setSearchFocused(false);
@@ -266,7 +250,7 @@ export default function Header() {
       e.preventDefault();
       e.stopPropagation();
     }
-    navigateWithLoading(`/products/${productSlug}`);
+    navigateTo(`/products/${productSlug}`);
     setSearchQuery("");
     setSearchResults([]);
     setSearchFocused(false);
@@ -279,14 +263,6 @@ export default function Header() {
 
   return (
     <>
-      {routeLoading && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black"
-          style={{ background: "#000000" }}
-        >
-          <LogoLoader size="md" tone="light" />
-        </div>
-      )}
       <header className={`sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/70 bg-neutral-950/80 border-b border-white/10 transition-transform duration-300 ${hide ? "-translate-y-full" : "translate-y-0"}`}>
         <div className="container flex h-20 items-center gap-4">
           {/* Left cluster: brand + nav */}

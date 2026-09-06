@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={<div className="container py-12">Loading…</div>}>
+    <Suspense fallback={<div className="bg-texture-white min-h-[80vh]" />}>
       <ProductsContent />
     </Suspense>
   );
