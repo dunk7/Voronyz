@@ -677,20 +677,19 @@ export default function Header() {
                   )}
                   Apparel
                 </Link>
-                <Link
-                  href="/quiz"
-                  className={`ml-4 flex items-center gap-3 py-2.5 px-4 rounded-xl uppercase tracking-[0.18em] text-[13px] font-medium transition-all duration-200 ${
-                    quizActive
-                      ? "text-white bg-white/10"
-                      : "text-white/70 hover:text-white hover:bg-white/[.06]"
-                  }`}
-                  onClick={() => setOpen(false)}
-                >
-                  {quizActive && (
-                    <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
-                  )}
-                  Take the Quiz
-                </Link>
+                <div className="ml-4 mb-1 flex flex-col gap-1 border-l border-white/10 pl-3">
+                  <Link
+                    href="/quiz"
+                    className={`py-2.5 px-3 rounded-lg text-[13px] uppercase tracking-[0.18em] ${
+                      quizActive
+                        ? "text-white bg-white/10"
+                        : "text-white/70 hover:text-white hover:bg-white/[.06]"
+                    }`}
+                    onClick={() => setOpen(false)}
+                  >
+                    Take the Quiz
+                  </Link>
+                </div>
                 <Link
                   href="/apparel/accessories"
                   className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
