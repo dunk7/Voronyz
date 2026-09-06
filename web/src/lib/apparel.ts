@@ -5,7 +5,7 @@ export const APPAREL_ONE_SIZE = ["One Size"] as const;
  * Apparel sub-sections.
  * - `collection`: multi-product listing pages (shirts, sweaters, socks, …) —
  *   add new designs to APPAREL_CATALOG with the matching subcategory.
- * - `standalone`: Accessories only (hats, bottles, shades, jewelry, …) — never mixed
+ * - `standalone`: Accessories only (shades, jewelry, drone parts, …) — never mixed
  *   into clothing collections, and never shown on Engineering `/accessories`.
  */
 export type ApparelSubcategoryId =
@@ -60,7 +60,7 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "accessories",
     label: "Accessories",
-    description: "Hats, bottles, shades, jewelry, and drone parts",
+    description: "Shades, jewelry, lace locks, and drone parts",
     listing: "standalone",
   },
 ];
@@ -109,6 +109,9 @@ export const OBSOLETE_APPAREL_SLUGS = [
   "voronyz-joggers",
   "voronyz-shell-jacket",
   "voronyz-scarf",
+  "voronyz-uv-hat",
+  "voronyz-water-bottle",
+  "voronyz-lock-squirt-bottle",
 ] as const;
 
 /**
@@ -157,44 +160,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/hoodie.jpg",
     skuPrefix: "APP-HOOD",
-    comingSoon: true,
-  },
-  // ── Accessories only (never mixed into clothing collections) ────────────
-  {
-    slug: "voronyz-uv-hat",
-    subcategory: "accessories",
-    name: "UV Hat",
-    description: "Wide-brim UV hat for sun coverage on long outdoor days.",
-    priceCents: 3800,
-    colors: ["black", "beige"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/uv-hat.jpg",
-    skuPrefix: "APP-UVHT",
-    comingSoon: true,
-  },
-  {
-    slug: "voronyz-water-bottle",
-    subcategory: "accessories",
-    name: "Stainless Water Bottle",
-    description: "Insulated stainless bottle with a clean Voronyz finish.",
-    priceCents: 3600,
-    colors: ["black", "white"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/water-bottle.jpg",
-    skuPrefix: "APP-BTTL",
-    comingSoon: true,
-  },
-  {
-    slug: "voronyz-lock-squirt-bottle",
-    subcategory: "accessories",
-    name: "Lock Squirt Bottle",
-    description:
-      "750ml BPA-free cycling squirt bottle with twist-to-lock leak-proof cap, quick flow, and lightweight adventure-ready build.",
-    priceCents: 2800,
-    colors: ["black"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/lock-squirt-bottle-clean.jpg",
-    skuPrefix: "APP-SQRT",
     comingSoon: true,
   },
   // ── Accessories only (never mixed into clothing collections) ────────────
