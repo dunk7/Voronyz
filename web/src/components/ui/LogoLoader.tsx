@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+/* eslint-disable @next/next/no-img-element -- transparent logos must not go through next/image */
 
 type LogoLoaderProps = {
   /** Visual size of the logo mark */
@@ -57,20 +57,14 @@ export default function LogoLoader({
       aria-label={label || "Loading"}
       style={{ background: "transparent" }}
     >
-      {/*
-        Serve the raw PNG (unoptimized) so the image pipeline never paints an
-        opaque black square behind the transparent logo mark.
-      */}
-      <Image
+      <img
         src={logoSrc(tone)}
         alt=""
         width={dims.mark}
         height={dims.mark}
         aria-hidden="true"
-        unoptimized
         className="logo-loader-mark bg-transparent"
-        style={{ background: "transparent", display: "block", mixBlendMode: "normal" }}
-        priority
+        style={{ background: "transparent", display: "block" }}
       />
 
       {showBar && (
@@ -109,16 +103,15 @@ export function LogoMark({
   priority = false,
 }: LogoMarkProps) {
   return (
-    <Image
+    <img
       src={logoSrc(tone)}
       alt=""
       width={size}
       height={size}
       aria-hidden="true"
-      unoptimized
-      priority={priority}
+      fetchPriority={priority ? "high" : undefined}
       className={`bg-transparent ${animate ? "logo-loader-mark" : ""} ${className}`}
-      style={{ background: "transparent", display: "block", mixBlendMode: "normal" }}
+      style={{ background: "transparent", display: "block" }}
     />
   );
 }
