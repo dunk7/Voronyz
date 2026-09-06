@@ -8,8 +8,11 @@ import {
 import { GALLERY_PHOTOS } from "@/lib/gallery";
 import {
   getHiddenGalleryPhotoIds,
+  hideCatalogGalleryPhoto,
+  isCatalogGalleryPhotoId,
   listVisibleCatalogPhotos,
 } from "@/lib/galleryHidden";
+import { galleryStatusChangeIsRemoval } from "@/lib/galleryAdminLogic";
 import { sanitizeUploadFileName } from "@/lib/stlUploadValidation";
 import { notifyNewGalleryPhoto } from "@/lib/adminNotifyEmail";
 
@@ -218,6 +221,7 @@ export async function updateGallerySubmissionStatus(
   status: GalleryStatus
 ): Promise<GallerySubmissionAdmin | null> {
   if (!GALLERY_STATUSES.includes(status)) return null;
+  if (galleryStatusChangeIsRemoval(status)) return null;
 
   try {
     const row = await prisma.gallerySubmission.update({
@@ -231,6 +235,23 @@ export async function updateGallerySubmissionStatus(
   } catch {
     return null;
   }
+}
+
+export async function removeGalleryPhoto(
+  id: string
+): Promise<
+  | { ok: true; source: GalleryPhotoSource; id: string }
+  | { ok: false; error: string }
+> {
+  if (isCatalogGalleryPhotoId(id)) {
+    const result = await hideCatalogGalleryPhoto(id);
+    if (!result.ok) return { ok: false, error: result.error };
+    return { ok: true, source: "catalog", id: result.id };
+  }
+
+  const deleted = await deleteGallerySubmission(id);
+  if (!deleted) return { ok: false, error: "Photo not found." };
+  return { ok: true, source: "submission", id };
 }
 
 export async function deleteGallerySubmission(id: string): Promise<boolean> {
