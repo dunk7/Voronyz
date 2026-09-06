@@ -358,14 +358,10 @@ export default function ProductsContent({
                     isNavigating ? "pointer-events-none" : ""
                   }`}
                 >
-                  {/* Image — footwear photos sit on the hex texture with no grey card. */}
+                  {/* Image container */}
                   <div
-                    className={`relative aspect-square w-full overflow-hidden transition-all duration-300 ${
-                      category === "footwear"
-                        ? "bg-transparent"
-                        : `rounded-2xl bg-neutral-50 ring-1 ring-black/5 group-hover:shadow-xl group-hover:ring-black/10 ${
-                            isNavigating ? "ring-black/10 shadow-xl" : ""
-                          }`
+                    className={`relative aspect-square w-full overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:shadow-xl group-hover:ring-black/10 ${
+                      isNavigating ? "ring-black/10 shadow-xl" : ""
                     }`}
                   >
                     {/* Primary image */}

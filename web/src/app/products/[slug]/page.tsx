@@ -403,11 +403,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 media={galleryMedia}
                 aspect="square"
                 fit={isFootwearSlug(slug) ? "contain" : "cover"}
-                className={
-                  isFootwearSlug(slug)
-                    ? ""
-                    : "[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
-                }
+                className="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
               />
             </div>
           </div>
