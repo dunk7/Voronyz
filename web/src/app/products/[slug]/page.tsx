@@ -67,6 +67,7 @@ import {
   isObsoleteApparelSlug,
 } from "@/lib/apparel";
 import LogoLoader from "@/components/ui/LogoLoader";
+import { studioCutoutSrc } from "@/lib/productImages";
 import { redirect } from "next/navigation";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
@@ -229,7 +230,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     : getApparelItem(slug)
     ? getApparelImages(getApparelItem(slug)!)
     : ((product.images as string[] | null) ?? defaultImages);
-  const galleryMedia: Media[] = images.map((src) => ({ type: "image" as const, src, alt: product.name }));
+  const galleryMedia: Media[] = images.map((src) => ({
+    type: "image" as const,
+    src: studioCutoutSrc(src),
+    alt: product.name,
+  }));
   if (slug === "slip-ons") {
     galleryMedia.push({
       type: "video",
@@ -403,7 +408,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 media={galleryMedia}
                 aspect="square"
                 fit={isFootwearSlug(slug) ? "contain" : "cover"}
-                className="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
+                className={
+                  isFootwearSlug(slug)
+                    ? ""
+                    : "[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
+                }
               />
             </div>
           </div>

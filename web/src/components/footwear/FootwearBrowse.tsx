@@ -70,8 +70,8 @@ function BrowseItem({
         onClick={handleClick}
         className={`group block outline-none ${navigating ? "pointer-events-none" : ""}`}
       >
-        {/* Square frame with % padding so tightly framed catalog shots keep heel/toe clear of edges */}
-        <div className="relative -mx-6 aspect-square w-[calc(100%+3rem)] overflow-hidden bg-neutral-50 p-[10%] sm:p-[12%] md:p-[14%]">
+        {/* Product sits on the hex texture — no grey card. */}
+        <div className="relative -mx-6 aspect-square w-[calc(100%+3rem)] overflow-hidden bg-transparent">
           <div className="relative h-full w-full">
             <SoftImage
               key={cover}

@@ -320,7 +320,7 @@ export default function V3Gallery({
   const objectFitClass =
     fit === "contain" ? "object-contain object-center" : "object-cover object-center";
   // Pixel inset (not %) so it matches the frame radius and is not tripled by the 300% track.
-  const containInnerPad = fit === "contain" ? "p-4 sm:p-5 lg:p-6" : "";
+  const containInnerPad = fit === "contain" ? "p-2 sm:p-3" : "";
 
   const renderMedia = (m: Media, index: number, isActive: boolean) => {
     if (m.type === "image") {
@@ -343,7 +343,9 @@ export default function V3Gallery({
         ref={isActive ? videoRef : undefined}
         src={m.src}
         poster={m.poster}
-        className={`h-full w-full ${objectFitClass} pointer-events-none bg-neutral-50`}
+        className={`h-full w-full ${objectFitClass} pointer-events-none ${
+          fit === "contain" ? "bg-transparent" : "bg-neutral-50"
+        }`}
         preload="auto"
         playsInline
         muted
@@ -373,9 +375,11 @@ export default function V3Gallery({
       {/* Viewport — square by default so product photos dominate like premium retail PDPs */}
       <div
         ref={containerRef}
-        className={`relative w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-neutral-100 ring-1 ring-black/5 group select-none ${
-          aspect === "landscape" ? "aspect-[4/3]" : "aspect-square"
-        }`}
+        className={`relative w-full overflow-hidden group select-none ${
+          fit === "contain"
+            ? "bg-transparent"
+            : "rounded-2xl sm:rounded-3xl bg-neutral-100 ring-1 ring-black/5"
+        } ${aspect === "landscape" ? "aspect-[4/3]" : "aspect-square"}`}
         style={{ touchAction: "pan-y pinch-zoom" }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}

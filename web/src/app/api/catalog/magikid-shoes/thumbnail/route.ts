@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 const STATIC_THUMB_PATH = path.join(
   process.cwd(),
-  "public/products/magikid-shoes/magikid-shoes-thumbnail.jpg"
+  "public/products/magikid-shoes/magikid-shoes-thumbnail.webp"
 );
 
 function imageResponse(bytes: Buffer, contentType: string) {
@@ -51,7 +51,12 @@ export async function GET() {
 
   try {
     const bytes = await readFile(STATIC_THUMB_PATH);
-    const contentType = bytes[0] === 0x89 ? "image/png" : "image/jpeg";
+    const contentType =
+      bytes[0] === 0x89
+        ? "image/png"
+        : bytes[0] === 0x52
+          ? "image/webp"
+          : "image/jpeg";
     return imageResponse(bytes, contentType);
   } catch {
     return NextResponse.json({ error: "Thumbnail not found." }, { status: 404 });

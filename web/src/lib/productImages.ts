@@ -40,22 +40,43 @@ import {
 } from "@/lib/latticeInsoles";
 import { getApparelItem } from "@/lib/apparel";
 
+/**
+ * Studio footwear JPEGs have matching transparent `.webp` cutouts so the
+ * product sits on the hex texture instead of a grey studio box.
+ * Lifestyle photos, video, and hero renders are left as-is.
+ */
+const FOOTWEAR_STUDIO_CUTOUT =
+  /\/products\/(v3-slides|slip-ons|dragonfly|gators|magikid-shoes|lattice-insoles)\//;
+
+export function studioCutoutSrc(src: string | null | undefined): string {
+  if (!src) return "";
+  if (src.includes("cloud-slides-boat") || src.includes("side-render-of-both")) return src;
+  if (!FOOTWEAR_STUDIO_CUTOUT.test(src)) return src;
+  return src.replace(/\.jpe?g$/i, ".webp");
+}
+
 export function getProductThumbnail(input: { slug?: string; images?: unknown }): string {
   // Special-case: canonical cover assets for known products
-  if (input.slug === "v3-slides") return "/products/v3-slides/InShot_20260212_194352014.jpg";
-  if (input.slug === "dragonfly") return "/products/dragonfly/InShot_20260212_153516456.jpg";
-  if (input.slug === "slip-ons") return "/products/slip-ons/InShot_20260405_203151152.jpg";
+  if (input.slug === "v3-slides") {
+    return studioCutoutSrc("/products/v3-slides/InShot_20260212_194352014.jpg");
+  }
+  if (input.slug === "dragonfly") {
+    return studioCutoutSrc("/products/dragonfly/InShot_20260212_153516456.jpg");
+  }
+  if (input.slug === "slip-ons") {
+    return studioCutoutSrc("/products/slip-ons/InShot_20260405_203151152.jpg");
+  }
   if (input.slug === "magikid-shoes") return MAGIKID_SHOES_THUMBNAIL_URL;
   if (input.slug === "antioxidant-trail-mix") return TRAIL_MIX_THUMBNAIL_URL;
   if (isViolettePonybeadSlug(input.slug)) return VIOLETTE_PONYBEAD_THUMBNAIL_URL;
-  if (input.slug === GATORS_SLUG) return GATORS_THUMBNAIL_URL;
+  if (input.slug === GATORS_SLUG) return studioCutoutSrc(GATORS_THUMBNAIL_URL);
   if (input.slug === FILAMENT_SLUG) return FILAMENT_THUMBNAIL_URL;
-  if (input.slug === LATTICE_INSOLES_SLUG) return LATTICE_INSOLES_THUMBNAIL_URL;
+  if (input.slug === LATTICE_INSOLES_SLUG) return studioCutoutSrc(LATTICE_INSOLES_THUMBNAIL_URL);
   const apparel = getApparelItem(input.slug);
   if (apparel) return apparel.image;
 
   const images = normalizeProductImages(input.images);
-  return images[0] ?? "/products/v3-slides/InShot_20260212_194352014.jpg";
+  return studioCutoutSrc(images[0] ?? "/products/v3-slides/InShot_20260212_194352014.jpg");
 }
 
 
