@@ -145,6 +145,21 @@ video {
   z-index: 1;
 }
 
+/*
+  Nested texture wrappers must not paint a second hex layer.
+  Each ::before origins at its own top, so a nested or stacked
+  restart reads as a layer shift (homepage video → All Footwear).
+*/
+.bg-texture-white .bg-texture-white {
+  background-color: transparent !important;
+  overflow-x: visible;
+}
+
+.bg-texture-white .bg-texture-white::before {
+  content: none;
+  animation: none;
+}
+
 /* Messenger: allow copying bubble text (site default is select-none) */
 .messenger-shell .message-text {
   -webkit-user-select: text;

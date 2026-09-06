@@ -55,23 +55,25 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Video Section — looping product video */}
-      <section className="bg-texture-white border-t border-neutral-200">
-        <div className="container py-16">
-          <MotionMediaCarousel />
-        </div>
-      </section>
-
-      {/* All Footwear — seamless continuation (heading + scroll arrow live in ProductsContent) */}
-      <Suspense fallback={
-        <div className="bg-texture-white">
-          <div className="container flex min-h-[40vh] items-center justify-center py-16">
-            <LogoLoader size="lg" label="Loading" />
+      {/* One hex layer from the slip-ons video through All Footwear. */}
+      <div className="bg-texture-white">
+        <section className="border-t border-neutral-200">
+          <div className="container py-16">
+            <MotionMediaCarousel />
           </div>
-        </div>
-      }>
-        <ProductsContent showScrollCue />
-      </Suspense>
+        </section>
+
+        {/* All Footwear — seamless continuation (heading + scroll arrow live in ProductsContent) */}
+        <Suspense
+          fallback={
+            <div className="container flex min-h-[40vh] items-center justify-center py-16">
+              <LogoLoader size="lg" label="Loading" />
+            </div>
+          }
+        >
+          <ProductsContent showScrollCue />
+        </Suspense>
+      </div>
     </div>
   );
 }
