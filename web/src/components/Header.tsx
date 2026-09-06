@@ -20,8 +20,6 @@ type SearchProductResult = {
 
 export default function Header() {
   const [open, setOpen] = useState(false);
-  const [apparelOpen, setApparelOpen] = useState(false);
-  const apparelMenuRef = useRef<HTMLDivElement>(null);
   const [hide, setHide] = useState(false);
   // const [user, setUser] = useState<{ id: string; email: string; name: string } | null>(null); // Removed user state
   const [cartCount, setCartCount] = useState(0);
@@ -93,36 +91,10 @@ export default function Header() {
   const searchString = searchParams?.toString() ?? "";
   const currentRouteKey = `${pathname}${searchString ? `?${searchString}` : ""}`;
 
-  useEffect(() => {
-    setApparelOpen(false);
-  }, [currentRouteKey]);
-
-  useEffect(() => {
-    if (!apparelOpen) return;
-    const onPointerDown = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (!apparelMenuRef.current?.contains(target)) {
-        setApparelOpen(false);
-      }
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setApparelOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [apparelOpen]);
-
   const affiliatesActive = pathname?.startsWith("/affiliates");
-  const apparelActive =
-    Boolean(pathname?.startsWith("/apparel") && !pathname?.startsWith("/apparel/accessories")) ||
-    Boolean(pathname?.startsWith("/quiz"));
-  const quizActive = Boolean(pathname?.startsWith("/quiz"));
+  const apparelActive = Boolean(
+    pathname?.startsWith("/apparel") && !pathname?.startsWith("/apparel/accessories")
+  );
 
   const navigateTo = (href: string) => {
     if (href === currentRouteKey) return;
@@ -307,58 +279,13 @@ export default function Header() {
                 <span>All Footwear</span>
                 <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/products") ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
-              <div className="relative" ref={apparelMenuRef}>
-                <button
-                  type="button"
-                  className={`relative shrink-0 inline-flex items-center gap-1.5 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${
-                    apparelActive || apparelOpen ? "text-white" : "text-white/70"
-                  }`}
-                  aria-expanded={apparelOpen}
-                  aria-haspopup="menu"
-                  onClick={() => setApparelOpen((v) => !v)}
-                >
-                  <span>Apparel</span>
-                  <span
-                    className={`text-[10px] leading-none transition-transform ${
-                      apparelOpen ? "rotate-180" : ""
-                    }`}
-                    aria-hidden
-                  >
-                    ▾
-                  </span>
-                  <span
-                    className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${
-                      apparelActive ? "opacity-100" : "opacity-0"
-                    }`}
-                    aria-hidden
-                  />
-                </button>
-                {apparelOpen ? (
-                  <div
-                    role="menu"
-                    className="absolute left-0 top-full mt-2 min-w-[220px] rounded-2xl border border-white/10 bg-neutral-950/95 backdrop-blur-md shadow-2xl py-2 z-50"
-                  >
-                    <Link
-                      href="/apparel"
-                      role="menuitem"
-                      className="block px-4 py-2.5 text-[12px] uppercase tracking-[0.18em] text-white/80 hover:text-white hover:bg-white/[.06]"
-                      onClick={() => setApparelOpen(false)}
-                    >
-                      Shop apparel
-                    </Link>
-                    <Link
-                      href="/quiz"
-                      role="menuitem"
-                      className={`block px-4 py-2.5 text-[12px] uppercase tracking-[0.18em] hover:text-white hover:bg-white/[.06] ${
-                        quizActive ? "text-white" : "text-white/80"
-                      }`}
-                      onClick={() => setApparelOpen(false)}
-                    >
-                      Take the Quiz
-                    </Link>
-                  </div>
-                ) : null}
-              </div>
+              <Link
+                href="/apparel"
+                className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${apparelActive ? "text-white" : "text-white/70"}`}
+              >
+                <span>Apparel</span>
+                <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${apparelActive ? "opacity-100" : "opacity-0"}`} aria-hidden />
+              </Link>
               <Link
                 href="/accessories"
                 className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/accessories") ? "text-white" : "text-white/70"}`}
@@ -547,7 +474,7 @@ export default function Header() {
           onClick={() => setOpen(false)}
         />
 
-        {/* Menu Content — scrollable so Take the Quiz stays reachable on short screens */}
+        {/* Menu Content — scrollable on short screens */}
         <div className={`absolute top-20 left-0 right-0 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           open ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
         }`}>
@@ -582,19 +509,6 @@ export default function Header() {
                   )}
                   Apparel
                 </Link>
-                <div className="ml-4 mb-1 flex flex-col gap-1 border-l border-white/10 pl-3">
-                  <Link
-                    href="/quiz"
-                    className={`py-2.5 px-3 rounded-lg text-[13px] uppercase tracking-[0.18em] ${
-                      quizActive
-                        ? "text-white bg-white/10"
-                        : "text-white/70 hover:text-white hover:bg-white/[.06]"
-                    }`}
-                    onClick={() => setOpen(false)}
-                  >
-                    Take the Quiz
-                  </Link>
-                </div>
                 <Link
                   href="/apparel/accessories"
                   className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
