@@ -11,6 +11,38 @@ const AVATAR_MIME_TYPES = new Set([
   "image/gif",
 ]);
 
+const GENERIC_MIME_TYPES = new Set([
+  "",
+  "application/octet-stream",
+  "binary/octet-stream",
+  "application/unknown",
+  "application/x-download",
+  "application/force-download",
+]);
+
+const MIME_ALIASES: Record<string, string> = {
+  "image/jpg": "image/jpeg",
+  "image/pjpeg": "image/jpeg",
+  "image/x-png": "image/png",
+  "image/x-citrix-png": "image/png",
+  "image/x-citrix-jpeg": "image/jpeg",
+  "image/jfif": "image/jpeg",
+  "image/pjp": "image/jpeg",
+  "image/pipeg": "image/jpeg",
+  "image/heic-sequence": "image/heic",
+  "image/heif-sequence": "image/heif",
+};
+
+const HEIF_FTYP_BRANDS = new Set([
+  "heic",
+  "heix",
+  "heif",
+  "heim",
+  "heis",
+  "mif1",
+  "msf1",
+]);
+
 export function isImageMimeType(mimeType: string | null | undefined): boolean {
   return Boolean(mimeType?.startsWith("image/"));
 }
@@ -37,26 +69,93 @@ export function shouldServeAttachmentInline(mimeType: string | null | undefined)
 
 export function normalizeMimeType(mimeType: string): string {
   const base = mimeType.split(";")[0]?.trim().toLowerCase();
-  return base || "application/octet-stream";
+  if (!base) return "application/octet-stream";
+  return MIME_ALIASES[base] ?? base;
 }
 
-export function sanitizeAttachmentFileName(fileName: string): string {
-  const base = fileName.split(/[/\\]/).pop()?.trim() ?? "attachment";
-  const cleaned = base.replace(/[^\w.\-()+\s]/g, "_").slice(0, 200);
-  return cleaned || "attachment";
+export function isAllowedAvatarMimeType(mimeType: string): boolean {
+  return AVATAR_MIME_TYPES.has(normalizeMimeType(mimeType));
 }
 
-export function inferMimeType(file: File): string {
-  const fromFile = file.type?.trim();
-  if (fromFile) return normalizeMimeType(fromFile);
+/** Detect JPEG/PNG/GIF/WebP/HEIC from magic bytes so we don't trust File.type. */
+export function sniffImageMimeType(
+  data: ArrayBuffer | Uint8Array
+): string | null {
+  const bytes = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
+  if (bytes.length < 3) return null;
 
-  const lower = file.name.toLowerCase();
-  if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return "image/jpeg";
+  }
+  if (
+    bytes.length >= 4 &&
+    bytes[0] === 0x89 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x4e &&
+    bytes[3] === 0x47
+  ) {
+    return "image/png";
+  }
+  if (
+    bytes.length >= 6 &&
+    bytes[0] === 0x47 &&
+    bytes[1] === 0x49 &&
+    bytes[2] === 0x46 &&
+    bytes[3] === 0x38 &&
+    (bytes[4] === 0x37 || bytes[4] === 0x39) &&
+    bytes[5] === 0x61
+  ) {
+    return "image/gif";
+  }
+  if (
+    bytes.length >= 12 &&
+    bytes[0] === 0x52 &&
+    bytes[1] === 0x49 &&
+    bytes[2] === 0x46 &&
+    bytes[3] === 0x46 &&
+    bytes[8] === 0x57 &&
+    bytes[9] === 0x45 &&
+    bytes[10] === 0x42 &&
+    bytes[11] === 0x50
+  ) {
+    return "image/webp";
+  }
+  if (bytes.length >= 12) {
+    const box = String.fromCharCode(bytes[4], bytes[5], bytes[6], bytes[7]);
+    if (box === "ftyp") {
+      const brands: string[] = [];
+      for (let i = 8; i + 4 <= Math.min(bytes.length, 32); i += 4) {
+        brands.push(
+          String.fromCharCode(
+            bytes[i],
+            bytes[i + 1],
+            bytes[i + 2],
+            bytes[i + 3]
+          ).toLowerCase()
+        );
+      }
+      if (brands.some((brand) => HEIF_FTYP_BRANDS.has(brand))) {
+        return brands.includes("heif") || brands.includes("mif1")
+          ? "image/heif"
+          : "image/heic";
+      }
+    }
+  }
+  if (bytes[0] === 0x42 && bytes[1] === 0x4d) return "image/bmp";
+  return null;
+}
+
+export function mimeTypeFromFileName(fileName: string): string | null {
+  const lower = fileName.toLowerCase();
+  if (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".jfif") || lower.endsWith(".pjpeg") || lower.endsWith(".pjp")) {
+    return "image/jpeg";
+  }
   if (lower.endsWith(".png")) return "image/png";
   if (lower.endsWith(".gif")) return "image/gif";
   if (lower.endsWith(".webp")) return "image/webp";
   if (lower.endsWith(".heic")) return "image/heic";
   if (lower.endsWith(".heif")) return "image/heif";
+  if (lower.endsWith(".bmp")) return "image/bmp";
   if (lower.endsWith(".mp4") && lower.includes("voice")) return "audio/mp4";
   if (lower.endsWith(".mp4")) return "video/mp4";
   if (lower.endsWith(".webm") && lower.includes("voice")) return "audio/webm";
@@ -73,7 +172,32 @@ export function inferMimeType(file: File): string {
   if (lower.endsWith(".docx")) {
     return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
   }
-  return "application/octet-stream";
+  return null;
+}
+
+export function sanitizeAttachmentFileName(fileName: string): string {
+  const base = fileName.split(/[/\\]/).pop()?.trim() ?? "attachment";
+  const cleaned = base.replace(/[^\w.\-()+\s]/g, "_").slice(0, 200);
+  return cleaned || "attachment";
+}
+
+export function inferMimeType(file: File): string {
+  const fromFile = normalizeMimeType(file.type?.trim() ?? "");
+  if (!GENERIC_MIME_TYPES.has(fromFile)) return fromFile;
+
+  return mimeTypeFromFileName(file.name) ?? "application/octet-stream";
+}
+
+export function inferMimeTypeFromBytes(
+  fileName: string,
+  declaredType: string | null | undefined,
+  data: ArrayBuffer | Uint8Array
+): string {
+  const sniffed = sniffImageMimeType(data);
+  if (sniffed) return sniffed;
+  const declared = normalizeMimeType(declaredType?.trim() ?? "");
+  if (!GENERIC_MIME_TYPES.has(declared)) return declared;
+  return mimeTypeFromFileName(fileName) ?? "application/octet-stream";
 }
 
 export function validateMessageAttachment(file: File): string | null {
@@ -127,16 +251,22 @@ export function contentDispositionForAttachment(
   return `${type}; filename="${safe}"; filename*=UTF-8''${encoded}`;
 }
 
-export function validateAvatarFile(file: File): string | null {
-  if (file.size <= 0) return "Image is empty.";
-  if (file.size > AVATAR_MAX_BYTES) {
+export function validateAvatarMeta(
+  sizeBytes: number,
+  mimeType: string
+): string | null {
+  if (sizeBytes <= 0) return "Image is empty.";
+  if (sizeBytes > AVATAR_MAX_BYTES) {
     return `Profile picture must be at most ${AVATAR_MAX_BYTES / (1024 * 1024)} MB.`;
   }
-  const mimeType = normalizeMimeType(inferMimeType(file));
-  if (!AVATAR_MIME_TYPES.has(mimeType)) {
+  if (!isAllowedAvatarMimeType(mimeType)) {
     return "Use a JPEG, PNG, WebP, or GIF image.";
   }
   return null;
+}
+
+export function validateAvatarFile(file: File): string | null {
+  return validateAvatarMeta(file.size, inferMimeType(file));
 }
 
 export function formatMessagePreview(body: string, mimeType: string | null, fileName: string | null): string {

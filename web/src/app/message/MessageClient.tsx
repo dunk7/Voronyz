@@ -1174,10 +1174,7 @@ export default function MessageClient() {
       try {
         const nextAttachments: PendingAttachment[] = [];
         for (const rawFile of rawFiles) {
-          let file = rawFile;
-          if (isImageUploadFile(rawFile)) {
-            file = await prepareMessageImage(rawFile);
-          }
+          const file = await prepareMessageImage(rawFile);
           const validationError = validateMessageAttachment(file);
           if (validationError) {
             setSendError(validationError);
@@ -1188,9 +1185,11 @@ export default function MessageClient() {
         if (nextAttachments.length > 0) {
           setPendingAttachments((prev) => [...prev, ...nextAttachments]);
         }
-      } catch {
+      } catch (err) {
         setSendError(
-          "Could not prepare that photo. Try saving it as JPEG or PNG first."
+          err instanceof Error && err.message.trim()
+            ? err.message
+            : "Could not attach that photo. Try a JPEG or PNG."
         );
       } finally {
         setPreparingAttachment(false);
@@ -1543,24 +1542,26 @@ export default function MessageClient() {
     setAvatarUploading(true);
 
     try {
-      const prepared = isImageUploadFile(file)
-        ? await prepareAvatarImage(file)
-        : file;
+      const prepared = await prepareAvatarImage(file);
       const formData = new FormData();
-      formData.append("avatar", prepared);
+      formData.append("avatar", prepared, prepared.name || "photo.jpg");
       const res = await fetch("/api/message/profile", {
         method: "POST",
         body: formData,
       });
-      const data = await res.json();
       if (!res.ok) {
-        setAvatarError(data.error ?? "Could not update profile picture.");
+        setAvatarError(
+          await readApiError(res, "Could not update profile picture.")
+        );
         return;
       }
+      const data = await res.json();
       patchUserAvatar(user.id, data.user.avatarUrl ?? null);
-    } catch {
+    } catch (err) {
       setAvatarError(
-        "Could not upload that photo. Try saving it as JPEG or PNG first."
+        err instanceof Error && err.message.trim()
+          ? err.message
+          : "Could not upload that photo. Try a JPEG or PNG."
       );
     } finally {
       clearAvatarPreview();
@@ -2528,7 +2529,7 @@ export default function MessageClient() {
               <input
                 ref={avatarInputRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
+                accept="image/jpeg,image/jpg,image/png,image/webp,image/gif,image/heic,image/heif,.jpg,.jpeg,.jfif,.pjpeg,.png,.gif,.webp,.heic,.heif"
                 onChange={handleAvatarChange}
                 className="sr-only"
               />
