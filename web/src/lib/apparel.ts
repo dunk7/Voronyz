@@ -3,7 +3,7 @@ export const APPAREL_ONE_SIZE = ["One Size"] as const;
 
 /**
  * Apparel sub-sections.
- * - `collection`: multi-product listing pages (shirts, scarves, sweaters, …) —
+ * - `collection`: multi-product listing pages (shirts, sweaters, socks, …) —
  *   add new designs to APPAREL_CATALOG with the matching subcategory.
  * - `standalone`: Accessories only (hats, bottles, shades, jewelry, …) — never mixed
  *   into clothing collections, and never shown on Engineering `/accessories`.
@@ -15,7 +15,6 @@ export type ApparelSubcategoryId =
   | "shorts"
   | "joggers"
   | "outerwear"
-  | "scarves"
   | "accessories";
 
 /** Legacy apparel collection paths that now live under Accessories. */
@@ -70,12 +69,6 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
     listing: "collection",
   },
   {
-    id: "scarves",
-    label: "Scarves",
-    description: "Knit scarves and cool-weather neck layers",
-    listing: "collection",
-  },
-  {
     id: "accessories",
     label: "Accessories",
     description: "Hats, bottles, shades, jewelry, and drone parts",
@@ -123,6 +116,7 @@ export const OBSOLETE_APPAREL_SLUGS = [
   "voronyz-necklace",
   "voronyz-rc-car-stickers",
   "voronyz-nice-shirt",
+  "voronyz-scarf",
 ] as const;
 
 /**
@@ -210,23 +204,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/outerwear.jpg",
     skuPrefix: "APP-OUT",
-    comingSoon: true,
-  },
-  // ── Scarves (multi-product) ─────────────────────────────────────────────
-  {
-    slug: "voronyz-scarf",
-    subcategory: "scarves",
-    name: "Scarf",
-    description: "Soft knit scarf with a clean drape for cool-weather layers.",
-    priceCents: 4200,
-    colors: ["black", "grey"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/scarf-product.jpg",
-    images: [
-      "/products/apparel/scarf-product.jpg",
-      "/products/apparel/scarf-snowboarder.jpg",
-    ],
-    skuPrefix: "APP-SCRF",
     comingSoon: true,
   },
   // ── Accessories only (never mixed into clothing collections) ────────────

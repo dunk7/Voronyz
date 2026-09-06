@@ -46,6 +46,13 @@ const nextConfig: NextConfig = {
         destination: "/products/voronyz-oversized-tee",
         permanent: true,
       },
+      // Removed Scarf listing — old product and collection URLs go to Apparel.
+      {
+        source: "/products/voronyz-scarf",
+        destination: "/apparel",
+        permanent: true,
+      },
+      { source: "/apparel/scarves", destination: "/apparel", permanent: true },
     ];
   },
 };
