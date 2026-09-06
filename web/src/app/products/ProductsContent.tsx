@@ -23,6 +23,10 @@ const HOME_APPAREL_TEASER_SLUGS = [
   "voronyz-performance-socks",
 ] as const;
 
+/** Technical shop-all CTA used under the home Footwear and Apparel teasers. */
+const SHOP_ALL_CTA_CLASS =
+  "inline-flex items-center justify-center rounded-md bg-neutral-900 px-6 py-2.5 text-[11px] font-medium uppercase tracking-[0.18em] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] transition-colors hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2";
+
 type Product = FootwearListProduct;
 
 /* Alt hover images only — no marketing / category pills on thumbnails (name already says what it is). */
@@ -424,7 +428,7 @@ export default function ProductsContent({
             <div className="mt-10 sm:mt-12 flex justify-center">
               <Link
                 href="/products"
-                className="inline-flex items-center justify-center rounded-md bg-neutral-900 px-6 py-2.5 text-[11px] font-medium uppercase tracking-[0.18em] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] transition-colors hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2"
+                className={SHOP_ALL_CTA_CLASS}
               >
                 Shop all footwear
               </Link>
@@ -455,9 +459,9 @@ export default function ProductsContent({
             <div className="mt-10 sm:mt-12 flex justify-center">
               <Link
                 href="/apparel"
-                className="inline-flex items-center justify-center rounded-full bg-neutral-900 text-white px-7 py-3.5 text-sm font-semibold hover:bg-neutral-800 transition"
+                className={SHOP_ALL_CTA_CLASS}
               >
-                View Apparel Section
+                Shop all apparel
               </Link>
             </div>
           </section>
