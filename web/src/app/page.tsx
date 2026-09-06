@@ -53,6 +53,9 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Soft black lighting on the sides — Zellerfeld-style studio falloff */}
+        <div className="hero-side-lights" aria-hidden />
       </section>
 
       {/* One hex layer from the slip-ons video through All Footwear. */}

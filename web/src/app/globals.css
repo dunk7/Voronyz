@@ -94,6 +94,60 @@ video {
   animation: hero-fade-in 800ms cubic-bezier(0.22, 1, 0.36, 1) 200ms both;
 }
 
+/*
+  Homepage hero: Zellerfeld-style studio flags — a little black light
+  falloff on the left and right so the product sits in a soft spotlight.
+*/
+.hero-side-lights {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    radial-gradient(
+      ellipse 34% 90% at 0% 50%,
+      rgb(0 0 0 / 0.62) 0%,
+      rgb(0 0 0 / 0.22) 42%,
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 34% 90% at 100% 50%,
+      rgb(0 0 0 / 0.62) 0%,
+      rgb(0 0 0 / 0.22) 42%,
+      transparent 72%
+    ),
+    linear-gradient(
+      to right,
+      rgb(0 0 0 / 0.38) 0%,
+      transparent 14%,
+      transparent 86%,
+      rgb(0 0 0 / 0.38) 100%
+    );
+}
+
+@media (max-width: 640px) {
+  .hero-side-lights {
+    background:
+      radial-gradient(
+        ellipse 22% 80% at 0% 50%,
+        rgb(0 0 0 / 0.48) 0%,
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 22% 80% at 100% 50%,
+        rgb(0 0 0 / 0.48) 0%,
+        transparent 70%
+      ),
+      linear-gradient(
+        to right,
+        rgb(0 0 0 / 0.28) 0%,
+        transparent 12%,
+        transparent 88%,
+        rgb(0 0 0 / 0.28) 100%
+      );
+  }
+}
+
 /* Subtle shimmer for primary CTA */
 @keyframes subtle-shimmer {
   0% { background-position: -200% center; }
