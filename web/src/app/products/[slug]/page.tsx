@@ -355,7 +355,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       {isGators && (
         <>
           <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Comfort clog</span>
-          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">$85</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">$100</span>
         </>
       )}
       {isDragonfly && (
@@ -433,13 +433,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                         id: "pickup",
                         label: "Magikid Lab pickup",
                         priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
-                        description: "$160 — no shipping fee",
+                        description: "$30 — no shipping fee",
                       },
                       {
                         id: "shipping",
                         label: "Ship to me",
                         priceCents: MAGIKID_SHOES_SHIPPED_PRICE_CENTS,
-                        description: "$160 shoe + $7 shipping",
+                        description: "$30 shoe + $7 shipping",
                       },
                     ],
                   })}
@@ -549,15 +549,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <h2 className="text-lg font-semibold text-neutral-900 mb-4">FAQs</h2>
           <FAQ
             items={isDragonfly ? [
-              { q: "What colors are available?", a: "The Dragonfly's come in Black, White, Red, Azure Blue, and Pink — white is currently out of stock. Black is $5 less at $60. Laces can be any color you want!" },
+              { q: "What colors are available?", a: "The Dragonfly's come in Black, White, Red, Azure Blue, and Pink — white is currently out of stock. $160 per pair. Laces can be any color you want!" },
               { q: "Are they true to size?", a: "Yes — we offer Men's, Women's, and Kids' sizing. They're designed for a comfortable, snug fit right out of the box." },
               { q: "How long does production take?", a: "Each pair is 3D-printed to order. Production takes about 1-2 days, then ships out next business day." },
               { q: "Is shipping really free?", a: "Yes! We offer free shipping on all domestic US orders. No minimum purchase required. We currently only ship within the US." },
               { q: "Can I wash them?", a: "Absolutely. The lattice sole and upper are fully washable — toss them in the washer on a gentle cycle." },
             ] : isMagikidShoes ? [
               { q: "What colors can I order?", a: "Black, grey, and pink are in stock. White and orange are listed but currently out of stock." },
-              { q: "How does Magikid Lab pickup work?", a: "Choose pickup at checkout — you pay $160 for the shoes with no shipping fee. We'll email you when your pair is ready to collect in person at Magikid Lab." },
-              { q: "How does shipping work?", a: "The shoes are $160. Shipping is an extra $7. Pickup at Magikid Lab is $160 with no shipping fee." },
+              { q: "How does Magikid Lab pickup work?", a: "Choose pickup at checkout — you pay $30 for the shoes with no shipping fee. We'll email you when your pair is ready to collect in person at Magikid Lab." },
+              { q: "How does shipping work?", a: "The shoes are $30. Shipping is an extra $7. Pickup at Magikid Lab is $30 with no shipping fee." },
               { q: "How long does production take?", a: "Made to order in under 7 days, then we ship or hold for pickup." },
             ] : isSlipOns ? [
               { q: "What colors can I order?", a: "Black, grey, orange, and pink are in stock — white is currently out of stock. Each pair is one solid body color (no two-tone option)." },
@@ -588,7 +588,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             ] : isGators ? [
               { q: "What is The Gators?", a: "A comfort clog named for the alligator 🐊 — closed toe, open back, thick cushioned platform, and easy slip-on wear for all-day comfort." },
               { q: "What colors are available?", a: "Black, pink, grey, and skin-tone tan. This is a new listing with low stock, so grab your size while pairs last." },
-              { q: "How much do they cost?", a: "$85 per pair." },
+              { q: "How much do they cost?", a: "$100 per pair." },
               { q: "Are they true to size?", a: "Yes — use Men's, Women's, or Kids' sizing and pick your usual US size for a comfortable clog fit." },
               { q: "How long does production take?", a: "Printed to order in about 1–2 days, then ships the next business day." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
@@ -617,7 +617,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   // Static metadata for known products
   if (slug === "dragonfly") {
     const title = "The Dragonfly's – Voronyz";
-    const description = "Lightweight 3D-printed sneakers with custom lattice sole and interchangeable laces. Starting at $60.";
+    const description = "Lightweight 3D-printed sneakers with custom lattice sole and interchangeable laces. $160.";
     const images = ["/products/dragonfly/InShot_20260212_153516456.jpg"];
     return {
       title,
@@ -630,7 +630,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug === "slip-ons") {
     const title = "Slip Ons – Voronyz";
     const description =
-      "Minimal 3D-printed slip-ons with a flexible lattice sole. $60. Black, grey, orange, and pink in stock; white temporarily unavailable.";
+      "Minimal 3D-printed slip-ons with a flexible lattice sole. $65. Black, grey, orange, and pink in stock; white temporarily unavailable.";
     const images = ["/products/slip-ons/InShot_20260405_203151152.jpg"];
     return {
       title,

@@ -169,7 +169,7 @@ async function main() {
           name: "The Dragonfly's",
           description:
             "Engineered for walking and active days, built to last. Lightweight, breathable 3D-printed sneakers with a custom lattice sole and interchangeable laces.",
-          priceCents: 6500,
+          priceCents: 16000,
           currency: "usd",
           images: [
             "/products/dragonfly/InShot_20260212_153516456.jpg",
@@ -187,11 +187,11 @@ async function main() {
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
           variants: {
             create: [
-              { color: "black", sku: "DF-BLK", stock: 999, priceCents: 6000 },
-              { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },  // Out of stock
-              { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
-              { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
-              { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 6500 },
+              { color: "black", sku: "DF-BLK", stock: 999, priceCents: 16000 },
+              { color: "white", sku: "DF-WHT", stock: 0, priceCents: 16000 },  // Out of stock
+              { color: "red", sku: "DF-RED", stock: 999, priceCents: 16000 },
+              { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 16000 },
+              { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 16000 },
             ],
           },
         },
@@ -206,7 +206,7 @@ async function main() {
           name: "The Dragonfly's",
           description:
             "Engineered for walking and active days, built to last. Lightweight, breathable 3D-printed sneakers with a custom lattice sole and interchangeable laces.",
-          priceCents: 6500,
+          priceCents: 16000,
           images: [
             "/products/dragonfly/InShot_20260212_153516456.jpg",
             "/products/dragonfly/InShot_20260212_153903491.jpg",
@@ -226,11 +226,11 @@ async function main() {
 
       // Upsert Dragonfly variants
       const dfVariants = [
-        { color: "black", sku: "DF-BLK", stock: 999, priceCents: 6000 },
-        { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },
-        { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
-        { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
-        { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 6500 },
+        { color: "black", sku: "DF-BLK", stock: 999, priceCents: 16000 },
+        { color: "white", sku: "DF-WHT", stock: 0, priceCents: 16000 },
+        { color: "red", sku: "DF-RED", stock: 999, priceCents: 16000 },
+        { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 16000 },
+        { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 16000 },
       ];
       for (const v of dfVariants) {
         await prisma.variant.upsert({
@@ -269,7 +269,7 @@ async function main() {
           name: "Slip Ons",
           description:
             "Engineered for easy everyday wear, built to last. Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
-          priceCents: 6000,
+          priceCents: 6500,
           currency: "usd",
           images: slipOnImages,
           primaryColors: ["black", "grey", "white", "orange", "pink"],
@@ -296,7 +296,7 @@ async function main() {
           name: "Slip Ons",
           description:
             "Engineered for easy everyday wear, built to last. Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
-          priceCents: 6000,
+          priceCents: 6500,
           images: slipOnImages,
           primaryColors: ["black", "grey", "white", "orange", "pink"],
           secondaryColors: [],

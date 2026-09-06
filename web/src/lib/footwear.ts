@@ -20,6 +20,9 @@ import {
 import { getProductThumbnail } from "@/lib/productImages";
 import { catalogSeedListedAt } from "@/lib/newListing";
 
+export const SLIP_ONS_PRICE_CENTS = 6500; // $65
+export const DRAGONFLY_PRICE_CENTS = 16000; // $160
+
 /** Core footwear catalog — used as an immediate client seed when /api/search is slow or down. */
 export type FootwearCatalogItem = {
   slug: string;
@@ -59,7 +62,7 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     name: "Slip Ons",
     description:
       "Engineered for easy everyday wear, built to last. Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
-    priceCents: 6000,
+    priceCents: SLIP_ONS_PRICE_CENTS,
     images: [
       "/products/slip-ons/InShot_20260405_203151152.jpg",
       "/products/slip-ons/InShot_20260405_203425292.jpg",
@@ -83,7 +86,7 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     name: "The Dragonfly's",
     description:
       "Engineered for walking and active days, built to last. Lightweight, breathable 3D-printed sneakers with a custom lattice sole and interchangeable laces.",
-    priceCents: 6500,
+    priceCents: DRAGONFLY_PRICE_CENTS,
     images: [
       "/products/dragonfly/InShot_20260212_153516456.jpg",
       "/products/dragonfly/InShot_20260212_153903491.jpg",

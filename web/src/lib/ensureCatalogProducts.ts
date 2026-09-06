@@ -58,7 +58,7 @@ import {
   apparelSku,
   getApparelImages,
 } from "@/lib/apparel";
-import { FOOTWEAR_CATALOG } from "@/lib/footwear";
+import { DRAGONFLY_PRICE_CENTS, FOOTWEAR_CATALOG } from "@/lib/footwear";
 
 /**
  * Self-heal Product.category / Product.subcategory when the apparel migration
@@ -92,11 +92,11 @@ const FOOTWEAR_VARIANTS: Record<
     { color: "pink", sku: "V3-PNK", stock: 999 },
   ],
   dragonfly: [
-    { color: "black", sku: "DF-BLK", stock: 999, priceCents: 6000 },
-    { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },
-    { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
-    { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
-    { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 6500 },
+    { color: "black", sku: "DF-BLK", stock: 999, priceCents: DRAGONFLY_PRICE_CENTS },
+    { color: "white", sku: "DF-WHT", stock: 0, priceCents: DRAGONFLY_PRICE_CENTS },
+    { color: "red", sku: "DF-RED", stock: 999, priceCents: DRAGONFLY_PRICE_CENTS },
+    { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: DRAGONFLY_PRICE_CENTS },
+    { color: "pink", sku: "DF-PNK", stock: 999, priceCents: DRAGONFLY_PRICE_CENTS },
   ],
   "slip-ons": [
     { color: "black", sku: "SO-BLK", stock: 999 },
@@ -249,11 +249,11 @@ const FOOTWEAR_STOCK_SYNC: Array<{
   {
     slug: "dragonfly",
     variants: [
-      { color: "black", sku: "DF-BLK", stock: 999, priceCents: 6000 },
-      { color: "white", sku: "DF-WHT", stock: 0, priceCents: 6500 },
-      { color: "red", sku: "DF-RED", stock: 999, priceCents: 6500 },
-      { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 6500 },
-      { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 6500 },
+      { color: "black", sku: "DF-BLK", stock: 999, priceCents: DRAGONFLY_PRICE_CENTS },
+      { color: "white", sku: "DF-WHT", stock: 0, priceCents: DRAGONFLY_PRICE_CENTS },
+      { color: "red", sku: "DF-RED", stock: 999, priceCents: DRAGONFLY_PRICE_CENTS },
+      { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: DRAGONFLY_PRICE_CENTS },
+      { color: "pink", sku: "DF-PNK", stock: 999, priceCents: DRAGONFLY_PRICE_CENTS },
     ],
   },
   {
