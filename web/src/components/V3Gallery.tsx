@@ -330,6 +330,7 @@ export default function V3Gallery({
           src={m.src}
           alt={m.alt || "Product image"}
           fill
+          showLogoPlaceholder={false}
           className={`${objectFitClass} pointer-events-none`}
           priority={index <= 1}
           loading={index <= 2 ? "eager" : "lazy"}
