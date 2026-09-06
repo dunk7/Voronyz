@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { formatCentsAsCurrency } from "@/lib/money";
+import { formatCentsAsCurrency, SHOP_PRICE_CLASS } from "@/lib/money";
 import {
   QUIZ_QUESTIONS,
   type QuizAnswers,
@@ -463,7 +463,7 @@ export default function QuizClient() {
                         {product.description}
                       </p>
                     </div>
-                    <p className="shrink-0 font-semibold text-neutral-900">
+                    <p className={`shrink-0 ${SHOP_PRICE_CLASS}`}>
                       {formatCentsAsCurrency(product.priceCents, product.currency)}
                     </p>
                   </div>

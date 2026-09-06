@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, useState, useEffect } from "react";
-import { formatCentsAsCurrency } from "@/lib/money";
+import { formatCentsAsCurrency, SHOP_PRICE_CLASS } from "@/lib/money";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { normalizeStudentName } from "@/lib/magikidShoesThumbnail";
@@ -797,8 +797,8 @@ export default function AddToCart({
             onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
             className="w-20 h-[48px] rounded-md border border-black/10 px-3 py-2 text-sm text-neutral-900"
           />
-          <div className="flex items-baseline gap-2 pt-1">
-            <span className="text-2xl font-bold text-neutral-900">{formattedTotal}</span>
+          <div className="flex items-center">
+            <span className={SHOP_PRICE_CLASS}>{formattedTotal}</span>
           </div>
           <div className="button-container flex-1">
             {added ? (
