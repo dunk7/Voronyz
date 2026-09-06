@@ -53,6 +53,22 @@ const nextConfig: NextConfig = {
         destination: "/apparel",
         permanent: true,
       },
+      // Removed UV hat and water bottles from Accessories.
+      {
+        source: "/products/voronyz-uv-hat",
+        destination: "/apparel/accessories",
+        permanent: true,
+      },
+      {
+        source: "/products/voronyz-water-bottle",
+        destination: "/apparel/accessories",
+        permanent: true,
+      },
+      {
+        source: "/products/voronyz-lock-squirt-bottle",
+        destination: "/apparel/accessories",
+        permanent: true,
+      },
       // Removed RC Car Stickers — never show again (old URLs → Accessories).
       {
         source: "/products/voronyz-rc-car-stickers",
