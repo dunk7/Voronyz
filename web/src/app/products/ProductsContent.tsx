@@ -191,7 +191,7 @@ export default function ProductsContent({
       ? "Collaborative"
       : isHomeFootwearTeaser
       ? "Footwear"
-      : "All Footwear";
+      : "Step into the future";
   /** Footwear stays heading-only (like Apparel on home) — no supporting paragraph. */
   const subheading =
     category === "accessories"

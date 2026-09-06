@@ -3,7 +3,7 @@ import ProductsContent from "./ProductsContent";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
-  title: "Footwear – Voronyz",
+  title: "Step into the future – Voronyz",
   description: "Shop all Voronyz footwear.",
 };
 
