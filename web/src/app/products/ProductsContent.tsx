@@ -230,11 +230,13 @@ export default function ProductsContent({
     });
   }, [showApparelContinuation]);
 
-  const sectionHeadingClass =
-    "text-3xl font-semibold tracking-tight text-neutral-900 text-center";
+  const isHomeSections = showScrollCue && !searchQuery;
+  const sectionHeadingClass = isHomeSections
+    ? "text-3xl font-semibold tracking-tight text-neutral-900"
+    : "text-3xl font-semibold tracking-tight text-neutral-900 text-center";
   const scrollCue = showScrollCue && !searchQuery && (
     <svg
-      className="mx-auto mt-2 h-4 w-4 animate-bounce text-neutral-400"
+      className={`mt-2 h-4 w-4 animate-bounce text-neutral-400 ${isHomeSections ? "" : "mx-auto"}`}
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -250,13 +252,18 @@ export default function ProductsContent({
     return (
       <div className="bg-texture-white min-h-[80vh]">
         <div className="container py-16">
-          <div className="mb-12 text-center">
+          <div className={isHomeSections ? "mb-8 lg:mb-10" : "mb-12 text-center"}>
+            {isHomeSections && (
+              <p className="text-xs uppercase tracking-[0.24em] text-neutral-500 mb-3">
+                Shop
+              </p>
+            )}
             <h1 className={sectionHeadingClass}>
               {heading}
             </h1>
             {scrollCue}
             {!searchQuery && subheading && (
-              <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
+              <p className={`mt-2 text-sm text-neutral-500 max-w-md ${isHomeSections ? "" : "mx-auto"}`}>
                 {subheading}
               </p>
             )}
@@ -292,19 +299,37 @@ export default function ProductsContent({
     <div className="bg-texture-white min-h-[80vh]">
       <div className="container py-16">
         {/* ── Header ── */}
-        <div className="mb-12 text-center">
-          <h1 className={sectionHeadingClass}>
-            {heading}
-          </h1>
+        <div className={isHomeSections ? "mb-8 lg:mb-10" : "mb-12 text-center"}>
+          {isHomeSections && (
+            <p className="text-xs uppercase tracking-[0.24em] text-neutral-500 mb-3">
+              Shop
+            </p>
+          )}
+          {isHomeSections ? (
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <h1 className={sectionHeadingClass}>
+                {heading}
+              </h1>
+              <span className="text-xs tabular-nums text-neutral-400 hidden sm:block">
+                {displayProducts.length} listing{displayProducts.length === 1 ? "" : "s"}
+              </span>
+            </div>
+          ) : (
+            <h1 className={sectionHeadingClass}>
+              {heading}
+            </h1>
+          )}
           {scrollCue}
           {!searchQuery && subheading && (
-            <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
+            <p className={`mt-2 text-sm text-neutral-500 max-w-md ${isHomeSections ? "" : "mx-auto"}`}>
               {subheading}
             </p>
           )}
-          <p className="mt-3 text-xs tabular-nums text-neutral-400 hidden sm:block">
-            {displayProducts.length} product{displayProducts.length === 1 ? "" : "s"}
-          </p>
+          {!isHomeSections && (
+            <p className="mt-3 text-xs tabular-nums text-neutral-400 hidden sm:block">
+              {displayProducts.length} product{displayProducts.length === 1 ? "" : "s"}
+            </p>
+          )}
           {!showScrollCue && <div className="mt-6 h-px bg-neutral-200" />}
         </div>
 
@@ -440,7 +465,7 @@ export default function ProductsContent({
             aria-labelledby="footwear-apparel-heading"
             className="mt-24 sm:mt-32 lg:mt-40"
           >
-            <div className="mb-10 sm:mb-14 text-center">
+            <div className="mb-8 lg:mb-10">
               <h2
                 id="footwear-apparel-heading"
                 className={sectionHeadingClass}

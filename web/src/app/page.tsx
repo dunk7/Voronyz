@@ -31,7 +31,7 @@ export default function Home() {
                 Voronyz Engineering
               </p>
 
-              <h1 className="hero-stagger-2 text-3xl font-semibold tracking-tight leading-[1.08] sm:leading-[1.1] text-white">
+              <h1 className="hero-stagger-2 text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-semibold leading-[1.08] sm:leading-[1.1] tracking-tight text-white">
                 3D Printed<br className="hidden sm:block" /> Footwear
               </h1>
             </div>
