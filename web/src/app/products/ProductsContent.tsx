@@ -12,6 +12,7 @@ import { APPAREL_CATALOG } from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
+import TakeTheQuizPromo from "@/components/apparel/TakeTheQuizPromo";
 import FootwearBrowse from "@/components/footwear/FootwearBrowse";
 
 /** Homepage footwear teaser — slides + slip-ons only; full catalog on /products. */
@@ -468,6 +469,8 @@ export default function ProductsContent({
                 Shop all apparel
               </Link>
             </div>
+
+            <TakeTheQuizPromo className="mt-10 sm:mt-12" />
           </section>
         )}
       </div>
