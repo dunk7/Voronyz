@@ -37,7 +37,7 @@ export default function Home() {
             </div>
 
             {/* Image / Parallax Column */}
-            <div className="relative lg:col-span-8 order-1 lg:order-2 hero-stagger-image">
+            <div className="lg:col-span-8 order-1 lg:order-2 hero-stagger-image">
               <HeroParallax>
                 <div className="relative w-full overflow-visible aspect-[4/3] sm:aspect-[4/3] lg:h-full xl:h-full 2xl:h-full bg-transparent">
                   <Image
@@ -50,11 +50,12 @@ export default function Home() {
                   />
                 </div>
               </HeroParallax>
-              {/* Soft black lighting on the sides — Zellerfeld-style studio falloff */}
-              <div className="hero-side-lights" aria-hidden />
             </div>
           </div>
         </div>
+
+        {/* Soft black lighting on the sides — Zellerfeld-style studio falloff */}
+        <div className="hero-side-lights" aria-hidden />
       </section>
 
       {/* One hex layer from the slip-ons video through All Footwear. */}
