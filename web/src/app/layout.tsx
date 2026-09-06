@@ -5,6 +5,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DiscountUrgencyBanner from "@/components/discount/DiscountUrgencyBanner";
+import HexTextureMotion from "@/components/HexTextureMotion";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ||
@@ -78,6 +79,7 @@ export default function RootLayout({
         style={{ background: "#000000" }}
         suppressHydrationWarning
       >
+        <HexTextureMotion />
         <DiscountUrgencyBanner />
         <Suspense fallback={null}>
           <Header />

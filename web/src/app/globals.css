@@ -109,26 +109,20 @@ video {
 .bg-texture-white {
   background-color: #ffffff !important;
   position: relative;
-  overflow-x: clip;
+  overflow: clip;
 }
 
-/* Original 50×43 overlapping hex tile. Slide left by one tile. */
-@keyframes hex-texture-drift {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50px);
-  }
-}
-
+/*
+  Hex tile is 50×43. Position is driven by HexTextureMotion (pointer/touch + scroll).
+  Extra size lets translate3d wrap one tile without a seam.
+*/
 .bg-texture-white::before {
   content: '';
   position: absolute;
   top: 0;
-  bottom: 0;
   left: 0;
   width: calc(100% + 50px);
+  height: calc(100% + 43px);
   /*
     Odd-row hexes extend 8 units past the tile. CSS clips that overflow,
     so draw the missing bottom tips as open paths at the top of the tile
@@ -140,10 +134,27 @@ video {
   background-size: 50px 43px;
   background-position: 0 0;
   background-repeat: repeat;
-  animation: hex-texture-drift 18s linear infinite;
+  transform: translate3d(var(--hex-shift-x, 0px), var(--hex-shift-y, 0px), 0);
   will-change: transform;
   pointer-events: none;
   z-index: 0;
+}
+
+/* Viewport-fixed glow that follows the pointer / touch point over the hex field. */
+.bg-texture-white::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: var(--hex-pointer-on, 0);
+  background: radial-gradient(
+    420px circle at var(--hex-pointer-x, 50%) var(--hex-pointer-y, 50%),
+    rgba(0, 0, 0, 0.045),
+    transparent 62%
+  );
+  background-attachment: fixed;
+  transition: opacity 280ms ease;
 }
 
 .bg-texture-white > * {
@@ -158,10 +169,11 @@ video {
 */
 .bg-texture-white .bg-texture-white {
   background-color: transparent !important;
-  overflow-x: visible;
+  overflow: visible;
 }
 
-.bg-texture-white .bg-texture-white::before {
+.bg-texture-white .bg-texture-white::before,
+.bg-texture-white .bg-texture-white::after {
   content: none;
   animation: none;
 }
@@ -246,6 +258,11 @@ video {
   .bg-texture-white::before {
     animation: none;
     transform: none;
+  }
+
+  .bg-texture-white::after {
+    opacity: 0;
+    background: none;
   }
 
   .motion-media-track {
