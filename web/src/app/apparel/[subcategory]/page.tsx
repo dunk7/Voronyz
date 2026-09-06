@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title: "Accessories – Apparel – Voronyz",
       description:
-        "Hats, bottles, insoles, shades, jewelry, and more Voronyz accessory pieces.",
+        "Shades, jewelry, lace locks, drone parts, and more Voronyz accessory pieces.",
     };
   }
   if (isLegacyRemovedApparelSubcategory(subcategory)) {

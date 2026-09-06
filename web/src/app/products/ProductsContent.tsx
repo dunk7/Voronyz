@@ -12,6 +12,7 @@ import { APPAREL_CATALOG } from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
+import TakeTheQuizPromo from "@/components/apparel/TakeTheQuizPromo";
 import FootwearBrowse from "@/components/footwear/FootwearBrowse";
 
 /** Homepage footwear teaser — slides + slip-ons only; full catalog on /products. */
@@ -190,7 +191,7 @@ export default function ProductsContent({
       ? "Collaborative"
       : isHomeFootwearTeaser
       ? "Footwear"
-      : "All Footwear";
+      : "Step into the future";
   /** Footwear stays heading-only (like Apparel on home) — no supporting paragraph. */
   const subheading =
     category === "accessories"
@@ -234,8 +235,12 @@ export default function ProductsContent({
     });
   }, [showApparelContinuation]);
 
+  const homeSectionTitleClass =
+    "text-2xl sm:text-[1.75rem] font-semibold tracking-tight text-neutral-900 text-center";
   const sectionHeadingClass =
     "text-3xl font-semibold tracking-tight text-neutral-900 text-center";
+  const titleClass = isHomeFootwearTeaser ? homeSectionTitleClass : sectionHeadingClass;
+  const TitleTag = isHomeFootwearTeaser ? "h2" : "h1";
   const scrollCue = showScrollCue && !searchQuery && (
     <svg
       className="mx-auto mt-2 h-4 w-4 animate-bounce text-neutral-400"
@@ -255,9 +260,9 @@ export default function ProductsContent({
       <div className="bg-texture-white min-h-[80vh]">
         <div className="container py-16">
           <div className="mb-12 text-center">
-            <h1 className={sectionHeadingClass}>
+            <TitleTag className={titleClass}>
               {heading}
-            </h1>
+            </TitleTag>
             {scrollCue}
             {!searchQuery && subheading && (
               <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
@@ -297,9 +302,9 @@ export default function ProductsContent({
       <div className="container py-16">
         {/* ── Header ── */}
         <div className="mb-12 text-center">
-          <h1 className={sectionHeadingClass}>
+          <TitleTag className={titleClass}>
             {heading}
-          </h1>
+          </TitleTag>
           {scrollCue}
           {!searchQuery && subheading && (
             <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
@@ -447,7 +452,7 @@ export default function ProductsContent({
             <div className="mb-8 sm:mb-10 text-center">
               <h2
                 id="footwear-apparel-heading"
-                className="text-2xl sm:text-[1.75rem] font-semibold tracking-tight text-neutral-900 text-center"
+                className={homeSectionTitleClass}
               >
                 Apparel
               </h2>
@@ -464,6 +469,8 @@ export default function ProductsContent({
                 Shop all apparel
               </Link>
             </div>
+
+            <TakeTheQuizPromo className="mt-10 sm:mt-12" />
           </section>
         )}
       </div>

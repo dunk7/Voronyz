@@ -87,6 +87,9 @@ const OBSOLETE_APPAREL_PRODUCT_REDIRECTS: Record<string, string> = {
   "voronyz-joggers": "/apparel",
   "voronyz-shell-jacket": "/apparel",
   "voronyz-scarf": "/apparel",
+  "voronyz-uv-hat": "/apparel/accessories",
+  "voronyz-water-bottle": "/apparel/accessories",
+  "voronyz-lock-squirt-bottle": "/apparel/accessories",
 };
 
 type Media = {
@@ -581,13 +584,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             ] : isApparel && !apparelItem?.comingSoon ? [
               { q: "What sizes are available?", a: apparelItem?.slug === "voronyz-performance-socks" ? "Socks run S–XL." : "This piece runs XS–XXL." },
               { q: "When will my order ship?", a: "Orders typically ship within a few business days. You'll get updates by email." },
-              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, Socks, and more. Accessories (hats, water bottles, shades, jewelry) live under their own Apparel section." },
+              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, Socks, and more. Accessories (shades, jewelry, lace locks, drone parts) live under their own Apparel section." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isApparel ? [
-              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Hats, bottles, cool shades, jewelry, lace locks, and drone parts are One Size. Socks use S–XL." },
+              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Cool shades, jewelry, lace locks, and drone parts are One Size. Socks use S–XL." },
               { q: "Can I pre-order coming soon pieces?", a: "Yes. Choose your color and size, then pay now to join the waitlist. We ship your order when that product arrives — timing can be a day or much longer depending on the drop." },
               { q: "When will my pre-order ship?", a: "As soon as we receive the product. You'll get updates by email. Pre-orders are paid reservations, not instant ship." },
-              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, Socks, and more. Accessories (hats, water bottles, shades, jewelry) live under their own Apparel section. Engineering is separate. Lattice Insoles are on All Footwear." },
+              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, Socks, and more. Accessories (shades, jewelry, lace locks, drone parts) live under their own Apparel section. Engineering is separate. Lattice Insoles are on All Footwear." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders once your pre-order ships." },
             ] : isGators ? [
               { q: "What is The Gators?", a: "A comfort clog named for the alligator 🐊 — closed toe, open back, thick cushioned platform, and easy slip-on wear for all-day comfort." },

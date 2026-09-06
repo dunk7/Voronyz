@@ -11,6 +11,10 @@ import {
   X,
 } from "lucide-react";
 import type { GallerySubmissionAdmin } from "@/lib/gallerySubmission";
+import {
+  shouldShowGalleryDeleteButton,
+  shouldShowGalleryRejectButton,
+} from "@/lib/galleryAdminLogic";
 
 function formatDate(iso: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -36,20 +40,26 @@ const STATUS_STYLES: Record<string, string> = {
 
 type Filter = "pending" | "approved" | "rejected" | "all";
 
+type RemovalKind = "reject" | "delete";
+
 function DeleteGalleryPhotoModal({
   photo,
+  kind,
   deleting,
   error,
   onCancel,
   onConfirm,
 }: {
   photo: GallerySubmissionAdmin;
+  kind: RemovalKind;
   deleting: boolean;
   error: string | null;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
   const isCatalog = photo.source === "catalog";
+  const title = kind === "reject" ? "Reject this photo?" : "Delete this photo?";
+  const confirmLabel = kind === "reject" ? "Yes, reject" : "Yes, delete";
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
@@ -66,12 +76,12 @@ function DeleteGalleryPhotoModal({
           id="delete-gallery-photo-title"
           className="text-base font-semibold text-neutral-900"
         >
-          Delete this photo?
+          {title}
         </h3>
         <p className="mt-2 text-sm text-neutral-600">
           {isCatalog
-            ? "This site gallery photo will be removed from /gallery. You can still approve or reject customer review photos separately."
-            : "This photo will be permanently deleted from the gallery and from this list."}
+            ? "This site gallery photo will be removed from /gallery."
+            : "Rejecting and deleting do the same thing: this photo will be removed from /gallery and from this list."}
         </p>
         {error ? (
           <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -93,7 +103,7 @@ function DeleteGalleryPhotoModal({
             disabled={deleting}
             className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
           >
-            {deleting ? "Deleting…" : "Yes, delete"}
+            {deleting ? "Removing…" : confirmLabel}
           </button>
         </div>
       </div>
@@ -114,9 +124,10 @@ export default function GalleryAdminPanel({
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [pendingDelete, setPendingDelete] = useState<GallerySubmissionAdmin | null>(
-    null
-  );
+  const [pendingRemoval, setPendingRemoval] = useState<{
+    photo: GallerySubmissionAdmin;
+    kind: RemovalKind;
+  } | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -166,7 +177,7 @@ export default function GalleryAdminPanel({
 
   async function setStatus(
     id: string,
-    status: "approved" | "rejected" | "pending"
+    status: "approved" | "pending"
   ) {
     setUpdatingId(id);
     setError(null);
@@ -195,12 +206,12 @@ export default function GalleryAdminPanel({
     }
   }
 
-  async function confirmDelete() {
-    if (!pendingDelete) return;
+  async function confirmRemoval() {
+    if (!pendingRemoval) return;
     setDeleting(true);
     setDeleteError(null);
     try {
-      const res = await fetch(`/api/gallery/admin/${pendingDelete.id}`, {
+      const res = await fetch(`/api/gallery/admin/${pendingRemoval.photo.id}`, {
         method: "DELETE",
       });
       if (res.status === 401) {
@@ -209,13 +220,13 @@ export default function GalleryAdminPanel({
       }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data.error || "Could not delete photo");
+        throw new Error(data.error || "Could not remove photo");
       }
-      const deletedId = pendingDelete.id;
-      setPendingDelete(null);
+      const deletedId = pendingRemoval.photo.id;
+      setPendingRemoval(null);
       setSubmissions((prev) => prev.filter((s) => s.id !== deletedId));
     } catch (err) {
-      setDeleteError(err instanceof Error ? err.message : "Could not delete photo");
+      setDeleteError(err instanceof Error ? err.message : "Could not remove photo");
     } finally {
       setDeleting(false);
     }
@@ -223,17 +234,18 @@ export default function GalleryAdminPanel({
 
   return (
     <div className="space-y-4">
-      {pendingDelete ? (
+      {pendingRemoval ? (
         <DeleteGalleryPhotoModal
-          photo={pendingDelete}
+          photo={pendingRemoval.photo}
+          kind={pendingRemoval.kind}
           deleting={deleting}
           error={deleteError}
           onCancel={() => {
             if (deleting) return;
-            setPendingDelete(null);
+            setPendingRemoval(null);
             setDeleteError(null);
           }}
-          onConfirm={() => void confirmDelete()}
+          onConfirm={() => void confirmRemoval()}
         />
       ) : null}
 
@@ -244,7 +256,7 @@ export default function GalleryAdminPanel({
             Gallery photos
           </h2>
           <p className="text-sm text-neutral-500 mt-1">
-            {pendingCount} pending · delete any photo to remove it from /gallery
+            {pendingCount} pending · reject or delete removes a photo from /gallery
           </p>
         </div>
         <button
@@ -287,7 +299,7 @@ export default function GalleryAdminPanel({
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Search filename or id…"
+          placeholder="Search filename or id…"
           className="w-full rounded-xl border border-black/10 bg-white pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
         />
       </div>
@@ -362,11 +374,14 @@ export default function GalleryAdminPanel({
                         Approve
                       </button>
                     ) : null}
-                    {!isCatalog && s.status !== "rejected" ? (
+                    {shouldShowGalleryRejectButton(s.source, s.status) ? (
                       <button
                         type="button"
-                        disabled={busy}
-                        onClick={() => void setStatus(s.id, "rejected")}
+                        disabled={busy || deleting}
+                        onClick={() => {
+                          setDeleteError(null);
+                          setPendingRemoval({ photo: s, kind: "reject" });
+                        }}
                         className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-sm font-medium text-red-700 ring-1 ring-red-200 hover:bg-red-50 disabled:opacity-50"
                       >
                         <X className="h-3.5 w-3.5" />
@@ -383,18 +398,20 @@ export default function GalleryAdminPanel({
                         Reset to pending
                       </button>
                     ) : null}
-                    <button
-                      type="button"
-                      disabled={busy || deleting}
-                      onClick={() => {
-                        setDeleteError(null);
-                        setPendingDelete(s);
-                      }}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-sm font-medium text-red-700 ring-1 ring-red-200 hover:bg-red-50 disabled:opacity-50"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      Delete
-                    </button>
+                    {shouldShowGalleryDeleteButton(s.source, s.status) ? (
+                      <button
+                        type="button"
+                        disabled={busy || deleting}
+                        onClick={() => {
+                          setDeleteError(null);
+                          setPendingRemoval({ photo: s, kind: "delete" });
+                        }}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-sm font-medium text-red-700 ring-1 ring-red-200 hover:bg-red-50 disabled:opacity-50"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Delete
+                      </button>
+                    ) : null}
                   </div>
                 </div>
               </article>

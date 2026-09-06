@@ -11,10 +11,16 @@ export default function Footer() {
 
   return (
     <footer className="border-t border-black/5 bg-white">
-      <div className="container py-10 grid gap-8 md:grid-cols-3 text-sm text-neutral-600">
+      <div className="container py-10 grid gap-8 md:grid-cols-4 text-sm text-neutral-600">
         <div className="space-y-3">
           <div className="text-black font-semibold">Voronyz</div>
           <p>Nothing compares to Voronyz—built for unmatched comfort, durability, and fit.</p>
+        </div>
+        <div className="grid gap-2">
+          <div className="text-neutral-900 font-medium">Shop</div>
+          <Link className="hover:text-black" href="/products">All Footwear</Link>
+          <Link className="hover:text-black" href="/apparel">Apparel</Link>
+          <Link className="hover:text-black" href="/quiz">Take the Quiz</Link>
         </div>
         <div className="grid gap-2">
           <div className="text-neutral-900 font-medium">Company</div>
@@ -23,7 +29,6 @@ export default function Footer() {
           <Link className="hover:text-black" href="/careers">Careers</Link>
           <Link className="hover:text-black" href="/affiliates">Affiliates</Link>
           <Link className="hover:text-black" href="/contact">Contact</Link>
-          <Link className="hover:text-black" href="/quiz">Take the Quiz</Link>
         </div>
         <div className="grid gap-2">
           <div className="text-neutral-900 font-medium">Follow</div>
