@@ -1,9 +1,14 @@
 import { prisma } from "@/lib/prisma";
+import {
+  MESSAGE_ENABLED_BY_DEFAULT,
+  parseMessageEnabledValue,
+} from "@/lib/messageEnabledValue";
 
 export const MESSAGE_DOWN_MESSAGE =
   "Messenger is temporarily unavailable. Try again shortly.";
 
 export const MESSAGE_ENABLED_KEY = "message_enabled";
+export { MESSAGE_ENABLED_BY_DEFAULT, parseMessageEnabledValue };
 
 const CACHE_MS = 60_000;
 
@@ -14,11 +19,6 @@ let siteSettingsReady: Promise<void> | null = null;
 function isMessageDisabledByEnv(): boolean {
   const value = process.env.MESSAGE_DISABLED?.trim().toLowerCase();
   return value === "1" || value === "true" || value === "yes";
-}
-
-function parseEnabledValue(value: string): boolean {
-  const normalized = value.trim().toLowerCase();
-  return normalized === "1" || normalized === "true" || normalized === "yes";
 }
 
 export function invalidateMessageEnabledCache(): void {
@@ -40,7 +40,7 @@ async function ensureSiteSettingsStore(): Promise<void> {
       `);
       await prisma.$executeRaw`
         INSERT INTO "SiteSetting" ("key", "value", "updatedAt")
-        VALUES (${MESSAGE_ENABLED_KEY}, 'false', CURRENT_TIMESTAMP)
+        VALUES (${MESSAGE_ENABLED_KEY}, 'true', CURRENT_TIMESTAMP)
         ON CONFLICT ("key") DO NOTHING
       `;
     })().catch((error) => {
@@ -57,8 +57,7 @@ async function getMessageEnabledFromDb(): Promise<boolean> {
     where: { key: MESSAGE_ENABLED_KEY },
     select: { value: true },
   });
-  if (!row) return false;
-  return parseEnabledValue(row.value);
+  return parseMessageEnabledValue(row?.value);
 }
 
 export async function getMessageEnabled(): Promise<boolean> {
@@ -69,14 +68,25 @@ export async function getMessageEnabled(): Promise<boolean> {
     return cachedEnabled;
   }
 
-  const enabled = await getMessageEnabledFromDb();
-  cachedEnabled = enabled;
-  cachedAt = now;
-  return enabled;
+  try {
+    const enabled = await getMessageEnabledFromDb();
+    cachedEnabled = enabled;
+    cachedAt = now;
+    return enabled;
+  } catch (error) {
+    console.error("Failed to read message_enabled setting:", error);
+    // Stay up if the settings table is unreachable — don't take /message down.
+    return cachedEnabled ?? MESSAGE_ENABLED_BY_DEFAULT;
+  }
 }
 
 export async function isMessageDisabled(): Promise<boolean> {
-  return !(await getMessageEnabled());
+  try {
+    return !(await getMessageEnabled());
+  } catch (error) {
+    console.error("Failed to check message maintenance flag:", error);
+    return false;
+  }
 }
 
 export async function setMessageEnabled(enabled: boolean): Promise<boolean> {

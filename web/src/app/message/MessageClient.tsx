@@ -763,6 +763,18 @@ export default function MessageClient() {
     setAuthLoading(true);
     try {
       const res = await fetch("/api/message/auth", { cache: "no-store" });
+      if (!res.ok) {
+        setUser(null);
+        setAuthError(
+          await readApiError(
+            res,
+            res.status >= 500
+              ? "Messenger is temporarily unavailable. Try again shortly."
+              : "Could not sign in. Try again."
+          )
+        );
+        return;
+      }
       const data = await res.json();
       if (data.authenticated && data.user) {
         setUser(data.user);
@@ -771,6 +783,7 @@ export default function MessageClient() {
       }
     } catch {
       setUser(null);
+      setAuthError("Could not connect. Check your internet and try again.");
     } finally {
       setAuthLoading(false);
     }
@@ -1311,14 +1324,20 @@ export default function MessageClient() {
               }),
             }
           );
+          if (!res.ok) {
+            setSendError(
+              await readApiError(res, "Could not send message. Try again.")
+            );
+            return false;
+          }
           const data = await res.json();
-          if (res.ok && data.message) {
+          if (data.message) {
             setMessages((prev) => [...prev, data.message]);
             loadConversations();
             stickScrollToBottom(true);
             return true;
           }
-          setSendError(data.error ?? "Could not send message. Try again.");
+          setSendError("Could not send message. Try again.");
           return false;
         }
 
@@ -1333,14 +1352,20 @@ export default function MessageClient() {
           `/api/message/conversations/${activeConversationId}/messages`,
           { method: "POST", body: formData }
         );
+        if (!res.ok) {
+          setSendError(
+            await readApiError(res, "Could not send message. Try again.")
+          );
+          return false;
+        }
         const data = await res.json();
-        if (res.ok && data.message) {
+        if (data.message) {
           setMessages((prev) => [...prev, data.message]);
           loadConversations();
           stickScrollToBottom(true);
           return true;
         }
-        setSendError(data.error ?? "Could not send message. Try again.");
+        setSendError("Could not send message. Try again.");
         return false;
       } catch (err) {
         setUploadProgress(null);
@@ -1447,14 +1472,21 @@ export default function MessageClient() {
             body: JSON.stringify({ body }),
           }
         );
-        const data = await res.json();
-        if (res.ok && data.message) {
-          setMessages((prev) => [...prev, data.message]);
-          loadConversations();
-          stickScrollToBottom(true);
-        } else {
+        if (!res.ok) {
           setDraft(savedDraft);
-          setSendError(data.error ?? "Could not send message. Try again.");
+          setSendError(
+            await readApiError(res, "Could not send message. Try again.")
+          );
+        } else {
+          const data = await res.json();
+          if (data.message) {
+            setMessages((prev) => [...prev, data.message]);
+            loadConversations();
+            stickScrollToBottom(true);
+          } else {
+            setDraft(savedDraft);
+            setSendError("Could not send message. Try again.");
+          }
         }
       }
     } catch {
