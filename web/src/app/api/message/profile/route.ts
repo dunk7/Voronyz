@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { avatarUrlForUser } from "@/lib/messageAccess";
 import { deleteAvatarFile, writeAvatarFile } from "@/lib/avatarBlobStorage";
 import {
-  inferMimeType,
-  validateAvatarFile,
+  inferMimeTypeFromBytes,
+  validateAvatarMeta,
 } from "@/lib/messageAttachment";
 import {
   getMessageUserId,
@@ -79,14 +79,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Please choose an image." }, { status: 400 });
   }
 
-  const validationError = validateAvatarFile(fileField);
+  const buffer = Buffer.from(await fileField.arrayBuffer());
+  const mimeType = inferMimeTypeFromBytes(fileField.name, fileField.type, buffer);
+  const validationError = validateAvatarMeta(fileField.size, mimeType);
   if (validationError) {
     return NextResponse.json({ error: validationError }, { status: 400 });
   }
 
-  const buffer = Buffer.from(await fileField.arrayBuffer());
-  const mimeType = inferMimeType(fileField);
-  const { storageKey, etag } = await writeAvatarFile(userId, buffer, mimeType);
+  let storageKey: string;
+  let etag: string;
+  try {
+    ({ storageKey, etag } = await writeAvatarFile(userId, buffer, mimeType));
+  } catch (err) {
+    console.error("Failed to store avatar:", err);
+    return NextResponse.json(
+      { error: "Could not save profile picture. Try again." },
+      { status: 503 }
+    );
+  }
 
   const user = await prisma.messengerUser.update({
     where: { id: userId },
