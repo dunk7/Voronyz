@@ -16,17 +16,41 @@ const nextConfig: NextConfig = {
     return [
       { source: "/uploads", destination: "/upload", permanent: true },
       { source: "/uploads/:path*", destination: "/upload", permanent: true },
-      { source: "/apparel/sweats", destination: "/apparel/joggers", permanent: true },
-      { source: "/apparel/pants", destination: "/apparel/joggers", permanent: true },
-      // Removed pants / sweats products — only joggers remains.
+      { source: "/apparel/sweats", destination: "/apparel", permanent: true },
+      { source: "/apparel/pants", destination: "/apparel", permanent: true },
+      { source: "/apparel/shorts", destination: "/apparel", permanent: true },
+      { source: "/apparel/joggers", destination: "/apparel", permanent: true },
+      { source: "/apparel/outerwear", destination: "/apparel", permanent: true },
+      { source: "/apparel/scarves", destination: "/apparel", permanent: true },
+      // Removed pants, sweats, joggers, shorts, shell jacket, and scarf listings.
       {
         source: "/products/voronyz-technical-pants",
-        destination: "/products/voronyz-joggers",
+        destination: "/apparel",
         permanent: true,
       },
       {
         source: "/products/voronyz-lounge-sweats",
-        destination: "/products/voronyz-joggers",
+        destination: "/apparel",
+        permanent: true,
+      },
+      {
+        source: "/products/voronyz-shorts",
+        destination: "/apparel",
+        permanent: true,
+      },
+      {
+        source: "/products/voronyz-joggers",
+        destination: "/apparel",
+        permanent: true,
+      },
+      {
+        source: "/products/voronyz-shell-jacket",
+        destination: "/apparel",
+        permanent: true,
+      },
+      {
+        source: "/products/voronyz-scarf",
+        destination: "/apparel",
         permanent: true,
       },
       // Removed RC Car Stickers — never show again (old URLs → Accessories).

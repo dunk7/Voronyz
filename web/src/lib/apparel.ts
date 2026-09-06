@@ -3,7 +3,7 @@ export const APPAREL_ONE_SIZE = ["One Size"] as const;
 
 /**
  * Apparel sub-sections.
- * - `collection`: multi-product listing pages (shirts, scarves, sweaters, …) —
+ * - `collection`: multi-product listing pages (shirts, sweaters, socks, …) —
  *   add new designs to APPAREL_CATALOG with the matching subcategory.
  * - `standalone`: Accessories only (hats, bottles, shades, jewelry, …) — never mixed
  *   into clothing collections, and never shown on Engineering `/accessories`.
@@ -12,14 +12,20 @@ export type ApparelSubcategoryId =
   | "shirts"
   | "sweaters"
   | "socks"
-  | "shorts"
-  | "joggers"
-  | "outerwear"
-  | "scarves"
   | "accessories";
 
 /** Legacy apparel collection paths that now live under Accessories. */
 export const LEGACY_APPAREL_ACCESSORY_SUBCATEGORIES = ["hats", "bottles"] as const;
+
+/** Retired clothing sections with no remaining listings. */
+export const LEGACY_REMOVED_APPAREL_SUBCATEGORIES = [
+  "shorts",
+  "joggers",
+  "outerwear",
+  "sweats",
+  "pants",
+  "scarves",
+] as const;
 
 export type ApparelListingKind = "collection" | "standalone";
 
@@ -49,30 +55,6 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
     id: "socks",
     label: "Socks",
     description: "Performance and everyday sock designs",
-    listing: "collection",
-  },
-  {
-    id: "shorts",
-    label: "Shorts",
-    description: "Everyday and training short designs",
-    listing: "collection",
-  },
-  {
-    id: "joggers",
-    label: "Joggers",
-    description: "Tapered joggers for training days and downtime",
-    listing: "collection",
-  },
-  {
-    id: "outerwear",
-    label: "Outerwear",
-    description: "Shells, jackets, and weather layers",
-    listing: "collection",
-  },
-  {
-    id: "scarves",
-    label: "Scarves",
-    description: "Knit scarves and cool-weather neck layers",
     listing: "collection",
   },
   {
@@ -123,6 +105,10 @@ export const OBSOLETE_APPAREL_SLUGS = [
   "voronyz-necklace",
   "voronyz-rc-car-stickers",
   "voronyz-nice-shirt",
+  "voronyz-shorts",
+  "voronyz-joggers",
+  "voronyz-shell-jacket",
+  "voronyz-scarf",
 ] as const;
 
 /**
@@ -171,62 +157,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/hoodie.jpg",
     skuPrefix: "APP-HOOD",
-    comingSoon: true,
-  },
-  // ── Shorts (multi-product) ──────────────────────────────────────────────
-  {
-    slug: "voronyz-shorts",
-    subcategory: "shorts",
-    name: "Shorts",
-    description: "Lightweight shorts with a relaxed athletic fit.",
-    priceCents: 5800,
-    colors: ["black", "grey"],
-    sizes: [...APPAREL_SIZES],
-    image: "/products/apparel/shorts.jpg",
-    skuPrefix: "APP-SHRT",
-    comingSoon: true,
-  },
-  // ── Joggers (multi-product) ─────────────────────────────────────────────
-  {
-    slug: "voronyz-joggers",
-    subcategory: "joggers",
-    name: "Joggers",
-    description: "Tapered luxury black joggers for training days and downtime.",
-    priceCents: 7200,
-    colors: ["black"],
-    sizes: [...APPAREL_SIZES],
-    image: "/products/apparel/sweats.jpg",
-    skuPrefix: "APP-JGR",
-    comingSoon: true,
-  },
-  // ── Outerwear (multi-product) ───────────────────────────────────────────
-  {
-    slug: "voronyz-shell-jacket",
-    subcategory: "outerwear",
-    name: "Shell Jacket",
-    description: "Lightweight outerwear shell for commuting and cool weather.",
-    priceCents: 12800,
-    colors: ["black", "grey"],
-    sizes: [...APPAREL_SIZES],
-    image: "/products/apparel/outerwear.jpg",
-    skuPrefix: "APP-OUT",
-    comingSoon: true,
-  },
-  // ── Scarves (multi-product) ─────────────────────────────────────────────
-  {
-    slug: "voronyz-scarf",
-    subcategory: "scarves",
-    name: "Scarf",
-    description: "Soft knit scarf with a clean drape for cool-weather layers.",
-    priceCents: 4200,
-    colors: ["black", "grey"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/scarf-product.jpg",
-    images: [
-      "/products/apparel/scarf-product.jpg",
-      "/products/apparel/scarf-snowboarder.jpg",
-    ],
-    skuPrefix: "APP-SCRF",
     comingSoon: true,
   },
   // ── Accessories only (never mixed into clothing collections) ────────────
@@ -353,6 +283,13 @@ export function isLegacyApparelAccessorySubcategory(
 ): boolean {
   const key = (id || "").trim().toLowerCase();
   return (LEGACY_APPAREL_ACCESSORY_SUBCATEGORIES as readonly string[]).includes(key);
+}
+
+export function isLegacyRemovedApparelSubcategory(
+  id: string | null | undefined,
+): boolean {
+  const key = (id || "").trim().toLowerCase();
+  return (LEGACY_REMOVED_APPAREL_SUBCATEGORIES as readonly string[]).includes(key);
 }
 
 export function isCollectionSubcategory(id: string | null | undefined): boolean {

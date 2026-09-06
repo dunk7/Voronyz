@@ -73,16 +73,20 @@ import { redirect } from "next/navigation";
 // This page is rendered on-demand.
 export const dynamic = "force-dynamic";
 
-/** Retired apparel product pages → remaining listing or Accessories hub. */
+/** Retired apparel product pages → remaining listing or Apparel/Accessories hub. */
 const OBSOLETE_APPAREL_PRODUCT_REDIRECTS: Record<string, string> = {
-  "voronyz-technical-pants": "/products/voronyz-joggers",
-  "voronyz-lounge-sweats": "/products/voronyz-joggers",
+  "voronyz-technical-pants": "/apparel",
+  "voronyz-lounge-sweats": "/apparel",
   "voronyz-lattice-shoe-trees": "/apparel/accessories",
   "voronyz-charm-bracelet": "/apparel/accessories",
   "voronyz-keychain": "/apparel/accessories",
   "voronyz-necklace": "/apparel/accessories",
   "voronyz-rc-car-stickers": "/apparel/accessories",
   "voronyz-nice-shirt": "/products/voronyz-oversized-tee",
+  "voronyz-shorts": "/apparel",
+  "voronyz-joggers": "/apparel",
+  "voronyz-shell-jacket": "/apparel",
+  "voronyz-scarf": "/apparel",
 };
 
 type Media = {
@@ -121,7 +125,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   }
   const obsoleteRedirect = OBSOLETE_APPAREL_PRODUCT_REDIRECTS[slug.trim().toLowerCase()];
   if (obsoleteRedirect || isObsoleteApparelSlug(slug)) {
-    redirect(obsoleteRedirect ?? "/products/voronyz-joggers");
+    redirect(obsoleteRedirect ?? "/apparel");
   }
   let product: ProductWithVariants;
   try {
@@ -577,13 +581,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             ] : isApparel && !apparelItem?.comingSoon ? [
               { q: "What sizes are available?", a: apparelItem?.slug === "voronyz-performance-socks" ? "Socks run S–XL." : "This piece runs XS–XXL." },
               { q: "When will my order ship?", a: "Orders typically ship within a few business days. You'll get updates by email." },
-              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, Scarves, and more. Accessories (hats, water bottles, shades, jewelry) live under their own Apparel section." },
+              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, Socks, and more. Accessories (hats, water bottles, shades, jewelry) live under their own Apparel section." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isApparel ? [
-              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Hats, scarves, bottles, cool shades, jewelry, lace locks, and drone parts are One Size. Socks use S–XL." },
+              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Hats, bottles, cool shades, jewelry, lace locks, and drone parts are One Size. Socks use S–XL." },
               { q: "Can I pre-order coming soon pieces?", a: "Yes. Choose your color and size, then pay now to join the waitlist. We ship your order when that product arrives — timing can be a day or much longer depending on the drop." },
               { q: "When will my pre-order ship?", a: "As soon as we receive the product. You'll get updates by email. Pre-orders are paid reservations, not instant ship." },
-              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, Scarves, and more. Accessories (hats, water bottles, shades, jewelry) live under their own Apparel section. Engineering is separate. Lattice Insoles are on All Footwear." },
+              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, Socks, and more. Accessories (hats, water bottles, shades, jewelry) live under their own Apparel section. Engineering is separate. Lattice Insoles are on All Footwear." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders once your pre-order ships." },
             ] : isGators ? [
               { q: "What is The Gators?", a: "A comfort clog named for the alligator 🐊 — closed toe, open back, thick cushioned platform, and easy slip-on wear for all-day comfort." },
