@@ -2,14 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   GALLERY_STATUSES,
   type GalleryStatus,
-  deleteGallerySubmission,
+  removeGalleryPhoto,
   updateGallerySubmissionStatus,
 } from "@/lib/gallerySubmission";
 import { ensureGallerySubmissionTable } from "@/lib/ensureGallerySubmissionTable";
-import {
-  hideCatalogGalleryPhoto,
-  isCatalogGalleryPhotoId,
-} from "@/lib/galleryHidden";
+import { galleryStatusChangeIsRemoval } from "@/lib/galleryAdminLogic";
+import { isCatalogGalleryPhotoId } from "@/lib/galleryHidden";
 import {
   isOrdersAdminAuthenticated,
   isOrdersAdminConfigured,
@@ -74,9 +72,25 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     );
   }
 
+  if (galleryStatusChangeIsRemoval(status)) {
+    const result = await removeGalleryPhoto(id);
+    if (!result.ok) {
+      return NextResponse.json(
+        { error: result.error },
+        { status: result.error === "Photo not found." ? 404 : 400 }
+      );
+    }
+    return NextResponse.json({
+      ok: true,
+      removed: true,
+      source: result.source,
+      id: result.id,
+    });
+  }
+
   if (isCatalogGalleryPhotoId(id)) {
     return NextResponse.json(
-      { error: "Site gallery photos cannot be approved or rejected. Delete them instead." },
+      { error: "Site gallery photos cannot be approved. Remove them instead." },
       { status: 400 }
     );
   }
@@ -110,28 +124,25 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Missing photo id." }, { status: 400 });
   }
 
-  if (isCatalogGalleryPhotoId(id)) {
-    const result = await hideCatalogGalleryPhoto(id);
-    if (!result.ok) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
-    }
-    return NextResponse.json({ ok: true, source: "catalog", id: result.id });
-  }
-
   try {
     await ensureGallerySubmissionTable();
   } catch (schemaErr) {
-    console.error("Gallery schema ensure failed:", schemaErr);
+    if (!isCatalogGalleryPhotoId(id)) {
+      console.error("Gallery schema ensure failed:", schemaErr);
+      return NextResponse.json(
+        { error: "Gallery database is not ready yet." },
+        { status: 503 }
+      );
+    }
+  }
+
+  const result = await removeGalleryPhoto(id);
+  if (!result.ok) {
     return NextResponse.json(
-      { error: "Gallery database is not ready yet." },
-      { status: 503 }
+      { error: result.error },
+      { status: result.error === "Photo not found." ? 404 : 400 }
     );
   }
 
-  const deleted = await deleteGallerySubmission(id);
-  if (!deleted) {
-    return NextResponse.json({ error: "Photo not found." }, { status: 404 });
-  }
-
-  return NextResponse.json({ ok: true, source: "submission", id });
+  return NextResponse.json({ ok: true, source: result.source, id: result.id });
 }
