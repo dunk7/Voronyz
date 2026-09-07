@@ -22,7 +22,7 @@ test("button shimmer is a faint hex chessboard, not a white fill", () => {
     /data:image\/svg\+xml/,
     "hex chessboard must be an SVG overlay",
   );
-  assert.match(css, /fill-opacity='0\.18'/);
+  assert.match(css, /fill-opacity='0\.1'/);
   assert.doesNotMatch(
     css.match(/\.btn-shimmer \{[\s\S]*?\n\}/)?.[0] ?? "",
     /background-color:\s*#f5f5f5/i,
