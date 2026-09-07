@@ -77,13 +77,13 @@ function BrowseItem({
       <Link
         href={`/products/${product.slug}`}
         onClick={handleClick}
-        className={`group grid h-full grid-cols-[minmax(7.25rem,40%)_1fr] items-center gap-3.5 rounded-2xl bg-white/55 p-2.5 ring-1 ring-black/[0.06] outline-none transition-all duration-300 hover:bg-white/90 hover:shadow-[0_10px_28px_-16px_rgba(0,0,0,0.35)] hover:ring-black/10 focus-visible:ring-2 focus-visible:ring-neutral-900 sm:grid-cols-1 sm:items-stretch sm:gap-0 sm:bg-transparent sm:p-0 sm:ring-0 sm:shadow-none sm:hover:bg-transparent sm:hover:shadow-none ${
+        className={`group grid h-full grid-cols-[minmax(7.25rem,40%)_1fr] items-center gap-3.5 rounded-2xl bg-white/55 p-2.5 ring-1 ring-black/[0.06] outline-none transition-all duration-300 hover:bg-white/90 hover:shadow-[0_10px_28px_-16px_rgba(0,0,0,0.35)] hover:ring-black/10 focus-visible:ring-2 focus-visible:ring-neutral-900 sm:grid-cols-[minmax(10rem,44%)_1fr] sm:gap-5 sm:p-3.5 md:p-4 ${
           navigating ? "pointer-events-none" : ""
         }`}
       >
         {/* Landscape studio frame so the pair reads side-on, not stacked in a tall square. */}
-        <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:ring-black/10 sm:rounded-2xl sm:group-hover:shadow-xl">
-          <div className="absolute inset-0 p-[7%] sm:p-[9%]">
+        <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:ring-black/10 sm:rounded-2xl">
+          <div className="absolute inset-0 p-[7%] sm:p-[8%]">
             <div className="relative h-full w-full">
               <SoftImage
                 key={coverSrc}
@@ -130,8 +130,8 @@ function BrowseItem({
           )}
         </div>
 
-        <div className="min-w-0 py-0.5 sm:mt-4 sm:px-0.5 sm:py-0">
-          <h2 className="text-[15px] font-semibold leading-snug tracking-tight text-neutral-900 transition-colors group-hover:text-black sm:text-lg">
+        <div className="min-w-0 py-0.5 sm:py-1">
+          <h2 className="text-[15px] font-semibold leading-snug tracking-tight text-neutral-900 transition-colors group-hover:text-black sm:text-[1.05rem] lg:text-lg">
             {product.name}
           </h2>
           {product.description ? (
@@ -160,7 +160,7 @@ function BrowseItem({
 
 export default function FootwearBrowse({ products, getImages }: FootwearBrowseProps) {
   return (
-    <div className="footwear-browse grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 xl:grid-cols-3 xl:gap-x-8 xl:gap-y-12">
+    <div className="footwear-browse grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 md:gap-5 xl:gap-6">
       {products.map((product, index) => {
         const { cover, alt } = getImages(product);
         return (
