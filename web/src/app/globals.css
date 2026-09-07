@@ -162,16 +162,18 @@ video {
 }
 
 /*
-  Diagonal highlight that sweeps across primary CTAs.
-  Painted as an overlay so Tailwind fill/text colors (and the quiz
-  add-to-cart label) stay readable — do not animate background-image.
+  Barely-visible diagonal sheen on primary CTAs.
+  Overlay only — never paint the button fill white, and never animate
+  background-image (that hid the quiz add-to-cart label).
 */
 @keyframes btn-shimmer-sweep {
-  0% {
-    transform: translateX(-140%) skewX(-18deg);
+  0%,
+  22% {
+    transform: translateX(-160%) skewX(-20deg);
   }
+  58%,
   100% {
-    transform: translateX(240%) skewX(-18deg);
+    transform: translateX(280%) skewX(-20deg);
   }
 }
 
@@ -184,21 +186,19 @@ video {
 .btn-shimmer::after {
   content: "";
   position: absolute;
-  inset: -50% auto -50% 0;
-  width: 50%;
+  inset: -40% auto -40% 0;
+  width: 26%;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgb(255 255 255 / 0.0) 15%,
-    rgb(255 255 255 / 0.2) 40%,
-    rgb(255 255 255 / 0.55) 49%,
-    rgb(255 255 255 / 0.85) 50%,
-    rgb(255 255 255 / 0.55) 51%,
-    rgb(255 255 255 / 0.2) 60%,
-    rgb(255 255 255 / 0.0) 85%,
+    rgb(255 255 255 / 0) 28%,
+    rgb(255 255 255 / 0.04) 44%,
+    rgb(255 255 255 / 0.12) 50%,
+    rgb(255 255 255 / 0.04) 56%,
+    rgb(255 255 255 / 0) 72%,
     transparent 100%
   );
-  animation: btn-shimmer-sweep 1.6s ease-in-out infinite;
+  animation: btn-shimmer-sweep 4.4s ease-in-out infinite;
   pointer-events: none;
   z-index: 1;
   will-change: transform;
@@ -566,70 +566,46 @@ html.site-dark main .hover\:bg-black\/\[\.05\]:hover {
   Selected / filled controls are black-on-white in regular mode. On the
   dark storefront that fill disappears into the page, so invert them:
   a light chip with dark type is the current choice.
+  Primary CTAs (.btn-shimmer) stay black — do not wash them white.
 */
-html.site-dark main button.bg-black,
-html.site-dark main a.bg-black,
-html.site-dark footer button.bg-black,
-html.site-dark footer a.bg-black,
-html.site-dark main button.bg-neutral-900,
-html.site-dark main a.bg-neutral-900 {
+html.site-dark main button.bg-black:not(.btn-shimmer),
+html.site-dark main a.bg-black:not(.btn-shimmer),
+html.site-dark footer button.bg-black:not(.btn-shimmer),
+html.site-dark footer a.bg-black:not(.btn-shimmer),
+html.site-dark main button.bg-neutral-900:not(.btn-shimmer),
+html.site-dark main a.bg-neutral-900:not(.btn-shimmer) {
   background-color: #f5f5f5;
   color: #111111;
 }
 
-html.site-dark main button.bg-black:hover,
-html.site-dark main a.bg-black:hover,
-html.site-dark footer button.bg-black:hover,
-html.site-dark footer a.bg-black:hover,
-html.site-dark main button.bg-neutral-900:hover,
-html.site-dark main a.bg-neutral-900:hover,
-html.site-dark main button.bg-black.hover\:bg-neutral-800:hover,
-html.site-dark main a.bg-black.hover\:bg-neutral-800:hover {
+html.site-dark main button.bg-black:not(.btn-shimmer):hover,
+html.site-dark main a.bg-black:not(.btn-shimmer):hover,
+html.site-dark footer button.bg-black:not(.btn-shimmer):hover,
+html.site-dark footer a.bg-black:not(.btn-shimmer):hover,
+html.site-dark main button.bg-neutral-900:not(.btn-shimmer):hover,
+html.site-dark main a.bg-neutral-900:not(.btn-shimmer):hover,
+html.site-dark main button.bg-black:not(.btn-shimmer).hover\:bg-neutral-800:hover,
+html.site-dark main a.bg-black:not(.btn-shimmer).hover\:bg-neutral-800:hover {
   background-color: #e4e4e4;
   color: #111111;
 }
 
-html.site-dark main button.bg-black:disabled,
-html.site-dark main button.bg-neutral-900:disabled,
-html.site-dark main .btn-shimmer:disabled {
+html.site-dark main button.bg-black:not(.btn-shimmer):disabled,
+html.site-dark main button.bg-neutral-900:not(.btn-shimmer):disabled {
   background-color: #d4d4d4;
   color: #111111;
 }
 
-html.site-dark main button.bg-black .text-white\/80,
-html.site-dark main button.bg-black .text-white\/75,
-html.site-dark main button.bg-neutral-900 .text-white\/80,
-html.site-dark main button.bg-neutral-900 .text-white\/75,
-html.site-dark main button.bg-neutral-900 .text-white\/70 {
+html.site-dark main button.bg-black:not(.btn-shimmer) .text-white\/80,
+html.site-dark main button.bg-black:not(.btn-shimmer) .text-white\/75,
+html.site-dark main button.bg-neutral-900:not(.btn-shimmer) .text-white\/80,
+html.site-dark main button.bg-neutral-900:not(.btn-shimmer) .text-white\/75,
+html.site-dark main button.bg-neutral-900:not(.btn-shimmer) .text-white\/70 {
   color: rgb(17 17 17 / 0.68);
 }
 
-html.site-dark main button.bg-black .border-white {
+html.site-dark main button.bg-black:not(.btn-shimmer) .border-white {
   border-color: rgb(17 17 17 / 0.28);
-}
-
-html.site-dark main .btn-shimmer {
-  color: #111111;
-  background-color: #f5f5f5;
-}
-
-html.site-dark main .btn-shimmer::after {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgb(0 0 0 / 0) 15%,
-    rgb(0 0 0 / 0.08) 40%,
-    rgb(0 0 0 / 0.22) 49%,
-    rgb(0 0 0 / 0.38) 50%,
-    rgb(0 0 0 / 0.22) 51%,
-    rgb(0 0 0 / 0.08) 60%,
-    rgb(0 0 0 / 0) 85%,
-    transparent 100%
-  );
-}
-
-html.site-dark main .btn-shimmer:disabled {
-  background-image: none;
 }
 
 html.site-dark main .glow {
