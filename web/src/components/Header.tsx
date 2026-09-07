@@ -475,12 +475,34 @@ export default function Header() {
         />
 
         {/* Menu Content — scrollable on short screens */}
-        <div className={`absolute top-20 left-0 right-0 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        <div className={`absolute top-20 left-0 right-0 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain no-scrollbar transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           open ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
         }`}>
           <div className="bg-neutral-950/90 backdrop-blur-xl border-b border-white/10 shadow-2xl text-white">
             <div className="container py-6">
               <nav className="flex flex-col gap-1">
+                <Link
+                  href="/cart"
+                  className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
+                    pathname === "/cart"
+                      ? "text-white bg-white/10"
+                      : "text-white/70 hover:text-white hover:bg-white/[.06]"
+                  }`}
+                  onClick={() => setOpen(false)}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M3 3h2l.4 2M7 13h9l3-8H6.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="9" cy="19" r="1.5" fill="currentColor"/>
+                    <circle cx="17" cy="19" r="1.5" fill="currentColor"/>
+                  </svg>
+                  <span>Cart</span>
+                  {cartCountLoaded && cartCount > 0 && (
+                    <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white text-black px-1.5 text-xs font-semibold">
+                      {cartCount}
+                    </span>
+                  )}
+                </Link>
+                <div className="my-2 h-px bg-white/10" />
                 <Link
                   href="/products"
                   className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
@@ -592,28 +614,6 @@ export default function Header() {
                     <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
                   )}
                   Affiliates
-                </Link>
-                <div className="my-2 h-px bg-white/10" />
-                <Link
-                  href="/cart"
-                  className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
-                    pathname === "/cart"
-                      ? "text-white bg-white/10"
-                      : "text-white/70 hover:text-white hover:bg-white/[.06]"
-                  }`}
-                  onClick={() => setOpen(false)}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M3 3h2l.4 2M7 13h9l3-8H6.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <circle cx="9" cy="19" r="1.5" fill="currentColor"/>
-                    <circle cx="17" cy="19" r="1.5" fill="currentColor"/>
-                  </svg>
-                  <span>Cart</span>
-                  {cartCountLoaded && cartCount > 0 && (
-                    <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white text-black px-1.5 text-xs font-semibold">
-                      {cartCount}
-                    </span>
-                  )}
                 </Link>
               </nav>
             </div>

@@ -6,6 +6,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DiscountUrgencyBanner from "@/components/discount/DiscountUrgencyBanner";
 import InitialSplash from "@/components/ui/InitialSplash";
+import SiteTheme from "@/components/SiteTheme";
+import { getSiteDarkMode } from "@/lib/siteTheme";
 
 /** Black + white-logo splash for iOS home-screen shortcuts (avoids the default white card + icon). */
 const appleStartupImages = [
@@ -60,6 +62,8 @@ const appleStartupImages = [
       "(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)",
   },
 ];
+
+export const dynamic = "force-dynamic";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ||
@@ -130,18 +134,31 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+function siteThemeBootScript(dark: boolean): string {
+  return `(function(){try{var d=${dark ? "1" : "0"};var p=location.pathname;if(d==="1"&&p.indexOf("/orders")!==0&&p.indexOf("/message")!==0){document.documentElement.classList.add("site-dark");}}catch(e){}})();`;
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const darkMode = await getSiteDarkMode();
+
   return (
-    <html lang="en" style={{ background: "#000000", colorScheme: "dark" }}>
+    <html
+      lang="en"
+      style={{ background: "#000000", colorScheme: "dark" }}
+      suppressHydrationWarning
+    >
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} antialiased`}
         style={{ background: "#000000" }}
         suppressHydrationWarning
       >
+        <script
+          dangerouslySetInnerHTML={{ __html: siteThemeBootScript(darkMode) }}
+        />
         {/*
           Inline critical splash CSS so the first paint is full-bleed black
           even before globals.css / Tailwind is available.
@@ -158,6 +175,7 @@ export default function RootLayout({
             }}
           />
         </noscript>
+        <SiteTheme dark={darkMode} />
         <InitialSplash />
         <DiscountUrgencyBanner />
         <Suspense fallback={null}>

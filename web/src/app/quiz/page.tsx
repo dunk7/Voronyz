@@ -11,7 +11,7 @@ export default function QuizPage() {
   return (
     <div className="relative min-h-[70vh] overflow-hidden bg-texture-white">
       <div
-        className="pointer-events-none absolute inset-0 opacity-70"
+        className="theme-surface-wash pointer-events-none absolute inset-0 opacity-70"
         aria-hidden
         style={{
           background:
@@ -27,8 +27,7 @@ export default function QuizPage() {
             Take the Quiz
           </h1>
           <p className="mt-4 text-neutral-600 text-base sm:text-lg leading-relaxed">
-            A few easy questions about how you move and what you need — so we can
-            point you at the right pair, not just push a product.
+            Find the Right Pair
           </p>
         </div>
 

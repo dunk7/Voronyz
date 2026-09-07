@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function GamePage() {
   return (
     <div
-      className="min-h-[calc(100vh-5rem)]"
+      className="theme-surface-wash min-h-[calc(100vh-5rem)]"
       style={{
         background:
           "linear-gradient(165deg, #fff8f1 0%, #ffeef5 38%, #eef9ff 72%, #fff6e8 100%)",
