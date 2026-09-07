@@ -15,5 +15,5 @@ test("dark mode paints hex panels black and keeps the tiny traces light", () => 
   const darkTraces = css.match(/html\.site-dark \.bg-texture-white::before \{[\s\S]*?\n\}/);
   assert.ok(darkTraces, "expected inverted hex traces on the dark field");
   assert.match(darkTraces[0], /stroke='%23ffffff'/);
-  assert.match(darkTraces[0], /stroke-opacity='0\.22'/);
+  assert.match(darkTraces[0], /stroke-opacity='0\.34'/);
 });
