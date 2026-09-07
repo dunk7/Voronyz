@@ -170,13 +170,13 @@ video {
 */
 @keyframes btn-shimmer-flow {
   to {
-    background-position: 56px 0;
+    transform: translate3d(-56px, 0, 0);
   }
 }
 
 @keyframes btn-shimmer-flow-alt {
   to {
-    background-position: -80px 0;
+    transform: translate3d(80px, 0, 0);
   }
 }
 
@@ -195,7 +195,10 @@ video {
 
 .btn-shimmer::before {
   position: absolute;
-  inset: 0;
+  top: -40%;
+  bottom: -40%;
+  left: -50%;
+  width: 200%;
   background-image: repeating-linear-gradient(
     128deg,
     rgb(255 255 255 / 0) 0 16px,
@@ -206,11 +209,15 @@ video {
   );
   background-size: 80px 80px;
   animation: btn-shimmer-flow-alt 2.4s linear infinite;
+  will-change: transform;
 }
 
 .btn-shimmer::after {
   position: absolute;
-  inset: 0;
+  top: -40%;
+  bottom: -40%;
+  left: -50%;
+  width: 200%;
   background-image: repeating-linear-gradient(
     112deg,
     rgb(255 255 255 / 0) 0 6px,
@@ -221,6 +228,7 @@ video {
   );
   background-size: 56px 56px;
   animation: btn-shimmer-flow 1.15s linear infinite;
+  will-change: transform;
 }
 
 .btn-shimmer:disabled::before,
