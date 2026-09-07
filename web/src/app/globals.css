@@ -415,13 +415,22 @@ html.site-dark footer .disabled\:hover\:bg-white:hover:disabled {
   background-color: #0c0c0c;
 }
 
+/*
+  Hex texture stays the original white field in dark mode.
+  Near-black fill with 10% white strokes made the pattern almost invisible.
+  Copy and surfaces on this field keep light-theme contrast so type stays readable.
+*/
 html.site-dark .bg-texture-white {
-  background-color: #0a0a0a !important;
+  background-color: #ffffff !important;
+  color: #171717;
+  --foreground: #171717;
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
 }
 
-html.site-dark .bg-texture-white::before {
-  background-image:
-    url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.10' stroke-width='0.8' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
+html.site-dark .bg-texture-white .bg-texture-white {
+  background-color: transparent !important;
 }
 
 html.site-dark main .bg-white\/95,
@@ -545,4 +554,139 @@ html.site-dark main select {
 html.site-dark ::selection {
   background: #fff;
   color: #000;
+}
+
+html.site-dark .bg-texture-white .footwear-description {
+  color: #171717;
+}
+
+html.site-dark .bg-texture-white .theme-surface-wash {
+  background:
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgb(0 0 0 / 0.06), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 0%, rgb(0 0 0 / 0.04), transparent 50%),
+    linear-gradient(180deg, #f7f7f5 0%, #ffffff 45%, #f3f3f1 100%) !important;
+}
+
+html.site-dark main .bg-texture-white .bg-white,
+html.site-dark footer .bg-texture-white,
+html.site-dark footer .bg-texture-white .bg-white,
+html.site-dark main .bg-texture-white .hover\:bg-white:hover,
+html.site-dark footer .bg-texture-white .hover\:bg-white:hover,
+html.site-dark main .bg-texture-white .disabled\:hover\:bg-white:hover:disabled,
+html.site-dark footer .bg-texture-white .disabled\:hover\:bg-white:hover:disabled {
+  background-color: #ffffff;
+}
+
+html.site-dark main .bg-texture-white .bg-white\/95,
+html.site-dark footer .bg-texture-white .bg-white\/95 {
+  background-color: rgb(255 255 255 / 0.95);
+}
+
+html.site-dark main .bg-texture-white .bg-white\/90,
+html.site-dark footer .bg-texture-white .bg-white\/90,
+html.site-dark main .bg-texture-white .hover\:bg-white\/90:hover {
+  background-color: rgb(255 255 255 / 0.9);
+}
+
+html.site-dark main .bg-texture-white .bg-white\/70 {
+  background-color: rgb(255 255 255 / 0.7);
+}
+
+html.site-dark main .bg-texture-white .bg-white\/55 {
+  background-color: rgb(255 255 255 / 0.55);
+}
+
+html.site-dark main .bg-texture-white .text-black,
+html.site-dark footer .bg-texture-white .text-black,
+html.site-dark footer .bg-texture-white.text-black,
+html.site-dark main .bg-texture-white .hover\:text-black:hover,
+html.site-dark footer .bg-texture-white .hover\:text-black:hover {
+  color: #000000;
+}
+
+html.site-dark main .bg-texture-white .text-neutral-900,
+html.site-dark footer .bg-texture-white .text-neutral-900,
+html.site-dark .bg-texture-white.text-neutral-900 {
+  color: #171717;
+}
+
+html.site-dark main .bg-texture-white .text-neutral-800,
+html.site-dark footer .bg-texture-white .text-neutral-800 {
+  color: #262626;
+}
+
+html.site-dark main .bg-texture-white .text-neutral-700,
+html.site-dark footer .bg-texture-white .text-neutral-700 {
+  color: #404040;
+}
+
+html.site-dark main .bg-texture-white .text-neutral-600,
+html.site-dark footer .bg-texture-white .text-neutral-600 {
+  color: #525252;
+}
+
+html.site-dark main .bg-texture-white .text-neutral-500,
+html.site-dark footer .bg-texture-white .text-neutral-500,
+html.site-dark footer .bg-texture-white.text-neutral-500 {
+  color: #737373;
+}
+
+html.site-dark main .bg-texture-white .placeholder\:text-neutral-400::placeholder,
+html.site-dark main .bg-texture-white .placeholder\:text-neutral-500::placeholder {
+  color: #a3a3a3;
+}
+
+html.site-dark main .bg-texture-white .border-black\/5,
+html.site-dark footer .bg-texture-white.border-black\/5,
+html.site-dark footer .bg-texture-white .border-black\/5 {
+  border-color: rgb(0 0 0 / 0.05);
+}
+
+html.site-dark main .bg-texture-white .border-black\/10,
+html.site-dark footer .bg-texture-white .border-black\/10,
+html.site-dark main .bg-texture-white .border-black\/20,
+html.site-dark main .bg-texture-white .divide-black\/10 > :not(:last-child),
+html.site-dark footer .bg-texture-white .divide-black\/10 > :not(:last-child) {
+  border-color: rgb(0 0 0 / 0.1);
+}
+
+html.site-dark main .bg-texture-white .ring-black\/5,
+html.site-dark footer .bg-texture-white .ring-black\/5,
+html.site-dark main .bg-texture-white .ring-black\/10,
+html.site-dark footer .bg-texture-white .ring-black\/10,
+html.site-dark main .bg-texture-white .ring-black\/20,
+html.site-dark main .bg-texture-white .focus\:ring-black\/10:focus,
+html.site-dark main .bg-texture-white .focus\:ring-black\/20:focus,
+html.site-dark main .bg-texture-white .focus-visible\:ring-black:focus-visible,
+html.site-dark main .bg-texture-white .focus-visible\:ring-neutral-900:focus-visible {
+  --tw-ring-color: rgb(0 0 0 / 0.1);
+}
+
+html.site-dark main .bg-texture-white .hover\:bg-black\/5:hover,
+html.site-dark footer .bg-texture-white .hover\:bg-black\/5:hover,
+html.site-dark main .bg-texture-white .bg-black\/5,
+html.site-dark footer .bg-texture-white .bg-black\/5,
+html.site-dark main .bg-texture-white .hover\:bg-black\/\[\.05\]:hover {
+  background-color: rgb(0 0 0 / 0.05);
+}
+
+html.site-dark main .bg-texture-white .bg-black.text-white,
+html.site-dark footer .bg-texture-white .bg-black.text-white,
+html.site-dark main .bg-texture-white a.bg-black,
+html.site-dark main .bg-texture-white button.bg-black {
+  box-shadow: none;
+}
+
+html.site-dark main .bg-texture-white .border-neutral-900\/15 {
+  border-color: rgb(23 23 23 / 0.15);
+}
+
+html.site-dark main .bg-texture-white .hover\:border-neutral-900\/40:hover {
+  border-color: rgb(23 23 23 / 0.4);
+}
+
+html.site-dark main .bg-texture-white input,
+html.site-dark main .bg-texture-white textarea,
+html.site-dark main .bg-texture-white select {
+  color-scheme: light;
 }
