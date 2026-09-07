@@ -269,7 +269,7 @@ export default function ProductsContent({
                 {subheading}
               </p>
             )}
-            {!showScrollCue && <div className="mt-6 h-px bg-neutral-200" />}
+            {!showScrollCue && subheading && <div className="mt-6 h-px bg-neutral-200" />}
           </div>
           <div className="flex min-h-[40vh] items-center justify-center py-16">
             <LogoLoader size="lg" label="Loading" />
@@ -311,10 +311,7 @@ export default function ProductsContent({
               {subheading}
             </p>
           )}
-          <p className="mt-3 text-xs tabular-nums text-neutral-400 hidden sm:block">
-            {displayProducts.length} product{displayProducts.length === 1 ? "" : "s"}
-          </p>
-          {!showScrollCue && <div className="mt-6 h-px bg-neutral-200" />}
+          {!showScrollCue && subheading && <div className="mt-6 h-px bg-neutral-200" />}
         </div>
 
         {/* ── Empty state ── */}
@@ -430,17 +427,14 @@ export default function ProductsContent({
           </div>
 
           {isHomeFootwearTeaser && (
-            <>
-              <div className="mt-10 sm:mt-12 flex justify-center">
-                <Link
-                  href="/products"
-                  className={SHOP_ALL_CTA_CLASS}
-                >
-                  Shop all footwear
-                </Link>
-              </div>
-              <TakeTheQuizPromo className="mt-10 sm:mt-12" />
-            </>
+            <div className="mt-10 sm:mt-12 flex justify-center">
+              <Link
+                href="/products"
+                className={SHOP_ALL_CTA_CLASS}
+              >
+                Shop all footwear
+              </Link>
+            </div>
           )}
           </>
         )}
@@ -473,6 +467,10 @@ export default function ProductsContent({
               </Link>
             </div>
           </section>
+        )}
+
+        {isHomeFootwearTeaser && (
+          <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
         )}
       </div>
     </div>

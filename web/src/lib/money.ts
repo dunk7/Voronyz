@@ -1,6 +1,6 @@
-/** Small grey catalog price — never a headline. Cart/checkout stay full-weight. */
+/** Catalog price next to Add to Cart — readable, not a headline. Cart/checkout stay full-weight. */
 export const SHOP_PRICE_CLASS =
-  "text-xs font-normal tabular-nums tracking-wide text-neutral-400";
+  "text-base font-medium tabular-nums text-neutral-500";
 
 export function formatCentsAsCurrency(cents: number, currency: string = "usd") {
   const amount = (cents ?? 0) / 100;
