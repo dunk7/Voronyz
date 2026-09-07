@@ -8,20 +8,11 @@ import {
 export const SITE_DARK_MODE_KEY = "dark_mode";
 export { SITE_DARK_MODE_BY_DEFAULT, parseSiteDarkModeValue };
 
-const CACHE_MS = 15_000;
-
-let cachedDark: boolean | null = null;
-let cachedAt = 0;
 let memoryDark = SITE_DARK_MODE_BY_DEFAULT;
 let siteSettingsReady: Promise<void> | null = null;
 
 function isDatabaseConfigured(): boolean {
   return Boolean(process.env.DATABASE_URL?.trim());
-}
-
-export function invalidateSiteDarkModeCache(): void {
-  cachedDark = null;
-  cachedAt = 0;
 }
 
 /** Create SiteSetting storage if migrations have not been applied yet. */
@@ -62,27 +53,18 @@ export async function getSiteDarkMode(): Promise<boolean> {
   noStore();
   if (!isDatabaseConfigured()) return memoryDark;
 
-  const now = Date.now();
-  if (cachedDark !== null && now - cachedAt < CACHE_MS) {
-    return cachedDark;
-  }
-
   try {
     const dark = await getSiteDarkModeFromDb();
-    cachedDark = dark;
-    cachedAt = now;
     memoryDark = dark;
     return dark;
   } catch (error) {
     console.error("Failed to read dark_mode setting:", error);
-    return cachedDark ?? memoryDark;
+    return memoryDark;
   }
 }
 
 export async function setSiteDarkMode(dark: boolean): Promise<boolean> {
   memoryDark = dark;
-  cachedDark = dark;
-  cachedAt = Date.now();
   if (!isDatabaseConfigured()) {
     return dark;
   }
@@ -98,8 +80,5 @@ export async function setSiteDarkMode(dark: boolean): Promise<boolean> {
       value: dark ? "true" : "false",
     },
   });
-  invalidateSiteDarkModeCache();
-  cachedDark = dark;
-  cachedAt = Date.now();
   return dark;
 }
