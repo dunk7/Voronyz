@@ -360,7 +360,13 @@ html.site-dark footer {
   --color-neutral-200: #2e2e2e;
 }
 
+html.site-dark footer {
+  background-color: #0c0c0c;
+  border-color: rgb(255 255 255 / 0.12);
+}
+
 html.site-dark main .bg-white,
+html.site-dark footer.bg-white,
 html.site-dark footer .bg-white,
 html.site-dark main .hover\:bg-white:hover,
 html.site-dark footer .hover\:bg-white:hover,
@@ -435,6 +441,7 @@ html.site-dark main .placeholder\:text-neutral-500::placeholder {
 }
 
 html.site-dark main .border-black\/5,
+html.site-dark footer.border-black\/5,
 html.site-dark footer .border-black\/5,
 html.site-dark main .border-black\/10,
 html.site-dark footer .border-black\/10,

@@ -35,16 +35,26 @@ export default function SiteTheme({ dark: initialDark }: { dark: boolean }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/site-theme")
-      .then((res) => res.json())
-      .then((data) => {
-        if (!cancelled && typeof data.dark === "boolean") setDark(data.dark);
-      })
-      .catch(() => {
-        /* keep last known value */
-      });
+    const load = () => {
+      fetch("/api/site-theme")
+        .then((res) => res.json())
+        .then((data) => {
+          if (!cancelled && typeof data.dark === "boolean") setDark(data.dark);
+        })
+        .catch(() => {
+          /* keep last known value */
+        });
+    };
+    load();
+    const onVis = () => {
+      if (document.visibilityState === "visible") load();
+    };
+    window.addEventListener("focus", load);
+    document.addEventListener("visibilitychange", onVis);
     return () => {
       cancelled = true;
+      window.removeEventListener("focus", load);
+      document.removeEventListener("visibilitychange", onVis);
     };
   }, [pathname]);
 
