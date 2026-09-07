@@ -11,7 +11,6 @@ export const APPAREL_ONE_SIZE = ["One Size"] as const;
 export type ApparelSubcategoryId =
   | "shirts"
   | "sweaters"
-  | "socks"
   | "shorts"
   | "joggers"
   | "outerwear"
@@ -43,12 +42,6 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
     id: "sweaters",
     label: "Sweaters",
     description: "Hoodies, knit layers, and sweater designs",
-    listing: "collection",
-  },
-  {
-    id: "socks",
-    label: "Socks",
-    description: "Performance and everyday sock designs",
     listing: "collection",
   },
   {
@@ -123,6 +116,7 @@ export const OBSOLETE_APPAREL_SLUGS = [
   "voronyz-necklace",
   "voronyz-rc-car-stickers",
   "voronyz-nice-shirt",
+  "voronyz-performance-socks",
 ] as const;
 
 /**
@@ -144,23 +138,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/shirt.jpg",
     skuPrefix: "APP-TEE",
-    comingSoon: false,
-  },
-  // ── Socks (multi-product) ───────────────────────────────────────────────
-  {
-    slug: "voronyz-performance-socks",
-    subcategory: "socks",
-    name: "Socks",
-    description: "Cushioned crew socks built for all-day wear and recovery.",
-    priceCents: 2800,
-    colors: ["black", "grey", "white"],
-    sizes: ["S", "M", "L", "XL"],
-    image: "/products/apparel/socks-unfolded.jpg",
-    images: [
-      "/products/apparel/socks-unfolded.jpg",
-      "/products/apparel/socks-folded-hanger.jpg",
-    ],
-    skuPrefix: "APP-SOCK",
     comingSoon: false,
   },
   // ── Sweaters (multi-product) ────────────────────────────────────────────

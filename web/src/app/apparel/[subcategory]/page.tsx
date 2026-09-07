@@ -19,6 +19,7 @@ type PageProps = {
 const LEGACY_SUBCATEGORY_REDIRECTS: Record<string, string> = {
   sweats: "/apparel/joggers",
   pants: "/apparel/joggers",
+  socks: "/apparel",
 };
 
 export function generateStaticParams() {
@@ -27,6 +28,7 @@ export function generateStaticParams() {
     // Keep legacy hats/bottles paths buildable so they can redirect.
     { subcategory: "hats" },
     { subcategory: "bottles" },
+    { subcategory: "socks" },
   ];
 }
 
