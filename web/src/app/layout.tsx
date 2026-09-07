@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist_Mono, Space_Grotesk } from "next/font/google";
+import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -70,6 +70,11 @@ const siteUrl =
   process.env.URL || // Netlify
   process.env.DEPLOY_PRIME_URL || // Netlify previews
   "http://localhost:3000";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -143,7 +148,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${geistMono.variable}`}
+      className={`${spaceGrotesk.variable} ${geistSans.variable} ${geistMono.variable}`}
       style={{ background: "#000000", colorScheme: "dark" }}
       suppressHydrationWarning
     >

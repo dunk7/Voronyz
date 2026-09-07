@@ -1823,7 +1823,7 @@ export default function MessageClient() {
             <h1 className="mx-auto mb-3 flex items-center justify-center gap-3">
               <VoronyzLogoMark size={44} priority />
               <span className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
-                <span className="tracking-[0.18em]">VORONYZ</span>{" "}
+                <span className="font-logo tracking-[0.18em]">VORONYZ</span>{" "}
                 <span className="font-medium text-white/85">Messages</span>
               </span>
             </h1>

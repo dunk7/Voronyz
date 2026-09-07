@@ -13,7 +13,7 @@ export default function Footer() {
     <footer className="border-t border-black/5 bg-white">
       <div className="container py-10 grid gap-8 md:grid-cols-4 text-sm text-neutral-600">
         <div className="space-y-3">
-          <div className="text-black font-semibold">Voronyz</div>
+          <div className="font-logo text-black font-semibold">Voronyz</div>
           <p>Nothing compares to Voronyz—built for unmatched comfort, durability, and fit.</p>
         </div>
         <div className="grid gap-2">
