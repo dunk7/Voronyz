@@ -56,6 +56,14 @@ function BrowseItem({
     [router, product.slug],
   );
 
+  // Slip-on studio shots are wide (1600×905) with empty grey on both sides.
+  // Cover the square so those side margins are cropped; other products stay contain
+  // so tightly framed square photos (slides, sneakers) don't clip heel/toe.
+  const cropSideMargins = slugKey === "slip-ons";
+  const imageFitClass = cropSideMargins
+    ? "object-cover object-center"
+    : "object-contain object-center";
+
   return (
     <article
       ref={itemRef}
@@ -77,7 +85,7 @@ function BrowseItem({
               src={cover}
               alt={product.name}
               fill
-              className={`object-contain object-center transition-opacity duration-700 ease-out ${
+              className={`${imageFitClass} transition-opacity duration-700 ease-out ${
                 alt ? "group-hover:opacity-0" : ""
               } ${navigating ? "brightness-90" : ""}`}
               sizes="100vw"
@@ -90,7 +98,7 @@ function BrowseItem({
                 alt={`${product.name} – alternate view`}
                 fill
                 showLogoPlaceholder={false}
-                className="object-contain object-center opacity-0 transition-opacity duration-700 ease-out group-hover:opacity-100"
+                className={`${imageFitClass} opacity-0 transition-opacity duration-700 ease-out group-hover:opacity-100`}
                 sizes="100vw"
                 loading="lazy"
               />
