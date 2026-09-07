@@ -23,7 +23,7 @@ export default function TakeTheQuizPromo({ className = "" }: TakeTheQuizPromoPro
         Take the Quiz
       </h3>
       <p className="mt-2 mx-auto max-w-md text-sm text-neutral-500">
-        A few easy questions about how you move — so we can point you at the right pick.
+        Find the Right Pair
       </p>
       <div className="mt-6 flex justify-center">
         <Link href="/quiz" className={CTA_CLASS}>
