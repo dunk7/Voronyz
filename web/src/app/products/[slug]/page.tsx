@@ -273,6 +273,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           ? FILAMENT_NAME
           : isLatticeInsoles
             ? LATTICE_INSOLES_NAME
+          : apparelItem
+            ? apparelItem.name
           : product.name;
 
   // Product-specific descriptions (oversized tee skips the top blurb — size picker covers fit)
