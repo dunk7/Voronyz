@@ -42,7 +42,7 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "shirts",
     label: "Shirts",
-    description: "Oversized tees and more designs to come",
+    description: "Equip the aura. Oversized tees built to throw on and keep the swag loud.",
     listing: "collection",
   },
   {
