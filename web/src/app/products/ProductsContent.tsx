@@ -170,7 +170,7 @@ export default function ProductsContent({
   const isHomeFootwearTeaser =
     showScrollCue && category === "footwear" && !searchQuery;
   const showApparelContinuation = category === "footwear" && !searchQuery;
-  /** Immersive browse on All Footwear; home keeps the slides/slip-ons teaser grid. */
+  /** Shopping catalog on All Footwear; home keeps the slides/slip-ons teaser grid. */
   const useFootwearBrowse =
     category === "footwear" && !searchQuery && !isHomeFootwearTeaser;
 
@@ -341,7 +341,7 @@ export default function ProductsContent({
             </Link>
           </div>
         ) : useFootwearBrowse ? (
-          /* ── Immersive footwear browse: one large image + description per product ── */
+          /* ── Footwear shop: landscape cards in a horizontal catalog grid ── */
           <FootwearBrowse products={products} getImages={getImages} />
         ) : (
           /* ── Product grid (home teaser / Engineering / Collaborative / search) ── */
