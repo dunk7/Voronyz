@@ -163,20 +163,18 @@ video {
 }
 
 /*
-  Continuous futuristic sheen on primary CTAs.
-  Two opposing metallic fields that scroll linearly forever — no
-  single blade, no orbit that sits on the right edge. Overlay only
-  so Tailwind fills and the quiz add-to-cart label stay put.
+  Subtle hex chessboard sheen on primary CTAs.
+  Same 50×43 hex tile as the page texture — alternate cells breathe
+  slowly. Overlay only; never paint the button fill white, and never
+  use scrolling disco bands.
 */
-@keyframes btn-shimmer-flow {
-  to {
-    transform: translate3d(-56px, 0, 0);
+@keyframes btn-shimmer-hex {
+  0%,
+  100% {
+    opacity: 0.4;
   }
-}
-
-@keyframes btn-shimmer-flow-alt {
-  to {
-    transform: translate3d(80px, 0, 0);
+  50% {
+    opacity: 0.95;
   }
 }
 
@@ -191,44 +189,22 @@ video {
   content: "";
   pointer-events: none;
   z-index: 1;
+  position: absolute;
+  inset: -20%;
+  background-repeat: repeat;
+  background-size: 50px 43px;
 }
 
+/* Even hexes + white grid, matching the storefront tessellation. */
 .btn-shimmer::before {
-  position: absolute;
-  top: -40%;
-  bottom: -40%;
-  left: -50%;
-  width: 200%;
-  background-image: repeating-linear-gradient(
-    128deg,
-    rgb(255 255 255 / 0) 0 16px,
-    rgb(255 255 255 / 0.08) 30px,
-    rgb(255 255 255 / 0.16) 40px,
-    rgb(255 255 255 / 0.08) 50px,
-    rgb(255 255 255 / 0) 64px 80px
-  );
-  background-size: 80px 80px;
-  animation: btn-shimmer-flow-alt 2.4s linear infinite;
-  will-change: transform;
+  background-image: url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3C/g%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.1' stroke-width='0.8' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3C/g%3E%3C/svg%3E");
+  animation: btn-shimmer-hex 16s ease-in-out infinite;
 }
 
+/* Odd hexes — the other chessboard color, fading the opposite way. */
 .btn-shimmer::after {
-  position: absolute;
-  top: -40%;
-  bottom: -40%;
-  left: -50%;
-  width: 200%;
-  background-image: repeating-linear-gradient(
-    112deg,
-    rgb(255 255 255 / 0) 0 6px,
-    rgb(255 255 255 / 0.1) 16px,
-    rgb(255 255 255 / 0.26) 24px,
-    rgb(255 255 255 / 0.1) 32px,
-    rgb(255 255 255 / 0) 42px 56px
-  );
-  background-size: 56px 56px;
-  animation: btn-shimmer-flow 1.15s linear infinite;
-  will-change: transform;
+  background-image: url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
+  animation: btn-shimmer-hex 16s ease-in-out infinite reverse;
 }
 
 .btn-shimmer:disabled::before,
@@ -242,8 +218,8 @@ video {
 @media (prefers-reduced-motion: reduce) {
   .btn-shimmer::before,
   .btn-shimmer::after {
-    content: none;
     animation: none;
+    opacity: 0.7;
   }
 }
 
