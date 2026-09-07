@@ -130,7 +130,7 @@ video {
     at the 50×43 display size.
   */
   background-image:
-    url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='0.08' stroke-width='0.8' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
+    url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='0.14' stroke-width='0.8' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
   background-size: 50px 43px;
   background-position: 0 0;
   background-repeat: repeat;
@@ -140,7 +140,7 @@ video {
   z-index: 0;
 }
 
-/* Viewport-fixed glow that follows the pointer / touch point over the hex field. */
+/* Spotlight that follows the pointer / touch point (element-local, not transformed). */
 .bg-texture-white::after {
   content: '';
   position: absolute;
@@ -149,12 +149,11 @@ video {
   z-index: 0;
   opacity: var(--hex-pointer-on, 0);
   background: radial-gradient(
-    420px circle at var(--hex-pointer-x, 50%) var(--hex-pointer-y, 50%),
-    rgba(0, 0, 0, 0.045),
-    transparent 62%
+    360px circle at var(--hex-pointer-x, 50%) var(--hex-pointer-y, 50%),
+    rgba(0, 0, 0, 0.11),
+    transparent 68%
   );
-  background-attachment: fixed;
-  transition: opacity 280ms ease;
+  transition: opacity 220ms ease;
 }
 
 .bg-texture-white > * {

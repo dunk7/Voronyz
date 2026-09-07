@@ -5,17 +5,20 @@ import { useEffect } from "react";
 const TILE_W = 50;
 const TILE_H = 43;
 const IDLE_MS_PER_TILE = 18_000;
-const POINTER_RANGE_X = 48;
-const POINTER_RANGE_Y = 36;
-const SCROLL_X_RATE = 0.08;
-const SCROLL_Y_RATE = 0.12;
-const SCROLL_BOOST = 0.55;
-const LERP = 0.16;
-const BOOST_DECAY = 0.9;
-const GLOW_HOLD_MS = 420;
+const POINTER_RANGE_X = 90;
+const POINTER_RANGE_Y = 70;
+const SCROLL_X_RATE = 0.1;
+const SCROLL_Y_RATE = 0.16;
+const SCROLL_BOOST = 0.7;
+const LERP = 0.18;
+const BOOST_DECAY = 0.88;
 
 function wrap(value: number, period: number) {
   return ((value % period) + period) % period;
+}
+
+function isNestedTexture(el: HTMLElement) {
+  return Boolean(el.parentElement?.closest(".bg-texture-white"));
 }
 
 /** Drives the hexagonal `.bg-texture-white` layer from pointer/touch and scroll. */
@@ -25,7 +28,14 @@ export default function HexTextureMotion() {
     if (media.matches) return;
 
     const root = document.documentElement;
-    const pointer = { x: 0.5, y: 0.5, hasPointed: false, lastSeen: 0 };
+    const pointer = {
+      x: 0.5,
+      y: 0.5,
+      clientX: 0,
+      clientY: 0,
+      hasPointed: false,
+      inView: false,
+    };
     const current = { x: 0, y: 0 };
     const boost = { x: 0, y: 0 };
     let lastScrollY = window.scrollY || 0;
@@ -34,10 +44,12 @@ export default function HexTextureMotion() {
     const origin = performance.now();
 
     const setPointer = (clientX: number, clientY: number) => {
+      pointer.clientX = clientX;
+      pointer.clientY = clientY;
       pointer.x = clientX / Math.max(1, window.innerWidth);
       pointer.y = clientY / Math.max(1, window.innerHeight);
       pointer.hasPointed = true;
-      pointer.lastSeen = performance.now();
+      pointer.inView = true;
     };
 
     const onPointerMove = (event: PointerEvent) => {
@@ -51,6 +63,24 @@ export default function HexTextureMotion() {
     const onTouchMove = (event: TouchEvent) => {
       const touch = event.touches[0];
       if (touch) setPointer(touch.clientX, touch.clientY);
+    };
+
+    const onPointerLeave = (event: PointerEvent) => {
+      if (event.relatedTarget) return;
+      pointer.inView = false;
+    };
+
+    const syncLayerPointers = () => {
+      const glowOn = pointer.hasPointed && pointer.inView ? "1" : "0";
+      root.style.setProperty("--hex-pointer-on", glowOn);
+      const layers = document.querySelectorAll(".bg-texture-white");
+      for (const node of layers) {
+        if (!(node instanceof HTMLElement) || isNestedTexture(node)) continue;
+        const rect = node.getBoundingClientRect();
+        node.style.setProperty("--hex-pointer-x", `${pointer.clientX - rect.left}px`);
+        node.style.setProperty("--hex-pointer-y", `${pointer.clientY - rect.top}px`);
+        node.style.setProperty("--hex-pointer-on", glowOn);
+      }
     };
 
     const tick = (now: number) => {
@@ -72,7 +102,6 @@ export default function HexTextureMotion() {
 
       const idleX = ((now - origin) / IDLE_MS_PER_TILE) * TILE_W;
       const pointerMul = pointer.hasPointed ? 1 : 0;
-      const glowOn = pointer.hasPointed && now - pointer.lastSeen < GLOW_HOLD_MS ? 1 : 0;
 
       const targetX =
         idleX +
@@ -89,9 +118,7 @@ export default function HexTextureMotion() {
 
       root.style.setProperty("--hex-shift-x", `${-wrap(current.x, TILE_W)}px`);
       root.style.setProperty("--hex-shift-y", `${-wrap(current.y, TILE_H)}px`);
-      root.style.setProperty("--hex-pointer-x", `${pointer.x * 100}%`);
-      root.style.setProperty("--hex-pointer-y", `${pointer.y * 100}%`);
-      root.style.setProperty("--hex-pointer-on", String(glowOn));
+      syncLayerPointers();
 
       raf = requestAnimationFrame(tick);
     };
@@ -100,6 +127,7 @@ export default function HexTextureMotion() {
     window.addEventListener("pointerdown", onPointerDown, { passive: true });
     window.addEventListener("touchstart", onTouchMove, { passive: true });
     window.addEventListener("touchmove", onTouchMove, { passive: true });
+    document.documentElement.addEventListener("pointerleave", onPointerLeave);
     raf = requestAnimationFrame(tick);
 
     return () => {
@@ -109,11 +137,16 @@ export default function HexTextureMotion() {
       window.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("touchstart", onTouchMove);
       window.removeEventListener("touchmove", onTouchMove);
+      document.documentElement.removeEventListener("pointerleave", onPointerLeave);
       root.style.removeProperty("--hex-shift-x");
       root.style.removeProperty("--hex-shift-y");
-      root.style.removeProperty("--hex-pointer-x");
-      root.style.removeProperty("--hex-pointer-y");
       root.style.removeProperty("--hex-pointer-on");
+      document.querySelectorAll(".bg-texture-white").forEach((node) => {
+        if (!(node instanceof HTMLElement)) return;
+        node.style.removeProperty("--hex-pointer-x");
+        node.style.removeProperty("--hex-pointer-y");
+        node.style.removeProperty("--hex-pointer-on");
+      });
     };
   }, []);
 
