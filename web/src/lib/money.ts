@@ -1,3 +1,7 @@
+/** Small grey catalog price — never a headline. Cart/checkout stay full-weight. */
+export const SHOP_PRICE_CLASS =
+  "text-xs font-normal tabular-nums tracking-wide text-neutral-400";
+
 export function formatCentsAsCurrency(cents: number, currency: string = "usd") {
   const amount = (cents ?? 0) / 100;
   try {
