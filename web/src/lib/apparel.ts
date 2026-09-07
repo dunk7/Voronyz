@@ -267,21 +267,26 @@ export function apparelSubcategoryHref(id: ApparelSubcategoryId): string {
   return `/apparel/${id}`;
 }
 
-/** Back-link target for a product detail page. */
+/**
+ * Back-link target for a product detail page.
+ * Clothing listings (tees, hoodies) return to the Apparel hub; accessories
+ * stay on their own Accessories listing.
+ */
 export function apparelProductShopHref(slug: string | null | undefined): string {
   const item = getApparelItem(slug);
   if (!item) return "/apparel";
-  return apparelSubcategoryHref(item.subcategory);
+  if (getApparelSubcategory(item.subcategory)?.listing === "standalone") {
+    return apparelSubcategoryHref(item.subcategory);
+  }
+  return "/apparel";
 }
 
 export function apparelProductShopLabel(slug: string | null | undefined): string {
   const item = getApparelItem(slug);
   if (!item) return "Back to Apparel";
   const sub = getApparelSubcategory(item.subcategory);
-  if (!sub) return "Back to Apparel";
-  return sub.listing === "standalone"
-    ? "Back to Accessories"
-    : `Back to ${sub.label}`;
+  if (sub?.listing === "standalone") return "Back to Accessories";
+  return "Back to Apparel";
 }
 
 export function apparelSku(prefix: string, color: string) {
