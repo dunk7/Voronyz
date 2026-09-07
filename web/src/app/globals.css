@@ -176,7 +176,7 @@ video {
 
 @keyframes btn-shimmer-flow {
   to {
-    background-position: 160px 0;
+    background-position: 120px 0;
   }
 }
 
@@ -200,16 +200,16 @@ video {
   background: conic-gradient(
     from 0deg,
     transparent 0deg,
-    rgb(255 255 255 / 0) 48deg,
-    rgb(255 255 255 / 0.06) 76deg,
-    rgb(255 255 255 / 0) 104deg,
-    transparent 170deg,
-    transparent 228deg,
-    rgb(255 255 255 / 0.035) 256deg,
-    rgb(255 255 255 / 0) 284deg,
+    rgb(255 255 255 / 0) 40deg,
+    rgb(255 255 255 / 0.08) 70deg,
+    rgb(255 255 255 / 0) 100deg,
+    transparent 165deg,
+    transparent 220deg,
+    rgb(255 255 255 / 0.045) 250deg,
+    rgb(255 255 255 / 0) 280deg,
     transparent 360deg
   );
-  animation: btn-shimmer-orbit 8s linear infinite;
+  animation: btn-shimmer-orbit 6.5s linear infinite;
 }
 
 /* Repeating metallic bands that scroll with no pause or landing. */
@@ -218,14 +218,14 @@ video {
   inset: 0;
   background-image: repeating-linear-gradient(
     118deg,
-    transparent 0 28px,
-    rgb(255 255 255 / 0.02) 40px,
-    rgb(255 255 255 / 0.10) 48px,
-    rgb(255 255 255 / 0.02) 56px,
-    transparent 72px 160px
+    transparent 0 18px,
+    rgb(255 255 255 / 0.03) 30px,
+    rgb(255 255 255 / 0.14) 38px,
+    rgb(255 255 255 / 0.03) 46px,
+    transparent 60px 120px
   );
-  background-size: 160px 160px;
-  animation: btn-shimmer-flow 2.8s linear infinite;
+  background-size: 120px 120px;
+  animation: btn-shimmer-flow 2.1s linear infinite;
 }
 
 .btn-shimmer:disabled::before,
