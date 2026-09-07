@@ -20,9 +20,6 @@ type SearchProductResult = {
 
 export default function Header() {
   const [open, setOpen] = useState(false);
-  const [affiliatesOpen, setAffiliatesOpen] = useState(false);
-  const [mobileAffiliatesOpen, setMobileAffiliatesOpen] = useState(false);
-  const affiliatesMenuRef = useRef<HTMLDivElement>(null);
   const [hide, setHide] = useState(false);
   // const [user, setUser] = useState<{ id: string; email: string; name: string } | null>(null); // Removed user state
   const [cartCount, setCartCount] = useState(0);
@@ -38,8 +35,6 @@ export default function Header() {
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
-  const [routeLoading, setRouteLoading] = useState(false);
-  const routeKeyRef = useRef<string | null>(null);
 
   // Load cart count from localStorage
   useEffect(() => {
@@ -96,44 +91,13 @@ export default function Header() {
   const searchString = searchParams?.toString() ?? "";
   const currentRouteKey = `${pathname}${searchString ? `?${searchString}` : ""}`;
 
-  useEffect(() => {
-    // Clear any route-loading overlay once navigation completes.
-    if (routeKeyRef.current !== null && routeKeyRef.current !== currentRouteKey) {
-      setRouteLoading(false);
-    }
-    routeKeyRef.current = currentRouteKey;
-    setAffiliatesOpen(false);
-    setMobileAffiliatesOpen(false);
-  }, [currentRouteKey]);
-
-  useEffect(() => {
-    if (!affiliatesOpen) return;
-    const onPointerDown = (event: MouseEvent) => {
-      if (!affiliatesMenuRef.current?.contains(event.target as Node)) {
-        setAffiliatesOpen(false);
-      }
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setAffiliatesOpen(false);
-    };
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [affiliatesOpen]);
-
   const affiliatesActive = pathname?.startsWith("/affiliates");
+  const apparelActive = Boolean(
+    pathname?.startsWith("/apparel") && !pathname?.startsWith("/apparel/accessories")
+  );
 
-  const navigateWithLoading = (href: string) => {
-    // If we're already at the destination (including query params), Next won't navigate,
-    // so don't show an indefinite loading overlay.
-    if (href === currentRouteKey) {
-      setRouteLoading(false);
-      return;
-    }
-    setRouteLoading(true);
+  const navigateTo = (href: string) => {
+    if (href === currentRouteKey) return;
     router.push(href);
   };
 
@@ -213,13 +177,13 @@ export default function Header() {
     e.preventDefault();
     if (searchResults.length > 0 && selectedResultIndex >= 0) {
       const selectedProduct = searchResults[selectedResultIndex];
-      navigateWithLoading(`/products/${selectedProduct.slug}`);
+      navigateTo(`/products/${selectedProduct.slug}`);
       setSearchQuery("");
       setSearchResults([]);
       setSearchFocused(false);
       searchInputRef.current?.blur();
     } else if (searchQuery.trim()) {
-      navigateWithLoading(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
+      navigateTo(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery("");
       setSearchResults([]);
       setSearchFocused(false);
@@ -245,7 +209,7 @@ export default function Header() {
         e.preventDefault();
         if (selectedResultIndex >= 0) {
           const selectedProduct = searchResults[selectedResultIndex];
-          navigateWithLoading(`/products/${selectedProduct.slug}`);
+          navigateTo(`/products/${selectedProduct.slug}`);
           setSearchQuery("");
           setSearchResults([]);
           setSearchFocused(false);
@@ -286,7 +250,7 @@ export default function Header() {
       e.preventDefault();
       e.stopPropagation();
     }
-    navigateWithLoading(`/products/${productSlug}`);
+    navigateTo(`/products/${productSlug}`);
     setSearchQuery("");
     setSearchResults([]);
     setSearchFocused(false);
@@ -299,14 +263,6 @@ export default function Header() {
 
   return (
     <>
-      {routeLoading && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black"
-          style={{ background: "#000000" }}
-        >
-          <LogoLoader size="md" tone="light" />
-        </div>
-      )}
       <header className={`sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/70 bg-neutral-950/80 border-b border-white/10 transition-transform duration-300 ${hide ? "-translate-y-full" : "translate-y-0"}`}>
         <div className="container flex h-20 items-center gap-4">
           {/* Left cluster: brand + nav */}
@@ -325,10 +281,10 @@ export default function Header() {
               </Link>
               <Link
                 href="/apparel"
-                className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/apparel") && !pathname?.startsWith("/apparel/accessories") ? "text-white" : "text-white/70"}`}
+                className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${apparelActive ? "text-white" : "text-white/70"}`}
               >
                 <span>Apparel</span>
-                <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/apparel") && !pathname?.startsWith("/apparel/accessories") ? "opacity-100" : "opacity-0"}`} aria-hidden />
+                <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${apparelActive ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
               <Link
                 href="/accessories"
@@ -345,13 +301,6 @@ export default function Header() {
                 <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/health") ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
               <Link
-                href="/quiz"
-                className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/quiz") ? "text-white" : "text-white/70"}`}
-              >
-                <span>Take the Quiz</span>
-                <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname?.startsWith("/quiz") ? "opacity-100" : "opacity-0"}`} aria-hidden />
-              </Link>
-              <Link
                 href="/gallery"
                 className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${pathname?.startsWith("/gallery") ? "text-white" : "text-white/70"}`}
               >
@@ -365,72 +314,13 @@ export default function Header() {
                 <span>About</span>
                 <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname === "/about" ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
-              <div className="relative" ref={affiliatesMenuRef}>
-                <button
-                  type="button"
-                  className={`relative shrink-0 inline-flex items-center gap-1.5 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${
-                    affiliatesActive || affiliatesOpen ? "text-white" : "text-white/70"
-                  }`}
-                  aria-expanded={affiliatesOpen}
-                  aria-haspopup="menu"
-                  onClick={() => setAffiliatesOpen((v) => !v)}
-                >
-                  <span>Affiliates</span>
-                  <span
-                    className={`text-[10px] leading-none transition-transform ${
-                      affiliatesOpen ? "rotate-180" : ""
-                    }`}
-                    aria-hidden
-                  >
-                    ▾
-                  </span>
-                  <span
-                    className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${
-                      affiliatesActive ? "opacity-100" : "opacity-0"
-                    }`}
-                    aria-hidden
-                  />
-                </button>
-                {affiliatesOpen ? (
-                  <div
-                    role="menu"
-                    className="absolute left-0 top-full mt-2 min-w-[220px] rounded-2xl border border-white/10 bg-neutral-950/95 backdrop-blur-md shadow-2xl py-2 z-50"
-                  >
-                    <Link
-                      href="/affiliates"
-                      role="menuitem"
-                      className="block px-4 py-2.5 text-[12px] uppercase tracking-[0.18em] text-white/80 hover:text-white hover:bg-white/[.06]"
-                      onClick={() => setAffiliatesOpen(false)}
-                    >
-                      Overview
-                    </Link>
-                    <Link
-                      href="/affiliates#how-it-works"
-                      role="menuitem"
-                      className="block px-4 py-2.5 text-[12px] uppercase tracking-[0.18em] text-white/80 hover:text-white hover:bg-white/[.06]"
-                      onClick={() => setAffiliatesOpen(false)}
-                    >
-                      How it works
-                    </Link>
-                    <Link
-                      href="/affiliates#steps"
-                      role="menuitem"
-                      className="block px-4 py-2.5 text-[12px] uppercase tracking-[0.18em] text-white/80 hover:text-white hover:bg-white/[.06]"
-                      onClick={() => setAffiliatesOpen(false)}
-                    >
-                      Step-by-step
-                    </Link>
-                    <Link
-                      href="/affiliates#apply"
-                      role="menuitem"
-                      className="block px-4 py-2.5 text-[12px] uppercase tracking-[0.18em] text-white hover:bg-white/[.08]"
-                      onClick={() => setAffiliatesOpen(false)}
-                    >
-                      Apply now
-                    </Link>
-                  </div>
-                ) : null}
-              </div>
+              <Link
+                href="/affiliates"
+                className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${affiliatesActive ? "text-white" : "text-white/70"}`}
+              >
+                <span>Affiliates</span>
+                <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${affiliatesActive ? "opacity-100" : "opacity-0"}`} aria-hidden />
+              </Link>
             </nav>
           </div>
 
@@ -584,7 +474,7 @@ export default function Header() {
           onClick={() => setOpen(false)}
         />
 
-        {/* Menu Content — scrollable so Take the Quiz stays reachable on short screens */}
+        {/* Menu Content — scrollable on short screens */}
         <div className={`absolute top-20 left-0 right-0 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           open ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
         }`}>
@@ -662,20 +552,6 @@ export default function Header() {
                   Collaborative
                 </Link>
                 <Link
-                  href="/quiz"
-                  className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
-                    pathname?.startsWith("/quiz")
-                      ? "text-white bg-white/10"
-                      : "text-white/70 hover:text-white hover:bg-white/[.06]"
-                  }`}
-                  onClick={() => setOpen(false)}
-                >
-                  {pathname?.startsWith("/quiz") && (
-                    <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
-                  )}
-                  Take the Quiz
-                </Link>
-                <Link
                   href="/gallery"
                   className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
                     pathname?.startsWith("/gallery")
@@ -703,61 +579,20 @@ export default function Header() {
                   )}
                   About
                 </Link>
-                <button
-                  type="button"
-                  className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 text-left ${
+                <Link
+                  href="/affiliates"
+                  className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
                     affiliatesActive
                       ? "text-white bg-white/10"
                       : "text-white/70 hover:text-white hover:bg-white/[.06]"
                   }`}
-                  aria-expanded={mobileAffiliatesOpen}
-                  onClick={() => setMobileAffiliatesOpen((v) => !v)}
+                  onClick={() => setOpen(false)}
                 >
                   {affiliatesActive && (
                     <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
                   )}
-                  <span className="flex-1">Affiliates</span>
-                  <span
-                    className={`text-xs transition-transform ${
-                      mobileAffiliatesOpen ? "rotate-180" : ""
-                    }`}
-                    aria-hidden
-                  >
-                    ▾
-                  </span>
-                </button>
-                {mobileAffiliatesOpen ? (
-                  <div className="ml-4 mb-1 flex flex-col gap-1 border-l border-white/10 pl-3">
-                    <Link
-                      href="/affiliates"
-                      className="py-2.5 px-3 rounded-lg text-[13px] uppercase tracking-[0.18em] text-white/70 hover:text-white hover:bg-white/[.06]"
-                      onClick={() => setOpen(false)}
-                    >
-                      Overview
-                    </Link>
-                    <Link
-                      href="/affiliates#how-it-works"
-                      className="py-2.5 px-3 rounded-lg text-[13px] uppercase tracking-[0.18em] text-white/70 hover:text-white hover:bg-white/[.06]"
-                      onClick={() => setOpen(false)}
-                    >
-                      How it works
-                    </Link>
-                    <Link
-                      href="/affiliates#steps"
-                      className="py-2.5 px-3 rounded-lg text-[13px] uppercase tracking-[0.18em] text-white/70 hover:text-white hover:bg-white/[.06]"
-                      onClick={() => setOpen(false)}
-                    >
-                      Step-by-step
-                    </Link>
-                    <Link
-                      href="/affiliates#apply"
-                      className="py-2.5 px-3 rounded-lg text-[13px] uppercase tracking-[0.18em] text-white hover:bg-white/[.08]"
-                      onClick={() => setOpen(false)}
-                    >
-                      Apply now
-                    </Link>
-                  </div>
-                ) : null}
+                  Affiliates
+                </Link>
                 <div className="my-2 h-px bg-white/10" />
                 <Link
                   href="/cart"

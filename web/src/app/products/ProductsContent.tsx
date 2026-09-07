@@ -12,6 +12,7 @@ import { APPAREL_CATALOG } from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
+import TakeTheQuizPromo from "@/components/apparel/TakeTheQuizPromo";
 import FootwearBrowse from "@/components/footwear/FootwearBrowse";
 
 /** Homepage footwear teaser — slides + slip-ons only; full catalog on /products. */
@@ -22,6 +23,10 @@ const HOME_APPAREL_TEASER_SLUGS = [
   "voronyz-oversized-tee",
   "voronyz-core-hoodie",
 ] as const;
+
+/** Technical shop-all CTA used under the home Footwear and Apparel teasers. */
+const SHOP_ALL_CTA_CLASS =
+  "inline-flex items-center justify-center rounded-md bg-neutral-900 px-6 py-2.5 text-[11px] font-medium uppercase tracking-[0.18em] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] transition-colors hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2";
 
 type Product = FootwearListProduct;
 
@@ -186,7 +191,7 @@ export default function ProductsContent({
       ? "Collaborative"
       : isHomeFootwearTeaser
       ? "Footwear"
-      : "All Footwear";
+      : "Step into the future";
   /** Footwear stays heading-only (like Apparel on home) — no supporting paragraph. */
   const subheading =
     category === "accessories"
@@ -230,8 +235,12 @@ export default function ProductsContent({
     });
   }, [showApparelContinuation]);
 
+  const homeSectionTitleClass =
+    "text-2xl sm:text-[1.75rem] font-semibold tracking-tight text-neutral-900 text-center";
   const sectionHeadingClass =
     "text-3xl font-semibold tracking-tight text-neutral-900 text-center";
+  const titleClass = isHomeFootwearTeaser ? homeSectionTitleClass : sectionHeadingClass;
+  const TitleTag = isHomeFootwearTeaser ? "h2" : "h1";
   const scrollCue = showScrollCue && !searchQuery && (
     <svg
       className="mx-auto mt-2 h-4 w-4 animate-bounce text-neutral-400"
@@ -251,9 +260,9 @@ export default function ProductsContent({
       <div className="bg-texture-white min-h-[80vh]">
         <div className="container py-16">
           <div className="mb-12 text-center">
-            <h1 className={sectionHeadingClass}>
+            <TitleTag className={titleClass}>
               {heading}
-            </h1>
+            </TitleTag>
             {scrollCue}
             {!searchQuery && subheading && (
               <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
@@ -293,9 +302,9 @@ export default function ProductsContent({
       <div className="container py-16">
         {/* ── Header ── */}
         <div className="mb-12 text-center">
-          <h1 className={sectionHeadingClass}>
+          <TitleTag className={titleClass}>
             {heading}
-          </h1>
+          </TitleTag>
           {scrollCue}
           {!searchQuery && subheading && (
             <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
@@ -424,7 +433,7 @@ export default function ProductsContent({
             <div className="mt-10 sm:mt-12 flex justify-center">
               <Link
                 href="/products"
-                className="inline-flex items-center justify-center rounded-full bg-neutral-900 text-white px-5 py-2.5 text-sm font-semibold hover:bg-neutral-800 transition"
+                className={SHOP_ALL_CTA_CLASS}
               >
                 Shop all footwear
               </Link>
@@ -438,12 +447,12 @@ export default function ProductsContent({
           <section
             id="apparel"
             aria-labelledby="footwear-apparel-heading"
-            className="mt-24 sm:mt-32 lg:mt-40"
+            className="mt-16 sm:mt-24 lg:mt-28"
           >
-            <div className="mb-10 sm:mb-14 text-center">
+            <div className="mb-8 sm:mb-10 text-center">
               <h2
                 id="footwear-apparel-heading"
-                className={sectionHeadingClass}
+                className={homeSectionTitleClass}
               >
                 Apparel
               </h2>
@@ -455,11 +464,13 @@ export default function ProductsContent({
             <div className="mt-10 sm:mt-12 flex justify-center">
               <Link
                 href="/apparel"
-                className="inline-flex items-center justify-center rounded-full bg-neutral-900 text-white px-7 py-3.5 text-sm font-semibold hover:bg-neutral-800 transition"
+                className={SHOP_ALL_CTA_CLASS}
               >
-                View Apparel Section
+                Shop all apparel
               </Link>
             </div>
+
+            <TakeTheQuizPromo className="mt-10 sm:mt-12" />
           </section>
         )}
       </div>

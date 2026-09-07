@@ -14,6 +14,7 @@
 html {
   background: #000000;
   background-color: #000000;
+  color-scheme: dark;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -94,6 +95,46 @@ video {
   animation: hero-fade-in 800ms cubic-bezier(0.22, 1, 0.36, 1) 200ms both;
 }
 
+/*
+  Homepage hero: Zellerfeld-style studio flags — black light falloff
+  from the left and right so the product sits in a soft center spotlight.
+*/
+.hero-side-lights {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background:
+    linear-gradient(
+      to right,
+      rgb(0 0 0 / 0.72) 0%,
+      rgb(0 0 0 / 0.38) 10%,
+      rgb(0 0 0 / 0.16) 24%,
+      rgb(0 0 0 / 0.06) 38%,
+      transparent 48%,
+      transparent 54%,
+      rgb(0 0 0 / 0.06) 64%,
+      rgb(0 0 0 / 0.16) 76%,
+      rgb(0 0 0 / 0.38) 90%,
+      rgb(0 0 0 / 0.72) 100%
+    );
+}
+
+@media (max-width: 640px) {
+  .hero-side-lights {
+    background:
+      linear-gradient(
+        to right,
+        rgb(0 0 0 / 0.5) 0%,
+        rgb(0 0 0 / 0.16) 14%,
+        transparent 32%,
+        transparent 68%,
+        rgb(0 0 0 / 0.16) 86%,
+        rgb(0 0 0 / 0.5) 100%
+      );
+  }
+}
+
 /* Subtle shimmer for primary CTA */
 @keyframes subtle-shimmer {
   0% { background-position: -200% center; }
@@ -112,7 +153,7 @@ video {
   overflow-x: clip;
 }
 
-/* Original 50×43 overlapping hex tile (unchanged since Dec 2025). Slide left by one tile. */
+/* Original 50×43 overlapping hex tile. Slide left by one tile. */
 @keyframes hex-texture-drift {
   from {
     transform: translateX(0);
@@ -129,8 +170,14 @@ video {
   bottom: 0;
   left: 0;
   width: calc(100% + 50px);
+  /*
+    Odd-row hexes extend 8 units past the tile. CSS clips that overflow,
+    so draw the missing bottom tips as open paths at the top of the tile
+    (fully inside the viewBox). 2× SVG pixels so those tips still rasterize
+    at the 50×43 display size.
+  */
   background-image:
-    url("data:image/svg+xml,%3Csvg width='120' height='104' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='0.08' stroke-width='0.8'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
+    url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='0.08' stroke-width='0.8' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
   background-size: 50px 43px;
   background-position: 0 0;
   background-repeat: repeat;

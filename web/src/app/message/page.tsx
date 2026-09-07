@@ -5,7 +5,15 @@ import { isMessageDisabled, MESSAGE_DOWN_MESSAGE } from "@/lib/messageMaintenanc
 export const dynamic = "force-dynamic";
 
 export default async function MessagePage() {
-  if (await isMessageDisabled()) {
+  let disabled = false;
+  try {
+    disabled = await isMessageDisabled();
+  } catch (error) {
+    console.error("Failed to check messenger availability:", error);
+    disabled = false;
+  }
+
+  if (disabled) {
     return (
       <div className="flex min-h-[100dvh] flex-col items-center justify-center px-6 text-center">
         <div className="mb-6" aria-hidden="true">
