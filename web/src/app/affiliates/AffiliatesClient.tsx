@@ -527,7 +527,7 @@ export default function AffiliatesClient() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full bg-black text-white py-3.5 px-6 rounded-lg hover:bg-neutral-800 transition-colors font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+              className="btn-shimmer w-full bg-black text-white py-3.5 px-6 rounded-lg hover:bg-neutral-800 transition-colors font-medium disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {submitting ? "Submitting…" : "Submit affiliate application"}
             </button>

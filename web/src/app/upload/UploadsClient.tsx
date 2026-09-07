@@ -144,7 +144,7 @@ export default function UploadsClient() {
         <button
           type="button"
           onClick={() => setSuccessMessage(null)}
-          className="mt-6 rounded-full bg-black px-6 py-3 text-sm font-medium text-white hover:bg-neutral-800"
+          className="btn-shimmer mt-6 rounded-full bg-black px-6 py-3 text-sm font-medium text-white hover:bg-neutral-800"
         >
           Submit another file
         </button>
@@ -283,7 +283,7 @@ export default function UploadsClient() {
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-black px-6 py-3.5 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
+          className="btn-shimmer inline-flex w-full items-center justify-center gap-2 rounded-full bg-black px-6 py-3.5 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? (
             <>
