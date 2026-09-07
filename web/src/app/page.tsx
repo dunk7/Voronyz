@@ -11,19 +11,18 @@ export default function Home() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-black" />
         <div
-          className="absolute inset-0 -z-10 opacity-[0.28]"
+          className="hero-bg-wash absolute inset-0 -z-10"
           style={{
             backgroundImage: "url('/hero-bg.jpg')",
             backgroundSize: "cover",
             backgroundPosition: "center bottom",
             backgroundRepeat: "no-repeat",
-            filter: "brightness(0.65)",
           }}
         />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(900px_500px_at_50%_25%,rgba(255,255,255,0.06),transparent)]" />
+        <div className="hero-center-glow absolute inset-0 -z-10" />
 
-        {/* Hero content */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-20 sm:py-24 md:py-28 lg:py-12 xl:py-14 2xl:py-16 lg:px-8">
+        {/* Hero content stays above the side shade */}
+        <div className="relative z-[1] mx-auto max-w-7xl px-4 sm:px-6 py-20 sm:py-24 md:py-28 lg:py-12 xl:py-14 2xl:py-16 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-10 sm:gap-12 lg:gap-16">
             {/* Brand / headline */}
             <div className="lg:col-span-4 space-y-5 sm:space-y-6 order-2 lg:order-1">
@@ -54,8 +53,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Soft black lighting on the sides — Zellerfeld-style studio falloff */}
-        <div className="hero-side-lights" aria-hidden />
+        {/* Soft black shading on the left and right — behind the product */}
+        <div className="hero-side-shade" aria-hidden />
       </section>
 
       {/* One hex layer from the slip-ons video through All Footwear. */}
