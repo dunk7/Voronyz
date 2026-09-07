@@ -430,17 +430,14 @@ export default function ProductsContent({
           </div>
 
           {isHomeFootwearTeaser && (
-            <>
-              <div className="mt-10 sm:mt-12 flex justify-center">
-                <Link
-                  href="/products"
-                  className={SHOP_ALL_CTA_CLASS}
-                >
-                  Shop all footwear
-                </Link>
-              </div>
-              <TakeTheQuizPromo className="mt-10 sm:mt-12" />
-            </>
+            <div className="mt-10 sm:mt-12 flex justify-center">
+              <Link
+                href="/products"
+                className={SHOP_ALL_CTA_CLASS}
+              >
+                Shop all footwear
+              </Link>
+            </div>
           )}
           </>
         )}
@@ -473,6 +470,10 @@ export default function ProductsContent({
               </Link>
             </div>
           </section>
+        )}
+
+        {isHomeFootwearTeaser && (
+          <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
         )}
       </div>
     </div>
