@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { isThemeExemptPath } from "@/lib/siteThemeValue";
+import { shouldApplySiteDarkClass } from "@/lib/siteThemeValue";
 
 export const SITE_THEME_EVENT = "voronyz-theme";
 const SITE_THEME_CHANNEL = "voronyz-theme";
@@ -19,8 +19,10 @@ export function dispatchSiteTheme(dark: boolean) {
 }
 
 function applySiteDarkClass(dark: boolean, pathname: string | null) {
-  const on = dark && !isThemeExemptPath(pathname);
-  document.documentElement.classList.toggle("site-dark", on);
+  document.documentElement.classList.toggle(
+    "site-dark",
+    shouldApplySiteDarkClass(dark, pathname)
+  );
 }
 
 async function fetchSiteTheme(): Promise<boolean | null> {
@@ -37,11 +39,16 @@ async function fetchSiteTheme(): Promise<boolean | null> {
 export default function SiteTheme({ dark: initialDark }: { dark: boolean }) {
   const pathname = usePathname();
   const [dark, setDark] = useState(initialDark);
+  const fetchGen = useRef(0);
 
   useEffect(() => {
     const onTheme = (event: Event) => {
       const detail = (event as CustomEvent<{ dark?: unknown }>).detail;
-      if (detail && typeof detail.dark === "boolean") setDark(detail.dark);
+      if (detail && typeof detail.dark === "boolean") {
+        // Drop in-flight polls so they cannot overwrite a live admin toggle.
+        fetchGen.current += 1;
+        setDark(detail.dark);
+      }
     };
     window.addEventListener(SITE_THEME_EVENT, onTheme);
 
@@ -49,7 +56,10 @@ export default function SiteTheme({ dark: initialDark }: { dark: boolean }) {
     try {
       channel = new BroadcastChannel(SITE_THEME_CHANNEL);
       channel.onmessage = (event: MessageEvent<{ dark?: unknown }>) => {
-        if (typeof event.data?.dark === "boolean") setDark(event.data.dark);
+        if (typeof event.data?.dark === "boolean") {
+          fetchGen.current += 1;
+          setDark(event.data.dark);
+        }
       };
     } catch {
       /* BroadcastChannel unavailable */
@@ -64,8 +74,9 @@ export default function SiteTheme({ dark: initialDark }: { dark: boolean }) {
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
+      const gen = ++fetchGen.current;
       const next = await fetchSiteTheme();
-      if (!cancelled && next !== null) setDark(next);
+      if (!cancelled && gen === fetchGen.current && next !== null) setDark(next);
     };
     load();
     const onVis = () => {
@@ -85,7 +96,17 @@ export default function SiteTheme({ dark: initialDark }: { dark: boolean }) {
   }, [pathname]);
 
   useLayoutEffect(() => {
-    applySiteDarkClass(dark, pathname);
+    const sync = () => applySiteDarkClass(dark, pathname);
+    sync();
+
+    // Next.js re-renders `<html className>` and can strip a classList toggle.
+    const root = document.documentElement;
+    const observer = new MutationObserver(() => {
+      const on = shouldApplySiteDarkClass(dark, pathname);
+      if (root.classList.contains("site-dark") !== on) sync();
+    });
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
   }, [dark, pathname]);
 
   return null;
