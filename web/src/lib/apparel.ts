@@ -141,7 +141,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/hoodie.jpg",
     skuPrefix: "APP-HOOD",
-    comingSoon: true,
+    comingSoon: false,
   },
   // ── Accessories only (never mixed into clothing collections) ────────────
   // Lattice Insoles live on All Footwear as a live listing (see latticeInsoles.ts).
