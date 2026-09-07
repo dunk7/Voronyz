@@ -38,7 +38,7 @@ async function ensureSiteSettingsStore(): Promise<void> {
       `);
       await prisma.$executeRaw`
         INSERT INTO "SiteSetting" ("key", "value", "updatedAt")
-        VALUES (${SITE_DARK_MODE_KEY}, 'true', CURRENT_TIMESTAMP)
+        VALUES (${SITE_DARK_MODE_KEY}, 'false', CURRENT_TIMESTAMP)
         ON CONFLICT ("key") DO NOTHING
       `;
     })().catch((error) => {

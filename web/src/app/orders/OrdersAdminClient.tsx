@@ -700,15 +700,15 @@ export default function OrdersAdminClient() {
                   {darkMode === null
                     ? "Loading…"
                     : darkMode
-                      ? "Live on admin & shop"
-                      : "Off — light colors"}
+                      ? "Site is dark"
+                      : "Site is regular"}
                 </p>
               </div>
               <button
                 type="button"
                 role="switch"
                 aria-checked={darkMode ?? false}
-                aria-label="Toggle storefront dark mode"
+                aria-label="Choose dark or regular colors for the site"
                 disabled={darkMode === null || darkModeSaving}
                 onClick={toggleDarkMode}
                 className={`relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-50 ${

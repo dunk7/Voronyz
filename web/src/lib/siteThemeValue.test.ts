@@ -2,11 +2,11 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { isThemeExemptPath, parseSiteDarkModeValue } from "./siteThemeValue";
 
-test("storefront is dark when the setting is missing or blank", () => {
-  assert.equal(parseSiteDarkModeValue(null), true);
-  assert.equal(parseSiteDarkModeValue(undefined), true);
-  assert.equal(parseSiteDarkModeValue(""), true);
-  assert.equal(parseSiteDarkModeValue("   "), true);
+test("storefront stays regular when the setting is missing or blank", () => {
+  assert.equal(parseSiteDarkModeValue(null), false);
+  assert.equal(parseSiteDarkModeValue(undefined), false);
+  assert.equal(parseSiteDarkModeValue(""), false);
+  assert.equal(parseSiteDarkModeValue("   "), false);
 });
 
 test("dark mode follows explicit on/off values", () => {
@@ -20,9 +20,9 @@ test("dark mode follows explicit on/off values", () => {
   assert.equal(parseSiteDarkModeValue("off"), false);
 });
 
-test("messenger stays exempt; admin follows the site theme", () => {
-  assert.equal(isThemeExemptPath("/orders"), false);
-  assert.equal(isThemeExemptPath("/orders/"), false);
+test("admin and messenger stay on their own colors; the shop follows the toggle", () => {
+  assert.equal(isThemeExemptPath("/orders"), true);
+  assert.equal(isThemeExemptPath("/orders/"), true);
   assert.equal(isThemeExemptPath("/message"), true);
   assert.equal(isThemeExemptPath("/message/inbox"), true);
   assert.equal(isThemeExemptPath("/"), false);
