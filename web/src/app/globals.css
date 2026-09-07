@@ -14,6 +14,7 @@
 html {
   background: #000000;
   background-color: #000000;
+  color-scheme: dark;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -92,6 +93,46 @@ video {
 .hero-stagger-image {
   opacity: 0;
   animation: hero-fade-in 800ms cubic-bezier(0.22, 1, 0.36, 1) 200ms both;
+}
+
+/*
+  Homepage hero: Zellerfeld-style studio flags — black light falloff
+  from the left and right so the product sits in a soft center spotlight.
+*/
+.hero-side-lights {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background:
+    linear-gradient(
+      to right,
+      rgb(0 0 0 / 0.72) 0%,
+      rgb(0 0 0 / 0.38) 10%,
+      rgb(0 0 0 / 0.16) 24%,
+      rgb(0 0 0 / 0.06) 38%,
+      transparent 48%,
+      transparent 54%,
+      rgb(0 0 0 / 0.06) 64%,
+      rgb(0 0 0 / 0.16) 76%,
+      rgb(0 0 0 / 0.38) 90%,
+      rgb(0 0 0 / 0.72) 100%
+    );
+}
+
+@media (max-width: 640px) {
+  .hero-side-lights {
+    background:
+      linear-gradient(
+        to right,
+        rgb(0 0 0 / 0.5) 0%,
+        rgb(0 0 0 / 0.16) 14%,
+        transparent 32%,
+        transparent 68%,
+        rgb(0 0 0 / 0.16) 86%,
+        rgb(0 0 0 / 0.5) 100%
+      );
+  }
 }
 
 /* Subtle shimmer for primary CTA */

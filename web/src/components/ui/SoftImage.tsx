@@ -25,7 +25,7 @@ function srcToKey(src: ImageProps["src"]): string {
  */
 export default function SoftImage({
   className = "",
-  showLogoPlaceholder = true,
+  showLogoPlaceholder = false,
   placeholderTone = "dark",
   alt,
   src,
