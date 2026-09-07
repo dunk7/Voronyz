@@ -62,7 +62,7 @@ export default function Home() {
       <div className="bg-texture-white">
         <section className="border-t border-neutral-200">
           <div className="container py-16">
-            <MotionMediaCarousel />
+            <MotionMediaCarousel href="/products" linkLabel="Shop all footwear" />
           </div>
         </section>
 

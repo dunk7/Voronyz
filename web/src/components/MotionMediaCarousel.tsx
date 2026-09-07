@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { LogoMark } from "@/components/ui/LogoLoader";
 
@@ -71,15 +72,20 @@ function buildPingPongKeyframes(slideCount: number, animationName: string): stri
 type MotionMediaCarouselProps = {
   slides?: MediaSlide[];
   className?: string;
+  /** Same destination as the homepage “Shop all footwear” button. */
+  href?: string;
+  linkLabel?: string;
 };
 
 function MotionVideoSlide({
   src,
   alt,
+  decorative,
   onPlaying,
 }: {
   src: string;
   alt?: string;
+  decorative?: boolean;
   onPlaying: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -158,7 +164,7 @@ function MotionVideoSlide({
       <video
         ref={videoRef}
         src={src}
-        className={`h-full w-full object-cover transition-opacity duration-500 ease-out ${
+        className={`pointer-events-none h-full w-full object-cover transition-opacity duration-500 ease-out ${
           isPlaying ? "opacity-100" : "opacity-0"
         }`}
         autoPlay
@@ -166,7 +172,8 @@ function MotionVideoSlide({
         loop
         playsInline
         preload="auto"
-        aria-label={alt ?? "Product video"}
+        aria-hidden={decorative || undefined}
+        aria-label={decorative ? undefined : alt ?? "Product video"}
       />
     </div>
   );
@@ -175,6 +182,8 @@ function MotionVideoSlide({
 export default function MotionMediaCarousel({
   slides = MOTION_MEDIA_SLIDES,
   className = "",
+  href,
+  linkLabel = "Shop all footwear",
 }: MotionMediaCarouselProps) {
   const reactId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const animationName = `motion-media-pan-${reactId}`;
@@ -217,9 +226,11 @@ export default function MotionMediaCarousel({
     };
   }, [keyframes, animationName]);
 
-  return (
+  const frame = (
     <div
-      className={`relative aspect-video w-full overflow-hidden rounded-2xl ring-1 ring-neutral-200 shadow-lg bg-neutral-100 ${className}`}
+      className={`relative aspect-video w-full overflow-hidden rounded-2xl ring-1 ring-neutral-200 shadow-lg bg-neutral-100 ${
+        href ? "cursor-pointer transition-shadow duration-200 hover:shadow-xl" : ""
+      } ${className}`}
     >
       <div
         className="motion-media-track flex h-full will-change-transform"
@@ -241,6 +252,7 @@ export default function MotionMediaCarousel({
               <MotionVideoSlide
                 src={slide.src}
                 alt={slide.alt}
+                decorative={Boolean(href)}
                 onPlaying={handleVideoPlaying}
               />
             ) : (
@@ -258,4 +270,18 @@ export default function MotionMediaCarousel({
       </div>
     </div>
   );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        aria-label={linkLabel}
+        className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2"
+      >
+        {frame}
+      </Link>
+    );
+  }
+
+  return frame;
 }
