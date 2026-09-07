@@ -1,3 +1,5 @@
+import { readFileSync, writeFileSync } from "fs";
+import { join } from "path";
 import { unstable_noStore as noStore } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import {
@@ -13,6 +15,34 @@ let siteSettingsReady: Promise<void> | null = null;
 
 function isDatabaseConfigured(): boolean {
   return Boolean(process.env.DATABASE_URL?.trim());
+}
+
+function localThemeFile(): string {
+  return join(process.env.TMPDIR || "/tmp", "voronyz-dark-mode.json");
+}
+
+function readLocalTheme(): boolean {
+  try {
+    const parsed = JSON.parse(readFileSync(localThemeFile(), "utf8")) as {
+      dark?: unknown;
+    };
+    if (typeof parsed.dark === "boolean") {
+      memoryDark = parsed.dark;
+      return parsed.dark;
+    }
+  } catch {
+    /* no local file yet */
+  }
+  return memoryDark;
+}
+
+function writeLocalTheme(dark: boolean): void {
+  memoryDark = dark;
+  try {
+    writeFileSync(localThemeFile(), JSON.stringify({ dark }), "utf8");
+  } catch (error) {
+    console.error("Failed to persist local dark_mode setting:", error);
+  }
 }
 
 /** Create SiteSetting storage if migrations have not been applied yet. */
@@ -51,7 +81,7 @@ async function getSiteDarkModeFromDb(): Promise<boolean> {
 
 export async function getSiteDarkMode(): Promise<boolean> {
   noStore();
-  if (!isDatabaseConfigured()) return memoryDark;
+  if (!isDatabaseConfigured()) return readLocalTheme();
 
   try {
     const dark = await getSiteDarkModeFromDb();
@@ -64,7 +94,7 @@ export async function getSiteDarkMode(): Promise<boolean> {
 }
 
 export async function setSiteDarkMode(dark: boolean): Promise<boolean> {
-  memoryDark = dark;
+  writeLocalTheme(dark);
   if (!isDatabaseConfigured()) {
     return dark;
   }

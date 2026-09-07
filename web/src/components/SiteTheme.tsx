@@ -39,10 +39,6 @@ export default function SiteTheme({ dark: initialDark }: { dark: boolean }) {
   const [dark, setDark] = useState(initialDark);
 
   useEffect(() => {
-    setDark(initialDark);
-  }, [initialDark]);
-
-  useEffect(() => {
     const onTheme = (event: Event) => {
       const detail = (event as CustomEvent<{ dark?: unknown }>).detail;
       if (detail && typeof detail.dark === "boolean") setDark(detail.dark);
@@ -79,7 +75,7 @@ export default function SiteTheme({ dark: initialDark }: { dark: boolean }) {
     document.addEventListener("visibilitychange", onVis);
     const poll = window.setInterval(() => {
       if (document.visibilityState === "visible") load();
-    }, 4000);
+    }, 2000);
     return () => {
       cancelled = true;
       window.removeEventListener("focus", load);
