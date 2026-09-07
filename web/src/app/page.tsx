@@ -8,20 +8,8 @@ import LogoLoader from "@/components/ui/LogoLoader";
 export default function Home() {
   return (
     <div className="relative">
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-black" />
-        <div
-          className="hero-bg-wash absolute inset-0 -z-10"
-          style={{
-            backgroundImage: "url('/hero-bg.jpg')",
-            backgroundSize: "cover",
-            backgroundPosition: "center bottom",
-            backgroundRepeat: "no-repeat",
-          }}
-        />
-        <div className="hero-center-glow absolute inset-0 -z-10" />
-
-        {/* Hero content stays above the side shade */}
+      <section className="hero-stage relative overflow-hidden">
+        {/* Hero content */}
         <div className="relative z-[1] mx-auto max-w-7xl px-4 sm:px-6 py-20 sm:py-24 md:py-28 lg:py-12 xl:py-14 2xl:py-16 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-10 sm:gap-12 lg:gap-16">
             {/* Brand / headline */}
@@ -52,9 +40,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-
-        {/* Soft black shading on the left and right — behind the product */}
-        <div className="hero-side-shade" aria-hidden />
       </section>
 
       {/* One hex layer from the slip-ons video through All Footwear. */}
