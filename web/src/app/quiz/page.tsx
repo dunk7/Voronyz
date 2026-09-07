@@ -11,7 +11,7 @@ export default function QuizPage() {
   return (
     <div className="relative min-h-[70vh] overflow-hidden bg-texture-white">
       <div
-        className="pointer-events-none absolute inset-0 opacity-70"
+        className="theme-surface-wash pointer-events-none absolute inset-0 opacity-70"
         aria-hidden
         style={{
           background:
