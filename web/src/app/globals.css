@@ -307,24 +307,20 @@ video {
 }
 
 /*
-  Footwear product copy under each pair: bold handwriting that’s easy to read,
-  in a soft cool charcoal with a light glow so it feels a little future —
-  not robotic, not a stiff sans.
+  Footwear product copy under each pair: Space Grotesk — bold, easy to read,
+  geometric enough to sit with the lattice/tech look, not cursive, not HUD.
 */
 .footwear-description {
-  font-family: var(--font-handwriting), "Segoe Print", "Bradley Hand", cursive;
+  font-family: var(--font-space), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   font-weight: 700;
-  font-size: 1.35rem;
-  line-height: 1.55;
+  font-size: 1.0625rem;
+  line-height: 1.7;
   letter-spacing: 0.02em;
-  color: #5a6474;
-  text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.7),
-    0 0 22px rgba(148, 180, 214, 0.28);
+  color: #2f3440;
 }
 
 @media (min-width: 640px) {
   .footwear-description {
-    font-size: 1.5rem;
+    font-size: 1.1875rem;
   }
 }

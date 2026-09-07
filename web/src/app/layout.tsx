@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Caveat } from "next/font/google";
+import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -77,9 +77,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-/** Bold handwriting that’s still easy to read — used for footwear descriptions. */
-const handwriting = Caveat({
-  variable: "--font-handwriting",
+/** Geometric, bold, readable — footwear descriptions. Future without going robotic. */
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space",
   subsets: ["latin"],
   weight: ["600", "700"],
   display: "swap",
@@ -138,7 +138,7 @@ export default function RootLayout({
   return (
     <html lang="en" style={{ background: "#000000", colorScheme: "dark" }}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${handwriting.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} antialiased`}
         style={{ background: "#000000" }}
         suppressHydrationWarning
       >
