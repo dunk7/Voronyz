@@ -17,6 +17,12 @@ type FootwearBrowseProps = {
   getImages: (p: BrowseProduct) => { cover: string; alt?: string };
 };
 
+/** Side-cropped listing frames — originals stay on the product gallery. */
+const SLIP_ONS_BROWSE = {
+  cover: "/products/slip-ons/browse-cover.jpg",
+  alt: "/products/slip-ons/browse-alt.jpg",
+} as const;
+
 function BrowseItem({
   product,
   cover,
@@ -56,13 +62,9 @@ function BrowseItem({
     [router, product.slug],
   );
 
-  // Slip-on studio shots are wide (1600×905) with empty grey on both sides.
-  // Cover the square so those side margins are cropped; other products stay contain
-  // so tightly framed square photos (slides, sneakers) don't clip heel/toe.
-  const cropSideMargins = slugKey === "slip-ons";
-  const imageFitClass = cropSideMargins
-    ? "object-cover object-center"
-    : "object-contain object-center";
+  const isSlipOns = slugKey === "slip-ons";
+  const coverSrc = isSlipOns ? SLIP_ONS_BROWSE.cover : cover;
+  const altSrc = isSlipOns ? SLIP_ONS_BROWSE.alt : alt;
 
   return (
     <article
@@ -81,24 +83,24 @@ function BrowseItem({
         <div className="relative -mx-6 aspect-square w-[calc(100%+3rem)] overflow-hidden bg-transparent p-[10%] sm:p-[12%] md:p-[14%]">
           <div className="relative h-full w-full">
             <SoftImage
-              key={cover}
-              src={cover}
+              key={coverSrc}
+              src={coverSrc}
               alt={product.name}
               fill
-              className={`${imageFitClass} transition-opacity duration-700 ease-out ${
-                alt ? "group-hover:opacity-0" : ""
+              className={`object-contain object-center transition-opacity duration-700 ease-out ${
+                altSrc ? "group-hover:opacity-0" : ""
               } ${navigating ? "brightness-90" : ""}`}
               sizes="100vw"
               priority={index === 0}
             />
-            {alt && (
+            {altSrc && (
               <SoftImage
-                key={alt}
-                src={alt}
+                key={altSrc}
+                src={altSrc}
                 alt={`${product.name} – alternate view`}
                 fill
                 showLogoPlaceholder={false}
-                className={`${imageFitClass} opacity-0 transition-opacity duration-700 ease-out group-hover:opacity-100`}
+                className="object-contain object-center opacity-0 transition-opacity duration-700 ease-out group-hover:opacity-100"
                 sizes="100vw"
                 loading="lazy"
               />
