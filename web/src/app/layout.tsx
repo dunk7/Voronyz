@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Shantell_Sans } from "next/font/google";
+import { Geist, Geist_Mono, Caveat } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -77,8 +77,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-/** Informal marker hand — bold, readable, human. Used for footwear descriptions. */
-const handwriting = Shantell_Sans({
+/** Bold handwriting that’s still easy to read — used for footwear descriptions. */
+const handwriting = Caveat({
   variable: "--font-handwriting",
   subsets: ["latin"],
   weight: ["600", "700"],
