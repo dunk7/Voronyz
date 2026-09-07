@@ -14,15 +14,15 @@ test("button shimmer is a faint hex chessboard, not a white fill", () => {
   assert.ok(shimmerAfter, "expected a .btn-shimmer::after overlay rule");
   assert.match(
     css,
-    /background-size:\s*50px 43px/,
-    "button sheen must use the storefront hex tile size",
+    /background-size:\s*32px 28px/,
+    "button sheen must use a scaled storefront hex tile so cells fit on a CTA",
   );
   assert.match(
     css,
     /data:image\/svg\+xml/,
     "hex chessboard must be an SVG overlay",
   );
-  assert.match(css, /fill-opacity='0\.12'/);
+  assert.match(css, /fill-opacity='0\.18'/);
   assert.doesNotMatch(
     css.match(/\.btn-shimmer \{[\s\S]*?\n\}/)?.[0] ?? "",
     /background-color:\s*#f5f5f5/i,

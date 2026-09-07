@@ -192,18 +192,18 @@ video {
   position: absolute;
   inset: -20%;
   background-repeat: repeat;
-  background-size: 50px 43px;
+  background-size: 32px 28px;
 }
 
 /* Even hexes + white grid, matching the storefront tessellation. */
 .btn-shimmer::before {
-  background-image: url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.12'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3C/g%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.18' stroke-width='0.8' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.18'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3C/g%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.26' stroke-width='0.9' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3C/g%3E%3C/svg%3E");
   animation: btn-shimmer-hex 16s ease-in-out infinite;
 }
 
 /* Odd hexes — the other chessboard color, fading the opposite way. */
 .btn-shimmer::after {
-  background-image: url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.12'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.18'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
   animation: btn-shimmer-hex 16s ease-in-out infinite reverse;
 }
 
