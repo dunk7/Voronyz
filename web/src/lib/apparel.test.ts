@@ -6,8 +6,8 @@ import {
   getApparelItem,
 } from "./apparel";
 
-test("core hoodie listing is named Essential hoodie", () => {
-  assert.equal(getApparelItem("voronyz-core-hoodie")?.name, "Essential hoodie");
+test("core hoodie listing is named The Atelier Hoodie", () => {
+  assert.equal(getApparelItem("voronyz-core-hoodie")?.name, "The Atelier Hoodie");
 });
 
 test("hoodie listing back link returns to Apparel", () => {
