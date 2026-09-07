@@ -17,3 +17,19 @@ export function isThemeExemptPath(pathname: string | null | undefined): boolean 
     pathname.startsWith("/message/")
   );
 }
+
+/** Shop pages follow the admin setting; /orders and /message keep their own colors. */
+export function shouldApplySiteDarkClass(
+  dark: boolean,
+  pathname: string | null | undefined
+): boolean {
+  return Boolean(dark) && !isThemeExemptPath(pathname);
+}
+
+/**
+ * Inline boot script so `site-dark` is applied (or cleared) before paint.
+ * Uses real booleans — a number compared with `==="1"` never matches.
+ */
+export function siteThemeBootScript(dark: boolean): string {
+  return `(function(){try{var dark=${dark ? "true" : "false"};var p=location.pathname||"";var exempt=p==="/orders"||p.indexOf("/orders/")===0||p==="/message"||p.indexOf("/message/")===0;if(dark&&!exempt){document.documentElement.classList.add("site-dark");}else{document.documentElement.classList.remove("site-dark");}}catch(e){}})();`;
+}

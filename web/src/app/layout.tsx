@@ -8,6 +8,7 @@ import DiscountUrgencyBanner from "@/components/discount/DiscountUrgencyBanner";
 import InitialSplash from "@/components/ui/InitialSplash";
 import SiteTheme from "@/components/SiteTheme";
 import { getSiteDarkMode } from "@/lib/siteTheme";
+import { siteThemeBootScript } from "@/lib/siteThemeValue";
 
 /** Black + white-logo splash for iOS home-screen shortcuts (avoids the default white card + icon). */
 const appleStartupImages = [
@@ -129,10 +130,6 @@ export const metadata: Metadata = {
   },
 };
 
-function siteThemeBootScript(dark: boolean): string {
-  return `(function(){try{var d=${dark ? "1" : "0"};var p=location.pathname;if(d==="1"&&p.indexOf("/orders")!==0&&p.indexOf("/message")!==0){document.documentElement.classList.add("site-dark");}}catch(e){}})();`;
-}
-
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -143,12 +140,11 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${geistMono.variable}`}
       style={{ background: "#000000", colorScheme: "dark" }}
       suppressHydrationWarning
     >
       <body
-        className={`${spaceGrotesk.className} antialiased`}
+        className={`${spaceGrotesk.className} ${spaceGrotesk.variable} ${geistMono.variable} antialiased`}
         style={{ background: "#000000" }}
         suppressHydrationWarning
       >
