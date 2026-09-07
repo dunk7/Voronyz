@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { isThemeExemptPath } from "@/lib/siteThemeValue";
 
@@ -58,7 +58,7 @@ export default function SiteTheme({ dark: initialDark }: { dark: boolean }) {
     };
   }, [pathname]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     applySiteDarkClass(dark, pathname);
   }, [dark, pathname]);
 
