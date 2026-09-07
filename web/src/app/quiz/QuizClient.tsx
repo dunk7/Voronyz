@@ -562,7 +562,7 @@ export default function QuizClient() {
             size="lg"
             disabled={!canAddAny || addingAll}
             onClick={handleAddAll}
-            className="btn-shimmer text-white"
+            className="btn-shimmer text-white disabled:opacity-100"
           >
             {addingAll ? "Adding…" : "Add these products to cart"}
           </Button>

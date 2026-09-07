@@ -143,6 +143,14 @@ video {
   animation: subtle-shimmer 3s ease-in-out infinite;
 }
 
+.btn-shimmer:disabled {
+  opacity: 1;
+  color: #fff;
+  background-color: #262626;
+  background-image: none;
+  animation: none;
+}
+
 .bg-texture-white {
   background-color: #ffffff !important;
   position: relative;
