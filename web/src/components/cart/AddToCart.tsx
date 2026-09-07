@@ -814,7 +814,7 @@ export default function AddToCart({
                 </button>
                 <Link
                   href="/cart"
-                  className="button-pop-right rounded-full px-6 py-3 text-sm font-medium h-[48px] flex-1 bg-black text-white hover:bg-neutral-800 flex items-center justify-center transition-colors"
+                  className="button-pop-right btn-shimmer rounded-full px-6 py-3 text-sm font-medium h-[48px] flex-1 bg-black text-white hover:bg-neutral-800 flex items-center justify-center transition-colors"
                 >
                   View Cart
                 </Link>
@@ -826,7 +826,7 @@ export default function AddToCart({
                 className={`rounded-full px-6 py-3 text-sm font-medium h-[48px] w-full transition-all duration-300 ease-out ${
                   loading || !canAdd
                     ? "bg-neutral-300 text-neutral-500 cursor-not-allowed" 
-                    : "bg-black text-white hover:bg-neutral-800"
+                    : "btn-shimmer bg-black text-white hover:bg-neutral-800"
                 } flex items-center justify-center gap-2`}
               >
                 {loading

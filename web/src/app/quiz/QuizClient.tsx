@@ -562,13 +562,13 @@ export default function QuizClient() {
             size="lg"
             disabled={!canAddAny || addingAll}
             onClick={handleAddAll}
-            className="btn-shimmer text-white disabled:opacity-100"
+            className="text-white disabled:opacity-100 disabled:bg-[#262626]"
           >
             {addingAll ? "Adding…" : "Add these products to cart"}
           </Button>
           <Link
             href="/cart"
-            className="inline-flex items-center justify-center rounded-full bg-neutral-900 text-white px-6 py-3.5 text-base font-medium hover:bg-neutral-800"
+            className="btn-shimmer inline-flex items-center justify-center rounded-full bg-neutral-900 text-white px-6 py-3.5 text-base font-medium hover:bg-neutral-800"
           >
             View cart
           </Link>

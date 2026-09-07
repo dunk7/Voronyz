@@ -411,7 +411,7 @@ export default function CartClient() {
         <p>Your cart is empty.</p>
         <Link
           href="/products"
-          className="inline-flex rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white hover:bg-neutral-800"
+          className="btn-shimmer inline-flex rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white hover:bg-neutral-800"
         >
           Shop footwear
         </Link>
@@ -673,7 +673,7 @@ export default function CartClient() {
               />
               <button
                 onClick={applyDiscount}
-                className="px-4 py-2 bg-black text-white rounded-md text-sm hover:bg-neutral-800"
+                className="btn-shimmer px-4 py-2 bg-black text-white rounded-md text-sm hover:bg-neutral-800"
               >
                 Apply
               </button>
@@ -733,7 +733,7 @@ export default function CartClient() {
         <button
           type="button"
           disabled={stripeBusy || isNanoCheckingOut}
-          className="w-full rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn-shimmer w-full rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Continue"
           onClick={() => startStripeCheckout("ach")}
         >

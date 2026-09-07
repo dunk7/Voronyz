@@ -149,36 +149,60 @@ video {
   }
 }
 
-/* Subtle shimmer for primary CTA.
-   Keep the sweep on a dark fill with white label text. A light gradient
-   plus `text-white` made the quiz "Add these products to cart" button
-   invisible on the light results page. */
-@keyframes subtle-shimmer {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
+/*
+  Diagonal highlight that sweeps across primary CTAs.
+  Painted as an overlay so Tailwind fill/text colors (and the quiz
+  add-to-cart label) stay readable — do not animate background-image.
+*/
+@keyframes btn-shimmer-sweep {
+  0% {
+    transform: translateX(-140%) skewX(-18deg);
+  }
+  100% {
+    transform: translateX(240%) skewX(-18deg);
+  }
 }
 
 .btn-shimmer {
-  color: #fff;
-  background-color: #000;
-  background-size: 200% auto;
-  background-image: linear-gradient(
-    90deg,
-    #000 0%,
-    #000 40%,
-    #3f3f3f 50%,
-    #000 60%,
-    #000 100%
-  );
-  animation: subtle-shimmer 3s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
 }
 
-.btn-shimmer:disabled {
-  opacity: 1;
-  color: #fff;
-  background-color: #262626;
-  background-image: none;
+.btn-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: -50% auto -50% 0;
+  width: 50%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(255 255 255 / 0.0) 15%,
+    rgb(255 255 255 / 0.2) 40%,
+    rgb(255 255 255 / 0.55) 49%,
+    rgb(255 255 255 / 0.85) 50%,
+    rgb(255 255 255 / 0.55) 51%,
+    rgb(255 255 255 / 0.2) 60%,
+    rgb(255 255 255 / 0.0) 85%,
+    transparent 100%
+  );
+  animation: btn-shimmer-sweep 1.6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+  will-change: transform;
+}
+
+.btn-shimmer:disabled::after,
+.btn-shimmer[aria-disabled="true"]::after {
+  content: none;
   animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-shimmer::after {
+    content: none;
+    animation: none;
+  }
 }
 
 .bg-texture-white {
@@ -575,19 +599,25 @@ html.site-dark main button.bg-black .border-white {
 html.site-dark main .btn-shimmer {
   color: #111111;
   background-color: #f5f5f5;
-  background-image: linear-gradient(
+}
+
+html.site-dark main .btn-shimmer::after {
+  background: linear-gradient(
     90deg,
-    #f5f5f5 0%,
-    #f5f5f5 40%,
-    #d4d4d4 50%,
-    #f5f5f5 60%,
-    #f5f5f5 100%
+    transparent 0%,
+    rgb(0 0 0 / 0) 15%,
+    rgb(0 0 0 / 0.08) 40%,
+    rgb(0 0 0 / 0.22) 49%,
+    rgb(0 0 0 / 0.38) 50%,
+    rgb(0 0 0 / 0.22) 51%,
+    rgb(0 0 0 / 0.08) 60%,
+    rgb(0 0 0 / 0) 85%,
+    transparent 100%
   );
 }
 
 html.site-dark main .btn-shimmer:disabled {
   background-image: none;
-  animation: none;
 }
 
 html.site-dark main .glow {
