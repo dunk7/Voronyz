@@ -156,12 +156,12 @@ video {
 */
 @keyframes btn-shimmer-sweep {
   0%,
-  12% {
-    transform: translateX(-160%) skewX(-18deg);
+  8% {
+    transform: translateX(-180%) skewX(-20deg);
   }
-  42%,
+  38%,
   100% {
-    transform: translateX(280%) skewX(-18deg);
+    transform: translateX(320%) skewX(-20deg);
   }
 }
 
@@ -174,22 +174,24 @@ video {
 .btn-shimmer::after {
   content: "";
   position: absolute;
-  inset: -40% auto -40% 0;
-  width: 55%;
+  inset: -50% auto -50% 0;
+  width: 42%;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgb(255 255 255 / 0.08) 30%,
-    rgb(255 255 255 / 0.42) 48%,
-    rgb(255 255 255 / 0.85) 50%,
-    rgb(255 255 255 / 0.42) 52%,
-    rgb(255 255 255 / 0.08) 70%,
+    rgb(255 255 255 / 0.0) 18%,
+    rgb(255 255 255 / 0.14) 38%,
+    rgb(255 255 255 / 0.38) 48%,
+    rgb(255 255 255 / 0.7) 50%,
+    rgb(255 255 255 / 0.38) 52%,
+    rgb(255 255 255 / 0.14) 62%,
+    rgb(255 255 255 / 0.0) 82%,
     transparent 100%
   );
-  mix-blend-mode: overlay;
-  animation: btn-shimmer-sweep 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: btn-shimmer-sweep 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   pointer-events: none;
   z-index: 1;
+  will-change: transform;
 }
 
 .btn-shimmer:disabled::after,
