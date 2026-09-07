@@ -134,14 +134,14 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
   {
     slug: "voronyz-core-hoodie",
     subcategory: "sweaters",
-    name: "Hoodie",
+    name: "The Atelier Hoodie",
     description: "Heavyweight fleece hoodie with a clean, modern cut.",
     priceCents: 7800,
     colors: ["black", "grey"],
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/hoodie.jpg",
     skuPrefix: "APP-HOOD",
-    comingSoon: true,
+    comingSoon: false,
   },
   // ── Accessories only (never mixed into clothing collections) ────────────
   // Lattice Insoles live on All Footwear as a live listing (see latticeInsoles.ts).

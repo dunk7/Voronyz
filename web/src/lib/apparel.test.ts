@@ -1,6 +1,20 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { apparelProductShopHref, apparelProductShopLabel } from "./apparel";
+import {
+  apparelProductShopHref,
+  apparelProductShopLabel,
+  getApparelItem,
+} from "./apparel";
+import { isComingSoonPreOrderProduct } from "./preorder";
+
+test("core hoodie listing is named The Atelier Hoodie", () => {
+  assert.equal(getApparelItem("voronyz-core-hoodie")?.name, "The Atelier Hoodie");
+});
+
+test("The Atelier Hoodie is a live listing, not a pre-order", () => {
+  assert.equal(getApparelItem("voronyz-core-hoodie")?.comingSoon, false);
+  assert.equal(isComingSoonPreOrderProduct("voronyz-core-hoodie"), false);
+});
 
 test("hoodie listing back link returns to Apparel", () => {
   assert.equal(apparelProductShopHref("voronyz-core-hoodie"), "/apparel");
