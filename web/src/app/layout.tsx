@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Shantell_Sans } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -77,6 +77,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+/** Informal marker hand — bold, readable, human. Used for footwear descriptions. */
+const handwriting = Shantell_Sans({
+  variable: "--font-handwriting",
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  display: "swap",
+});
+
 export const viewport: Viewport = {
   themeColor: "#000000",
 };
@@ -130,7 +138,7 @@ export default function RootLayout({
   return (
     <html lang="en" style={{ background: "#000000", colorScheme: "dark" }}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${handwriting.variable} antialiased`}
         style={{ background: "#000000" }}
         suppressHydrationWarning
       >

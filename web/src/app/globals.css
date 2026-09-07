@@ -305,3 +305,25 @@ video {
     opacity: 1;
   }
 }
+
+/*
+  Footwear product copy under each pair: handwritten-bold, easy to read,
+  soft charcoal with a cool glow so it feels a little future — not robotic.
+*/
+.footwear-description {
+  font-family: var(--font-handwriting), ui-rounded, "Segoe Print", "Bradley Hand", cursive;
+  font-weight: 700;
+  font-size: 1.125rem;
+  line-height: 1.7;
+  letter-spacing: 0.018em;
+  color: #5a6474;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7),
+    0 0 22px rgba(148, 180, 214, 0.28);
+}
+
+@media (min-width: 640px) {
+  .footwear-description {
+    font-size: 1.25rem;
+  }
+}
