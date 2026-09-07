@@ -76,6 +76,8 @@ type ProductsContentProps = {
   category?: "footwear" | "accessories" | "health" | "all";
   /** When true (home page), show a bounce arrow under the bold heading as a scroll cue. */
   showScrollCue?: boolean;
+  /** Skip the hex wrapper when the parent already provides one (homepage). */
+  embedded?: boolean;
 };
 
 function categorySeed(category: ProductsContentProps["category"]): Product[] {
@@ -88,6 +90,7 @@ function categorySeed(category: ProductsContentProps["category"]): Product[] {
 export default function ProductsContent({
   category = "footwear",
   showScrollCue = false,
+  embedded = false,
 }: ProductsContentProps) {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q");
@@ -254,10 +257,14 @@ export default function ProductsContent({
     </svg>
   );
 
+  const shellClass = embedded
+    ? "min-h-[80vh]"
+    : "bg-texture-white min-h-[80vh]";
+
   /* ── Logo loader only when we have nothing to show yet ── */
   if (loading && products.length === 0) {
     return (
-      <div className="bg-texture-white min-h-[80vh]">
+      <div className={shellClass}>
         <div className="container py-16">
           <div className="mb-12 text-center">
             <TitleTag className={titleClass}>
@@ -298,7 +305,7 @@ export default function ProductsContent({
   }
 
   return (
-    <div className="bg-texture-white min-h-[80vh]">
+    <div className={shellClass}>
       <div className="container py-16">
         {/* ── Header ── */}
         <div className="mb-12 text-center">
