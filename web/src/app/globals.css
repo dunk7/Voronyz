@@ -313,14 +313,14 @@ video {
 .footwear-description {
   font-family: var(--font-space), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   font-weight: 700;
-  font-size: 1.0625rem;
-  line-height: 1.7;
-  letter-spacing: 0.02em;
-  color: #2f3440;
+  font-size: 1.125rem;
+  line-height: 1.65;
+  letter-spacing: 0.03em;
+  color: #171717;
 }
 
 @media (min-width: 640px) {
   .footwear-description {
-    font-size: 1.1875rem;
+    font-size: 1.25rem;
   }
 }
