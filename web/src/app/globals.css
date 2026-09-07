@@ -96,43 +96,21 @@ video {
 }
 
 /*
-  Homepage hero: Zellerfeld-style studio flags — black light falloff
-  from the left and right so the product sits in a soft center spotlight.
+  Homepage hero: charcoal in the middle, black on the left and right.
+  Applied on the section itself so the side shading is actually visible.
 */
-.hero-side-lights {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  z-index: 10;
-  background:
+.hero-stage {
+  background-color: #000;
+  background-image:
     linear-gradient(
       to right,
-      rgb(0 0 0 / 0.72) 0%,
-      rgb(0 0 0 / 0.38) 10%,
-      rgb(0 0 0 / 0.16) 24%,
-      rgb(0 0 0 / 0.06) 38%,
-      transparent 48%,
-      transparent 54%,
-      rgb(0 0 0 / 0.06) 64%,
-      rgb(0 0 0 / 0.16) 76%,
-      rgb(0 0 0 / 0.38) 90%,
-      rgb(0 0 0 / 0.72) 100%
+      #000 0%,
+      #1a1a1a 12%,
+      #242424 22%,
+      #242424 78%,
+      #1a1a1a 88%,
+      #000 100%
     );
-}
-
-@media (max-width: 640px) {
-  .hero-side-lights {
-    background:
-      linear-gradient(
-        to right,
-        rgb(0 0 0 / 0.5) 0%,
-        rgb(0 0 0 / 0.16) 14%,
-        transparent 32%,
-        transparent 68%,
-        rgb(0 0 0 / 0.16) 86%,
-        rgb(0 0 0 / 0.5) 100%
-      );
-  }
 }
 
 /* Subtle shimmer for primary CTA */
