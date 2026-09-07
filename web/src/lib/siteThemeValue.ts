@@ -1,5 +1,5 @@
-/** Storefront stays light unless an admin turns dark mode on. */
-export const SITE_DARK_MODE_BY_DEFAULT = false;
+/** Dark storefront unless an admin turns it off. */
+export const SITE_DARK_MODE_BY_DEFAULT = true;
 
 export function parseSiteDarkModeValue(value: string | null | undefined): boolean {
   if (value == null) return SITE_DARK_MODE_BY_DEFAULT;

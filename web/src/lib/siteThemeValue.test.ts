@@ -2,11 +2,11 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { isThemeExemptPath, parseSiteDarkModeValue } from "./siteThemeValue";
 
-test("storefront stays light when the setting is missing or blank", () => {
-  assert.equal(parseSiteDarkModeValue(null), false);
-  assert.equal(parseSiteDarkModeValue(undefined), false);
-  assert.equal(parseSiteDarkModeValue(""), false);
-  assert.equal(parseSiteDarkModeValue("   "), false);
+test("storefront is dark when the setting is missing or blank", () => {
+  assert.equal(parseSiteDarkModeValue(null), true);
+  assert.equal(parseSiteDarkModeValue(undefined), true);
+  assert.equal(parseSiteDarkModeValue(""), true);
+  assert.equal(parseSiteDarkModeValue("   "), true);
 });
 
 test("dark mode follows explicit on/off values", () => {
