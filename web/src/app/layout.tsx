@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
+import { Geist_Mono, Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -71,21 +71,16 @@ const siteUrl =
   process.env.DEPLOY_PRIME_URL || // Netlify previews
   "http://localhost:3000";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
-/** Geometric, bold, readable — footwear descriptions. Future without going robotic. */
+/** Site-wide type: Space Grotesk — the geometric face used on footwear descriptions. */
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space",
   subsets: ["latin"],
-  weight: ["600", "700"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -148,11 +143,12 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
+      className={`${spaceGrotesk.variable} ${geistMono.variable}`}
       style={{ background: "#000000", colorScheme: "dark" }}
       suppressHydrationWarning
     >
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} antialiased`}
+        className={`${spaceGrotesk.className} antialiased`}
         style={{ background: "#000000" }}
         suppressHydrationWarning
       >

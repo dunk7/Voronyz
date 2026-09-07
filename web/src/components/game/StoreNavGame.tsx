@@ -598,7 +598,7 @@ export default function StoreNavGame() {
         drawRoundedRect(ctx, zone.x, zone.y, zone.w, zone.h, 14);
         ctx.fill();
         ctx.fillStyle = "rgba(40, 30, 50, 0.45)";
-        ctx.font = "600 13px ui-rounded, system-ui, sans-serif";
+        ctx.font = "600 13px 'Space Grotesk', ui-sans-serif, system-ui, sans-serif";
         ctx.textAlign = "center";
         ctx.fillText(zone.name, zone.x + zone.w / 2, zone.y + zone.h / 2 + 4);
       }
@@ -619,7 +619,7 @@ export default function StoreNavGame() {
 
         if (shelf.label) {
           ctx.fillStyle = shelf.labelColor || "#fff";
-          ctx.font = "700 13px ui-rounded, system-ui, sans-serif";
+          ctx.font = "700 13px 'Space Grotesk', ui-sans-serif, system-ui, sans-serif";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           const vertical = shelf.h > shelf.w * 1.2;
@@ -684,7 +684,7 @@ export default function StoreNavGame() {
         const alpha = Math.min(1, pop.t);
         ctx.save();
         ctx.globalAlpha = alpha;
-        ctx.font = "700 18px ui-rounded, system-ui, sans-serif";
+        ctx.font = "700 18px 'Space Grotesk', ui-sans-serif, system-ui, sans-serif";
         ctx.textAlign = "center";
         const text = pop.text;
         const tw = ctx.measureText(text).width;
@@ -701,7 +701,7 @@ export default function StoreNavGame() {
 
       // Brand corner (world-space, near map origin)
       ctx.fillStyle = "rgba(45, 35, 55, 0.45)";
-      ctx.font = "800 16px ui-rounded, system-ui, sans-serif";
+      ctx.font = "700 16px 'Space Grotesk', ui-sans-serif, system-ui, sans-serif";
       ctx.textAlign = "left";
       ctx.textBaseline = "alphabetic";
       ctx.fillText("VORONYZ STORE", 28, 42);

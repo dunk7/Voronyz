@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-space), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
 :root {
   --background: #000000;
   --foreground: #171717;
@@ -52,10 +57,17 @@ body {
   background: #000000;
   background-color: #000000;
   color: var(--foreground);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  font-family: var(--font-space), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
 }
 
 input,
@@ -361,11 +373,11 @@ html.site-dark .bg-texture-white .bg-texture-white::before {
 }
 
 /*
-  Footwear product copy under each pair: Space Grotesk — bold, easy to read,
-  geometric enough to sit with the lattice/tech look, not cursive, not HUD.
+  Product copy under each pair: same Space Grotesk as the rest of the site,
+  kept bolder and a bit more open so the description stays easy to read.
 */
 .footwear-description {
-  font-family: var(--font-space), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: inherit;
   font-weight: 700;
   font-size: 1.125rem;
   line-height: 1.65;

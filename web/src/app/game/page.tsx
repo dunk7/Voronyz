@@ -21,10 +21,7 @@ export default function GamePage() {
           <p className="uppercase tracking-[0.28em] text-xs text-rose-400 font-semibold">
             Voronyz Play
           </p>
-          <h1
-            className="text-4xl md:text-5xl font-bold text-neutral-900"
-            style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
-          >
+          <h1 className="text-4xl md:text-5xl font-bold text-neutral-900">
             Store Stroll
           </h1>
         </div>
