@@ -163,18 +163,20 @@ video {
 }
 
 /*
-  Barely-visible diagonal sheen on primary CTAs.
-  Overlay only — never paint the button fill white, and never animate
-  background-image (that hid the quiz add-to-cart label).
+  Continuous futuristic sheen on primary CTAs.
+  Two opposing metallic fields that scroll linearly forever — no
+  single blade, no orbit that sits on the right edge. Overlay only
+  so Tailwind fills and the quiz add-to-cart label stay put.
 */
-@keyframes btn-shimmer-sweep {
-  0%,
-  22% {
-    transform: translateX(-160%) skewX(-20deg);
+@keyframes btn-shimmer-flow {
+  to {
+    transform: translate3d(-56px, 0, 0);
   }
-  58%,
-  100% {
-    transform: translateX(280%) skewX(-20deg);
+}
+
+@keyframes btn-shimmer-flow-alt {
+  to {
+    transform: translate3d(80px, 0, 0);
   }
 }
 
@@ -184,34 +186,61 @@ video {
   isolation: isolate;
 }
 
+.btn-shimmer::before,
 .btn-shimmer::after {
   content: "";
-  position: absolute;
-  inset: -40% auto -40% 0;
-  width: 26%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgb(255 255 255 / 0) 28%,
-    rgb(255 255 255 / 0.04) 44%,
-    rgb(255 255 255 / 0.12) 50%,
-    rgb(255 255 255 / 0.04) 56%,
-    rgb(255 255 255 / 0) 72%,
-    transparent 100%
-  );
-  animation: btn-shimmer-sweep 4.4s ease-in-out infinite;
   pointer-events: none;
   z-index: 1;
+}
+
+.btn-shimmer::before {
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  left: -50%;
+  width: 200%;
+  background-image: repeating-linear-gradient(
+    128deg,
+    rgb(255 255 255 / 0) 0 16px,
+    rgb(255 255 255 / 0.08) 30px,
+    rgb(255 255 255 / 0.16) 40px,
+    rgb(255 255 255 / 0.08) 50px,
+    rgb(255 255 255 / 0) 64px 80px
+  );
+  background-size: 80px 80px;
+  animation: btn-shimmer-flow-alt 2.4s linear infinite;
   will-change: transform;
 }
 
+.btn-shimmer::after {
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  left: -50%;
+  width: 200%;
+  background-image: repeating-linear-gradient(
+    112deg,
+    rgb(255 255 255 / 0) 0 6px,
+    rgb(255 255 255 / 0.1) 16px,
+    rgb(255 255 255 / 0.26) 24px,
+    rgb(255 255 255 / 0.1) 32px,
+    rgb(255 255 255 / 0) 42px 56px
+  );
+  background-size: 56px 56px;
+  animation: btn-shimmer-flow 1.15s linear infinite;
+  will-change: transform;
+}
+
+.btn-shimmer:disabled::before,
 .btn-shimmer:disabled::after,
+.btn-shimmer[aria-disabled="true"]::before,
 .btn-shimmer[aria-disabled="true"]::after {
   content: none;
   animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .btn-shimmer::before,
   .btn-shimmer::after {
     content: none;
     animation: none;
@@ -607,6 +636,13 @@ html.site-dark main button.bg-neutral-900:not(.btn-shimmer) .text-white\/70 {
 
 html.site-dark main button.bg-black:not(.btn-shimmer) .border-white {
   border-color: rgb(17 17 17 / 0.28);
+}
+
+html.site-dark main .btn-shimmer:hover,
+html.site-dark main a.btn-shimmer:hover,
+html.site-dark footer .btn-shimmer:hover {
+  background-color: #262626;
+  color: #fff;
 }
 
 html.site-dark main .glow {
