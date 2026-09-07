@@ -475,7 +475,7 @@ export default function Header() {
         />
 
         {/* Menu Content — scrollable on short screens */}
-        <div className={`absolute top-20 left-0 right-0 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        <div className={`absolute top-20 left-0 right-0 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain no-scrollbar transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           open ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
         }`}>
           <div className="bg-neutral-950/90 backdrop-blur-xl border-b border-white/10 shadow-2xl text-white">
