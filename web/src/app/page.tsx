@@ -58,7 +58,7 @@ export default function Home() {
             </div>
           }
         >
-          <ProductsContent showScrollCue />
+          <ProductsContent showScrollCue embedded />
         </Suspense>
       </div>
     </div>
