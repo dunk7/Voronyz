@@ -198,11 +198,11 @@ video {
   inset: 0;
   background-image: repeating-linear-gradient(
     128deg,
-    rgb(255 255 255 / 0) 0 18px,
-    rgb(255 255 255 / 0.04) 28px,
-    rgb(255 255 255 / 0.08) 34px,
-    rgb(255 255 255 / 0.04) 40px,
-    rgb(255 255 255 / 0) 50px 80px
+    rgb(255 255 255 / 0) 0 16px,
+    rgb(255 255 255 / 0.08) 30px,
+    rgb(255 255 255 / 0.16) 40px,
+    rgb(255 255 255 / 0.08) 50px,
+    rgb(255 255 255 / 0) 64px 80px
   );
   background-size: 80px 80px;
   animation: btn-shimmer-flow-alt 2.4s linear infinite;
@@ -213,11 +213,11 @@ video {
   inset: 0;
   background-image: repeating-linear-gradient(
     112deg,
-    rgb(255 255 255 / 0) 0 8px,
-    rgb(255 255 255 / 0.04) 16px,
-    rgb(255 255 255 / 0.14) 20px,
-    rgb(255 255 255 / 0.04) 24px,
-    rgb(255 255 255 / 0) 32px 56px
+    rgb(255 255 255 / 0) 0 6px,
+    rgb(255 255 255 / 0.1) 16px,
+    rgb(255 255 255 / 0.26) 24px,
+    rgb(255 255 255 / 0.1) 32px,
+    rgb(255 255 255 / 0) 42px 56px
   );
   background-size: 56px 56px;
   animation: btn-shimmer-flow 1.15s linear infinite;

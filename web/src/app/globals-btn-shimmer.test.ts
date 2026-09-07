@@ -12,11 +12,11 @@ const shimmerAfter = css.match(
 
 test("button shimmer stays a faint overlay and never paints the fill white", () => {
   assert.ok(shimmerAfter, "expected a .btn-shimmer::after overlay rule");
-  assert.match(shimmerAfter![0], /rgb\(255 255 255 \/ 0\.1[0-6]\)/);
+  assert.match(shimmerAfter![0], /rgb\(255 255 255 \/ 0\.26\)/);
   assert.doesNotMatch(
     shimmerAfter![0],
-    /rgb\(255 255 255 \/ 0\.(?:[2-9]\d?|1[7-9])\)/,
-    "shimmer peak should stay barely visible (≤ 0.16)",
+    /rgb\(255 255 255 \/ 0\.(?:[4-9]\d?|3[2-9])\)/,
+    "shimmer peak should stay a field, not a white wash (≥ 0.32 is too much)",
   );
   assert.doesNotMatch(
     css.match(/\.btn-shimmer \{[\s\S]*?\n\}/)?.[0] ?? "",
