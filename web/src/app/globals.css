@@ -518,11 +518,81 @@ html.site-dark main .hover\:bg-black\/\[\.05\]:hover {
   background-color: rgb(255 255 255 / 0.06);
 }
 
-html.site-dark main .bg-black.text-white,
-html.site-dark footer .bg-black.text-white,
+/*
+  Selected / filled controls are black-on-white in regular mode. On the
+  dark storefront that fill disappears into the page, so invert them:
+  a light chip with dark type is the current choice.
+*/
+html.site-dark main button.bg-black,
 html.site-dark main a.bg-black,
-html.site-dark main button.bg-black {
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.16);
+html.site-dark footer button.bg-black,
+html.site-dark footer a.bg-black,
+html.site-dark main button.bg-neutral-900,
+html.site-dark main a.bg-neutral-900 {
+  background-color: #f5f5f5;
+  color: #111111;
+}
+
+html.site-dark main button.bg-black:hover,
+html.site-dark main a.bg-black:hover,
+html.site-dark footer button.bg-black:hover,
+html.site-dark footer a.bg-black:hover,
+html.site-dark main button.bg-neutral-900:hover,
+html.site-dark main a.bg-neutral-900:hover,
+html.site-dark main button.bg-black.hover\:bg-neutral-800:hover,
+html.site-dark main a.bg-black.hover\:bg-neutral-800:hover {
+  background-color: #e4e4e4;
+  color: #111111;
+}
+
+html.site-dark main button.bg-black:disabled,
+html.site-dark main button.bg-neutral-900:disabled,
+html.site-dark main .btn-shimmer:disabled {
+  background-color: #d4d4d4;
+  color: #111111;
+}
+
+html.site-dark main button.bg-black .text-white\/80,
+html.site-dark main button.bg-black .text-white\/75,
+html.site-dark main button.bg-neutral-900 .text-white\/80,
+html.site-dark main button.bg-neutral-900 .text-white\/75,
+html.site-dark main button.bg-neutral-900 .text-white\/70 {
+  color: rgb(17 17 17 / 0.68);
+}
+
+html.site-dark main button.bg-black .border-white {
+  border-color: rgb(17 17 17 / 0.28);
+}
+
+html.site-dark main .btn-shimmer {
+  color: #111111;
+  background-color: #f5f5f5;
+  background-image: linear-gradient(
+    90deg,
+    #f5f5f5 0%,
+    #f5f5f5 40%,
+    #d4d4d4 50%,
+    #f5f5f5 60%,
+    #f5f5f5 100%
+  );
+}
+
+html.site-dark main .btn-shimmer:disabled {
+  background-image: none;
+  animation: none;
+}
+
+html.site-dark main .glow {
+  animation-name: theme-selected-glow;
+}
+
+@keyframes theme-selected-glow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgb(255 255 255 / 0.28), 0 0 14px rgb(255 255 255 / 0.12);
+  }
+  50% {
+    box-shadow: 0 0 18px rgb(255 255 255 / 0.42), 0 0 28px rgb(255 255 255 / 0.2);
+  }
 }
 
 html.site-dark .theme-surface-wash {
