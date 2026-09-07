@@ -5,7 +5,6 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DiscountUrgencyBanner from "@/components/discount/DiscountUrgencyBanner";
-import HexTextureMotion from "@/components/HexTextureMotion";
 import InitialSplash from "@/components/ui/InitialSplash";
 
 /** Black + white-logo splash for iOS home-screen shortcuts (avoids the default white card + icon). */
@@ -135,7 +134,6 @@ export default function RootLayout({
         style={{ background: "#000000" }}
         suppressHydrationWarning
       >
-        <HexTextureMotion />
         {/*
           Inline critical splash CSS so the first paint is full-bleed black
           even before globals.css / Tailwind is available.
