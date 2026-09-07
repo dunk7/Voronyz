@@ -14,6 +14,7 @@ import {
   Loader2,
   LogOut,
   MessageSquare,
+  Moon,
   ImageIcon,
   Package,
   Search,
@@ -267,6 +268,9 @@ export default function OrdersAdminClient() {
   const [messageEnabled, setMessageEnabled] = useState<boolean | null>(null);
   const [messageToggleSaving, setMessageToggleSaving] = useState(false);
   const [messageToggleError, setMessageToggleError] = useState<string | null>(null);
+  const [darkMode, setDarkMode] = useState<boolean | null>(null);
+  const [darkModeSaving, setDarkModeSaving] = useState(false);
+  const [darkModeError, setDarkModeError] = useState<string | null>(null);
 
   const checkAuth = useCallback(async () => {
     const res = await fetch("/api/orders/auth");
@@ -318,6 +322,27 @@ export default function OrdersAdminClient() {
     }
   }, []);
 
+  const loadThemeSetting = useCallback(async () => {
+    try {
+      const res = await fetch("/api/orders/admin/theme");
+      if (res.status === 401) {
+        setAuthenticated(false);
+        return;
+      }
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to load dark mode setting");
+      }
+      const data = await res.json();
+      setDarkMode(Boolean(data.dark));
+      setDarkModeError(null);
+    } catch (err) {
+      setDarkModeError(
+        err instanceof Error ? err.message : "Failed to load dark mode setting"
+      );
+    }
+  }, []);
+
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
@@ -326,8 +351,9 @@ export default function OrdersAdminClient() {
     if (authenticated) {
       loadOrders();
       loadMessageSetting();
+      loadThemeSetting();
     }
-  }, [authenticated, loadOrders, loadMessageSetting]);
+  }, [authenticated, loadOrders, loadMessageSetting, loadThemeSetting]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -386,6 +412,7 @@ export default function OrdersAdminClient() {
     else if (tab === "affiliates") setAffiliatesRefresh((n) => n + 1);
     else setUploadsRefresh((n) => n + 1);
     loadMessageSetting();
+    loadThemeSetting();
   }
 
   async function toggleMessageApp() {
@@ -413,6 +440,34 @@ export default function OrdersAdminClient() {
       setMessageToggleError(err instanceof Error ? err.message : "Failed to update message app");
     } finally {
       setMessageToggleSaving(false);
+    }
+  }
+
+  async function toggleDarkMode() {
+    if (darkMode === null || darkModeSaving) return;
+
+    const nextDark = !darkMode;
+    setDarkModeSaving(true);
+    setDarkModeError(null);
+    try {
+      const res = await fetch("/api/orders/admin/theme", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dark: nextDark }),
+      });
+      if (res.status === 401) {
+        setAuthenticated(false);
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update dark mode");
+      }
+      setDarkMode(Boolean(data.dark));
+    } catch (err) {
+      setDarkModeError(err instanceof Error ? err.message : "Failed to update dark mode");
+    } finally {
+      setDarkModeSaving(false);
     }
   }
 
@@ -628,6 +683,36 @@ export default function OrdersAdminClient() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-3 rounded-full border border-black/10 bg-neutral-50 px-4 py-2">
+              <Moon className="h-4 w-4 text-neutral-600" />
+              <div className="text-left">
+                <p className="text-xs font-medium text-neutral-800">Dark mode</p>
+                <p className="text-[11px] text-neutral-500">
+                  {darkMode === null
+                    ? "Loading…"
+                    : darkMode
+                      ? "Storefront is dark"
+                      : "Storefront is light"}
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={darkMode ?? false}
+                aria-label="Toggle storefront dark mode"
+                disabled={darkMode === null || darkModeSaving}
+                onClick={toggleDarkMode}
+                className={`relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
+                  darkMode ? "bg-emerald-500" : "bg-neutral-300"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ${
+                    darkMode ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+            <div className="flex items-center gap-3 rounded-full border border-black/10 bg-neutral-50 px-4 py-2">
               <MessageSquare className="h-4 w-4 text-neutral-600" />
               <div className="text-left">
                 <p className="text-xs font-medium text-neutral-800">Message app</p>
@@ -763,6 +848,11 @@ export default function OrdersAdminClient() {
         {messageToggleError ? (
           <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200 print:hidden">
             {messageToggleError}
+          </p>
+        ) : null}
+        {darkModeError ? (
+          <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200 print:hidden">
+            {darkModeError}
           </p>
         ) : null}
         {tab === "uploads" ? (
