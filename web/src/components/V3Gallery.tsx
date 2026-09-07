@@ -29,6 +29,7 @@ export default function V3Gallery({
    * Contain slides also get a modest inner inset so the photo corners clear the
    * rounded frame without looking zoomed out. Padding lives on the inner box —
    * percentage padding on the 300%-wide track would triple the inset.
+   * Videos ignore contain/inset so they keep a constant full-frame crop.
    */
   fit = "cover",
 }: {
@@ -317,10 +318,12 @@ export default function V3Gallery({
 
   /* ── Render helpers ─────────────────────────────────────── */
 
-  const objectFitClass =
+  const imageFitClass =
     fit === "contain" ? "object-contain object-center" : "object-cover object-center";
   // Pixel inset (not %) so it matches the frame radius and is not tripled by the 300% track.
-  const containInnerPad = fit === "contain" ? "p-4 sm:p-5 lg:p-6" : "";
+  const containInnerPad = "p-4 sm:p-5 lg:p-6";
+  const innerPadFor = (m: Media | undefined) =>
+    fit === "contain" && m?.type === "image" ? containInnerPad : "";
 
   const renderMedia = (m: Media, index: number, isActive: boolean) => {
     if (m.type === "image") {
@@ -330,7 +333,7 @@ export default function V3Gallery({
           src={m.src}
           alt={m.alt || "Product image"}
           fill
-          className={`${objectFitClass} pointer-events-none`}
+          className={`${imageFitClass} pointer-events-none`}
           priority={index <= 1}
           loading={index <= 2 ? "eager" : "lazy"}
           sizes="(max-width: 1024px) 100vw, 75vw"
@@ -343,7 +346,7 @@ export default function V3Gallery({
         ref={isActive ? videoRef : undefined}
         src={m.src}
         poster={m.poster}
-        className={`h-full w-full ${objectFitClass} pointer-events-none bg-neutral-50`}
+        className="h-full w-full object-cover object-center pointer-events-none bg-neutral-50"
         preload="auto"
         playsInline
         muted
@@ -397,7 +400,7 @@ export default function V3Gallery({
             className="relative h-full flex-shrink-0"
             style={{ width: "33.3333%" }}
           >
-            <div className={`relative h-full w-full box-border ${containInnerPad}`}>
+            <div className={`relative h-full w-full box-border ${innerPadFor(prevIndex !== null ? media[prevIndex] : undefined)}`}>
               {prevIndex !== null && renderMedia(media[prevIndex], prevIndex, false)}
             </div>
           </div>
@@ -408,7 +411,7 @@ export default function V3Gallery({
             className="relative h-full flex-shrink-0 gallery-enter"
             style={{ width: "33.3333%" }}
           >
-            <div className={`relative h-full w-full box-border ${containInnerPad}`}>
+            <div className={`relative h-full w-full box-border ${innerPadFor(active)}`}>
               {renderMedia(active, activeIndex, true)}
             </div>
           </div>
@@ -418,7 +421,7 @@ export default function V3Gallery({
             className="relative h-full flex-shrink-0"
             style={{ width: "33.3333%" }}
           >
-            <div className={`relative h-full w-full box-border ${containInnerPad}`}>
+            <div className={`relative h-full w-full box-border ${innerPadFor(nextIndex !== null ? media[nextIndex] : undefined)}`}>
               {nextIndex !== null && renderMedia(media[nextIndex], nextIndex, false)}
             </div>
           </div>
