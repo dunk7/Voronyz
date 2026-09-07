@@ -10,10 +10,5 @@ export function parseSiteDarkModeValue(value: string | null | undefined): boolea
 
 export function isThemeExemptPath(pathname: string | null | undefined): boolean {
   if (!pathname) return false;
-  return (
-    pathname === "/orders" ||
-    pathname.startsWith("/orders/") ||
-    pathname === "/message" ||
-    pathname.startsWith("/message/")
-  );
+  return pathname === "/message" || pathname.startsWith("/message/");
 }

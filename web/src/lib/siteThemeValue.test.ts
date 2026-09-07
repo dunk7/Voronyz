@@ -20,9 +20,9 @@ test("dark mode follows explicit on/off values", () => {
   assert.equal(parseSiteDarkModeValue("off"), false);
 });
 
-test("admin and messenger paths are exempt from the storefront theme", () => {
-  assert.equal(isThemeExemptPath("/orders"), true);
-  assert.equal(isThemeExemptPath("/orders/"), true);
+test("messenger stays exempt; admin follows the site theme", () => {
+  assert.equal(isThemeExemptPath("/orders"), false);
+  assert.equal(isThemeExemptPath("/orders/"), false);
   assert.equal(isThemeExemptPath("/message"), true);
   assert.equal(isThemeExemptPath("/message/inbox"), true);
   assert.equal(isThemeExemptPath("/"), false);

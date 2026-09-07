@@ -125,7 +125,7 @@ export const metadata: Metadata = {
 };
 
 function siteThemeBootScript(dark: boolean): string {
-  return `(function(){try{var d=${dark ? "1" : "0"};var p=location.pathname;if(d==="1"&&p.indexOf("/orders")!==0&&p.indexOf("/message")!==0){document.documentElement.classList.add("site-dark");}}catch(e){}})();`;
+  return `(function(){try{var d=${dark ? "1" : "0"};var p=location.pathname;if(d==="1"&&p.indexOf("/message")!==0){document.documentElement.classList.add("site-dark");}}catch(e){}})();`;
 }
 
 export default async function RootLayout({

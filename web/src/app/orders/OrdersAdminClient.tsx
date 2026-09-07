@@ -447,7 +447,10 @@ export default function OrdersAdminClient() {
   async function toggleDarkMode() {
     if (darkMode === null || darkModeSaving) return;
 
+    const previous = darkMode;
     const nextDark = !darkMode;
+    setDarkMode(nextDark);
+    dispatchSiteTheme(nextDark);
     setDarkModeSaving(true);
     setDarkModeError(null);
     try {
@@ -458,6 +461,8 @@ export default function OrdersAdminClient() {
       });
       if (res.status === 401) {
         setAuthenticated(false);
+        setDarkMode(previous);
+        dispatchSiteTheme(previous);
         return;
       }
       const data = await res.json().catch(() => ({}));
@@ -468,6 +473,8 @@ export default function OrdersAdminClient() {
       setDarkMode(next);
       dispatchSiteTheme(next);
     } catch (err) {
+      setDarkMode(previous);
+      dispatchSiteTheme(previous);
       setDarkModeError(err instanceof Error ? err.message : "Failed to update dark mode");
     } finally {
       setDarkModeSaving(false);
@@ -693,8 +700,8 @@ export default function OrdersAdminClient() {
                   {darkMode === null
                     ? "Loading…"
                     : darkMode
-                      ? "Storefront is dark"
-                      : "Storefront is light"}
+                      ? "Live on admin & shop"
+                      : "Off — light colors"}
                 </p>
               </div>
               <button
