@@ -38,7 +38,7 @@ const STATUS_STYLES: Record<string, string> = {
   rejected: "bg-red-100 text-red-800",
 };
 
-type Filter = "pending" | "approved" | "rejected" | "all";
+type Filter = "pending" | "approved" | "all";
 
 type RemovalKind = "reject" | "delete";
 
@@ -274,7 +274,6 @@ export default function GalleryAdminPanel({
             ["all", "All"],
             ["pending", "Pending"],
             ["approved", "Approved"],
-            ["rejected", "Rejected"],
           ] as const
         ).map(([value, label]) => (
           <button
