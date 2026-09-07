@@ -150,26 +150,20 @@ video {
 .bg-texture-white {
   background-color: #ffffff !important;
   position: relative;
-  overflow-x: clip;
+  overflow: clip;
 }
 
-/* Original 50×43 overlapping hex tile. Slide left by one tile. */
-@keyframes hex-texture-drift {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50px);
-  }
-}
-
+/*
+  Hex tile is 50×43. Position is driven by HexTextureMotion (pointer/touch + scroll).
+  Extra size lets translate3d wrap one tile without a seam.
+*/
 .bg-texture-white::before {
   content: '';
   position: absolute;
   top: 0;
-  bottom: 0;
   left: 0;
   width: calc(100% + 50px);
+  height: calc(100% + 43px);
   /*
     Odd-row hexes extend 8 units past the tile. CSS clips that overflow,
     so draw the missing bottom tips as open paths at the top of the tile
@@ -177,11 +171,11 @@ video {
     at the 50×43 display size.
   */
   background-image:
-    url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='0.08' stroke-width='0.8' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
+    url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='0.14' stroke-width='0.8' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
   background-size: 50px 43px;
   background-position: 0 0;
   background-repeat: repeat;
-  animation: hex-texture-drift 18s linear infinite;
+  transform: translate3d(var(--hex-shift-x, 0px), var(--hex-shift-y, 0px), 0);
   will-change: transform;
   pointer-events: none;
   z-index: 0;
@@ -199,7 +193,7 @@ video {
 */
 .bg-texture-white .bg-texture-white {
   background-color: transparent !important;
-  overflow-x: visible;
+  overflow: visible;
 }
 
 .bg-texture-white .bg-texture-white::before {
