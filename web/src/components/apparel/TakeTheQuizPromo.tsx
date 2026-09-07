@@ -15,7 +15,7 @@ export default function TakeTheQuizPromo({ className = "" }: TakeTheQuizPromoPro
       aria-labelledby="take-the-quiz-heading"
       className={`rounded-2xl bg-white ring-1 ring-black/5 px-6 py-8 sm:px-10 sm:py-10 text-center ${className}`}
     >
-      <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">Find your pair</p>
+      <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">Find your match</p>
       <h3
         id="take-the-quiz-heading"
         className="mt-2 text-xl sm:text-2xl font-semibold tracking-tight text-neutral-900"
@@ -23,7 +23,7 @@ export default function TakeTheQuizPromo({ className = "" }: TakeTheQuizPromoPro
         Take the Quiz
       </h3>
       <p className="mt-2 mx-auto max-w-md text-sm text-neutral-500">
-        A few easy questions about how you move — so we can point you at the right pair.
+        A few easy questions about how you move — so we can point you at the right pick.
       </p>
       <div className="mt-6 flex justify-center">
         <Link href="/quiz" className={CTA_CLASS}>
