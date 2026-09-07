@@ -155,13 +155,11 @@ video {
   add-to-cart label) stay readable — do not animate background-image.
 */
 @keyframes btn-shimmer-sweep {
-  0%,
-  8% {
-    transform: translateX(-180%) skewX(-20deg);
+  0% {
+    transform: translateX(-140%) skewX(-18deg);
   }
-  38%,
   100% {
-    transform: translateX(320%) skewX(-20deg);
+    transform: translateX(240%) skewX(-18deg);
   }
 }
 
@@ -175,20 +173,20 @@ video {
   content: "";
   position: absolute;
   inset: -50% auto -50% 0;
-  width: 42%;
+  width: 50%;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgb(255 255 255 / 0.0) 18%,
-    rgb(255 255 255 / 0.14) 38%,
-    rgb(255 255 255 / 0.38) 48%,
-    rgb(255 255 255 / 0.7) 50%,
-    rgb(255 255 255 / 0.38) 52%,
-    rgb(255 255 255 / 0.14) 62%,
-    rgb(255 255 255 / 0.0) 82%,
+    rgb(255 255 255 / 0.0) 15%,
+    rgb(255 255 255 / 0.2) 40%,
+    rgb(255 255 255 / 0.55) 49%,
+    rgb(255 255 255 / 0.85) 50%,
+    rgb(255 255 255 / 0.55) 51%,
+    rgb(255 255 255 / 0.2) 60%,
+    rgb(255 255 255 / 0.0) 85%,
     transparent 100%
   );
-  animation: btn-shimmer-sweep 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: btn-shimmer-sweep 1.6s ease-in-out infinite;
   pointer-events: none;
   z-index: 1;
   will-change: transform;
