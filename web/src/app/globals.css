@@ -170,13 +170,13 @@ video {
 */
 @keyframes btn-shimmer-flow {
   to {
-    background-position: 120px 0;
+    background-position: 56px 0;
   }
 }
 
 @keyframes btn-shimmer-flow-alt {
   to {
-    background-position: -160px 0;
+    background-position: -80px 0;
   }
 }
 
@@ -198,14 +198,14 @@ video {
   inset: 0;
   background-image: repeating-linear-gradient(
     128deg,
-    transparent 0 42px,
-    rgb(255 255 255 / 0.03) 58px,
-    rgb(255 255 255 / 0.08) 68px,
-    rgb(255 255 255 / 0.03) 78px,
-    transparent 96px 160px
+    rgb(255 255 255 / 0) 0 18px,
+    rgb(255 255 255 / 0.04) 28px,
+    rgb(255 255 255 / 0.08) 34px,
+    rgb(255 255 255 / 0.04) 40px,
+    rgb(255 255 255 / 0) 50px 80px
   );
-  background-size: 160px 160px;
-  animation: btn-shimmer-flow-alt 3.2s linear infinite;
+  background-size: 80px 80px;
+  animation: btn-shimmer-flow-alt 2.4s linear infinite;
 }
 
 .btn-shimmer::after {
@@ -213,14 +213,14 @@ video {
   inset: 0;
   background-image: repeating-linear-gradient(
     112deg,
-    transparent 0 14px,
-    rgb(255 255 255 / 0.035) 26px,
-    rgb(255 255 255 / 0.14) 34px,
-    rgb(255 255 255 / 0.035) 42px,
-    transparent 56px 120px
+    rgb(255 255 255 / 0) 0 8px,
+    rgb(255 255 255 / 0.04) 16px,
+    rgb(255 255 255 / 0.14) 20px,
+    rgb(255 255 255 / 0.04) 24px,
+    rgb(255 255 255 / 0) 32px 56px
   );
-  background-size: 120px 120px;
-  animation: btn-shimmer-flow 1.7s linear infinite;
+  background-size: 56px 56px;
+  animation: btn-shimmer-flow 1.15s linear infinite;
 }
 
 .btn-shimmer:disabled::before,
