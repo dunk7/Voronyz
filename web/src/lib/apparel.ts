@@ -3,7 +3,7 @@ export const APPAREL_ONE_SIZE = ["One Size"] as const;
 
 /**
  * Apparel sub-sections.
- * - `collection`: multi-product listing pages (shirts, sweaters, socks, …) —
+ * - `collection`: multi-product listing pages (shirts, sweaters, …) —
  *   add new designs to APPAREL_CATALOG with the matching subcategory.
  * - `standalone`: Accessories only (shades, jewelry, drone parts, …) — never mixed
  *   into clothing collections, and never shown on Engineering `/accessories`.
@@ -11,7 +11,6 @@ export const APPAREL_ONE_SIZE = ["One Size"] as const;
 export type ApparelSubcategoryId =
   | "shirts"
   | "sweaters"
-  | "socks"
   | "accessories";
 
 /** Legacy apparel collection paths that now live under Accessories. */
@@ -25,6 +24,7 @@ export const LEGACY_REMOVED_APPAREL_SUBCATEGORIES = [
   "sweats",
   "pants",
   "scarves",
+  "socks",
 ] as const;
 
 export type ApparelListingKind = "collection" | "standalone";
@@ -49,12 +49,6 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
     id: "sweaters",
     label: "Sweaters",
     description: "Hoodies, knit layers, and sweater designs",
-    listing: "collection",
-  },
-  {
-    id: "socks",
-    label: "Socks",
-    description: "Performance and everyday sock designs",
     listing: "collection",
   },
   {
@@ -112,6 +106,7 @@ export const OBSOLETE_APPAREL_SLUGS = [
   "voronyz-uv-hat",
   "voronyz-water-bottle",
   "voronyz-lock-squirt-bottle",
+  "voronyz-performance-socks",
 ] as const;
 
 /**
@@ -133,20 +128,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/shirt.jpg",
     skuPrefix: "APP-TEE",
-    comingSoon: false,
-  },
-  // ── Socks (multi-product) ───────────────────────────────────────────────
-  {
-    slug: "voronyz-performance-socks",
-    subcategory: "socks",
-    name: "Socks",
-    description: "Cushioned crew socks built for all-day wear and recovery.",
-    priceCents: 2800,
-    colors: ["black", "grey", "white"],
-    sizes: ["S", "M", "L", "XL"],
-    image: "/products/apparel/socks-plain-banded.jpg",
-    images: ["/products/apparel/socks-plain-banded.jpg"],
-    skuPrefix: "APP-SOCK",
     comingSoon: false,
   },
   // ── Sweaters (multi-product) ────────────────────────────────────────────

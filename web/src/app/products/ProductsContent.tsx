@@ -21,7 +21,7 @@ const HOME_FOOTWEAR_TEASER_SLUGS = ["v3-slides", "slip-ons"] as const;
 /** Homepage apparel teaser — a couple of highlights, not the full catalog. */
 const HOME_APPAREL_TEASER_SLUGS = [
   "voronyz-oversized-tee",
-  "voronyz-performance-socks",
+  "voronyz-core-hoodie",
 ] as const;
 
 /** Technical shop-all CTA used under the home Footwear and Apparel teasers. */

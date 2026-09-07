@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (isLegacyRemovedApparelSubcategory(subcategory)) {
     return {
       title: "Apparel – Voronyz",
-      description: "Shop Voronyz Apparel by type: shirts, sweaters, and socks.",
+      description: "Shop Voronyz Apparel by type: shirts and sweaters.",
     };
   }
   const sub = getApparelSubcategory(subcategory);

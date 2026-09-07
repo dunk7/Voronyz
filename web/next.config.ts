@@ -86,6 +86,17 @@ const nextConfig: NextConfig = {
         destination: "/products/voronyz-oversized-tee",
         permanent: true,
       },
+      // Removed Socks listing.
+      {
+        source: "/products/voronyz-performance-socks",
+        destination: "/apparel",
+        permanent: true,
+      },
+      {
+        source: "/apparel/socks",
+        destination: "/apparel",
+        permanent: true,
+      },
     ];
   },
 };
