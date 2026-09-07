@@ -96,57 +96,20 @@ video {
 
 /*
   Homepage hero: charcoal in the middle, black on the left and right.
-  Pure-black overlays were invisible; this is a slight, readable falloff.
+  Applied on the section itself so the side shading is actually visible.
 */
 .hero-stage {
   background-color: #000;
-}
-
-.hero-stage::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: #222;
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    #000 14%,
-    #000 86%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    #000 14%,
-    #000 86%,
-    transparent 100%
-  );
-}
-
-.hero-stage::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.28;
-  background: url("/hero-bg.jpg") center bottom / cover no-repeat;
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    #000 16%,
-    #000 84%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    #000 16%,
-    #000 84%,
-    transparent 100%
-  );
+  background-image:
+    linear-gradient(
+      to right,
+      #000 0%,
+      #1a1a1a 12%,
+      #242424 22%,
+      #242424 78%,
+      #1a1a1a 88%,
+      #000 100%
+    );
 }
 
 /* Subtle shimmer for primary CTA */
