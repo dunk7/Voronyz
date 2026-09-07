@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { apparelProductShopHref, apparelProductShopLabel } from "./apparel";
+import {
+  apparelProductShopHref,
+  apparelProductShopLabel,
+  getApparelItem,
+} from "./apparel";
+
+test("core hoodie listing is named Essential hoodie", () => {
+  assert.equal(getApparelItem("voronyz-core-hoodie")?.name, "Essential hoodie");
+});
 
 test("hoodie listing back link returns to Apparel", () => {
   assert.equal(apparelProductShopHref("voronyz-core-hoodie"), "/apparel");

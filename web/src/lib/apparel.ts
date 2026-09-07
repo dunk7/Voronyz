@@ -134,7 +134,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
   {
     slug: "voronyz-core-hoodie",
     subcategory: "sweaters",
-    name: "Hoodie",
+    name: "Essential hoodie",
     description: "Heavyweight fleece hoodie with a clean, modern cut.",
     priceCents: 7800,
     colors: ["black", "grey"],
