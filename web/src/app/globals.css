@@ -591,19 +591,25 @@ html.site-dark main button.bg-black .border-white {
 html.site-dark main .btn-shimmer {
   color: #111111;
   background-color: #f5f5f5;
-  background-image: linear-gradient(
+}
+
+html.site-dark main .btn-shimmer::after {
+  background: linear-gradient(
     90deg,
-    #f5f5f5 0%,
-    #f5f5f5 40%,
-    #d4d4d4 50%,
-    #f5f5f5 60%,
-    #f5f5f5 100%
+    transparent 0%,
+    rgb(0 0 0 / 0) 15%,
+    rgb(0 0 0 / 0.08) 40%,
+    rgb(0 0 0 / 0.22) 49%,
+    rgb(0 0 0 / 0.38) 50%,
+    rgb(0 0 0 / 0.22) 51%,
+    rgb(0 0 0 / 0.08) 60%,
+    rgb(0 0 0 / 0) 85%,
+    transparent 100%
   );
 }
 
 html.site-dark main .btn-shimmer:disabled {
   background-image: none;
-  animation: none;
 }
 
 html.site-dark main .glow {
