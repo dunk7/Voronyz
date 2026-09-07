@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import Header from "@/components/Header";
@@ -81,6 +81,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+/** Geometric, bold, readable — footwear descriptions. Future without going robotic. */
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space",
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  display: "swap",
+});
+
 export const viewport: Viewport = {
   themeColor: "#000000",
 };
@@ -144,7 +152,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} antialiased`}
         style={{ background: "#000000" }}
         suppressHydrationWarning
       >

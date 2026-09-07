@@ -407,7 +407,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 </h1>
                 {productBadges}
                 {displayDescription ? (
-                  <p className="text-neutral-600 leading-relaxed text-[15px]">{displayDescription}</p>
+                  <p className={isFootwearSlug(slug) ? "footwear-description" : "text-neutral-600 leading-relaxed text-[15px]"}>
+                    {displayDescription}
+                  </p>
                 ) : null}
               </div>
 

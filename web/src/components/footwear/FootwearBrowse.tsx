@@ -131,7 +131,7 @@ function BrowseItem({
             {product.name}
           </h2>
           {product.description ? (
-            <p className="mt-3 sm:mt-4 text-[15px] sm:text-base leading-relaxed text-neutral-600">
+            <p className="footwear-description mt-3 sm:mt-4">
               {product.description}
             </p>
           ) : null}

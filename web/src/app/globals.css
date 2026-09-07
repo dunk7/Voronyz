@@ -357,6 +357,29 @@ video {
 }
 
 /*
+  Footwear product copy under each pair: Space Grotesk — bold, easy to read,
+  geometric enough to sit with the lattice/tech look, not cursive, not HUD.
+*/
+.footwear-description {
+  font-family: var(--font-space), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.125rem;
+  line-height: 1.65;
+  letter-spacing: 0.03em;
+  color: #171717;
+}
+
+@media (min-width: 640px) {
+  .footwear-description {
+    font-size: 1.25rem;
+  }
+}
+
+html.site-dark .footwear-description {
+  color: #e8e8e8;
+}
+
+/*
   Admin-controlled storefront palette. Header stays the existing dark bar.
   Only colors change — layout, type, and photos are untouched.
 */
