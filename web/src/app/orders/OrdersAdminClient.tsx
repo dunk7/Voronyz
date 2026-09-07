@@ -37,6 +37,7 @@ import {
   type AdminOrder,
   type OrderLineItem,
 } from "@/lib/orderTypes";
+import { dispatchSiteTheme } from "@/components/SiteTheme";
 
 type SortKey = "date" | "price" | "name" | "status";
 type SortDir = "asc" | "desc";
@@ -463,7 +464,9 @@ export default function OrdersAdminClient() {
       if (!res.ok) {
         throw new Error(data.error || "Failed to update dark mode");
       }
-      setDarkMode(Boolean(data.dark));
+      const next = Boolean(data.dark);
+      setDarkMode(next);
+      dispatchSiteTheme(next);
     } catch (err) {
       setDarkModeError(err instanceof Error ? err.message : "Failed to update dark mode");
     } finally {
