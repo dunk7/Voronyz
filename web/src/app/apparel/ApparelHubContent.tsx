@@ -11,7 +11,6 @@ import {
 import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
-import TakeTheQuizPromo from "@/components/apparel/TakeTheQuizPromo";
 import LogoLoader from "@/components/ui/LogoLoader";
 
 function toGridProduct(
@@ -159,8 +158,6 @@ export default function ApparelHubContent() {
             <ApparelProductGrid products={collectionProducts} />
           )}
         </section>
-
-        <TakeTheQuizPromo className="mt-10 sm:mt-12" />
       </div>
     </div>
   );
