@@ -17,10 +17,10 @@ type FootwearBrowseProps = {
   getImages: (p: BrowseProduct) => { cover: string; alt?: string };
 };
 
-/** Side-cropped listing frames — originals stay on the product gallery. */
+/** Listing frames with empty left/right studio edges trimmed — full shoe stays in frame. */
 const SLIP_ONS_BROWSE = {
-  cover: "/products/slip-ons/browse-cover.jpg",
-  alt: "/products/slip-ons/browse-alt.jpg",
+  cover: "/products/slip-ons/listing-cover.jpg",
+  alt: "/products/slip-ons/listing-alt.jpg",
 } as const;
 
 function BrowseItem({
