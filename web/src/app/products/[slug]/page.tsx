@@ -59,6 +59,7 @@ import {
   LATTICE_INSOLES_THUMBNAIL_URL,
 } from "@/lib/latticeInsoles";
 import { isAccessorySlug, isApparelSlug, isFootwearSlug, isHealthSlug } from "@/lib/productCategories";
+import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION } from "@/lib/footwear";
 import {
   apparelProductShopHref,
   apparelProductShopLabel,
@@ -279,11 +280,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const displayDescription = slug === "v3-slides" 
     ? "Engineered for comfort, built to last. World-class FDM printed slides with TPU 90A lattice lowers and breathable uppers."
     : slug === "dragonfly"
-    ? "Engineered for walking and active days, built to last. Lightweight, breathable 3D-printed sneakers featuring a custom lattice sole for unmatched cushioning and style. Available in five stunning colorways with fully customizable lace colors."
+    ? DRAGONFLY_DESCRIPTION
     : isMagikidShoes
     ? MAGIKID_SHOES_DESCRIPTION
     : isSlipOns
-    ? "Engineered for easy everyday wear, built to last. Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — black, grey, orange, and pink in stock; white temporarily unavailable."
+    ? SLIP_ONS_DESCRIPTION
     : isTrailMix
     ? TRAIL_MIX_DESCRIPTION
     : isViolettePonybead
@@ -629,7 +630,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug === "slip-ons") {
     const title = "Slip Ons – Voronyz";
     const description =
-      "Minimal 3D-printed slip-ons with a flexible lattice sole. $65. Black, grey, orange, and pink in stock; white temporarily unavailable.";
+      "Minimal 3D-printed slip-ons with a flexible lattice sole. $65.";
     const images = ["/products/slip-ons/InShot_20260405_203151152.jpg"];
     return {
       title,
