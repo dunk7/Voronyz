@@ -140,22 +140,6 @@ video {
   z-index: 0;
 }
 
-/* Spotlight that follows the pointer / touch point (element-local, not transformed). */
-.bg-texture-white::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  opacity: var(--hex-pointer-on, 0);
-  background: radial-gradient(
-    360px circle at var(--hex-pointer-x, 50%) var(--hex-pointer-y, 50%),
-    rgba(0, 0, 0, 0.11),
-    transparent 68%
-  );
-  transition: opacity 220ms ease;
-}
-
 .bg-texture-white > * {
   position: relative;
   z-index: 1;
@@ -171,8 +155,7 @@ video {
   overflow: visible;
 }
 
-.bg-texture-white .bg-texture-white::before,
-.bg-texture-white .bg-texture-white::after {
+.bg-texture-white .bg-texture-white::before {
   content: none;
   animation: none;
 }
@@ -257,11 +240,6 @@ video {
   .bg-texture-white::before {
     animation: none;
     transform: none;
-  }
-
-  .bg-texture-white::after {
-    opacity: 0;
-    background: none;
   }
 
   .motion-media-track {
