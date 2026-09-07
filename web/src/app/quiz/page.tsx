@@ -27,8 +27,7 @@ export default function QuizPage() {
             Take the Quiz
           </h1>
           <p className="mt-4 text-neutral-600 text-base sm:text-lg leading-relaxed">
-            A few easy questions about how you move and what you need — so we can
-            point you at the right pair, not just push a product.
+            Find the Right Pair
           </p>
         </div>
 
