@@ -164,19 +164,19 @@ video {
 
 /*
   Continuous futuristic sheen on primary CTAs.
-  A looping energy field — not a one-shot sweep that parks on the
-  right edge. Overlay only so Tailwind fills and the quiz add-to-cart
-  label stay put. Never paint the button fill white.
+  Two opposing metallic fields that scroll linearly forever — no
+  single blade, no orbit that sits on the right edge. Overlay only
+  so Tailwind fills and the quiz add-to-cart label stay put.
 */
-@keyframes btn-shimmer-orbit {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @keyframes btn-shimmer-flow {
   to {
     background-position: 120px 0;
+  }
+}
+
+@keyframes btn-shimmer-flow-alt {
+  to {
+    background-position: -160px 0;
   }
 }
 
@@ -193,39 +193,34 @@ video {
   z-index: 1;
 }
 
-/* Soft orbiting highlight so the surface always feels powered. */
 .btn-shimmer::before {
   position: absolute;
-  inset: -80%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    rgb(255 255 255 / 0) 40deg,
-    rgb(255 255 255 / 0.08) 70deg,
-    rgb(255 255 255 / 0) 100deg,
-    transparent 165deg,
-    transparent 220deg,
-    rgb(255 255 255 / 0.045) 250deg,
-    rgb(255 255 255 / 0) 280deg,
-    transparent 360deg
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    128deg,
+    transparent 0 42px,
+    rgb(255 255 255 / 0.03) 58px,
+    rgb(255 255 255 / 0.08) 68px,
+    rgb(255 255 255 / 0.03) 78px,
+    transparent 96px 160px
   );
-  animation: btn-shimmer-orbit 6.5s linear infinite;
+  background-size: 160px 160px;
+  animation: btn-shimmer-flow-alt 3.2s linear infinite;
 }
 
-/* Repeating metallic bands that scroll with no pause or landing. */
 .btn-shimmer::after {
   position: absolute;
   inset: 0;
   background-image: repeating-linear-gradient(
-    118deg,
-    transparent 0 18px,
-    rgb(255 255 255 / 0.03) 30px,
-    rgb(255 255 255 / 0.14) 38px,
-    rgb(255 255 255 / 0.03) 46px,
-    transparent 60px 120px
+    112deg,
+    transparent 0 14px,
+    rgb(255 255 255 / 0.035) 26px,
+    rgb(255 255 255 / 0.14) 34px,
+    rgb(255 255 255 / 0.035) 42px,
+    transparent 56px 120px
   );
   background-size: 120px 120px;
-  animation: btn-shimmer-flow 2.1s linear infinite;
+  animation: btn-shimmer-flow 1.7s linear infinite;
 }
 
 .btn-shimmer:disabled::before,
@@ -633,6 +628,13 @@ html.site-dark main button.bg-neutral-900:not(.btn-shimmer) .text-white\/70 {
 
 html.site-dark main button.bg-black:not(.btn-shimmer) .border-white {
   border-color: rgb(17 17 17 / 0.28);
+}
+
+html.site-dark main .btn-shimmer:hover,
+html.site-dark main a.btn-shimmer:hover,
+html.site-dark footer .btn-shimmer:hover {
+  background-color: #262626;
+  color: #fff;
 }
 
 html.site-dark main .glow {

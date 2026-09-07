@@ -27,12 +27,17 @@ test("button shimmer stays a faint overlay and never paints the fill white", () 
 
 test("button shimmer is a continuous futuristic loop, not a sweep that parks", () => {
   assert.match(css, /@keyframes btn-shimmer-flow/);
-  assert.match(css, /@keyframes btn-shimmer-orbit/);
+  assert.match(css, /@keyframes btn-shimmer-flow-alt/);
   assert.match(shimmerAfter![0], /linear infinite/);
   assert.doesNotMatch(
     css,
     /@keyframes btn-shimmer-sweep/,
     "the old edge-parking sweep should be gone",
+  );
+  assert.doesNotMatch(
+    css,
+    /@keyframes btn-shimmer-orbit/,
+    "an orbiting lobe parks on the right edge — do not use it",
   );
   assert.doesNotMatch(
     css,
