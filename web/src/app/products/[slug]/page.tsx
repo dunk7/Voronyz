@@ -529,6 +529,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? VIOLETTE_PONYBEAD_HOW_ITS_MADE
               : apparelItem?.slug === "voronyz-oversized-tee"
               ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Ready to ship in your size and color."
+              : apparelItem?.slug === "voronyz-core-hoodie"
+              ? "Heavyweight fleece with a clean, modern cut. Ready to ship in your size and color."
               : isApparel && apparelItem?.comingSoon
               ? "Pre-order Voronyz Apparel — pay now to join the waitlist, and we ship when the drop arrives."
               : isApparel
