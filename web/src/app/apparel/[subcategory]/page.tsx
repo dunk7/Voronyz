@@ -49,7 +49,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const count = getApparelBySubcategory(sub.id).length;
   return {
     title: `${sub.label} – Apparel – Voronyz`,
-    description: `${sub.description}. ${count} design${count === 1 ? "" : "s"} in this Voronyz Apparel section.`,
+    description: `${sub.description.replace(/\.$/, "")}. ${count} design${count === 1 ? "" : "s"} in this Voronyz Apparel section.`,
   };
 }
 
