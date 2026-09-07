@@ -17,6 +17,12 @@ type FootwearBrowseProps = {
   getImages: (p: BrowseProduct) => { cover: string; alt?: string };
 };
 
+/** Listing frames with empty left/right studio edges trimmed — full shoe stays in frame. */
+const SLIP_ONS_BROWSE = {
+  cover: "/products/slip-ons/listing-cover.jpg",
+  alt: "/products/slip-ons/listing-alt.jpg",
+} as const;
+
 function BrowseItem({
   product,
   cover,
@@ -56,6 +62,10 @@ function BrowseItem({
     [router, product.slug],
   );
 
+  const isSlipOns = slugKey === "slip-ons";
+  const coverSrc = isSlipOns ? SLIP_ONS_BROWSE.cover : cover;
+  const altSrc = isSlipOns ? SLIP_ONS_BROWSE.alt : alt;
+
   return (
     <article
       ref={itemRef}
@@ -73,20 +83,20 @@ function BrowseItem({
         <div className="relative -mx-6 aspect-square w-[calc(100%+3rem)] overflow-hidden bg-transparent p-[10%] sm:p-[12%] md:p-[14%]">
           <div className="relative h-full w-full">
             <SoftImage
-              key={cover}
-              src={cover}
+              key={coverSrc}
+              src={coverSrc}
               alt={product.name}
               fill
               className={`object-contain object-center transition-opacity duration-700 ease-out ${
-                alt ? "group-hover:opacity-0" : ""
+                altSrc ? "group-hover:opacity-0" : ""
               } ${navigating ? "brightness-90" : ""}`}
               sizes="100vw"
               priority={index === 0}
             />
-            {alt && (
+            {altSrc && (
               <SoftImage
-                key={alt}
-                src={alt}
+                key={altSrc}
+                src={altSrc}
                 alt={`${product.name} – alternate view`}
                 fill
                 showLogoPlaceholder={false}
