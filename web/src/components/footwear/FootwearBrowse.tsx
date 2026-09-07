@@ -7,7 +7,6 @@ import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 import NewListingBadge from "@/components/NewListingBadge";
 import { isNewListing } from "@/lib/newListing";
-import { formatCentsAsCurrency } from "@/lib/money";
 import type { FootwearListProduct } from "@/lib/footwear";
 import { TRAIL_MIX_SLUG } from "@/lib/trailMix";
 
@@ -118,14 +117,9 @@ function BrowseItem({
         </div>
 
         <div className="mt-7 sm:mt-9 max-w-2xl">
-          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-neutral-900 group-hover:text-black transition-colors">
-              {product.name}
-            </h2>
-            <span className="text-base sm:text-lg tabular-nums text-neutral-500">
-              {formatCentsAsCurrency(product.priceCents, product.currency)}
-            </span>
-          </div>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-neutral-900 group-hover:text-black transition-colors">
+            {product.name}
+          </h2>
           {product.description ? (
             <p className="mt-3 sm:mt-4 text-[15px] sm:text-base leading-relaxed text-neutral-600">
               {product.description}
