@@ -311,9 +311,6 @@ export default function ProductsContent({
               {subheading}
             </p>
           )}
-          <p className="mt-3 text-xs tabular-nums text-neutral-400 hidden sm:block">
-            {displayProducts.length} product{displayProducts.length === 1 ? "" : "s"}
-          </p>
           {!showScrollCue && subheading && <div className="mt-6 h-px bg-neutral-200" />}
         </div>
 
