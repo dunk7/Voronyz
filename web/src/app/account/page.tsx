@@ -49,7 +49,7 @@ export default function AccountPage() {
               className="rounded-md border border-black/10 px-3 py-2 text-sm font-mono text-neutral-900 bg-white"
             />
           </div>
-          <button onClick={save} className="w-fit rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800">Save</button>
+          <button onClick={save} className="btn-shimmer w-fit rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800">Save</button>
           {message && <div className="text-sm text-green-600">{message}</div>}
         </div>
       </div>

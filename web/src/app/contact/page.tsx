@@ -76,7 +76,7 @@ export default function ContactPage() {
 
               <button
                 type="submit"
-                className="w-full bg-black text-white py-3 px-6 rounded-lg hover:bg-neutral-800 transition-colors font-medium"
+                className="btn-shimmer w-full bg-black text-white py-3 px-6 rounded-lg hover:bg-neutral-800 transition-colors font-medium"
               >
                 Send Message
               </button>

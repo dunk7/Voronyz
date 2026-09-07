@@ -2,8 +2,6 @@
 
 /* eslint-disable @next/next/no-img-element -- transparent logos must not go through next/image */
 
-import { useSiteDarkClass } from "@/components/SiteTheme";
-
 type LogoLoaderProps = {
   /** Visual size of the logo mark */
   size?: "sm" | "md" | "lg";
@@ -47,11 +45,9 @@ export default function LogoLoader({
   tone = "dark",
   className = "",
 }: LogoLoaderProps) {
-  const siteDark = useSiteDarkClass();
-  const resolvedTone = tone === "dark" && siteDark ? "light" : tone;
   const dims = SIZE_MAP[size];
-  const fill = resolvedTone === "light" ? "#ffffff" : "#0e0e0e";
-  const barTrack = resolvedTone === "light" ? "rgba(255,255,255,0.18)" : "rgba(14,14,14,0.1)";
+  const fill = tone === "light" ? "#ffffff" : "#0e0e0e";
+  const barTrack = tone === "light" ? "rgba(255,255,255,0.18)" : "rgba(14,14,14,0.1)";
 
   return (
     <div
@@ -62,7 +58,7 @@ export default function LogoLoader({
       style={{ background: "transparent" }}
     >
       <img
-        src={logoSrc(resolvedTone)}
+        src={logoSrc(tone)}
         alt=""
         width={dims.mark}
         height={dims.mark}
@@ -112,11 +108,9 @@ export function LogoMark({
   animate = true,
   priority = false,
 }: LogoMarkProps) {
-  const siteDark = useSiteDarkClass();
-  const resolvedTone = tone === "dark" && siteDark ? "light" : tone;
   return (
     <img
-      src={logoSrc(resolvedTone)}
+      src={logoSrc(tone)}
       alt=""
       width={size}
       height={size}
