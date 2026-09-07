@@ -46,15 +46,15 @@ test("button shimmer is a continuous futuristic loop, not a sweep that parks", (
   );
 });
 
-test("dark mode does not invert shimmer CTAs to white chips", () => {
-  assert.doesNotMatch(
-    css,
-    /html\.site-dark[^{}]*\.btn-shimmer(?!\))[^{]*\{[^}]*background-color:\s*#f5f5f5/i,
-    "dark-mode shimmer rules must not force a light fill",
-  );
+test("dark mode inverts primary buttons to the opposite of the black page", () => {
   assert.match(
     css,
+    /html\.site-dark main button\.bg-black[\s\S]*?background-color:\s*#f5f5f5/,
+    "black CTAs including shimmer should flip light on the dark shop",
+  );
+  assert.doesNotMatch(
+    css,
     /button\.bg-black:not\(\.btn-shimmer\)/,
-    "selected-chip invert should skip primary shimmer CTAs",
+    "shimmer CTAs should invert with the other black buttons",
   );
 });
