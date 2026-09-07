@@ -97,20 +97,26 @@ video {
 
 /*
   Homepage hero: charcoal in the middle, black on the left and right.
-  Applied on the section itself so the side shading is actually visible.
+  Desktop only — on stacked mobile the left-to-right fade makes the
+  headline look uneven.
 */
 .hero-stage {
   background-color: #000;
-  background-image:
-    linear-gradient(
-      to right,
-      #000 0%,
-      #1a1a1a 12%,
-      #242424 22%,
-      #242424 78%,
-      #1a1a1a 88%,
-      #000 100%
-    );
+}
+
+@media (min-width: 1024px) {
+  .hero-stage {
+    background-image:
+      linear-gradient(
+        to right,
+        #000 0%,
+        #1a1a1a 12%,
+        #242424 22%,
+        #242424 78%,
+        #1a1a1a 88%,
+        #000 100%
+      );
+  }
 }
 
 /* Subtle shimmer for primary CTA */
