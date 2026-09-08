@@ -43,7 +43,7 @@ test("button shimmer is a traveling sheen over the board, not a parked hex pulse
   assert.match(shimmerAfter![0], /linear infinite/);
   assert.match(
     shimmerAfter![0],
-    /rgb\(255 255 255 \/ 0\.28\)/,
+    /rgb\(255 255 255 \/ 0\.3\)/,
     "sheen peak should be visible on black CTAs",
   );
   assert.doesNotMatch(
