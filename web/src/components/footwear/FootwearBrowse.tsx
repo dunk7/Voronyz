@@ -36,22 +36,7 @@ function BrowseItem({
 }) {
   const router = useRouter();
   const [navigating, setNavigating] = useState(false);
-  const [visible, setVisible] = useState(false);
-  const itemRef = useRef<HTMLElement>(null);
   const slugKey = (product.slug || "").trim().toLowerCase();
-
-  useEffect(() => {
-    const el = itemRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) setVisible(true);
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -67,53 +52,43 @@ function BrowseItem({
   const altSrc = isSlipOns ? SLIP_ONS_BROWSE.alt : alt;
 
   return (
-    <article
-      ref={itemRef}
-      className={`footwear-browse-item h-full transition-all duration-500 ease-out ${
-        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-      }`}
-      style={{ transitionDelay: visible ? `${Math.min(index, 5) * 40}ms` : "0ms" }}
-    >
+    <article className="footwear-browse-item relative h-full w-full shrink-0 basis-full snap-center snap-always">
       <Link
         href={`/products/${product.slug}`}
         onClick={handleClick}
-        className={`group flex h-full flex-col rounded-2xl bg-white/55 p-2.5 ring-1 ring-black/[0.06] outline-none transition-all duration-300 hover:bg-white/90 hover:shadow-[0_10px_28px_-16px_rgba(0,0,0,0.35)] hover:ring-black/10 focus-visible:ring-2 focus-visible:ring-neutral-900 sm:p-3.5 md:p-4 ${
+        className={`group absolute inset-0 flex flex-col outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-inset ${
           navigating ? "pointer-events-none" : ""
         }`}
       >
-        {/* Studio frame on top so the name and full paragraph can sit underneath. */}
-        <div className="relative aspect-[16/10] shrink-0 overflow-hidden rounded-xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:ring-black/10 sm:rounded-2xl">
-          <div className="absolute inset-0 p-[7%] sm:p-[8%]">
-            <div className="relative h-full w-full">
-              <SoftImage
-                key={coverSrc}
-                src={coverSrc}
-                alt={product.name}
-                fill
-                className={`object-contain object-center transition-opacity duration-500 ease-out ${
-                  altSrc ? "group-hover:opacity-0" : ""
-                } ${navigating ? "brightness-90" : ""}`}
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                priority={index === 0}
-              />
-              {altSrc && (
-                <SoftImage
-                  key={altSrc}
-                  src={altSrc}
-                  alt={`${product.name} – alternate view`}
-                  fill
-                  showLogoPlaceholder={false}
-                  className="object-contain object-center opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100"
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                  loading="lazy"
-                />
-              )}
-            </div>
-          </div>
+        {/* Full-screen photo on the hex texture — no grey studio card. */}
+        <div className="absolute inset-x-0 top-14 bottom-[min(42%,14rem)] bg-transparent sm:top-16">
+          <SoftImage
+            key={coverSrc}
+            src={coverSrc}
+            alt={product.name}
+            fill
+            className={`object-contain object-center bg-transparent transition-opacity duration-500 ease-out ${
+              altSrc ? "group-hover:opacity-0" : ""
+            } ${navigating ? "brightness-90" : ""}`}
+            sizes="100vw"
+            priority={index === 0}
+          />
+          {altSrc && (
+            <SoftImage
+              key={altSrc}
+              src={altSrc}
+              alt={`${product.name} – alternate view`}
+              fill
+              showLogoPlaceholder={false}
+              className="object-contain object-center bg-transparent opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100"
+              sizes="100vw"
+              loading="lazy"
+            />
+          )}
 
           {slugKey === TRAIL_MIX_SLUG && (
-            <div className="absolute top-2 left-2 z-10 sm:top-3 sm:left-3">
-              <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider shadow-sm bg-neutral-900 text-white sm:px-3 sm:text-[11px]">
+            <div className="absolute top-4 left-4 z-10 sm:top-6 sm:left-6">
+              <span className="rounded-full bg-neutral-900 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white shadow-sm">
                 Sold Out
               </span>
             </div>
@@ -130,16 +105,16 @@ function BrowseItem({
           )}
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col px-0.5 pt-3 sm:pt-4">
-          <h2 className="text-[15px] font-semibold leading-snug tracking-tight text-neutral-900 transition-colors group-hover:text-black sm:text-[1.05rem] lg:text-lg">
+        <div className="relative mt-auto flex shrink-0 flex-col px-6 pb-8 pt-2 sm:px-10 sm:pb-10">
+          <h2 className="text-2xl font-semibold leading-snug tracking-tight text-neutral-900 transition-colors group-hover:text-black sm:text-3xl lg:text-4xl">
             {product.name}
           </h2>
           {product.description ? (
-            <p className="mt-1.5 text-[13px] leading-relaxed text-neutral-600 sm:mt-2 sm:text-sm">
+            <p className="footwear-description mt-3 sm:mt-4">
               {product.description}
             </p>
           ) : null}
-          <span className="mt-auto ml-auto inline-flex min-h-10 items-center gap-1.5 pt-3 text-xs font-semibold text-neutral-900 transition-all group-hover:gap-2.5 sm:min-h-0 sm:pt-4 sm:text-sm">
+          <span className="ml-auto mt-5 inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-neutral-900 transition-all group-hover:gap-3 sm:mt-6">
             Shop
             <svg
               className="h-3.5 w-3.5 shrink-0 opacity-60 transition-transform duration-200 group-hover:translate-x-0.5"
@@ -159,8 +134,31 @@ function BrowseItem({
 }
 
 export default function FootwearBrowse({ products, getImages }: FootwearBrowseProps) {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const onWheel = (event: WheelEvent) => {
+      if (event.ctrlKey) return;
+      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+      const atStart = el.scrollLeft <= 2;
+      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
+      if ((event.deltaY < 0 && atStart) || (event.deltaY > 0 && atEnd)) return;
+      event.preventDefault();
+      el.scrollLeft += event.deltaY;
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
   return (
-    <div className="footwear-browse grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 lg:gap-5 xl:gap-6">
+    <div
+      ref={scrollerRef}
+      className="footwear-browse no-scrollbar flex h-[calc(100dvh-5rem)] min-h-[28rem] snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x"
+      tabIndex={0}
+      aria-label="Footwear catalog. Scroll sideways to see each pair."
+    >
       {products.map((product, index) => {
         const { cover, alt } = getImages(product);
         return (
