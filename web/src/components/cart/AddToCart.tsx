@@ -68,6 +68,13 @@ type Props = {
    * Distinct from soldOut (which blocks purchase).
    */
   preOrder?: boolean;
+  /**
+   * Colors that stay listed but cannot be purchased, including on pre-order
+   * items (variant stock 0 is not enough — pre-order otherwise allows them).
+   */
+  unavailableColors?: string[];
+  /** Sizes that stay listed but cannot be purchased. */
+  unavailableSizes?: string[];
 };
 
 const MENS_SIZES = ["6", "7", "8", "9", "10", "11", "12", "13"];
@@ -130,6 +137,8 @@ export default function AddToCart({
   soldOut = false,
   soldOutLabel = "Sold Out",
   preOrder = false,
+  unavailableColors = [],
+  unavailableSizes = [],
 }: Props) {
   const hasSecondaryColors = secondaryColors.length > 0;
   const hasFulfillmentOptions = fulfillmentOptions.length > 0;
@@ -149,11 +158,16 @@ export default function AddToCart({
   const [selectedPrimary, setSelectedPrimary] = useState<string | undefined>(
     () => {
       const primaryParam = searchParams.get('primary');
-      if (primaryParam && primaryColors.includes(primaryParam.toLowerCase())) {
+      if (
+        primaryParam &&
+        primaryColors.includes(primaryParam.toLowerCase()) &&
+        !unavailableColors.includes(primaryParam.toLowerCase())
+      ) {
         return primaryParam.toLowerCase();
       }
       // Prefer first in-stock color (matches display order: available first)
       const firstAvailable = primaryColors.find((color) => {
+        if (unavailableColors.includes(color)) return false;
         if (soldOut || preOrder) return true;
         const variant = variants.find((v) => v.color === color);
         const stock = variant ? variant.stock : 999;
@@ -193,8 +207,12 @@ export default function AddToCart({
     if (hideSizeSelector) return oneSizeLabel;
     const sizeParam = searchParams.get("size");
     if (useCatalogSizes) {
-      if (sizeParam && catalogSizes.includes(sizeParam)) return sizeParam;
-      return catalogSizes[0];
+      const firstAvailableSize =
+        catalogSizes.find((size) => !unavailableSizes.includes(size)) ?? catalogSizes[0];
+      if (sizeParam && catalogSizes.includes(sizeParam) && !unavailableSizes.includes(sizeParam)) {
+        return sizeParam;
+      }
+      return firstAvailableSize;
     }
     const initialGender = parseGenderParam(searchParams.get("gender")) ?? defaultGender;
     const initialSizes = sizesForGender(initialGender);
@@ -219,6 +237,7 @@ export default function AddToCart({
 
   // Check if primary is available
   const isPrimaryAvailable = (color: string) => {
+    if (unavailableColors.includes(color)) return false;
     // Coming soon / sold-out catalog items stay browsable like regular products.
     // Pre-order items also stay selectable even though variant stock is 0.
     if (soldOut || preOrder) return true;
@@ -226,16 +245,19 @@ export default function AddToCart({
     return stock > 0;
   };
 
+  const isSizeAvailable = (size: string) => !unavailableSizes.includes(size);
+
   // Available colors first; out-of-stock colors at the bottom
   const sortedPrimaryColors = useMemo(() => {
     const rank = (color: string) => {
+      if (unavailableColors.includes(color)) return 1;
       if (soldOut || preOrder) return 0;
       const variant = variants.find((v) => v.color === color);
       const stock = variant ? variant.stock : 999;
       return stock > 0 ? 0 : 1;
     };
     return [...primaryColors].sort((a, b) => rank(a) - rank(b));
-  }, [primaryColors, variants, soldOut, preOrder]);
+  }, [primaryColors, variants, soldOut, preOrder, unavailableColors]);
 
   const sortedFlavorOptions = useMemo(() => {
     const rank = (color: string) => {
@@ -270,6 +292,7 @@ export default function AddToCart({
     (selectedSecondary || !hasSecondaryColors) &&
     selectedSize &&
     isPrimaryAvailable(selectedPrimary) &&
+    isSizeAvailable(selectedSize) &&
     (!requireStudentName || Boolean(normalizedStudentName));
 
   // Get display sizes based on gender
@@ -299,9 +322,17 @@ export default function AddToCart({
   useEffect(() => {
     if (hideSizeSelector || hasCarryStyles) return;
     if (selectedSize && !displaySizes.includes(selectedSize)) {
-      setSelectedSize(displaySizes[0]);
+      const firstAvailable =
+        displaySizes.find((size) => !unavailableSizes.includes(size)) ?? displaySizes[0];
+      setSelectedSize(firstAvailable);
+      return;
     }
-  }, [gender, displaySizes, selectedSize, hideSizeSelector, hasCarryStyles]);
+    if (selectedSize && unavailableSizes.includes(selectedSize)) {
+      const firstAvailable =
+        displaySizes.find((size) => !unavailableSizes.includes(size)) ?? displaySizes[0];
+      setSelectedSize(firstAvailable);
+    }
+  }, [gender, displaySizes, selectedSize, hideSizeSelector, hasCarryStyles, unavailableSizes]);
 
   // Reset added if selections change
   useEffect(() => {
@@ -748,16 +779,23 @@ export default function AddToCart({
           <div className="flex flex-wrap gap-2">
             {displaySizes.map((displaySize) => {
               const isSelected = selectedSize === displaySize;
+              const available = isSizeAvailable(displaySize);
               return (
                 <button
                   key={`size-${displaySize}-${useCatalogSizes ? "catalog" : gender}`}
                   onClick={() => {
+                    if (!available) return;
                     setSelectedSize(displaySize);
                   }}
-                  className={`rounded-full h-10 w-10 text-sm text-neutral-900 ring-1 transition flex items-center justify-center ${
-                    isSelected 
-                      ? "bg-black text-white ring-black glow" 
-                      : "ring-black/10 hover:bg-black/5"
+                  disabled={!available}
+                  title={available ? displaySize : `${displaySize} — Out of Stock`}
+                  aria-label={available ? displaySize : `${displaySize} out of stock`}
+                  className={`rounded-full h-10 min-w-10 px-2 text-sm ring-1 transition flex items-center justify-center ${
+                    isSelected
+                      ? "bg-black text-white ring-black glow"
+                      : available
+                        ? "text-neutral-900 ring-black/10 hover:bg-black/5"
+                        : "bg-red-50 text-red-600 ring-red-300 cursor-not-allowed opacity-50 line-through"
                   }`}
                 >
                   {displaySize}

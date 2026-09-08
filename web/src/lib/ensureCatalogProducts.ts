@@ -56,6 +56,7 @@ import {
   APPAREL_CATEGORY,
   OBSOLETE_APPAREL_SLUGS,
   apparelSku,
+  apparelVariantStock,
   getApparelImages,
 } from "@/lib/apparel";
 import { DRAGONFLY_PRICE_CENTS, FOOTWEAR_CATALOG } from "@/lib/footwear";
@@ -769,8 +770,8 @@ export async function ensureApparelProducts(): Promise<void> {
     const variants = item.colors.map((color) => ({
       color,
       sku: apparelSku(item.skuPrefix, color),
-      // Live listings are buyable now; coming-soon stays at 0 (pre-order path).
-      stock: item.comingSoon ? 0 : 999,
+      // Live listings are buyable now; coming-soon and OOS colors stay at 0.
+      stock: apparelVariantStock(item, color),
     }));
 
     if (!existing) {
