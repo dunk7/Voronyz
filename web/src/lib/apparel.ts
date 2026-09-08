@@ -42,13 +42,14 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "shirts",
     label: "Shirts",
-    description: "Oversized tees and more designs to come",
+    description: "Equip the aura. Oversized tees built to throw on and keep the swag loud.",
     listing: "collection",
   },
   {
     id: "sweaters",
     label: "Sweaters",
-    description: "Hoodies, knit layers, and sweater designs",
+    description:
+      "Voronyz comfort, not just in the shoes. Generous fit that goes with everything — durable, easy on the body, warm without running hot.",
     listing: "collection",
   },
   {
@@ -71,7 +72,17 @@ export type ApparelCatalogItem = {
   description: string;
   priceCents: number;
   colors: string[];
+  /**
+   * Colors that stay listed but cannot be purchased (stock 0).
+   * Shown as “Out of Stock” even on coming-soon / pre-order items.
+   */
+  outOfStockColors?: string[];
   sizes: string[];
+  /**
+   * When set, only these sizes can be purchased. Other `sizes` stay
+   * listed as out of stock so shoppers can see what is missing.
+   */
+  availableSizes?: string[];
   /** Primary cover / thumbnail image. */
   image: string;
   /** Full gallery; defaults to `[image]` when omitted. */
@@ -125,7 +136,9 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     description: "Built big on purpose — soft, roomy, and easy to wear.",
     priceCents: 4800,
     colors: ["black", "white", "grey"],
+    outOfStockColors: ["white", "grey"],
     sizes: [...APPAREL_SIZES],
+    availableSizes: ["L"],
     image: "/products/apparel/shirt.jpg",
     skuPrefix: "APP-TEE",
     comingSoon: false,
@@ -138,6 +151,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     description: "Heavyweight fleece hoodie with a clean, modern cut.",
     priceCents: 7800,
     colors: ["black", "grey"],
+    outOfStockColors: ["grey"],
     sizes: [...APPAREL_SIZES],
     image: "/products/apparel/hoodie.jpg",
     skuPrefix: "APP-HOOD",
@@ -152,6 +166,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     description: "Lightweight 3D-printed frames with a sharp geometric silhouette.",
     priceCents: 4800,
     colors: ["black", "white", "grey"],
+    outOfStockColors: ["grey"],
     sizes: [...APPAREL_ONE_SIZE],
     image: "/products/apparel/cool-shades.jpg",
     skuPrefix: "APP-SHDE",
@@ -176,6 +191,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     description: "Precision 3D-printed drone mounts, guards, and frame accessories.",
     priceCents: 2800,
     colors: ["black", "grey"],
+    outOfStockColors: ["grey"],
     sizes: [...APPAREL_ONE_SIZE],
     image: "/products/apparel/drone-parts.jpg",
     skuPrefix: "APP-DRNE",
@@ -188,6 +204,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     description: "3D-printed lace locks that keep your footwear dialed without retying.",
     priceCents: 1600,
     colors: ["black", "white", "grey"],
+    outOfStockColors: ["grey"],
     sizes: [...APPAREL_ONE_SIZE],
     image: "/products/apparel/lace-locks.jpg",
     skuPrefix: "APP-LACE",
@@ -292,4 +309,47 @@ export function apparelProductShopLabel(slug: string | null | undefined): string
 export function apparelSku(prefix: string, color: string) {
   const code = color.replace(/[^a-z0-9]/gi, "").slice(0, 3).toUpperCase() || "CLR";
   return `${prefix}-${code}`;
+}
+
+function normalizeApparelColor(color: string) {
+  return color.trim().toLowerCase();
+}
+
+/** True when a catalog color is explicitly marked out of stock. */
+export function isApparelColorOutOfStock(
+  item: ApparelCatalogItem,
+  color: string,
+): boolean {
+  const key = normalizeApparelColor(color);
+  return (item.outOfStockColors ?? []).some(
+    (entry) => normalizeApparelColor(entry) === key,
+  );
+}
+
+/**
+ * Variant stock written to the DB. Coming-soon pieces stay at 0 (pre-order
+ * path) unless a color is also listed as out of stock — same 0, but the
+ * product page treats those colors as unbuyable.
+ */
+export function apparelVariantStock(
+  item: ApparelCatalogItem,
+  color: string,
+): number {
+  if (isApparelColorOutOfStock(item, color)) return 0;
+  return item.comingSoon ? 0 : 999;
+}
+
+export function isApparelSizeAvailable(
+  item: ApparelCatalogItem,
+  size: string,
+): boolean {
+  if (!item.sizes.includes(size)) return false;
+  if (!item.availableSizes || item.availableSizes.length === 0) return true;
+  return item.availableSizes.includes(size);
+}
+
+/** Sizes that stay listed but cannot be purchased. */
+export function apparelUnavailableSizes(item: ApparelCatalogItem): string[] {
+  if (!item.availableSizes || item.availableSizes.length === 0) return [];
+  return item.sizes.filter((size) => !item.availableSizes!.includes(size));
 }

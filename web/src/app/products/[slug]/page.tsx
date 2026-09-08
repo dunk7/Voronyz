@@ -59,9 +59,11 @@ import {
   LATTICE_INSOLES_THUMBNAIL_URL,
 } from "@/lib/latticeInsoles";
 import { isAccessorySlug, isApparelSlug, isFootwearSlug, isHealthSlug } from "@/lib/productCategories";
+import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION } from "@/lib/footwear";
 import {
   apparelProductShopHref,
   apparelProductShopLabel,
+  apparelUnavailableSizes,
   getApparelItem,
   getApparelImages,
   isObsoleteApparelSlug,
@@ -281,11 +283,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const displayDescription = slug === "v3-slides" 
     ? "Engineered for comfort, built to last. World-class FDM printed slides with TPU 90A lattice lowers and breathable uppers."
     : slug === "dragonfly"
-    ? "Engineered for walking and active days, built to last. Lightweight, breathable 3D-printed sneakers featuring a custom lattice sole for unmatched cushioning and style. Available in five stunning colorways with fully customizable lace colors."
+    ? DRAGONFLY_DESCRIPTION
     : isMagikidShoes
     ? MAGIKID_SHOES_DESCRIPTION
     : isSlipOns
-    ? "Engineered for easy everyday wear, built to last. Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — black, grey, orange, and pink in stock; white temporarily unavailable."
+    ? SLIP_ONS_DESCRIPTION
     : isTrailMix
     ? TRAIL_MIX_DESCRIPTION
     : isViolettePonybead
@@ -466,6 +468,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     useCatalogSizes: true,
                     preOrder: Boolean(apparelItem?.comingSoon),
                     hideSizeSelector: apparelItem?.sizes.length === 1,
+                    unavailableColors: apparelItem?.outOfStockColors ?? [],
+                    unavailableSizes: apparelItem ? apparelUnavailableSizes(apparelItem) : [],
                   })}
                   sizes={product.sizes as string[]}
                   productName={displayName}
@@ -530,7 +534,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               : isViolettePonybead
               ? VIOLETTE_PONYBEAD_HOW_ITS_MADE
               : apparelItem?.slug === "voronyz-oversized-tee"
-              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Ready to ship in your size and color."
+              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Shipping now in black, Large — white, grey, and other sizes are out of stock."
               : apparelItem?.slug === "voronyz-core-hoodie"
               ? "Heavyweight fleece with a clean, modern cut. Ready to ship in your size and color."
               : isApparel && apparelItem?.comingSoon
@@ -578,12 +582,20 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Does it come in sizes?", a: "No sizes — pick the animal style you want." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isApparel && !apparelItem?.comingSoon ? [
-              { q: "What sizes are available?", a: "This piece runs XS–XXL." },
+              { q: "What sizes are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
+                ? "The Oversized Tee currently ships in Large only. XS, S, M, XL, and XXL are listed but out of stock."
+                : "This piece runs XS–XXL." },
+              { q: "What colors are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
+                ? "Black is in stock. White and grey are currently out of stock."
+                : apparelItem?.outOfStockColors?.includes("grey")
+                  ? "Grey is currently out of stock. Choose another listed color."
+                  : "Pick any listed color that is in stock." },
               { q: "When will my order ship?", a: "Orders typically ship within a few business days. You'll get updates by email." },
               { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Accessories (shades, jewelry, lace locks, drone parts) live under their own Apparel section." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isApparel ? [
               { q: "What sizes are available?", a: "Most pieces run XS–XXL. Cool shades, jewelry, lace locks, and drone parts are One Size." },
+              { q: "What colors are available?", a: "Grey is currently out of stock on apparel. Other listed colors can be pre-ordered." },
               { q: "Can I pre-order coming soon pieces?", a: "Yes. Choose your color and size, then pay now to join the waitlist. We ship your order when that product arrives — timing can be a day or much longer depending on the drop." },
               { q: "When will my pre-order ship?", a: "As soon as we receive the product. You'll get updates by email. Pre-orders are paid reservations, not instant ship." },
               { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Accessories (shades, jewelry, lace locks, drone parts) live under their own Apparel section. Engineering is separate. Lattice Insoles are on All Footwear." },
@@ -633,7 +645,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug === "slip-ons") {
     const title = "Slip Ons – Voronyz";
     const description =
-      "Minimal 3D-printed slip-ons with a flexible lattice sole. $65. Black, grey, orange, and pink in stock; white temporarily unavailable.";
+      "Minimal 3D-printed slip-ons with a flexible lattice sole. $65.";
     const images = ["/products/slip-ons/InShot_20260405_203151152.jpg"];
     return {
       title,

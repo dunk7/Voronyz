@@ -7,17 +7,22 @@ import { fileURLToPath } from "node:url";
 const css = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "globals.css"), "utf8");
 
 const shimmerAfter = css.match(
-  /\.btn-shimmer::after \{\n  position:[\s\S]*?\n\}/,
+  /\.btn-shimmer::after \{[\s\S]*?\n\}/,
 );
 
-test("button shimmer stays a faint overlay and never paints the fill white", () => {
+test("button shimmer is a faint hex chessboard, not a white fill", () => {
   assert.ok(shimmerAfter, "expected a .btn-shimmer::after overlay rule");
-  assert.match(shimmerAfter![0], /rgb\(255 255 255 \/ 0\.26\)/);
-  assert.doesNotMatch(
-    shimmerAfter![0],
-    /rgb\(255 255 255 \/ 0\.(?:[4-9]\d?|3[2-9])\)/,
-    "shimmer peak should stay a field, not a white wash (≥ 0.32 is too much)",
+  assert.match(
+    css,
+    /background-size:\s*32px 28px/,
+    "button sheen must use a scaled storefront hex tile so cells fit on a CTA",
   );
+  assert.match(
+    css,
+    /data:image\/svg\+xml/,
+    "hex chessboard must be an SVG overlay",
+  );
+  assert.match(css, /fill-opacity='0\.1'/);
   assert.doesNotMatch(
     css.match(/\.btn-shimmer \{[\s\S]*?\n\}/)?.[0] ?? "",
     /background-color:\s*#f5f5f5/i,
@@ -25,10 +30,14 @@ test("button shimmer stays a faint overlay and never paints the fill white", () 
   );
 });
 
-test("button shimmer is a continuous futuristic loop, not a sweep that parks", () => {
-  assert.match(css, /@keyframes btn-shimmer-flow/);
-  assert.match(css, /@keyframes btn-shimmer-flow-alt/);
-  assert.match(shimmerAfter![0], /linear infinite/);
+test("button shimmer is a slow hex breathe, not disco light bands", () => {
+  assert.match(css, /@keyframes btn-shimmer-hex/);
+  assert.match(css, /16s ease-in-out infinite/);
+  assert.doesNotMatch(
+    css,
+    /@keyframes btn-shimmer-flow/,
+    "scrolling disco bands should be gone",
+  );
   assert.doesNotMatch(
     css,
     /@keyframes btn-shimmer-sweep/,
@@ -37,24 +46,24 @@ test("button shimmer is a continuous futuristic loop, not a sweep that parks", (
   assert.doesNotMatch(
     css,
     /@keyframes btn-shimmer-orbit/,
-    "an orbiting lobe parks on the right edge — do not use it",
+    "an orbiting lobe should be gone",
   );
   assert.doesNotMatch(
     css,
-    /btn-shimmer-sweep[^{]*\{[^}]*0%,\s*22%/,
-    "shimmer must not hold, then stop on the right edge",
+    /html\.site-dark[^{]*\.btn-shimmer::after \{[\s\S]*?repeating-linear-gradient/,
+    "dark-mode shimmer must stay hex, not disco stripes",
   );
 });
 
-test("dark mode does not invert shimmer CTAs to white chips", () => {
-  assert.doesNotMatch(
-    css,
-    /html\.site-dark[^{}]*\.btn-shimmer(?!\))[^{]*\{[^}]*background-color:\s*#f5f5f5/i,
-    "dark-mode shimmer rules must not force a light fill",
-  );
+test("dark mode inverts primary buttons to the opposite of the black page", () => {
   assert.match(
     css,
+    /html\.site-dark main button\.bg-black[\s\S]*?background-color:\s*#f5f5f5/,
+    "black CTAs including shimmer should flip light on the dark shop",
+  );
+  assert.doesNotMatch(
+    css,
     /button\.bg-black:not\(\.btn-shimmer\)/,
-    "selected-chip invert should skip primary shimmer CTAs",
+    "shimmer CTAs should invert with the other black buttons",
   );
 });

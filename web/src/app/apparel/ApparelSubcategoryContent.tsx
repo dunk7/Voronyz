@@ -144,9 +144,7 @@ export default function ApparelSubcategoryContent({
                 {sub.label}
               </h1>
               <p className="mt-2 text-sm text-neutral-500 max-w-xl">
-                {isStandalone
-                  ? sub.description
-                  : `${sub.description}. Add more designs anytime — this listing scales with the catalog.`}
+                {sub.description}
               </p>
             </div>
             <span className="text-xs tabular-nums text-neutral-400 min-h-[1rem]">

@@ -41,6 +41,7 @@ import {
   LATTICE_INSOLES_SLUG,
   LATTICE_INSOLES_VARIANTS,
 } from "../src/lib/latticeInsoles";
+import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION } from "../src/lib/footwear";
 import {
   GATORS_DESCRIPTION_SHORT,
   GATORS_IMAGES,
@@ -167,8 +168,7 @@ async function main() {
         data: {
           slug: "dragonfly",
           name: "The Dragonfly's",
-          description:
-            "Engineered for walking and active days, built to last. Lightweight, breathable 3D-printed sneakers with a custom lattice sole and interchangeable laces.",
+          description: DRAGONFLY_DESCRIPTION,
           priceCents: 16000,
           currency: "usd",
           images: [
@@ -204,8 +204,7 @@ async function main() {
         where: { id: existingDf.id },
         data: {
           name: "The Dragonfly's",
-          description:
-            "Engineered for walking and active days, built to last. Lightweight, breathable 3D-printed sneakers with a custom lattice sole and interchangeable laces.",
+          description: DRAGONFLY_DESCRIPTION,
           priceCents: 16000,
           images: [
             "/products/dragonfly/InShot_20260212_153516456.jpg",
@@ -267,8 +266,7 @@ async function main() {
         data: {
           slug: "slip-ons",
           name: "Slip Ons",
-          description:
-            "Engineered for easy everyday wear, built to last. Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
+          description: SLIP_ONS_DESCRIPTION,
           priceCents: 6500,
           currency: "usd",
           images: slipOnImages,
@@ -294,8 +292,7 @@ async function main() {
         where: { id: existingSo.id },
         data: {
           name: "Slip Ons",
-          description:
-            "Engineered for easy everyday wear, built to last. Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette. One body color per pair — pick black, grey, orange, or pink (white coming soon).",
+          description: SLIP_ONS_DESCRIPTION,
           priceCents: 6500,
           images: slipOnImages,
           primaryColors: ["black", "grey", "white", "orange", "pink"],
