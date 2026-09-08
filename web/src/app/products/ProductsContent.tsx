@@ -23,7 +23,7 @@ const HOME_APPAREL_TEASER_SLUGS = [
 
 /** Technical shop-all CTA used under the home Footwear and Apparel teasers. */
 const SHOP_ALL_CTA_CLASS =
-  "btn-shimmer inline-flex items-center justify-center rounded-md bg-neutral-900 px-6 py-2.5 text-[11px] font-medium uppercase tracking-[0.18em] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] transition-colors hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2";
+  "btn-shimmer inline-flex min-h-11 items-center justify-center rounded-md bg-neutral-900 px-7 py-3 text-[11px] font-medium uppercase tracking-[0.18em] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] transition-colors hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2";
 
 type Product = FootwearListProduct;
 
