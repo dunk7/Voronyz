@@ -77,7 +77,7 @@ function BrowseItem({
       <Link
         href={`/products/${product.slug}`}
         onClick={handleClick}
-        className={`group grid h-full grid-cols-[minmax(7.25rem,40%)_1fr] items-center gap-3.5 rounded-2xl bg-white/55 p-2.5 ring-1 ring-black/[0.06] outline-none transition-all duration-300 hover:bg-white/90 hover:shadow-[0_10px_28px_-16px_rgba(0,0,0,0.35)] hover:ring-black/10 focus-visible:ring-2 focus-visible:ring-neutral-900 sm:grid-cols-[minmax(10rem,44%)_1fr] sm:gap-5 sm:p-3.5 md:p-4 ${
+        className={`group grid h-full grid-cols-[minmax(6.75rem,38%)_1fr] items-center gap-3 rounded-2xl bg-white/55 p-2.5 ring-1 ring-black/[0.06] outline-none transition-all duration-300 hover:bg-white/90 hover:shadow-[0_10px_28px_-16px_rgba(0,0,0,0.35)] hover:ring-black/10 focus-visible:ring-2 focus-visible:ring-neutral-900 sm:grid-cols-[minmax(10rem,44%)_1fr] sm:gap-5 sm:p-3.5 md:p-4 ${
           navigating ? "pointer-events-none" : ""
         }`}
       >
@@ -130,7 +130,7 @@ function BrowseItem({
           )}
         </div>
 
-        <div className="min-w-0 py-0.5 sm:py-1">
+        <div className="min-w-0 overflow-hidden py-0.5 sm:py-1">
           <h2 className="text-[15px] font-semibold leading-snug tracking-tight text-neutral-900 transition-colors group-hover:text-black sm:text-[1.05rem] lg:text-lg">
             {product.name}
           </h2>
@@ -140,7 +140,8 @@ function BrowseItem({
             </p>
           ) : null}
           <span className="mt-2 inline-flex min-h-10 items-center gap-1.5 text-xs font-semibold text-neutral-900 transition-all group-hover:gap-2.5 sm:mt-3 sm:min-h-0 sm:text-sm">
-            Shop {product.name}
+            <span className="sm:hidden">Shop</span>
+            <span className="hidden sm:inline">Shop {product.name}</span>
             <svg
               className="h-3.5 w-3.5 shrink-0 opacity-60 transition-transform duration-200 group-hover:translate-x-0.5"
               fill="none"
