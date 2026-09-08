@@ -231,7 +231,6 @@ video {
     rgb(255 255 255 / 0) 100%
   );
   box-shadow: 0 0 22px 8px rgb(255 255 255 / 0.12);
-  mix-blend-mode: overlay;
   animation: btn-shimmer-sheen 2s linear infinite;
   will-change: transform;
 }

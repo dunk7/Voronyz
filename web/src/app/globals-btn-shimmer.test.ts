@@ -46,10 +46,10 @@ test("button shimmer is a traveling sheen over the board, not a parked hex pulse
     /rgb\(255 255 255 \/ 0\.55\)/,
     "sheen peak should be visible on the print-bed",
   );
-  assert.match(
+  assert.doesNotMatch(
     shimmerAfter![0],
     /mix-blend-mode:\s*overlay/,
-    "overlay blend keeps the blade a highlight, not a white wash",
+    "overlay on black is invisible — use normal blending",
   );
   assert.doesNotMatch(
     shimmerAfter![0],
