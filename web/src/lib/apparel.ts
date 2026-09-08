@@ -48,7 +48,8 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "sweaters",
     label: "Sweaters",
-    description: "Hoodies, knit layers, and sweater designs",
+    description:
+      "Voronyz comfort, not just in the shoes. Generous fit that goes with everything — durable, easy on the body, warm without running hot.",
     listing: "collection",
   },
   {
