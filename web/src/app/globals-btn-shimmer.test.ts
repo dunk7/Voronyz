@@ -13,12 +13,12 @@ const shimmerAfter = css.match(
   /\.btn-shimmer::after \{\n  position:[\s\S]*?\n\}/,
 );
 
-test("button shimmer is a print-bed chessboard, not a miniature hex copy", () => {
+test("button shimmer is an axis-aligned square chessboard, not hex or diamonds", () => {
   assert.ok(shimmerBefore, "expected a .btn-shimmer::before overlay rule");
   assert.match(
     shimmerBefore![0],
-    /linear-gradient\(\s*45deg/,
-    "CTAs should use a square chessboard, not hex SVG cells",
+    /%3Crect width='10' height='10'/,
+    "CTAs must use square rect tiles",
   );
   assert.match(
     shimmerBefore![0],
@@ -27,8 +27,13 @@ test("button shimmer is a print-bed chessboard, not a miniature hex copy", () =>
   );
   assert.doesNotMatch(
     shimmerBefore![0],
-    /data:image\/svg\+xml/,
-    "button texture must not reuse the page honeycomb SVG",
+    /45deg/,
+    "45° checkers render as diamonds that read as hex",
+  );
+  assert.doesNotMatch(
+    shimmerBefore![0],
+    /L55\.98/,
+    "button texture must not reuse the page honeycomb path",
   );
   assert.doesNotMatch(
     css.match(/\.btn-shimmer \{[\s\S]*?\n\}/)?.[0] ?? "",
@@ -79,7 +84,7 @@ test("button shimmer is a traveling sheen over the board, not a parked hex pulse
   );
 });
 
-test("dark mode inverts primary buttons and keeps a dark print-bed", () => {
+test("dark mode inverts primary buttons and keeps a dark square print-bed", () => {
   assert.match(
     css,
     /html\.site-dark main button\.bg-black[\s\S]*?background-color:\s*#f5f5f5/,
@@ -87,13 +92,13 @@ test("dark mode inverts primary buttons and keeps a dark print-bed", () => {
   );
   assert.match(
     css,
-    /html\.site-dark main \.btn-shimmer::before[\s\S]*?linear-gradient\(\s*45deg/,
+    /html\.site-dark main \.btn-shimmer::before[\s\S]*?%3Crect width='10' height='10'/,
     "inverted CTAs should keep the square print-bed",
   );
   assert.doesNotMatch(
     css,
-    /html\.site-dark[^{]*\.btn-shimmer::before \{[\s\S]*?data:image\/svg\+xml/,
-    "dark-mode shimmer must not fall back to the hex SVG",
+    /html\.site-dark[^{]*\.btn-shimmer::before \{[\s\S]*?L55\.98/,
+    "dark-mode shimmer must not fall back to the hex path",
   );
   assert.doesNotMatch(
     css,
