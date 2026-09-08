@@ -17,12 +17,12 @@ test("button shimmer is a print-bed chessboard, not a miniature hex copy", () =>
   assert.ok(shimmerBefore, "expected a .btn-shimmer::before overlay rule");
   assert.match(
     shimmerBefore![0],
-    /repeating-conic-gradient/,
+    /linear-gradient\(\s*45deg/,
     "CTAs should use a square chessboard, not hex SVG cells",
   );
   assert.match(
     shimmerBefore![0],
-    /background-size:\s*18px 18px/,
+    /background-size:\s*20px 20px/,
     "print-bed cells should read as blocks on a chip",
   );
   assert.doesNotMatch(
@@ -43,7 +43,7 @@ test("button shimmer is a traveling sheen over the board, not a parked hex pulse
   assert.match(shimmerAfter![0], /linear infinite/);
   assert.match(
     shimmerAfter![0],
-    /rgb\(255 255 255 \/ 0\.24\)/,
+    /rgb\(255 255 255 \/ 0\.28\)/,
     "sheen peak should be visible on black CTAs",
   );
   assert.doesNotMatch(
@@ -81,7 +81,7 @@ test("dark mode inverts primary buttons and keeps a dark print-bed", () => {
   );
   assert.match(
     css,
-    /html\.site-dark main \.btn-shimmer::before[\s\S]*?repeating-conic-gradient/,
+    /html\.site-dark main \.btn-shimmer::before[\s\S]*?linear-gradient\(\s*45deg/,
     "inverted CTAs should keep the square print-bed",
   );
   assert.doesNotMatch(
