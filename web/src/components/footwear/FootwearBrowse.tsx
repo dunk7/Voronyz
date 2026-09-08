@@ -77,12 +77,12 @@ function BrowseItem({
       <Link
         href={`/products/${product.slug}`}
         onClick={handleClick}
-        className={`group grid h-full grid-cols-[minmax(6.75rem,38%)_1fr] items-center gap-3 rounded-2xl bg-white/55 p-2.5 ring-1 ring-black/[0.06] outline-none transition-all duration-300 hover:bg-white/90 hover:shadow-[0_10px_28px_-16px_rgba(0,0,0,0.35)] hover:ring-black/10 focus-visible:ring-2 focus-visible:ring-neutral-900 sm:grid-cols-[minmax(10rem,44%)_1fr] sm:gap-5 sm:p-3.5 md:p-4 ${
+        className={`group flex h-full flex-col rounded-2xl bg-white/55 p-2.5 ring-1 ring-black/[0.06] outline-none transition-all duration-300 hover:bg-white/90 hover:shadow-[0_10px_28px_-16px_rgba(0,0,0,0.35)] hover:ring-black/10 focus-visible:ring-2 focus-visible:ring-neutral-900 sm:p-3.5 md:p-4 ${
           navigating ? "pointer-events-none" : ""
         }`}
       >
-        {/* Landscape studio frame so the pair reads side-on, not stacked in a tall square. */}
-        <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:ring-black/10 sm:rounded-2xl">
+        {/* Studio frame on top so the name and full paragraph can sit underneath. */}
+        <div className="relative aspect-[16/10] shrink-0 overflow-hidden rounded-xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:ring-black/10 sm:rounded-2xl">
           <div className="absolute inset-0 p-[7%] sm:p-[8%]">
             <div className="relative h-full w-full">
               <SoftImage
@@ -93,7 +93,7 @@ function BrowseItem({
                 className={`object-contain object-center transition-opacity duration-500 ease-out ${
                   altSrc ? "group-hover:opacity-0" : ""
                 } ${navigating ? "brightness-90" : ""}`}
-                sizes="(max-width: 640px) 42vw, (max-width: 1280px) 45vw, 30vw"
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                 priority={index === 0}
               />
               {altSrc && (
@@ -104,7 +104,7 @@ function BrowseItem({
                   fill
                   showLogoPlaceholder={false}
                   className="object-contain object-center opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100"
-                  sizes="(max-width: 640px) 42vw, (max-width: 1280px) 45vw, 30vw"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   loading="lazy"
                 />
               )}
@@ -130,18 +130,17 @@ function BrowseItem({
           )}
         </div>
 
-        <div className="min-w-0 overflow-hidden py-0.5 sm:py-1">
+        <div className="flex min-w-0 flex-1 flex-col px-0.5 pt-3 sm:pt-4">
           <h2 className="text-[15px] font-semibold leading-snug tracking-tight text-neutral-900 transition-colors group-hover:text-black sm:text-[1.05rem] lg:text-lg">
             {product.name}
           </h2>
           {product.description ? (
-            <p className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-neutral-600 sm:mt-1.5 sm:text-sm sm:line-clamp-3">
+            <p className="mt-1.5 text-[13px] leading-relaxed text-neutral-600 sm:mt-2 sm:text-sm">
               {product.description}
             </p>
           ) : null}
-          <span className="mt-2 inline-flex min-h-10 items-center gap-1.5 text-xs font-semibold text-neutral-900 transition-all group-hover:gap-2.5 sm:mt-3 sm:min-h-0 sm:text-sm">
-            <span className="sm:hidden">Shop</span>
-            <span className="hidden sm:inline">Shop {product.name}</span>
+          <span className="mt-auto ml-auto inline-flex min-h-10 items-center gap-1.5 pt-3 text-xs font-semibold text-neutral-900 transition-all group-hover:gap-2.5 sm:min-h-0 sm:pt-4 sm:text-sm">
+            Shop
             <svg
               className="h-3.5 w-3.5 shrink-0 opacity-60 transition-transform duration-200 group-hover:translate-x-0.5"
               fill="none"
@@ -161,7 +160,7 @@ function BrowseItem({
 
 export default function FootwearBrowse({ products, getImages }: FootwearBrowseProps) {
   return (
-    <div className="footwear-browse grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 md:gap-5 xl:gap-6">
+    <div className="footwear-browse grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 lg:gap-5 xl:gap-6">
       {products.map((product, index) => {
         const { cover, alt } = getImages(product);
         return (
