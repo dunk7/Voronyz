@@ -15,6 +15,9 @@ import ApparelProductGrid, {
 import TakeTheQuizPromo from "@/components/apparel/TakeTheQuizPromo";
 import FootwearBrowse from "@/components/footwear/FootwearBrowse";
 
+/** Homepage footwear teaser — slides + slip-ons only; full catalog on /products. */
+const HOME_FOOTWEAR_TEASER_SLUGS = ["v3-slides", "slip-ons"] as const;
+
 /** Homepage apparel teaser — a couple of highlights, not the full catalog. */
 const HOME_APPAREL_TEASER_SLUGS = [
   "voronyz-oversized-tee",
@@ -164,11 +167,23 @@ export default function ProductsContent({
     };
   }, [searchQuery, category]);
 
-  const isHomeFootwearSection =
+  const isHomeFootwearTeaser =
     showScrollCue && category === "footwear" && !searchQuery;
   const showApparelContinuation = category === "footwear" && !searchQuery;
-  /** Horizontal shopping catalog on home and All Footwear. */
-  const useFootwearBrowse = category === "footwear" && !searchQuery;
+  /** Shopping catalog on All Footwear; home keeps the slides/slip-ons teaser grid. */
+  const useFootwearBrowse =
+    category === "footwear" && !searchQuery && !isHomeFootwearTeaser;
+
+  const displayProducts = useMemo(() => {
+    if (!isHomeFootwearTeaser) return products;
+    const bySlug = new Map(
+      products.map((p) => [(p.slug || "").trim().toLowerCase(), p]),
+    );
+    return HOME_FOOTWEAR_TEASER_SLUGS.flatMap((slug) => {
+      const product = bySlug.get(slug);
+      return product ? [product] : [];
+    });
+  }, [isHomeFootwearTeaser, products]);
 
   const heading =
     searchQuery
@@ -177,7 +192,7 @@ export default function ProductsContent({
       ? "Engineering"
       : category === "health"
       ? "Collaborative"
-      : isHomeFootwearSection
+      : isHomeFootwearTeaser
       ? "Footwear"
       : "Step into the future";
   /** Footwear stays heading-only (like Apparel on home) — no supporting paragraph. */
@@ -227,8 +242,8 @@ export default function ProductsContent({
     "text-2xl sm:text-[1.75rem] font-semibold tracking-tight text-neutral-900 text-center";
   const sectionHeadingClass =
     "text-3xl font-semibold tracking-tight text-neutral-900 text-center";
-  const titleClass = isHomeFootwearSection ? homeSectionTitleClass : sectionHeadingClass;
-  const TitleTag = isHomeFootwearSection ? "h2" : "h1";
+  const titleClass = isHomeFootwearTeaser ? homeSectionTitleClass : sectionHeadingClass;
+  const TitleTag = isHomeFootwearTeaser ? "h2" : "h1";
   const scrollCue = showScrollCue && !searchQuery && (
     <svg
       className="mx-auto mt-2 h-4 w-4 animate-bounce text-neutral-400"
@@ -307,7 +322,7 @@ export default function ProductsContent({
         </div>
 
         {/* ── Empty state ── */}
-        {products.length === 0 && searchQuery ? (
+        {displayProducts.length === 0 && searchQuery ? (
           <div className="text-center py-20">
             <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
               <svg className="h-7 w-7 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -329,9 +344,14 @@ export default function ProductsContent({
           /* ── Footwear shop: landscape cards in a horizontal catalog grid ── */
           <FootwearBrowse products={products} getImages={getImages} />
         ) : (
-          /* ── Product grid (Engineering / Collaborative / search) ── */
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            {products.map((p) => {
+          /* ── Product grid (home teaser / Engineering / Collaborative / search) ── */
+          <>
+          <div className={`grid gap-4 sm:gap-6 ${
+            isHomeFootwearTeaser
+              ? "grid-cols-2"
+              : "grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
+          }`}>
+            {displayProducts.map((p) => {
               const slugKey = (p.slug || "").trim().toLowerCase();
               const { cover, alt } = getImages(p);
               const meta = cardMetaForSlug(slugKey);
@@ -416,6 +436,18 @@ export default function ProductsContent({
               );
             })}
           </div>
+
+          {isHomeFootwearTeaser && (
+            <div className="mt-10 sm:mt-12 flex justify-center">
+              <Link
+                href="/products"
+                className={SHOP_ALL_CTA_CLASS}
+              >
+                Shop all footwear
+              </Link>
+            </div>
+          )}
+          </>
         )}
 
         {/* ── Apparel teaser after footwear (full catalog lives on /apparel) ── */}
@@ -448,7 +480,7 @@ export default function ProductsContent({
           </section>
         )}
 
-        {isHomeFootwearSection && (
+        {isHomeFootwearTeaser && (
           <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
         )}
       </div>
