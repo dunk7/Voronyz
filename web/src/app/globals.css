@@ -168,19 +168,11 @@ video {
   button fill white. A single sheen travels across the blocks so
   the surface actually shimmers (no parked sweep, no disco bands).
 */
-@keyframes btn-shimmer-sheen {
-  from {
-    transform: translate3d(-160%, 0, 0);
-  }
-  to {
-    transform: translate3d(380%, 0, 0);
-  }
-}
-
 .btn-shimmer {
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  --btn-print-rev: 4;
 }
 
 .btn-shimmer::before,
@@ -196,7 +188,10 @@ video {
 */
 .btn-shimmer::before {
   position: absolute;
-  inset: 0;
+  top: -20px;
+  right: -20px;
+  bottom: -20px;
+  left: -20px;
   background-image:
     linear-gradient(
       45deg,
@@ -214,6 +209,7 @@ video {
     );
   background-size: 20px 20px;
   background-position: 0 0, 10px 10px;
+  animation: btn-print-crawl 6s linear infinite;
 }
 
 .btn-shimmer::after {
@@ -221,18 +217,31 @@ video {
   top: 0;
   bottom: 0;
   left: 0;
-  width: 40%;
+  width: 45%;
   background-image: linear-gradient(
     to right,
     rgb(255 255 255 / 0) 0%,
-    rgb(255 255 255 / 0.18) 40%,
+    rgb(255 255 255 / 0.2) 40%,
     rgb(255 255 255 / 0.55) 50%,
-    rgb(255 255 255 / 0.18) 60%,
+    rgb(255 255 255 / 0.2) 60%,
     rgb(255 255 255 / 0) 100%
   );
-  box-shadow: 0 0 22px 8px rgb(255 255 255 / 0.12);
   animation: btn-shimmer-sheen 2s linear infinite;
-  will-change: transform;
+}
+
+@keyframes btn-print-crawl {
+  to {
+    transform: translate3d(-20px, 0, 0);
+  }
+}
+
+@keyframes btn-shimmer-sheen {
+  from {
+    transform: translate3d(-120%, 0, 0);
+  }
+  to {
+    transform: translate3d(280%, 0, 0);
+  }
 }
 
 .btn-shimmer:disabled::before,
@@ -244,8 +253,8 @@ video {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .btn-shimmer::before,
   .btn-shimmer::after {
-    content: none;
     animation: none;
   }
 }

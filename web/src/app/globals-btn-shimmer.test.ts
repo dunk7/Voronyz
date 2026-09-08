@@ -40,6 +40,7 @@ test("button shimmer is a print-bed chessboard, not a miniature hex copy", () =>
 test("button shimmer is a traveling sheen over the board, not a parked hex pulse", () => {
   assert.ok(shimmerAfter, "expected a .btn-shimmer::after overlay rule");
   assert.match(css, /@keyframes btn-shimmer-sheen/);
+  assert.match(css, /@keyframes btn-print-crawl/);
   assert.match(shimmerAfter![0], /linear infinite/);
   assert.match(
     shimmerAfter![0],
