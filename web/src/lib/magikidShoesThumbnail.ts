@@ -12,16 +12,16 @@ export const MAGIKID_SHOES_SHIPPED_PRICE_CENTS =
   MAGIKID_SHOES_BASE_PRICE_CENTS + MAGIKID_SHOES_SHIPPING_FEE_CENTS;
 
 export const MAGIKID_SHOES_DESCRIPTION =
-  "Engineered for kids' custom designs, built to last. Your 3D-printed slip-ons with a flexible lattice sole. Black, grey, and pink in stock — ship to you or pick up at Magikid Lab.";
+  "Engineered for kids' custom designs, built to last. Your 3D-printed slip-ons with a flexible lattice sole. Ship to you or pick up at Magikid Lab.";
 
 export const MAGIKID_SHOES_DESCRIPTION_SHORT =
-  "Engineered for kids' custom designs, built to last. Your 3D-printed slip-ons with a flexible lattice sole. Pick black, grey, or pink — ship to you or pick up at Magikid Lab.";
+  "Engineered for kids' custom designs, built to last. Your 3D-printed slip-ons with a flexible lattice sole. Ship to you or pick up at Magikid Lab.";
 
 export const MAGIKID_SHOES_HOW_ITS_MADE =
   "You're buying your own custom-designed 3D-printed slip-ons — printed to order in one piece per colorway. Ship to you, or pick it up in person at Magikid Lab.";
 
 export const MAGIKID_SHOES_META_DESCRIPTION =
-  "Your custom-designed 3D-printed slip-ons. $30 per pair, plus $7 shipping or free pickup at Magikid Lab. Black, grey, and pink in stock.";
+  "Your custom-designed 3D-printed slip-ons. $30 per pair, plus $7 shipping or free pickup at Magikid Lab.";
 
 export const MAGIKID_STUDENT_NAME_MIN = 2;
 export const MAGIKID_STUDENT_NAME_MAX = 80;
