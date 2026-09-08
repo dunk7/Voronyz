@@ -615,29 +615,15 @@ html.site-dark main button.bg-black .border-white {
   border-color: rgb(17 17 17 / 0.28);
 }
 
-/* Dark sheen so the loop still reads on inverted light buttons. */
+/* Dark hex chessboard so inverted light CTAs keep the same tessellation. */
 html.site-dark main .btn-shimmer::before,
 html.site-dark footer .btn-shimmer::before {
-  background-image: repeating-linear-gradient(
-    128deg,
-    rgb(0 0 0 / 0) 0 16px,
-    rgb(0 0 0 / 0.08) 30px,
-    rgb(0 0 0 / 0.16) 40px,
-    rgb(0 0 0 / 0.08) 50px,
-    rgb(0 0 0 / 0) 64px 80px
-  );
+  background-image: url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.08'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3C/g%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='0.1' stroke-width='0.7' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 html.site-dark main .btn-shimmer::after,
 html.site-dark footer .btn-shimmer::after {
-  background-image: repeating-linear-gradient(
-    112deg,
-    rgb(0 0 0 / 0) 0 6px,
-    rgb(0 0 0 / 0.1) 16px,
-    rgb(0 0 0 / 0.22) 24px,
-    rgb(0 0 0 / 0.1) 32px,
-    rgb(0 0 0 / 0) 42px 56px
-  );
+  background-image: url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='0.08'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 html.site-dark main .glow {

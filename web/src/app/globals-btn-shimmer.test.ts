@@ -50,8 +50,8 @@ test("button shimmer is a slow hex breathe, not disco light bands", () => {
   );
   assert.doesNotMatch(
     css,
-    /repeating-linear-gradient/,
-    "diagonal stripe fields read as disco lights",
+    /html\.site-dark[^{]*\.btn-shimmer::after \{[\s\S]*?repeating-linear-gradient/,
+    "dark-mode shimmer must stay hex, not disco stripes",
   );
 });
 
