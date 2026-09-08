@@ -221,16 +221,18 @@ video {
   top: 0;
   bottom: 0;
   left: 0;
-  width: 36%;
+  width: 40%;
   background-image: linear-gradient(
     to right,
     rgb(255 255 255 / 0) 0%,
-    rgb(255 255 255 / 0.1) 42%,
-    rgb(255 255 255 / 0.3) 50%,
-    rgb(255 255 255 / 0.1) 58%,
+    rgb(255 255 255 / 0.18) 40%,
+    rgb(255 255 255 / 0.55) 50%,
+    rgb(255 255 255 / 0.18) 60%,
     rgb(255 255 255 / 0) 100%
   );
-  animation: btn-shimmer-sheen 2.4s linear infinite;
+  box-shadow: 0 0 22px 8px rgb(255 255 255 / 0.12);
+  mix-blend-mode: overlay;
+  animation: btn-shimmer-sheen 2s linear infinite;
   will-change: transform;
 }
 
@@ -666,11 +668,12 @@ html.site-dark footer .btn-shimmer::after {
   background-image: linear-gradient(
     to right,
     rgb(0 0 0 / 0) 0%,
-    rgb(0 0 0 / 0.08) 42%,
-    rgb(0 0 0 / 0.2) 50%,
-    rgb(0 0 0 / 0.08) 58%,
+    rgb(0 0 0 / 0.12) 40%,
+    rgb(0 0 0 / 0.32) 50%,
+    rgb(0 0 0 / 0.12) 60%,
     rgb(0 0 0 / 0) 100%
   );
+  box-shadow: 0 0 22px 8px rgb(0 0 0 / 0.1);
 }
 
 html.site-dark main .glow {

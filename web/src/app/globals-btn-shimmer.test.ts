@@ -43,13 +43,18 @@ test("button shimmer is a traveling sheen over the board, not a parked hex pulse
   assert.match(shimmerAfter![0], /linear infinite/);
   assert.match(
     shimmerAfter![0],
-    /rgb\(255 255 255 \/ 0\.3\)/,
-    "sheen peak should be visible on black CTAs",
+    /rgb\(255 255 255 \/ 0\.55\)/,
+    "sheen peak should be visible on the print-bed",
+  );
+  assert.match(
+    shimmerAfter![0],
+    /mix-blend-mode:\s*overlay/,
+    "overlay blend keeps the blade a highlight, not a white wash",
   );
   assert.doesNotMatch(
     shimmerAfter![0],
-    /rgb\(255 255 255 \/ 0\.(?:[4-9]\d?|3[2-9])\)/,
-    "sheen peak should stay a field, not a white wash (≥ 0.32 is too much)",
+    /rgb\(255 255 255 \/ 0\.(?:[7-9]\d?|6[5-9])\)/,
+    "sheen peak should stay a blade, not a white wash (≥ 0.65 is too much)",
   );
   assert.doesNotMatch(
     css,
