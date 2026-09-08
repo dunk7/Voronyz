@@ -50,7 +50,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* All Footwear — seamless continuation (heading + scroll arrow live in ProductsContent) */}
+        {/* Footwear shop — horizontal catalog (heading + scroll arrow live in ProductsContent) */}
         <Suspense
           fallback={
             <div className="container flex min-h-[40vh] items-center justify-center py-16">
