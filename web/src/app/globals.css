@@ -162,84 +162,6 @@ video {
   }
 }
 
-/*
-  Axis-aligned print-bed squares on primary CTAs — a chessboard of
-  rectangles, not diamonds, not the page honeycomb. Overlay only.
-  A sheen travels across the blocks so the surface actually shimmers.
-*/
-.btn-shimmer {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-  --btn-print-rev: 5;
-}
-
-.btn-shimmer::before,
-.btn-shimmer::after {
-  content: "";
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* 20×20 tile of two 10×10 squares — chessboard, never hex or 45° diamonds. */
-.btn-shimmer::before {
-  position: absolute;
-  top: -20px;
-  right: -20px;
-  bottom: -20px;
-  left: -20px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Crect width='10' height='10' fill='%23ffffff' fill-opacity='0.18'/%3E%3Crect x='10' y='10' width='10' height='10' fill='%23ffffff' fill-opacity='0.18'/%3E%3C/svg%3E");
-  background-size: 20px 20px;
-  animation: btn-print-crawl 6s linear infinite;
-}
-
-.btn-shimmer::after {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 45%;
-  background-image: linear-gradient(
-    to right,
-    rgb(255 255 255 / 0) 0%,
-    rgb(255 255 255 / 0.2) 40%,
-    rgb(255 255 255 / 0.55) 50%,
-    rgb(255 255 255 / 0.2) 60%,
-    rgb(255 255 255 / 0) 100%
-  );
-  animation: btn-shimmer-sheen 2s linear infinite;
-}
-
-@keyframes btn-print-crawl {
-  to {
-    transform: translate3d(-20px, 0, 0);
-  }
-}
-
-@keyframes btn-shimmer-sheen {
-  from {
-    transform: translate3d(-120%, 0, 0);
-  }
-  to {
-    transform: translate3d(280%, 0, 0);
-  }
-}
-
-.btn-shimmer:disabled::before,
-.btn-shimmer:disabled::after,
-.btn-shimmer[aria-disabled="true"]::before,
-.btn-shimmer[aria-disabled="true"]::after {
-  content: none;
-  animation: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .btn-shimmer::before,
-  .btn-shimmer::after {
-    animation: none;
-  }
-}
-
 .bg-texture-white {
   background-color: #ffffff !important;
   position: relative;
@@ -586,7 +508,7 @@ html.site-dark main .hover\:bg-black\/\[\.05\]:hover {
 
 /*
   Buttons are the opposite of the page: black on the light shop,
-  light on the black shop — including primary shimmer CTAs.
+  light on the black shop. Solid fills — no overlay texture.
 */
 html.site-dark main button.bg-black,
 html.site-dark main a.bg-black,
@@ -605,17 +527,13 @@ html.site-dark footer a.bg-black:hover,
 html.site-dark main button.bg-neutral-900:hover,
 html.site-dark main a.bg-neutral-900:hover,
 html.site-dark main button.bg-black.hover\:bg-neutral-800:hover,
-html.site-dark main a.bg-black.hover\:bg-neutral-800:hover,
-html.site-dark main .btn-shimmer:hover,
-html.site-dark main a.btn-shimmer:hover,
-html.site-dark footer .btn-shimmer:hover {
+html.site-dark main a.bg-black.hover\:bg-neutral-800:hover {
   background-color: #e4e4e4;
   color: #111111;
 }
 
 html.site-dark main button.bg-black:disabled,
-html.site-dark main button.bg-neutral-900:disabled,
-html.site-dark main .btn-shimmer:disabled {
+html.site-dark main button.bg-neutral-900:disabled {
   background-color: #d4d4d4;
   color: #111111;
 }
@@ -630,25 +548,6 @@ html.site-dark main button.bg-neutral-900 .text-white\/70 {
 
 html.site-dark main button.bg-black .border-white {
   border-color: rgb(17 17 17 / 0.28);
-}
-
-/* Dark print-bed so inverted light CTAs keep the same square waffle. */
-html.site-dark main .btn-shimmer::before,
-html.site-dark footer .btn-shimmer::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Crect width='10' height='10' fill='%23000000' fill-opacity='0.12'/%3E%3Crect x='10' y='10' width='10' height='10' fill='%23000000' fill-opacity='0.12'/%3E%3C/svg%3E");
-}
-
-html.site-dark main .btn-shimmer::after,
-html.site-dark footer .btn-shimmer::after {
-  background-image: linear-gradient(
-    to right,
-    rgb(0 0 0 / 0) 0%,
-    rgb(0 0 0 / 0.12) 40%,
-    rgb(0 0 0 / 0.32) 50%,
-    rgb(0 0 0 / 0.12) 60%,
-    rgb(0 0 0 / 0) 100%
-  );
-  box-shadow: 0 0 22px 8px rgb(0 0 0 / 0.1);
 }
 
 html.site-dark main .glow {

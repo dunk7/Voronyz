@@ -24,9 +24,9 @@ const HOME_APPAREL_TEASER_SLUGS = [
   "voronyz-core-hoodie",
 ] as const;
 
-/** Technical shop-all CTA used under the home Footwear and Apparel teasers. */
+/** Shop-all CTA under the home Footwear and Apparel teasers. */
 const SHOP_ALL_CTA_CLASS =
-  "btn-shimmer inline-flex min-h-11 items-center justify-center rounded-md bg-neutral-900 px-7 py-3 text-[11px] font-medium uppercase tracking-[0.18em] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] transition-colors hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2";
+  "inline-flex min-h-11 items-center justify-center rounded-md bg-neutral-900 px-7 py-3 text-sm font-medium text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] transition-colors hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2";
 
 type Product = FootwearListProduct;
 
@@ -335,7 +335,7 @@ export default function ProductsContent({
             </p>
             <Link
               href={emptyHref}
-              className="btn-shimmer inline-flex items-center gap-2 rounded-full bg-black text-white px-6 py-2.5 text-sm font-medium hover:bg-neutral-800 transition-colors"
+              className="inline-flex items-center gap-2 rounded-full bg-black text-white px-6 py-2.5 text-sm font-medium hover:bg-neutral-800 transition-colors"
             >
               {emptyLabel}
             </Link>
