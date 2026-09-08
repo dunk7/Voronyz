@@ -63,7 +63,7 @@ export default function InfluencerDiscountLanding({
             </p>
             <Link
               href="/products"
-              className="btn-shimmer mt-6 inline-flex rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white"
+              className="mt-6 inline-flex rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white"
             >
               Shop Voronyz
             </Link>

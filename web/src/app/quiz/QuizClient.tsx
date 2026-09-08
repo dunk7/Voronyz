@@ -568,7 +568,7 @@ export default function QuizClient() {
           </Button>
           <Link
             href="/cart"
-            className="btn-shimmer inline-flex items-center justify-center rounded-full bg-neutral-900 text-white px-6 py-3.5 text-base font-medium hover:bg-neutral-800"
+            className="inline-flex items-center justify-center rounded-full bg-neutral-900 text-white px-6 py-3.5 text-base font-medium hover:bg-neutral-800"
           >
             View cart
           </Link>

@@ -157,7 +157,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <div className="container py-12 text-center">
           <h1 className="text-2xl font-semibold text-neutral-900 mb-4">Something went wrong</h1>
           <p className="text-neutral-600 mb-6">We couldn&apos;t load this product right now. Please try again later.</p>
-          <Link href="/products" className="btn-shimmer inline-flex items-center justify-center rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800">
+          <Link href="/products" className="inline-flex items-center justify-center rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800">
             Back to Shop
           </Link>
         </div>

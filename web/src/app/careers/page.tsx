@@ -66,7 +66,7 @@ export default function CareersPage() {
             </p>
             <Link
               href="/contact"
-              className="btn-shimmer inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-full hover:bg-neutral-800 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-black text-white rounded-full hover:bg-neutral-800 transition-colors"
             >
               Get In Touch
               <span className="text-sm">→</span>
