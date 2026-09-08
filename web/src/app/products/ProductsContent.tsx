@@ -304,46 +304,105 @@ export default function ProductsContent({
     return { cover, alt };
   }
 
+  const headingBlock = (
+    <div className={`text-center ${useFootwearBrowse ? "mb-0" : "mb-12"}`}>
+      <TitleTag className={titleClass}>
+        {heading}
+      </TitleTag>
+      {scrollCue}
+      {!searchQuery && subheading && (
+        <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
+          {subheading}
+        </p>
+      )}
+      {!showScrollCue && subheading && <div className="mt-6 h-px bg-neutral-200" />}
+    </div>
+  );
+
+  const emptyState = displayProducts.length === 0 && searchQuery ? (
+    <div className="text-center py-20">
+      <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
+        <svg className="h-7 w-7 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+        </svg>
+      </div>
+      <p className="text-neutral-600 mb-2 text-lg font-medium">No results found</p>
+      <p className="text-neutral-400 text-sm mb-6">
+        We couldn&apos;t find anything matching &quot;{searchQuery}&quot;
+      </p>
+      <Link
+        href={emptyHref}
+        className="inline-flex items-center gap-2 rounded-full bg-black text-white px-6 py-2.5 text-sm font-medium hover:bg-neutral-800 transition-colors"
+      >
+        {emptyLabel}
+      </Link>
+    </div>
+  ) : null;
+
+  const apparelAndQuiz = (
+    <>
+        {/* ── Apparel teaser after footwear (full catalog lives on /apparel) ── */}
+        {showApparelContinuation && apparelTeaserProducts.length > 0 && (
+          <section
+            id="apparel"
+            aria-labelledby="footwear-apparel-heading"
+            className="mt-16 sm:mt-24 lg:mt-28"
+          >
+            <div className="mb-8 sm:mb-10 text-center">
+              <h2
+                id="footwear-apparel-heading"
+                className={homeSectionTitleClass}
+              >
+                Apparel
+              </h2>
+              {scrollCue}
+            </div>
+
+            <ApparelProductGrid products={apparelTeaserProducts} />
+
+            <div className="mt-10 sm:mt-12 flex justify-center">
+              <Link
+                href="/apparel"
+                className={SHOP_ALL_CTA_CLASS}
+              >
+                Shop all apparel
+              </Link>
+            </div>
+          </section>
+        )}
+
+        {isHomeFootwearTeaser && (
+          <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
+        )}
+    </>
+  );
+
+  if (useFootwearBrowse) {
+    return (
+      <div className={shellClass}>
+        <div className="relative">
+          <div className="pointer-events-none absolute inset-x-0 top-4 z-10">
+            <div className="container">{headingBlock}</div>
+          </div>
+          {emptyState ? (
+            <div className="container pt-20">{emptyState}</div>
+          ) : (
+            <FootwearBrowse products={products} getImages={getImages} />
+          )}
+        </div>
+        <div className="container pb-16">
+          {apparelAndQuiz}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={shellClass}>
       <div className="container py-16">
-        {/* ── Header ── */}
-        <div className="mb-12 text-center">
-          <TitleTag className={titleClass}>
-            {heading}
-          </TitleTag>
-          {scrollCue}
-          {!searchQuery && subheading && (
-            <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
-              {subheading}
-            </p>
-          )}
-          {!showScrollCue && subheading && <div className="mt-6 h-px bg-neutral-200" />}
-        </div>
-
-        {/* ── Empty state ── */}
-        {displayProducts.length === 0 && searchQuery ? (
-          <div className="text-center py-20">
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
-              <svg className="h-7 w-7 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-              </svg>
-            </div>
-            <p className="text-neutral-600 mb-2 text-lg font-medium">No results found</p>
-            <p className="text-neutral-400 text-sm mb-6">
-              We couldn&apos;t find anything matching &quot;{searchQuery}&quot;
-            </p>
-            <Link
-              href={emptyHref}
-              className="inline-flex items-center gap-2 rounded-full bg-black text-white px-6 py-2.5 text-sm font-medium hover:bg-neutral-800 transition-colors"
-            >
-              {emptyLabel}
-            </Link>
-          </div>
-        ) : useFootwearBrowse ? (
-          /* ── Footwear shop: left-to-right cards with full listing copy ── */
-          <FootwearBrowse products={products} getImages={getImages} />
-        ) : (
+        {headingBlock}
+        {emptyState}
+        {!emptyState && (
           /* ── Product grid (home teaser / Engineering / Collaborative / search) ── */
           <>
           <div className={`grid gap-4 sm:gap-6 ${
@@ -450,39 +509,7 @@ export default function ProductsContent({
           </>
         )}
 
-        {/* ── Apparel teaser after footwear (full catalog lives on /apparel) ── */}
-        {showApparelContinuation && apparelTeaserProducts.length > 0 && (
-          <section
-            id="apparel"
-            aria-labelledby="footwear-apparel-heading"
-            className="mt-16 sm:mt-24 lg:mt-28"
-          >
-            <div className="mb-8 sm:mb-10 text-center">
-              <h2
-                id="footwear-apparel-heading"
-                className={homeSectionTitleClass}
-              >
-                Apparel
-              </h2>
-              {scrollCue}
-            </div>
-
-            <ApparelProductGrid products={apparelTeaserProducts} />
-
-            <div className="mt-10 sm:mt-12 flex justify-center">
-              <Link
-                href="/apparel"
-                className={SHOP_ALL_CTA_CLASS}
-              >
-                Shop all apparel
-              </Link>
-            </div>
-          </section>
-        )}
-
-        {isHomeFootwearTeaser && (
-          <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
-        )}
+        {apparelAndQuiz}
       </div>
     </div>
   );
