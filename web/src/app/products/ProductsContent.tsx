@@ -341,7 +341,7 @@ export default function ProductsContent({
             </Link>
           </div>
         ) : useFootwearBrowse ? (
-          /* ── Footwear shop: left-to-right cards with full listing copy ── */
+          /* ── Footwear shop: one horizontal row; home keeps the two-up teaser ── */
           <FootwearBrowse products={products} getImages={getImages} />
         ) : (
           /* ── Product grid (home teaser / Engineering / Collaborative / search) ── */
