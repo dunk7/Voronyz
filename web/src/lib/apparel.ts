@@ -140,6 +140,11 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_SIZES],
     availableSizes: ["L"],
     image: "/products/apparel/shirt.jpg",
+    images: [
+      "/products/apparel/shirt.jpg",
+      "/products/apparel/shirt-back.jpg",
+      "/products/apparel/shirt-lifestyle.jpg",
+    ],
     skuPrefix: "APP-TEE",
     comingSoon: false,
   },
