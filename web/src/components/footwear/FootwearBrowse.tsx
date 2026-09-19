@@ -73,7 +73,7 @@ function BrowseItem({
   return (
     <article
       ref={itemRef}
-      className={`footwear-browse-item h-full w-[min(78vw,20.5rem)] shrink-0 snap-start sm:w-[21.5rem] lg:w-[23rem] transition-all duration-500 ease-out ${
+      className={`footwear-browse-item h-full w-[min(85%,20.5rem)] shrink-0 snap-start sm:w-[21.5rem] lg:w-[23rem] transition-all duration-500 ease-out ${
         visible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-3"
       }`}
       style={{ transitionDelay: visible ? `${Math.min(index, 4) * 40}ms` : "0ms" }}
@@ -163,9 +163,11 @@ function BrowseItem({
 
 function ArrowButton({
   direction,
+  disabled,
   onClick,
 }: {
   direction: "left" | "right";
+  disabled: boolean;
   onClick: () => void;
 }) {
   const isLeft = direction === "left";
@@ -173,10 +175,9 @@ function ArrowButton({
     <button
       type="button"
       aria-label={isLeft ? "Previous footwear" : "Next footwear"}
+      disabled={disabled}
       onClick={onClick}
-      className={`absolute top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-neutral-900 shadow-[0_8px_20px_-10px_rgba(0,0,0,0.45)] ring-1 ring-black/10 backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_10px_24px_-10px_rgba(0,0,0,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 sm:h-11 sm:w-11 ${
-        isLeft ? "left-1 sm:left-0" : "right-1 sm:right-0"
-      }`}
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-neutral-900 ring-1 ring-black/10 transition-all duration-200 hover:bg-neutral-50 hover:ring-black/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 disabled:pointer-events-none disabled:opacity-25 sm:h-11 sm:w-11"
     >
       {isLeft ? (
         <ChevronLeft className="h-5 w-5" strokeWidth={1.75} aria-hidden />
@@ -232,9 +233,8 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
   }, []);
 
   return (
-    <div className="footwear-browse relative">
-      {canPrev ? <ArrowButton direction="left" onClick={() => scrollByCard(-1)} /> : null}
-      {canNext ? <ArrowButton direction="right" onClick={() => scrollByCard(1)} /> : null}
+    <div className="footwear-browse flex items-center gap-2 sm:gap-3">
+      <ArrowButton direction="left" disabled={!canPrev} onClick={() => scrollByCard(-1)} />
 
       <div
         ref={scrollerRef}
@@ -250,7 +250,7 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
             scrollByCard(1);
           }
         }}
-        className="no-scrollbar flex snap-x snap-proximity gap-3 overflow-x-auto overscroll-x-contain scroll-smooth py-1 sm:gap-4 lg:gap-5"
+        className="no-scrollbar flex min-w-0 flex-1 snap-x snap-proximity gap-3 overflow-x-auto overscroll-x-contain scroll-smooth py-1 sm:gap-4 lg:gap-5"
       >
         {products.map((product, index) => {
           const { cover, alt } = getImages(product);
@@ -266,6 +266,8 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
           );
         })}
       </div>
+
+      <ArrowButton direction="right" disabled={!canNext} onClick={() => scrollByCard(1)} />
     </div>
   );
 }
