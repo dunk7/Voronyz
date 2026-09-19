@@ -52,21 +52,21 @@ test("unknown apparel slugs fall back to Apparel", () => {
   assert.equal(apparelProductShopLabel("not-a-product"), "Back to Apparel");
 });
 
-test("grey is out of stock across apparel; shirt also has white OOS and Large only", () => {
+test("grey is out of stock across apparel; shirt white Medium and Large are in stock", () => {
   const tee = getApparelItem("voronyz-oversized-tee");
   const hoodie = getApparelItem("voronyz-core-hoodie");
   const shades = getApparelItem("voronyz-cool-shades");
   assert.ok(tee && hoodie && shades);
 
   assert.equal(isApparelColorOutOfStock(tee, "grey"), true);
-  assert.equal(isApparelColorOutOfStock(tee, "white"), true);
+  assert.equal(isApparelColorOutOfStock(tee, "white"), false);
   assert.equal(isApparelColorOutOfStock(tee, "black"), false);
   assert.equal(apparelVariantStock(tee, "black"), 999);
-  assert.equal(apparelVariantStock(tee, "white"), 0);
+  assert.equal(apparelVariantStock(tee, "white"), 999);
   assert.equal(apparelVariantStock(tee, "grey"), 0);
   assert.equal(isApparelSizeAvailable(tee, "L"), true);
-  assert.equal(isApparelSizeAvailable(tee, "M"), false);
-  assert.deepEqual(apparelUnavailableSizes(tee), ["XS", "S", "M", "XL", "XXL"]);
+  assert.equal(isApparelSizeAvailable(tee, "M"), true);
+  assert.deepEqual(apparelUnavailableSizes(tee), ["XS", "S", "XL", "XXL"]);
 
   assert.equal(isApparelColorOutOfStock(hoodie, "grey"), true);
   assert.equal(isApparelColorOutOfStock(hoodie, "black"), false);

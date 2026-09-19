@@ -136,9 +136,9 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     description: "Built big on purpose — soft, roomy, and easy to wear.",
     priceCents: 4800,
     colors: ["black", "white", "grey"],
-    outOfStockColors: ["white", "grey"],
+    outOfStockColors: ["grey"],
     sizes: [...APPAREL_SIZES],
-    availableSizes: ["L"],
+    availableSizes: ["M", "L"],
     image: "/products/apparel/shirt.jpg",
     images: [
       "/products/apparel/shirt.jpg",
