@@ -193,7 +193,7 @@ export default function ProductsContent({
       : category === "health"
       ? "Collaborative"
       : isHomeFootwearTeaser
-      ? "Footwear"
+      ? "All Footwear"
       : "Step into the future";
   /** Footwear stays heading-only (like Apparel on home) — no supporting paragraph. */
   const subheading =
@@ -244,6 +244,18 @@ export default function ProductsContent({
     "text-3xl font-semibold tracking-tight text-neutral-900 text-center";
   const titleClass = isHomeFootwearTeaser ? homeSectionTitleClass : sectionHeadingClass;
   const TitleTag = isHomeFootwearTeaser ? "h2" : "h1";
+  /** Homepage heading stays plain type; click still opens All Footwear (/products). */
+  const headingHref = isHomeFootwearTeaser ? "/products" : undefined;
+  const headingNode = headingHref ? (
+    <Link
+      href={headingHref}
+      className="rounded-sm text-inherit no-underline transition-colors hover:text-neutral-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2"
+    >
+      {heading}
+    </Link>
+  ) : (
+    heading
+  );
   const scrollCue = showScrollCue && !searchQuery && (
     <svg
       className="mx-auto mt-2 h-4 w-4 animate-bounce text-neutral-400"
@@ -268,7 +280,7 @@ export default function ProductsContent({
         <div className="container py-16">
           <div className="mb-12 text-center">
             <TitleTag className={titleClass}>
-              {heading}
+              {headingNode}
             </TitleTag>
             {scrollCue}
             {!searchQuery && subheading && (
@@ -310,7 +322,7 @@ export default function ProductsContent({
         {/* ── Header ── */}
         <div className="mb-12 text-center">
           <TitleTag className={titleClass}>
-            {heading}
+            {headingNode}
           </TitleTag>
           {scrollCue}
           {!searchQuery && subheading && (
