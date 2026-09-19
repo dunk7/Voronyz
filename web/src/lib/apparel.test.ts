@@ -5,6 +5,7 @@ import {
   apparelProductShopLabel,
   apparelUnavailableSizes,
   apparelVariantStock,
+  getApparelImages,
   getApparelItem,
   isApparelColorOutOfStock,
   isApparelSizeAvailable,
@@ -28,6 +29,17 @@ test("hoodie listing back link returns to Apparel", () => {
 test("tee listing back link returns to Apparel", () => {
   assert.equal(apparelProductShopHref("voronyz-oversized-tee"), "/apparel");
   assert.equal(apparelProductShopLabel("voronyz-oversized-tee"), "Back to Apparel");
+});
+
+test("oversized tee keeps the original shirt photo first and adds two more gallery shots", () => {
+  const tee = getApparelItem("voronyz-oversized-tee");
+  assert.ok(tee);
+  assert.equal(tee.image, "/products/apparel/shirt.jpg");
+  assert.deepEqual(getApparelImages(tee), [
+    "/products/apparel/shirt.jpg",
+    "/products/apparel/shirt-back.jpg",
+    "/products/apparel/shirt-lifestyle.jpg",
+  ]);
 });
 
 test("accessory listings still return to Accessories", () => {
