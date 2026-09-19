@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 import NewListingBadge from "@/components/NewListingBadge";
@@ -28,11 +29,13 @@ function BrowseItem({
   cover,
   alt,
   index,
+  scrollRoot,
 }: {
   product: BrowseProduct;
   cover: string;
   alt?: string;
   index: number;
+  scrollRoot: RefObject<HTMLDivElement | null>;
 }) {
   const router = useRouter();
   const [navigating, setNavigating] = useState(false);
@@ -42,16 +45,17 @@ function BrowseItem({
 
   useEffect(() => {
     const el = itemRef.current;
+    const root = scrollRoot.current;
     if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) setVisible(true);
       },
-      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
+      { threshold: 0.2, root: root ?? null, rootMargin: "0px 8% 0px 8%" },
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [scrollRoot]);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -69,10 +73,10 @@ function BrowseItem({
   return (
     <article
       ref={itemRef}
-      className={`footwear-browse-item h-full transition-all duration-500 ease-out ${
-        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+      className={`footwear-browse-item h-full w-[min(78vw,20.5rem)] shrink-0 snap-start sm:w-[21.5rem] lg:w-[23rem] transition-all duration-500 ease-out ${
+        visible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-3"
       }`}
-      style={{ transitionDelay: visible ? `${Math.min(index, 5) * 40}ms` : "0ms" }}
+      style={{ transitionDelay: visible ? `${Math.min(index, 4) * 40}ms` : "0ms" }}
     >
       <Link
         href={`/products/${product.slug}`}
@@ -81,7 +85,6 @@ function BrowseItem({
           navigating ? "pointer-events-none" : ""
         }`}
       >
-        {/* Studio frame on top so the name and full paragraph can sit underneath. */}
         <div className="relative aspect-[16/10] shrink-0 overflow-hidden rounded-xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:ring-black/10 sm:rounded-2xl">
           <div className="absolute inset-0 p-[7%] sm:p-[8%]">
             <div className="relative h-full w-full">
@@ -93,8 +96,8 @@ function BrowseItem({
                 className={`object-contain object-center transition-opacity duration-500 ease-out ${
                   altSrc ? "group-hover:opacity-0" : ""
                 } ${navigating ? "brightness-90" : ""}`}
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                priority={index === 0}
+                sizes="(max-width: 640px) 78vw, 368px"
+                priority={index < 2}
               />
               {altSrc && (
                 <SoftImage
@@ -104,7 +107,7 @@ function BrowseItem({
                   fill
                   showLogoPlaceholder={false}
                   className="object-contain object-center opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100"
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  sizes="(max-width: 640px) 78vw, 368px"
                   loading="lazy"
                 />
               )}
@@ -135,7 +138,7 @@ function BrowseItem({
             {product.name}
           </h2>
           {product.description ? (
-            <p className="mt-1.5 text-[13px] leading-relaxed text-neutral-600 sm:mt-2 sm:text-sm">
+            <p className="mt-1.5 line-clamp-4 text-[13px] leading-relaxed text-neutral-600 sm:mt-2 sm:text-sm">
               {product.description}
             </p>
           ) : null}
@@ -158,21 +161,111 @@ function BrowseItem({
   );
 }
 
-export default function FootwearBrowse({ products, getImages }: FootwearBrowseProps) {
+function ArrowButton({
+  direction,
+  onClick,
+}: {
+  direction: "left" | "right";
+  onClick: () => void;
+}) {
+  const isLeft = direction === "left";
   return (
-    <div className="footwear-browse grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 lg:gap-5 xl:gap-6">
-      {products.map((product, index) => {
-        const { cover, alt } = getImages(product);
-        return (
-          <BrowseItem
-            key={product.id}
-            product={product}
-            cover={cover}
-            alt={alt}
-            index={index}
-          />
-        );
-      })}
+    <button
+      type="button"
+      aria-label={isLeft ? "Previous footwear" : "Next footwear"}
+      onClick={onClick}
+      className={`absolute top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-neutral-900 shadow-[0_8px_20px_-10px_rgba(0,0,0,0.45)] ring-1 ring-black/10 backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_10px_24px_-10px_rgba(0,0,0,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 sm:h-11 sm:w-11 ${
+        isLeft ? "left-1 sm:left-0" : "right-1 sm:right-0"
+      }`}
+    >
+      {isLeft ? (
+        <ChevronLeft className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+      ) : (
+        <ChevronRight className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+      )}
+    </button>
+  );
+}
+
+export default function FootwearBrowse({ products, getImages }: FootwearBrowseProps) {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+
+  const updateArrows = useCallback(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const max = Math.max(0, el.scrollWidth - el.clientWidth);
+    const card = el.querySelector<HTMLElement>(".footwear-browse-item");
+    const threshold = Math.max(40, Math.round((card?.offsetWidth ?? 320) * 0.2));
+    setCanPrev(el.scrollLeft > threshold);
+    setCanNext(el.scrollLeft < max - threshold);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const pinStart = () => {
+      if (el.scrollLeft !== 0) el.scrollLeft = 0;
+      updateArrows();
+    };
+    pinStart();
+    const raf = requestAnimationFrame(pinStart);
+    el.addEventListener("scroll", updateArrows, { passive: true });
+    const observer = new ResizeObserver(updateArrows);
+    observer.observe(el);
+    return () => {
+      cancelAnimationFrame(raf);
+      el.removeEventListener("scroll", updateArrows);
+      observer.disconnect();
+    };
+  }, [updateArrows, products.length]);
+
+  const scrollByCard = useCallback((direction: -1 | 1) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const card = el.querySelector<HTMLElement>(".footwear-browse-item");
+    const styles = getComputedStyle(el);
+    const gap = Number.parseFloat(styles.columnGap || styles.gap || "16") || 16;
+    const delta = (card?.offsetWidth ?? el.clientWidth * 0.8) + gap;
+    el.scrollBy({ left: direction * delta, behavior: "smooth" });
+  }, []);
+
+  return (
+    <div className="footwear-browse relative">
+      {canPrev ? <ArrowButton direction="left" onClick={() => scrollByCard(-1)} /> : null}
+      {canNext ? <ArrowButton direction="right" onClick={() => scrollByCard(1)} /> : null}
+
+      <div
+        ref={scrollerRef}
+        role="region"
+        aria-label="All footwear"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            scrollByCard(-1);
+          } else if (e.key === "ArrowRight") {
+            e.preventDefault();
+            scrollByCard(1);
+          }
+        }}
+        className="no-scrollbar flex snap-x snap-proximity gap-3 overflow-x-auto overscroll-x-contain scroll-smooth py-1 sm:gap-4 lg:gap-5"
+      >
+        {products.map((product, index) => {
+          const { cover, alt } = getImages(product);
+          return (
+            <BrowseItem
+              key={product.id}
+              product={product}
+              cover={cover}
+              alt={alt}
+              index={index}
+              scrollRoot={scrollerRef}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }
