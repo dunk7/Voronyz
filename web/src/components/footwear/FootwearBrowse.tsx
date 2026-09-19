@@ -163,11 +163,9 @@ function BrowseItem({
 
 function ArrowButton({
   direction,
-  disabled,
   onClick,
 }: {
   direction: "left" | "right";
-  disabled: boolean;
   onClick: () => void;
 }) {
   const isLeft = direction === "left";
@@ -175,11 +173,10 @@ function ArrowButton({
     <button
       type="button"
       aria-label={isLeft ? "Previous footwear" : "Next footwear"}
-      disabled={disabled}
       onClick={onClick}
       className={`absolute top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-neutral-900 shadow-[0_8px_20px_-10px_rgba(0,0,0,0.45)] ring-1 ring-black/10 backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_10px_24px_-10px_rgba(0,0,0,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 sm:h-11 sm:w-11 ${
         isLeft ? "left-1 sm:left-0" : "right-1 sm:right-0"
-      } ${disabled ? "pointer-events-none opacity-0" : "opacity-100"}`}
+      }`}
     >
       {isLeft ? (
         <ChevronLeft className="h-5 w-5" strokeWidth={1.75} aria-hidden />
@@ -229,8 +226,8 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
 
   return (
     <div className="footwear-browse relative">
-      <ArrowButton direction="left" disabled={!canPrev} onClick={() => scrollByCard(-1)} />
-      <ArrowButton direction="right" disabled={!canNext} onClick={() => scrollByCard(1)} />
+      {canPrev ? <ArrowButton direction="left" onClick={() => scrollByCard(-1)} /> : null}
+      {canNext ? <ArrowButton direction="right" onClick={() => scrollByCard(1)} /> : null}
 
       <div
         ref={scrollerRef}
