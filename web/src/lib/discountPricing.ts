@@ -10,6 +10,7 @@ type DiscountPricingContext = {
 
 export const VALID_DISCOUNT_CODES = [
   "fam45",
+  "famzero",
   "superdeal35",
   "maximus27",
   "emptyaus",
@@ -23,6 +24,9 @@ export const VALID_DISCOUNT_CODES = [
   "andy50",
   "young",
 ] as const;
+
+/** Makes exactly one cart unit free (highest-priced item). */
+export const ONE_ITEM_FREE_DISCOUNT_CODE = "famzero";
 
 const validDiscountCodeSet = new Set<string>(VALID_DISCOUNT_CODES);
 
@@ -54,6 +58,8 @@ export function getDiscountCodeDescription(
   switch (normalized) {
     case "fam45":
       return "$50 fixed unit price";
+    case "famzero":
+      return "One item completely free";
     case "superdeal35":
       return "$35 fixed unit price";
     case "maximus27":
@@ -96,6 +102,8 @@ export function getDiscountCodeShopperDescription(
     case "nicole50":
     case "andy50":
       return "All items just $50 each";
+    case "famzero":
+      return "One item free";
     case "superdeal35":
       return "All items just $35 each";
     case "maximus27":
@@ -149,6 +157,7 @@ export function getDiscountedUnitPriceCents(
     return FILAMENT_YOUNG_PRICE_CENTS;
   }
   if (normalizedCode === "fam45") return 5000;
+  // famzero is cart-level (one unit free), not a per-unit price rewrite.
   if (normalizedCode === "superdeal35") return 3500;
   if (normalizedCode === "maximus27") return 3200;
   if (normalizedCode === "super20") return 2000;
@@ -158,4 +167,116 @@ export function getDiscountedUnitPriceCents(
   if (normalizedCode === "andy50") return 5000;
 
   return baseUnitPriceCents;
+}
+
+export function isOneItemFreeDiscountCode(
+  code: string | null | undefined
+): boolean {
+  return normalizeDiscountCode(code) === ONE_ITEM_FREE_DISCOUNT_CODE;
+}
+
+/**
+ * Amount to take off the order so exactly one unit is free.
+ * Uses the highest unit price in the cart (one item, not every item).
+ */
+export function getOneFreeItemOffCents(unitPrices: readonly number[]): number {
+  let best = 0;
+  for (const raw of unitPrices) {
+    if (!Number.isFinite(raw) || raw <= 0) continue;
+    if (raw > best) best = Math.floor(raw);
+  }
+  return best;
+}
+
+/** Line index that should receive the free unit (highest unit price; first on ties). */
+export function getOneFreeItemLineIndex(unitPrices: readonly number[]): number {
+  let idx = -1;
+  let best = 0;
+  for (let i = 0; i < unitPrices.length; i++) {
+    const raw = unitPrices[i];
+    if (!Number.isFinite(raw) || raw <= 0) continue;
+    if (raw > best) {
+      best = raw;
+      idx = i;
+    }
+  }
+  return idx;
+}
+
+type QuantityPricedLine = {
+  quantity: number;
+  unitCents: number;
+};
+
+/** Zero one unit of the highest-priced line (splits qty > 1). */
+export function applyOneFreeItemToQuantityPricedLines<T extends QuantityPricedLine>(
+  lines: T[]
+): T[] {
+  const idx = getOneFreeItemLineIndex(lines.map((line) => line.unitCents));
+  if (idx < 0) return lines;
+  const item = lines[idx];
+  const qty = item.quantity > 0 ? item.quantity : 1;
+  if (qty === 1) {
+    lines[idx] = { ...item, unitCents: 0 };
+    return lines;
+  }
+  lines[idx] = { ...item, quantity: qty - 1 };
+  lines.splice(idx + 1, 0, { ...item, quantity: 1, unitCents: 0 });
+  return lines;
+}
+
+type StripeLikePricedLine = {
+  quantity?: number;
+  price_data?: {
+    unit_amount?: number;
+    product_data?: {
+      name?: string;
+      description?: string;
+      images?: string[];
+    };
+  };
+};
+
+/** Zero one unit on Stripe Checkout line items (skips $0 lines such as already-free items). */
+export function applyOneFreeItemToStripeLineItems<T extends StripeLikePricedLine>(
+  lineItems: T[]
+): T[] {
+  const idx = getOneFreeItemLineIndex(
+    lineItems.map((line) => line.price_data?.unit_amount ?? 0)
+  );
+  if (idx < 0) return lineItems;
+  const item = lineItems[idx];
+  if (!item.price_data) return lineItems;
+  const qty = item.quantity && item.quantity > 0 ? item.quantity : 1;
+  if (qty === 1) {
+    item.price_data.unit_amount = 0;
+    if (item.price_data.product_data) {
+      const existing = item.price_data.product_data.description;
+      item.price_data.product_data.description = [existing, "Free with FAMZERO"]
+        .filter(Boolean)
+        .join(" — ");
+    }
+    return lineItems;
+  }
+  item.quantity = qty - 1;
+  const productData = item.price_data.product_data
+    ? { ...item.price_data.product_data }
+    : {};
+  const freeLine = {
+    ...item,
+    quantity: 1,
+    price_data: {
+      ...item.price_data,
+      unit_amount: 0,
+      product_data: {
+        ...productData,
+        name: productData.name || "Item",
+        description: [productData.description, "Free with FAMZERO"]
+          .filter(Boolean)
+          .join(" — "),
+      },
+    },
+  } as T;
+  lineItems.splice(idx + 1, 0, freeLine);
+  return lineItems;
 }

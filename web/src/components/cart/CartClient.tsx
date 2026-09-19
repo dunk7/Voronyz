@@ -4,6 +4,9 @@ import { formatCentsAsCurrency } from "@/lib/money";
 import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 import {
   getDiscountedUnitPriceCents,
+  getOneFreeItemLineIndex,
+  getOneFreeItemOffCents,
+  isOneItemFreeDiscountCode,
   isValidDiscountCode,
   KNOWN_DISCOUNTED_UNIT_PRICES,
   normalizeDiscountCode,
@@ -240,10 +243,15 @@ export default function CartClient() {
         (sum, it) => sum + unitPriceForItem(it, normalized) * it.quantity,
         0
       );
+      const oneItemFreeOff = isOneItemFreeDiscountCode(normalized)
+        ? getOneFreeItemOffCents(
+            migratedItems.map((it) => unitPriceForItem(it, normalized))
+          )
+        : 0;
       const orderOff = affiliateDiscountCodes.has(normalized || "")
         ? applyOrderLevelDiscountCents(itemSubtotal, AFFILIATE_ORDER_DISCOUNT_CENTS)
         : 0;
-      const savings = itemSavings + orderOff;
+      const savings = itemSavings + oneItemFreeOff + orderOff;
       saveCart({ items: migratedItems, discountCode: normalized, shippingInsurance });
       setInputValue("");
       setMessage(
@@ -292,6 +300,12 @@ export default function CartClient() {
   const itemDiscountedSubtotal = items.reduce((sum, it) => {
     return sum + unitPriceForItem(it, discountCode) * it.quantity;
   }, 0);
+  const oneItemFreeOff = isOneItemFreeDiscountCode(discountCode)
+    ? getOneFreeItemOffCents(items.map((it) => unitPriceForItem(it, discountCode)))
+    : 0;
+  const freeItemLineIndex = isOneItemFreeDiscountCode(discountCode)
+    ? getOneFreeItemLineIndex(items.map((it) => unitPriceForItem(it, discountCode)))
+    : -1;
   const orderLevelOff =
     discountCode && affiliateDiscountCodes.has(discountCode)
       ? applyOrderLevelDiscountCents(
@@ -299,7 +313,7 @@ export default function CartClient() {
           AFFILIATE_ORDER_DISCOUNT_CENTS
         )
       : 0;
-  const subtotal = itemDiscountedSubtotal - orderLevelOff;
+  const subtotal = itemDiscountedSubtotal - oneItemFreeOff - orderLevelOff;
   const discountSavings = Math.max(0, subtotalBeforeDiscount - subtotal);
   const canOfferShippingInsurance = cartHasInsurableItems(items);
   const insuranceEnabled = canOfferShippingInsurance && shippingInsurance;
@@ -422,7 +436,7 @@ export default function CartClient() {
   return (
     <div className="grid grid-cols-1 gap-4 lg:gap-8 lg:grid-cols-3">
       <div className="lg:col-span-2 space-y-4">
-        {items.map((it) => (
+        {items.map((it, idx) => (
           <div 
             key={it.id} 
             className="flex flex-col lg:flex-row lg:items-center lg:justify-between rounded-xl ring-1 ring-black/10 p-3 lg:p-4 gap-3 lg:gap-0 bg-white"
@@ -558,7 +572,11 @@ export default function CartClient() {
               <div className="flex items-center gap-2 lg:gap-4 flex-1 lg:flex-none justify-end min-w-0 lg:min-w-[5rem]">
                 {(() => {
                   const baseLine = getBaseUnitPriceCents(it) * it.quantity;
-                  const discountedLine = unitPriceForItem(it, discountCode) * it.quantity;
+                  const unit = unitPriceForItem(it, discountCode);
+                  let discountedLine = unit * it.quantity;
+                  if (idx === freeItemLineIndex && oneItemFreeOff > 0) {
+                    discountedLine = Math.max(0, discountedLine - unit);
+                  }
                   const hasLineDiscount = discountedLine < baseLine;
                   return (
                     <div className="text-right flex-1 lg:flex-none">
@@ -687,7 +705,11 @@ export default function CartClient() {
               <div className="mt-2 text-sm text-green-700 flex justify-between items-center gap-3 bg-emerald-50 p-2 rounded-md border border-green-200">
                 <span>
                   Discount &quot;{discountCode}&quot; applied
-                  {orderLevelOff > 0 ? " — $5 off the whole order" : ""}
+                  {isOneItemFreeDiscountCode(discountCode)
+                    ? " — one item free"
+                    : orderLevelOff > 0
+                      ? " — $5 off the whole order"
+                      : ""}
                   {discountSavings > 0 ? ` — you save ${formatCentsAsCurrency(discountSavings)}` : ""}
                 </span>
                 <button onClick={clearDiscount} className="text-sm underline shrink-0">Remove</button>
@@ -735,13 +757,20 @@ export default function CartClient() {
           disabled={stripeBusy || isNanoCheckingOut}
           className="w-full rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Continue"
-          onClick={() => startStripeCheckout("ach")}
+          onClick={() => startStripeCheckout(orderTotal < 50 ? "card" : "ach")}
         >
-          {isCheckingOut ? "Processing..." : "Continue"}
+          {isCheckingOut || isCardCheckingOut
+            ? "Processing..."
+            : orderTotal === 0
+              ? "Complete free order"
+              : "Continue"}
         </button>
         <p className="text-center text-xs text-neutral-500 -mt-1">
-          Bank transfer · usually lower fees than card
+          {orderTotal < 50
+            ? "Card checkout — bank transfer needs at least $0.50"
+            : "Bank transfer · usually lower fees than card"}
         </p>
+        {orderTotal >= 50 ? (
         <button
           type="button"
           disabled={stripeBusy || isNanoCheckingOut}
@@ -751,6 +780,7 @@ export default function CartClient() {
         >
           {isCardCheckingOut ? "Processing…" : "Pay with card"}
         </button>
+        ) : null}
 
         {/* Nano (XNO) payment option */}
         <div className="relative flex items-center gap-2">
@@ -760,7 +790,7 @@ export default function CartClient() {
         </div>
         <button
           type="button"
-          disabled={stripeBusy || isNanoCheckingOut}
+          disabled={stripeBusy || isNanoCheckingOut || orderTotal <= 0}
           className="w-full rounded-full bg-[#209CE9] text-white px-6 py-3 text-sm font-medium hover:bg-[#1a88cc] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           aria-label="Pay with Nano cryptocurrency"
           onClick={async () => {
@@ -806,7 +836,11 @@ export default function CartClient() {
             <path d="M792.9,881h-52.5L541.1,570.6L338.8,881h-52.1l226.8-351.7L306.9,206.2h53.5L542,490.4l185.4-284.2h50.2L568.8,528.4L792.9,881z" fill="white"/>
             <path d="M336.5,508.7h408.3v38.4H336.5V508.7zM336.5,623.9h408.3v38.4H336.5V623.9z" fill="white"/>
           </svg>
-          {isNanoCheckingOut ? "Processing…" : "Pay with Nano (3% off)"}
+          {isNanoCheckingOut
+            ? "Processing…"
+            : orderTotal <= 0
+              ? "Nano unavailable on free orders"
+              : "Pay with Nano (3% off)"}
         </button>
       </div>
     </div>

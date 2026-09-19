@@ -3,7 +3,9 @@ import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 import {
+  applyOneFreeItemToStripeLineItems,
   getDiscountedUnitPriceCents,
+  isOneItemFreeDiscountCode,
 } from "@/lib/discountPricing";
 import { resolveActiveDiscountCode } from "@/lib/discountDisabled";
 import { getOrderLevelDiscountCentsForCode } from "@/lib/affiliateDiscounts";
@@ -252,6 +254,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (isOneItemFreeDiscountCode(activeDiscountCode)) {
+      applyOneFreeItemToStripeLineItems(lineItems);
+    }
+
     console.log('Creating Stripe session with line items:', lineItems);
     const hasPickupOnly = items.every((item: { fulfillment?: string }) => item.fulfillment === 'pickup');
     const hasPreOrder = cartHasPreOrder(items);
@@ -274,7 +280,6 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const isAch = paymentMethod === "ach";
     const productSubtotalCents = lineItems.reduce((sum, item) => {
       const unit = item.price_data?.unit_amount ?? 0;
       const qty = item.quantity ?? 1;
@@ -300,19 +305,28 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const payableCents = productOnlyCents - orderLevelOff + insuranceLineCents;
+    // ACH / bank debit cannot collect under Stripe's $0.50 minimum (including a $0 famzero cart).
+    const isAch = paymentMethod === "ach" && payableCents >= 50;
+
     const session = await stripe.checkout.sessions.create({
       // Explicit method types so cart can lead with ACH and offer card as a secondary path.
-      payment_method_types: isAch ? ["us_bank_account"] : ["card"],
-      ...(isAch && {
-        payment_method_options: {
-          us_bank_account: {
-            financial_connections: {
-              permissions: ["payment_method"],
-            },
-            verification_method: "automatic",
-          },
-        },
-      }),
+      // $0 orders (famzero with a single item) skip method types so Stripe does not collect a charge.
+      ...(payableCents > 0
+        ? {
+            payment_method_types: isAch ? ["us_bank_account"] : ["card"],
+            ...(isAch && {
+              payment_method_options: {
+                us_bank_account: {
+                  financial_connections: {
+                    permissions: ["payment_method"],
+                  },
+                  verification_method: "automatic",
+                },
+              },
+            }),
+          }
+        : {}),
       line_items: lineItems,
       mode: 'payment',
       ...(sessionDiscounts && { discounts: sessionDiscounts }),

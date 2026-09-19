@@ -3,7 +3,9 @@ import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 import {
+  applyOneFreeItemToQuantityPricedLines,
   getDiscountedUnitPriceCents,
+  isOneItemFreeDiscountCode,
 } from "@/lib/discountPricing";
 import { resolveActiveDiscountCode } from "@/lib/discountDisabled";
 import { getOrderLevelDiscountCentsForCode } from "@/lib/affiliateDiscounts";
@@ -123,7 +125,15 @@ export async function POST(request: NextRequest) {
       productSubtotalCents += unitAmount * item.quantity;
     }
 
-    if (productSubtotalCents <= 0) {
+    if (isOneItemFreeDiscountCode(normalizedDiscountCode)) {
+      applyOneFreeItemToQuantityPricedLines(lineItems);
+      productSubtotalCents = lineItems.reduce(
+        (sum, line) => sum + line.unitCents * line.quantity,
+        0
+      );
+    }
+
+    if (productSubtotalCents < 0) {
       return NextResponse.json({ error: "Invalid order total" }, { status: 400 });
     }
 
@@ -155,6 +165,16 @@ export async function POST(request: NextRequest) {
     const totalCents = productSubtotalCents - nanoDiscountCents + insuranceCents;
     const subtotalUsd = subtotalCents / 100;
     const nanoDiscountUsd = nanoDiscountCents / 100;
+
+    if (totalCents <= 0) {
+      return NextResponse.json(
+        {
+          error:
+            "This order is free. Complete checkout with card instead of Nano.",
+        },
+        { status: 400 }
+      );
+    }
 
     // Fetch current XNO/USD price from CoinGecko
     const priceRes = await fetch(
