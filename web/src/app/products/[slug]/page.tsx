@@ -534,7 +534,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               : isViolettePonybead
               ? VIOLETTE_PONYBEAD_HOW_ITS_MADE
               : apparelItem?.slug === "voronyz-oversized-tee"
-              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Shipping now in black, Large — white, grey, and other sizes are out of stock."
+              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Shipping now in black and white, Medium and Large — grey and other sizes are out of stock."
               : apparelItem?.slug === "voronyz-core-hoodie"
               ? "Heavyweight fleece with a clean, modern cut. Ready to ship in your size and color."
               : isApparel && apparelItem?.comingSoon
@@ -583,10 +583,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isApparel && !apparelItem?.comingSoon ? [
               { q: "What sizes are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
-                ? "The Oversized Tee currently ships in Large only. XS, S, M, XL, and XXL are listed but out of stock."
+                ? "The Oversized Tee currently ships in Medium and Large. XS, S, XL, and XXL are listed but out of stock."
                 : "This piece runs XS–XXL." },
               { q: "What colors are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
-                ? "Black is in stock. White and grey are currently out of stock."
+                ? "Black and white are in stock. Grey is currently out of stock."
                 : apparelItem?.outOfStockColors?.includes("grey")
                   ? "Grey is currently out of stock. Choose another listed color."
                   : "Pick any listed color that is in stock." },
