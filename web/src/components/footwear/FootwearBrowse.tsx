@@ -196,8 +196,10 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
     const el = scrollerRef.current;
     if (!el) return;
     const max = Math.max(0, el.scrollWidth - el.clientWidth);
-    setCanPrev(el.scrollLeft > 2);
-    setCanNext(el.scrollLeft < max - 2);
+    const card = el.querySelector<HTMLElement>(".footwear-browse-item");
+    const threshold = Math.max(40, Math.round((card?.offsetWidth ?? 320) * 0.2));
+    setCanPrev(el.scrollLeft > threshold);
+    setCanNext(el.scrollLeft < max - threshold);
   }, []);
 
   useEffect(() => {
