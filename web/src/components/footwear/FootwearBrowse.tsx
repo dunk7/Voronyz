@@ -177,9 +177,9 @@ function ArrowButton({
       aria-label={isLeft ? "Previous footwear" : "Next footwear"}
       disabled={disabled}
       onClick={onClick}
-      className={`absolute top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-neutral-900 shadow-[0_8px_20px_-10px_rgba(0,0,0,0.45)] ring-1 ring-black/10 backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_10px_24px_-10px_rgba(0,0,0,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 disabled:pointer-events-none disabled:opacity-0 sm:h-11 sm:w-11 ${
-        isLeft ? "left-0 sm:-left-2" : "right-0 sm:-right-2"
-      }`}
+      className={`absolute top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-neutral-900 shadow-[0_8px_20px_-10px_rgba(0,0,0,0.45)] ring-1 ring-black/10 backdrop-blur-sm transition-all duration-200 hover:bg-white hover:shadow-[0_10px_24px_-10px_rgba(0,0,0,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 sm:h-11 sm:w-11 ${
+        isLeft ? "left-1 sm:left-0" : "right-1 sm:right-0"
+      } ${disabled ? "pointer-events-none opacity-0" : "opacity-100"}`}
     >
       {isLeft ? (
         <ChevronLeft className="h-5 w-5" strokeWidth={1.75} aria-hidden />
@@ -199,8 +199,8 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
     const el = scrollerRef.current;
     if (!el) return;
     const max = Math.max(0, el.scrollWidth - el.clientWidth);
-    setCanPrev(el.scrollLeft > 8);
-    setCanNext(el.scrollLeft < max - 8);
+    setCanPrev(el.scrollLeft > 2);
+    setCanNext(el.scrollLeft < max - 2);
   }, []);
 
   useEffect(() => {
@@ -245,7 +245,7 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
             scrollByCard(1);
           }
         }}
-        className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scroll-smooth px-1 py-1 sm:gap-4 lg:gap-5"
+        className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scroll-smooth scroll-px-11 px-11 py-1 sm:gap-4 sm:scroll-px-12 sm:px-12 lg:gap-5"
       >
         {products.map((product, index) => {
           const { cover, alt } = getImages(product);
