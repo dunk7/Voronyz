@@ -73,7 +73,7 @@ function BrowseItem({
   return (
     <article
       ref={itemRef}
-      className={`footwear-browse-item h-full w-[min(78vw,20.5rem)] shrink-0 snap-start first:ml-11 last:mr-11 sm:w-[21.5rem] sm:first:ml-12 sm:last:mr-12 lg:w-[23rem] transition-all duration-500 ease-out ${
+      className={`footwear-browse-item h-full w-[min(78vw,20.5rem)] shrink-0 snap-start sm:w-[21.5rem] lg:w-[23rem] transition-all duration-500 ease-out ${
         visible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-3"
       }`}
       style={{ transitionDelay: visible ? `${Math.min(index, 4) * 40}ms` : "0ms" }}
@@ -203,12 +203,17 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
-    el.scrollLeft = 0;
-    updateArrows();
+    const pinStart = () => {
+      if (el.scrollLeft !== 0) el.scrollLeft = 0;
+      updateArrows();
+    };
+    pinStart();
+    const raf = requestAnimationFrame(pinStart);
     el.addEventListener("scroll", updateArrows, { passive: true });
     const observer = new ResizeObserver(updateArrows);
     observer.observe(el);
     return () => {
+      cancelAnimationFrame(raf);
       el.removeEventListener("scroll", updateArrows);
       observer.disconnect();
     };
@@ -243,7 +248,7 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
             scrollByCard(1);
           }
         }}
-        className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scroll-smooth py-1 sm:gap-4 lg:gap-5"
+        className="no-scrollbar flex snap-x snap-proximity gap-3 overflow-x-auto overscroll-x-contain scroll-smooth py-1 sm:gap-4 lg:gap-5"
       >
         {products.map((product, index) => {
           const { cover, alt } = getImages(product);
