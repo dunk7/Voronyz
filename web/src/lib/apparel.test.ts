@@ -5,6 +5,7 @@ import {
   apparelProductShopLabel,
   apparelUnavailableSizes,
   apparelVariantStock,
+  apparelCoverObjectPositionClass,
   getApparelImages,
   getApparelItem,
   isApparelColorOutOfStock,
@@ -40,6 +41,21 @@ test("oversized tee leads with the chest-logo front shot, then back and lifestyl
     "/products/apparel/shirt-back.jpg",
     "/products/apparel/shirt-lifestyle.jpg",
   ]);
+});
+
+test("on-model tee back photo keeps a square crop but pins to the top so the head is visible", () => {
+  assert.equal(
+    apparelCoverObjectPositionClass("/products/apparel/shirt-back.jpg"),
+    "object-top",
+  );
+  assert.equal(
+    apparelCoverObjectPositionClass("/products/apparel/shirt-front.jpg"),
+    "object-center",
+  );
+  assert.equal(
+    apparelCoverObjectPositionClass("/products/apparel/shirt-lifestyle.jpg"),
+    "object-center",
+  );
 });
 
 test("accessory listings still return to Accessories", () => {

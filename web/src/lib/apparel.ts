@@ -100,6 +100,19 @@ export function getApparelImages(item: ApparelCatalogItem): string[] {
   return [item.image];
 }
 
+/**
+ * Portrait on-model shots that a centered square crop would clip at the head.
+ * Keep the same square frame and pin the photo to the top so the model stays in view.
+ */
+const APPAREL_COVER_OBJECT_TOP = new Set([
+  "/products/apparel/shirt-back.jpg",
+]);
+
+/** Tailwind object-position class for apparel photos shown with object-cover. */
+export function apparelCoverObjectPositionClass(src: string): string {
+  return APPAREL_COVER_OBJECT_TOP.has(src) ? "object-top" : "object-center";
+}
+
 /** Slugs removed from the live apparel catalog (cleaned up on ensure). */
 export const OBSOLETE_APPAREL_SLUGS = [
   "voronyz-technical-pants",
