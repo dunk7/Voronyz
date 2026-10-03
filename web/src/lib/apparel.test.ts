@@ -31,12 +31,12 @@ test("tee listing back link returns to Apparel", () => {
   assert.equal(apparelProductShopLabel("voronyz-oversized-tee"), "Back to Apparel");
 });
 
-test("oversized tee keeps the original shirt photo first and adds two more gallery shots", () => {
+test("oversized tee leads with the chest-logo front shot, then back and lifestyle photos", () => {
   const tee = getApparelItem("voronyz-oversized-tee");
   assert.ok(tee);
-  assert.equal(tee.image, "/products/apparel/shirt.jpg");
+  assert.equal(tee.image, "/products/apparel/shirt-front.jpg");
   assert.deepEqual(getApparelImages(tee), [
-    "/products/apparel/shirt.jpg",
+    "/products/apparel/shirt-front.jpg",
     "/products/apparel/shirt-back.jpg",
     "/products/apparel/shirt-lifestyle.jpg",
   ]);
