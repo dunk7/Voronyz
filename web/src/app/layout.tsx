@@ -5,6 +5,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DiscountUrgencyBanner from "@/components/discount/DiscountUrgencyBanner";
+import HexTextureMotion from "@/components/HexTextureMotion";
 import InitialSplash from "@/components/ui/InitialSplash";
 import SiteTheme from "@/components/SiteTheme";
 import { getSiteDarkMode } from "@/lib/siteTheme";
@@ -173,6 +174,7 @@ export default async function RootLayout({
           />
         </noscript>
         <SiteTheme dark={darkMode} />
+        <HexTextureMotion />
         <InitialSplash />
         <DiscountUrgencyBanner />
         <Suspense fallback={null}>
