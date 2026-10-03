@@ -139,9 +139,9 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     outOfStockColors: ["grey"],
     sizes: [...APPAREL_SIZES],
     availableSizes: ["M", "L"],
-    image: "/products/apparel/shirt.jpg",
+    image: "/products/apparel/shirt-front.jpg",
     images: [
-      "/products/apparel/shirt.jpg",
+      "/products/apparel/shirt-front.jpg",
       "/products/apparel/shirt-back.jpg",
       "/products/apparel/shirt-lifestyle.jpg",
     ],
