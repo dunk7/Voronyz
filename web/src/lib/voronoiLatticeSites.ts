@@ -64,3 +64,24 @@ export function displacedSite(
     site.y + Math.cos(timeSec * site.speed * 0.86 + site.phase) * site.ampY,
   ];
 }
+
+/** Push seed points away from a pointer so the topology visibly warps. */
+export function warpFromPointer(
+  x: number,
+  y: number,
+  px: number,
+  py: number,
+  radius = 160,
+  strength = 28
+): [number, number] {
+  const dx = x - px;
+  const dy = y - py;
+  const distSq = dx * dx + dy * dy;
+  const rSq = radius * radius;
+  if (distSq < 1 || distSq > rSq) return [x, y];
+  const dist = Math.sqrt(distSq);
+  const falloff = 1 - dist / radius;
+  const push = falloff * falloff * strength;
+  return [x + (dx / dist) * push, y + (dy / dist) * push];
+}
+

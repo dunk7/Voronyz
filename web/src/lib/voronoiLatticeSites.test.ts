@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createJitteredSites, displacedSite, mulberry32 } from "./voronoiLatticeSites";
+import { createJitteredSites, displacedSite, mulberry32, warpFromPointer } from "./voronoiLatticeSites";
 
 test("jittered sites fill the animation bounds with irregular cells", () => {
   const rng = mulberry32(42);
@@ -37,3 +37,12 @@ test("reduced motion keeps seed points still", () => {
   assert.deepEqual(displacedSite(site, 12, true), [site.x, site.y]);
   assert.notDeepEqual(displacedSite(site, 12, false), [site.x, site.y]);
 });
+
+test("pointer warp pushes nearby seeds outward and leaves far seeds", () => {
+  assert.deepEqual(warpFromPointer(500, 500, 10, 10), [500, 500]);
+  const [x, y] = warpFromPointer(110, 100, 100, 100, 160, 28);
+  assert.ok(x > 110, "seed to the right of the pointer should move further right");
+  assert.equal(y, 100);
+});
+
+

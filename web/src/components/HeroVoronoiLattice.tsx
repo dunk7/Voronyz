@@ -5,6 +5,7 @@ import { Delaunay } from "d3-delaunay";
 import {
   createJitteredSites,
   displacedSite,
+  warpFromPointer,
   type LatticeSite,
 } from "@/lib/voronoiLatticeSites";
 
@@ -45,17 +46,24 @@ export default function HeroVoronoiLattice() {
       sites = createJitteredSites(logicalW, logicalH, CELL);
     };
 
-    const setPointer = (clientX: number, clientY: number) => {
+    const setPointerFromEvent = (clientX: number, clientY: number) => {
       const rect = parent.getBoundingClientRect();
+      const inside =
+        clientX >= rect.left &&
+        clientX <= rect.right &&
+        clientY >= rect.top &&
+        clientY <= rect.bottom;
+      if (!inside) {
+        pointer.live = false;
+        return;
+      }
       pointer.x = (clientX - rect.left) / Math.max(1, rect.width);
       pointer.y = (clientY - rect.top) / Math.max(1, rect.height);
       pointer.live = true;
     };
 
-    const onPointerMove = (event: PointerEvent) => setPointer(event.clientX, event.clientY);
-    const onPointerDown = (event: PointerEvent) => setPointer(event.clientX, event.clientY);
-    const onPointerLeave = () => {
-      pointer.live = false;
+    const onPointerMove = (event: PointerEvent) => {
+      setPointerFromEvent(event.clientX, event.clientY);
     };
 
     const draw = (now: number) => {
@@ -65,11 +73,15 @@ export default function HeroVoronoiLattice() {
       pointer.sx += (pointer.x - pointer.sx) * POINTER_LERP;
       pointer.sy += (pointer.y - pointer.sy) * POINTER_LERP;
 
-      const points: [number, number][] = sites.map((site) =>
-        displacedSite(site, timeSec, reducedMotion)
-      );
+      const px = pointer.sx * logicalW;
+      const py = pointer.sy * logicalH;
+      const points: [number, number][] = sites.map((site) => {
+        const [x, y] = displacedSite(site, timeSec, reducedMotion);
+        if (reducedMotion || !pointer.live) return [x, y];
+        return warpFromPointer(x, y, px, py);
+      });
       if (!reducedMotion && pointer.live) {
-        points.push([pointer.sx * logicalW, pointer.sy * logicalH]);
+        points.push([px, py]);
       }
 
       ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -128,9 +140,8 @@ export default function HeroVoronoiLattice() {
     const ro = new ResizeObserver(layout);
     ro.observe(parent);
     window.addEventListener("resize", onResize, { passive: true });
-    parent.addEventListener("pointermove", onPointerMove, { passive: true });
-    parent.addEventListener("pointerdown", onPointerDown, { passive: true });
-    parent.addEventListener("pointerleave", onPointerLeave);
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    window.addEventListener("pointerdown", onPointerMove, { passive: true });
     raf = requestAnimationFrame(draw);
 
     return () => {
@@ -138,9 +149,8 @@ export default function HeroVoronoiLattice() {
       cancelAnimationFrame(raf);
       ro.disconnect();
       window.removeEventListener("resize", onResize);
-      parent.removeEventListener("pointermove", onPointerMove);
-      parent.removeEventListener("pointerdown", onPointerDown);
-      parent.removeEventListener("pointerleave", onPointerLeave);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerdown", onPointerMove);
     };
   }, []);
 
