@@ -89,7 +89,6 @@ export default function ApparelHubContent() {
               {collectionProducts.length === 1 ? "" : "s"}
             </span>
           </div>
-          <div className="mt-6 h-px bg-neutral-200" />
         </div>
 
         <section aria-labelledby="apparel-listings-heading">
