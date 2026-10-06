@@ -8,7 +8,7 @@ import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 import { FILAMENT_SLUG, getAccessoryCatalogSeed } from "@/lib/filament";
-import { APPAREL_CATALOG } from "@/lib/apparel";
+import { APPAREL_CATALOG, apparelCoverObjectPositionClass } from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
@@ -390,7 +390,7 @@ export default function ProductsContent({
                       src={cover}
                       alt={p.name}
                       fill
-                      className={`object-cover transition-all duration-500 ${
+                      className={`object-cover ${apparelCoverObjectPositionClass(cover)} transition-all duration-500 ${
                         alt ? "group-hover:opacity-0" : "group-hover:scale-105"
                       } ${isNavigating ? "scale-105 brightness-90" : ""}`}
                       sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
@@ -404,7 +404,7 @@ export default function ProductsContent({
                         alt={`${p.name} – alternate view`}
                         fill
                         showLogoPlaceholder={false}
-                        className="object-cover opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
+                        className={`object-cover ${apparelCoverObjectPositionClass(alt)} opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105`}
                         sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
                         loading="lazy"
                       />

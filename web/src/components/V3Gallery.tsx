@@ -9,6 +9,7 @@ import {
   useCallback,
   useLayoutEffect,
 } from "react";
+import { apparelCoverObjectPositionClass } from "@/lib/apparel";
 
 type Media = {
   type: "image" | "video";
@@ -318,8 +319,10 @@ export default function V3Gallery({
 
   /* ── Render helpers ─────────────────────────────────────── */
 
-  const imageFitClass =
-    fit === "contain" ? "object-contain object-center" : "object-cover object-center";
+  const imageFitClass = (src: string) =>
+    fit === "contain"
+      ? "object-contain object-center"
+      : `object-cover ${apparelCoverObjectPositionClass(src)}`;
   // Pixel inset (not %) so it matches the frame radius and is not tripled by the 300% track.
   const containInnerPad = "p-4 sm:p-5 lg:p-6";
   const innerPadFor = (m: Media | undefined) =>
@@ -333,7 +336,7 @@ export default function V3Gallery({
           src={m.src}
           alt={m.alt || "Product image"}
           fill
-          className={`${imageFitClass} pointer-events-none`}
+          className={`${imageFitClass(m.src)} pointer-events-none`}
           priority={index <= 1}
           loading={index <= 2 ? "eager" : "lazy"}
           sizes="(max-width: 1024px) 100vw, 75vw"
@@ -525,7 +528,7 @@ export default function V3Gallery({
                   src={m.src}
                   alt={m.alt || "Thumb"}
                   fill
-                  className="object-cover object-center transition-transform duration-200 group-hover/thumb:scale-105"
+                  className={`object-cover ${apparelCoverObjectPositionClass(m.src)} transition-transform duration-200 group-hover/thumb:scale-105`}
                   loading={i < 4 ? "eager" : "lazy"}
                   sizes="80px"
                   draggable={false}
