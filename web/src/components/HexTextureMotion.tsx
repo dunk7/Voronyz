@@ -17,7 +17,7 @@ function wrap(value: number, period: number) {
   return ((value % period) + period) % period;
 }
 
-/** Drives the hexagonal hero and `.bg-texture-white` layers from pointer/touch and scroll. */
+/** Drives the hexagonal `.bg-texture-white` shop layer from pointer/touch and scroll. */
 export default function HexTextureMotion() {
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");

@@ -18,13 +18,11 @@ test("dark mode paints hex panels black and keeps the tiny traces light", () => 
   assert.match(darkTraces[0], /stroke-opacity='0\.34'/);
 });
 
-test("homepage hero paints a light hex mesh that follows --hex-shift", () => {
-  const heroMesh = css.match(/\.hero-stage::before \{[\s\S]*?\n\}/);
-  assert.ok(heroMesh, "expected a hex overlay on the homepage hero");
-  assert.match(heroMesh[0], /stroke='%23ffffff'/);
-  assert.match(heroMesh[0], /stroke-opacity='0\.34'/);
-  assert.match(heroMesh[0], /--hex-shift-x/);
-  assert.match(heroMesh[0], /--hex-shift-y/);
+test("homepage hero stage stays black and does not reuse the shop hex tile", () => {
+  assert.doesNotMatch(css, /\.hero-stage::before/);
+  const hero = css.match(/\.hero-stage \{[^}]+\}/);
+  assert.ok(hero, "expected a homepage hero stage");
+  assert.match(hero[0], /background-color:\s*#000/);
 });
 
 test("shop hex tiles follow the same --hex-shift motion variables", () => {
