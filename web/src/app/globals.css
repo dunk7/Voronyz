@@ -11,6 +11,8 @@
   --foreground: #171717;
   --brand: #0e0e0e;
   --muted: #7a7a7a;
+  --hex-shift-x: 0px;
+  --hex-shift-y: 0px;
 }
 
 /*
@@ -142,6 +144,7 @@ video {
   Homepage hero: charcoal in the middle, black on the left and right.
   Desktop only — on stacked mobile the left-to-right fade makes the
   headline look uneven.
+  The Voronoi lattice lives only on the shoe animation, not this stage.
 */
 .hero-stage {
   background-color: #000;
@@ -165,17 +168,17 @@ video {
 .bg-texture-white {
   background-color: #ffffff !important;
   position: relative;
-  overflow-x: clip;
+  overflow: clip;
 }
 
-/* Original 50×43 overlapping hex tile. Static — no leftward drift. */
+/* Original 50×43 overlapping hex tile. Position is driven by HexTextureMotion. */
 .bg-texture-white::before {
   content: '';
   position: absolute;
   top: 0;
-  bottom: 0;
   left: 0;
-  width: 100%;
+  width: calc(100% + 50px);
+  height: calc(100% + 43px);
   /*
     Odd-row hexes extend 8 units past the tile. CSS clips that overflow,
     so draw the missing bottom tips as open paths at the top of the tile
@@ -187,6 +190,8 @@ video {
   background-size: 50px 43px;
   background-position: 0 0;
   background-repeat: repeat;
+  transform: translate3d(var(--hex-shift-x, 0px), var(--hex-shift-y, 0px), 0);
+  will-change: transform;
   pointer-events: none;
   z-index: 0;
 }
@@ -205,7 +210,7 @@ video {
 .bg-texture-white .bg-texture-white,
 html.site-dark .bg-texture-white .bg-texture-white {
   background-color: transparent !important;
-  overflow-x: visible;
+  overflow: visible;
 }
 
 .bg-texture-white .bg-texture-white::before,
@@ -288,6 +293,11 @@ html.site-dark .bg-texture-white .bg-texture-white::before {
   .logo-loader-bar-fill {
     width: 55%;
     left: 22.5%;
+  }
+
+  .bg-texture-white::before {
+    transform: none;
+    will-change: auto;
   }
 
   .motion-media-track {
