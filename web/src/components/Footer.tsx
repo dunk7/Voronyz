@@ -34,6 +34,7 @@ export default function Footer() {
           <div className="text-neutral-900 font-medium">Follow</div>
           <a className="hover:text-black" href="https://instagram.com/voronyz" target="_blank" rel="noopener noreferrer">Instagram</a>
           <a className="hover:text-black" href="https://x.com/voronyz" target="_blank" rel="noopener noreferrer">X</a>
+          <a className="hover:text-black" href="https://www.tiktok.com/@voronyz" target="_blank" rel="noopener noreferrer">TikTok</a>
           <div className="pt-3 text-neutral-900 font-medium">Legal</div>
           <Link className="hover:text-black" href="/terms">Terms</Link>
           <Link className="hover:text-black" href="/privacy">Privacy</Link>
