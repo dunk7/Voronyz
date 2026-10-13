@@ -153,7 +153,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     image: "/products/apparel/shirt-front.jpg",
     images: [
       "/products/apparel/shirt-front.jpg",
-      "/products/apparel/shirt-back.jpg",
+      "/products/apparel/shirt-back-blank.jpg",
       "/products/apparel/shirt-lifestyle.jpg",
     ],
     skuPrefix: "APP-TEE",

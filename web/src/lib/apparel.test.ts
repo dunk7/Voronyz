@@ -38,14 +38,14 @@ test("oversized tee leads with the chest-logo front shot, then blank back and li
   assert.equal(tee.image, "/products/apparel/shirt-front.jpg");
   assert.deepEqual(getApparelImages(tee), [
     "/products/apparel/shirt-front.jpg",
-    "/products/apparel/shirt-back.jpg",
+    "/products/apparel/shirt-back-blank.jpg",
     "/products/apparel/shirt-lifestyle.jpg",
   ]);
 });
 
 test("flat-lay tee photos keep a centered square crop", () => {
   assert.equal(
-    apparelCoverObjectPositionClass("/products/apparel/shirt-back.jpg"),
+    apparelCoverObjectPositionClass("/products/apparel/shirt-back-blank.jpg"),
     "object-center",
   );
   assert.equal(
