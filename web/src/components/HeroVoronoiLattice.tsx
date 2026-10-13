@@ -1,4 +1,4 @@
-/** Rounded Voronoi foam from /hero-bg.jpg, only behind the shoe animation. */
+/** Rounded Voronoi foam from /hero-bg.jpg, filling the hero up to the header. */
 export default function HeroVoronoiLattice() {
   return (
     <div className="hero-voronoi-lattice" aria-hidden>

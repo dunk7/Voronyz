@@ -1,5 +1,6 @@
 import Image from "next/image";
 import HeroParallax from "@/components/HeroParallax";
+import HeroVoronoiLattice from "@/components/HeroVoronoiLattice";
 import MotionMediaCarousel from "@/components/MotionMediaCarousel";
 import { Suspense } from "react";
 import ProductsContent from "@/app/products/ProductsContent";
@@ -9,6 +10,8 @@ export default function Home() {
   return (
     <div className="relative">
       <section className="hero-stage relative overflow-hidden">
+        {/* Full hero foam — from the Voronyz header down, not clipped to the GIF. */}
+        <HeroVoronoiLattice />
         {/* Hero content */}
         <div className="relative z-[1] mx-auto max-w-7xl px-4 sm:px-6 py-20 sm:py-24 md:py-28 lg:py-12 xl:py-14 2xl:py-16 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-10 sm:gap-12 lg:gap-16">
@@ -43,8 +46,8 @@ export default function Home() {
       </section>
 
       {/*
-        Sequence: flashing GIF Voronoi → black fade (hero-stage) → hard hex
-        rail (does not fade) → static Voronoi for the shop. Never stacked.
+        Sequence: flashing Voronoi on the hero stage (header → hex rail) →
+        hard hex rail (does not fade) → static Voronoi for the shop. Never stacked.
       */}
       <div className="shop-hex-rail bg-texture-hex" aria-hidden />
 
