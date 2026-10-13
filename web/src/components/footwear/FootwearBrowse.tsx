@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import SoftImage from "@/components/ui/SoftImage";
@@ -161,66 +160,8 @@ function BrowseItem({
   );
 }
 
-function ArrowButton({
-  direction,
-  disabled,
-  onClick,
-}: {
-  direction: "left" | "right";
-  disabled: boolean;
-  onClick: () => void;
-}) {
-  const isLeft = direction === "left";
-  return (
-    <button
-      type="button"
-      aria-label={isLeft ? "Previous footwear" : "Next footwear"}
-      disabled={disabled}
-      onClick={onClick}
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-neutral-900 ring-1 ring-black/10 transition-all duration-200 hover:bg-neutral-50 hover:ring-black/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 disabled:pointer-events-none disabled:opacity-25 sm:h-11 sm:w-11"
-    >
-      {isLeft ? (
-        <ChevronLeft className="h-5 w-5" strokeWidth={1.75} aria-hidden />
-      ) : (
-        <ChevronRight className="h-5 w-5" strokeWidth={1.75} aria-hidden />
-      )}
-    </button>
-  );
-}
-
 export default function FootwearBrowse({ products, getImages }: FootwearBrowseProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const [canPrev, setCanPrev] = useState(false);
-  const [canNext, setCanNext] = useState(false);
-
-  const updateArrows = useCallback(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const max = Math.max(0, el.scrollWidth - el.clientWidth);
-    const card = el.querySelector<HTMLElement>(".footwear-browse-item");
-    const threshold = Math.max(40, Math.round((card?.offsetWidth ?? 320) * 0.2));
-    setCanPrev(el.scrollLeft > threshold);
-    setCanNext(el.scrollLeft < max - threshold);
-  }, []);
-
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const pinStart = () => {
-      if (el.scrollLeft !== 0) el.scrollLeft = 0;
-      updateArrows();
-    };
-    pinStart();
-    const raf = requestAnimationFrame(pinStart);
-    el.addEventListener("scroll", updateArrows, { passive: true });
-    const observer = new ResizeObserver(updateArrows);
-    observer.observe(el);
-    return () => {
-      cancelAnimationFrame(raf);
-      el.removeEventListener("scroll", updateArrows);
-      observer.disconnect();
-    };
-  }, [updateArrows, products.length]);
 
   const scrollByCard = useCallback((direction: -1 | 1) => {
     const el = scrollerRef.current;
@@ -232,42 +173,65 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
     el.scrollBy({ left: direction * delta, behavior: "smooth" });
   }, []);
 
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const pinStart = () => {
+      if (el.scrollLeft !== 0) el.scrollLeft = 0;
+    };
+    pinStart();
+    const raf = requestAnimationFrame(pinStart);
+
+    const onWheel = (e: WheelEvent) => {
+      const absX = Math.abs(e.deltaX);
+      const absY = Math.abs(e.deltaY);
+      if (absY <= absX) return;
+      const max = el.scrollWidth - el.clientWidth;
+      if (max <= 0) return;
+      if ((e.deltaY > 0 && el.scrollLeft >= max) || (e.deltaY < 0 && el.scrollLeft <= 0)) {
+        return;
+      }
+      e.preventDefault();
+      el.scrollLeft = Math.max(0, Math.min(max, el.scrollLeft + e.deltaY));
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      el.removeEventListener("wheel", onWheel);
+    };
+  }, [products.length]);
+
   return (
-    <div className="footwear-browse flex items-center gap-2 sm:gap-3">
-      <ArrowButton direction="left" disabled={!canPrev} onClick={() => scrollByCard(-1)} />
-
-      <div
-        ref={scrollerRef}
-        role="region"
-        aria-label="All footwear"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "ArrowLeft") {
-            e.preventDefault();
-            scrollByCard(-1);
-          } else if (e.key === "ArrowRight") {
-            e.preventDefault();
-            scrollByCard(1);
-          }
-        }}
-        className="no-scrollbar flex min-w-0 flex-1 snap-x snap-proximity gap-3 overflow-x-auto overscroll-x-contain scroll-smooth py-1 sm:gap-4 lg:gap-5"
-      >
-        {products.map((product, index) => {
-          const { cover, alt } = getImages(product);
-          return (
-            <BrowseItem
-              key={product.id}
-              product={product}
-              cover={cover}
-              alt={alt}
-              index={index}
-              scrollRoot={scrollerRef}
-            />
-          );
-        })}
-      </div>
-
-      <ArrowButton direction="right" disabled={!canNext} onClick={() => scrollByCard(1)} />
+    <div
+      ref={scrollerRef}
+      role="region"
+      aria-label="All footwear"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          scrollByCard(-1);
+        } else if (e.key === "ArrowRight") {
+          e.preventDefault();
+          scrollByCard(1);
+        }
+      }}
+      className="footwear-browse no-scrollbar flex snap-x snap-proximity gap-3 overflow-x-auto overscroll-x-contain py-1 outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/20 sm:gap-4 lg:gap-5"
+    >
+      {products.map((product, index) => {
+        const { cover, alt } = getImages(product);
+        return (
+          <BrowseItem
+            key={product.id}
+            product={product}
+            cover={cover}
+            alt={alt}
+            index={index}
+            scrollRoot={scrollerRef}
+          />
+        );
+      })}
     </div>
   );
 }
