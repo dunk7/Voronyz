@@ -150,6 +150,53 @@ video {
   background-color: #000;
 }
 
+/*
+  Real Voronyz lattice: rounded foam cells from /hero-bg.jpg.
+  Glow is a slow CSS drift so it lights up without a mouse (phones included).
+*/
+.hero-voronoi-lattice {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(ellipse 78% 82% at 58% 50%, #000 32%, transparent 78%);
+  mask-image: radial-gradient(ellipse 78% 82% at 58% 50%, #000 32%, transparent 78%);
+}
+
+.hero-voronoi-lattice-cells {
+  position: absolute;
+  inset: -8%;
+  background: url("/hero-bg.jpg") center bottom / cover no-repeat;
+  opacity: 0.5;
+  filter: brightness(1.05);
+}
+
+.hero-voronoi-lattice-glow {
+  position: absolute;
+  inset: -30%;
+  background: radial-gradient(
+    ellipse 42% 48% at 50% 46%,
+    rgb(255 255 255 / 0.28),
+    rgb(255 255 255 / 0.08) 42%,
+    transparent 70%
+  );
+  mix-blend-mode: screen;
+  animation: hero-lattice-light 9s ease-in-out infinite;
+}
+
+@keyframes hero-lattice-light {
+  0%,
+  100% {
+    transform: translate(-6%, -4%);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate(7%, 5%);
+    opacity: 0.95;
+  }
+}
+
 @media (min-width: 1024px) {
   .hero-stage {
     background-image:
@@ -298,6 +345,12 @@ html.site-dark .bg-texture-white .bg-texture-white::before {
   .bg-texture-white::before {
     transform: none;
     will-change: auto;
+  }
+
+  .hero-voronoi-lattice-glow {
+    animation: none;
+    transform: none;
+    opacity: 0.75;
   }
 
   .motion-media-track {

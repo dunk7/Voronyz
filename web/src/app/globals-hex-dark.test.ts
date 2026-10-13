@@ -31,3 +31,14 @@ test("shop hex tiles follow the same --hex-shift motion variables", () => {
   assert.match(shopMesh[0], /--hex-shift-x/);
   assert.match(shopMesh[0], /--hex-shift-y/);
 });
+
+test("hero animation lattice uses the rounded Voronoi foam and a CSS glow", () => {
+  const cells = css.match(/\.hero-voronoi-lattice-cells \{[\s\S]*?\n\}/);
+  assert.ok(cells, "expected the hero-bg Voronoi foam behind the shoe animation");
+  assert.match(cells[0], /hero-bg\.jpg/);
+
+  const glow = css.match(/\.hero-voronoi-lattice-glow \{[\s\S]*?\n\}/);
+  assert.ok(glow, "expected a light-up layer on the lattice");
+  assert.match(glow[0], /hero-lattice-light/);
+  assert.doesNotMatch(css, /pointermove|mousemove/);
+});
