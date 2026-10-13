@@ -53,6 +53,7 @@ test("hex honeycomb is reserved for hard seams and stays static", () => {
   assert.doesNotMatch(hexMesh[0], /animation/);
   assert.doesNotMatch(hexMesh[0], /--hex-shift/);
   assert.match(css, /\.shop-hex-rail \{/);
+  assert.match(css, /\.shop-hex-rail\.bg-texture-hex::before/);
 });
 
 test("homepage sequences flashing Voronoi, a hard hex rail, then static Voronoi", () => {
