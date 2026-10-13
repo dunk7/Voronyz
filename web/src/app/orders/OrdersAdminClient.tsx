@@ -37,10 +37,18 @@ import {
   type AdminOrder,
   type OrderLineItem,
 } from "@/lib/orderTypes";
+import {
+  filterAndSortAdminOrders,
+  isUncompletedOrder,
+  lineItemSummary,
+  type OrdersSortDir,
+  type OrdersSortKey,
+  type OrdersView,
+} from "@/lib/ordersAdminList";
 import { dispatchSiteTheme } from "@/components/SiteTheme";
 
-type SortKey = "date" | "price" | "name" | "status";
-type SortDir = "asc" | "desc";
+type SortKey = OrdersSortKey;
+type SortDir = OrdersSortDir;
 type AdminTab =
   | "orders"
   | "stats"
@@ -49,7 +57,6 @@ type AdminTab =
   | "gallery"
   | "quiz"
   | "affiliates";
-type OrdersView = "open" | "completed" | "all";
 
 const MAX_ADMIN_NOTES_LENGTH = 4000;
 
@@ -258,9 +265,8 @@ export default function OrdersAdminClient() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
   const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null);
-  /** Orders list starts collapsed; click the Orders header (or Orders button) to expand. */
   const [tab, setTab] = useState<AdminTab>("orders");
-  const [ordersOpen, setOrdersOpen] = useState(false);
+  const [ordersOpen, setOrdersOpen] = useState(true);
   const [uploadsRefresh, setUploadsRefresh] = useState(0);
   const [galleryRefresh, setGalleryRefresh] = useState(0);
   const [quizRefresh, setQuizRefresh] = useState(0);
@@ -396,7 +402,7 @@ export default function OrdersAdminClient() {
         return;
       }
       setTab("orders");
-      setOrdersOpen(false);
+      setOrdersOpen(true);
       return;
     }
     setTab(next);
@@ -521,7 +527,7 @@ export default function OrdersAdminClient() {
   }
 
   const openOrdersCount = useMemo(
-    () => orders.filter((o) => o.status !== "completed").length,
+    () => orders.filter(isUncompletedOrder).length,
     [orders]
   );
   const completedOrdersCount = useMemo(
@@ -533,77 +539,22 @@ export default function OrdersAdminClient() {
     [orders]
   );
 
-  const filteredOrders = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    let list = orders;
-
-    if (ordersView === "open") {
-      list = list.filter((o) => o.status !== "completed");
-    } else if (ordersView === "completed") {
-      list = list.filter((o) => o.status === "completed");
-    }
-
-    if (statusFilter !== "all") {
-      list = list.filter((o) => o.status === statusFilter);
-    }
-
-    if (q) {
-      list = list.filter((o) => {
-        const haystack = [
-          o.orderNumber,
-          o.id,
-          o.customer?.name,
-          o.customer?.email,
-          o.customer?.phone,
-          o.shipping?.name,
-          o.shipping?.address?.line1,
-          o.shipping?.address?.city,
-          o.adminNotes,
-          ...o.lineItems.map((i) => i.name),
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-        return haystack.includes(q);
-      });
-    }
-
-    const sorted = [...list].sort((a, b) => {
-      // Open: oldest first. Completed: newest first. All: user sort controls.
-      if (ordersView === "open" || ordersView === "completed") {
-        const cmp =
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-        return ordersView === "open" ? cmp : -cmp;
-      }
-
-      let cmp = 0;
-      switch (sortKey) {
-        case "price":
-          cmp = a.totalCents - b.totalCents;
-          break;
-        case "name": {
-          const an = (a.shipping?.name || a.customer?.name || "").toLowerCase();
-          const bn = (b.shipping?.name || b.customer?.name || "").toLowerCase();
-          cmp = an.localeCompare(bn);
-          break;
-        }
-        case "status":
-          cmp = a.status.localeCompare(b.status);
-          break;
-        case "date":
-        default:
-          cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      }
-      return sortDir === "asc" ? cmp : -cmp;
-    });
-
-    return sorted;
-  }, [orders, ordersView, search, statusFilter, sortKey, sortDir]);
+  const filteredOrders = useMemo(
+    () =>
+      filterAndSortAdminOrders(orders, {
+        ordersView,
+        statusFilter,
+        search,
+        sortKey,
+        sortDir,
+      }),
+    [orders, ordersView, search, statusFilter, sortKey, sortDir]
+  );
 
   const statusOptions = useMemo(() => {
     const scoped =
       ordersView === "open"
-        ? orders.filter((o) => o.status !== "completed")
+        ? orders.filter(isUncompletedOrder)
         : ordersView === "completed"
           ? orders.filter((o) => o.status === "completed")
           : orders;
@@ -676,8 +627,8 @@ export default function OrdersAdminClient() {
             <p className="text-sm text-neutral-500">
               {tab === "orders"
                 ? ordersOpen
-                  ? `${filteredOrders.length} shown · ${openOrdersCount} open · ${completedOrdersCount} completed`
-                  : `${openOrdersCount} open · ${completedOrdersCount} completed — click to expand`
+                  ? `${filteredOrders.length} shown · ${openOrdersCount} uncompleted · ${completedOrdersCount} completed`
+                  : `${openOrdersCount} uncompleted · ${completedOrdersCount} completed — click to expand`
                 : tab === "stats"
                   ? "Revenue and order performance"
                   : tab === "discounts"
@@ -923,13 +874,13 @@ export default function OrdersAdminClient() {
                 Orders
               </div>
               <h2 className="mt-1 text-base font-semibold text-neutral-900">
-                Open and completed orders
+                Uncompleted and completed orders
               </h2>
               <p className="mt-1 text-sm text-neutral-500 max-w-2xl">
-                {openOrdersCount} open · {completedOrdersCount} completed.{" "}
+                {openOrdersCount} uncompleted · {completedOrdersCount} completed.{" "}
                 {ordersOpen
-                  ? "Scroll the list below to fulfill or review an order."
-                  : "Click to open the full order list when you need it."}
+                  ? "Rows stay collapsed so you can scan the full list; click one to expand details."
+                  : "Click to open the compact order list."}
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0 text-neutral-500 pt-1">
@@ -946,49 +897,59 @@ export default function OrdersAdminClient() {
 
           {ordersOpen ? (
             <div className="border-t border-black/5 px-4 sm:px-5 pb-4 sm:pb-5 pt-4 space-y-4 print:border-0">
-        <div
-          className="flex flex-wrap gap-2 print:hidden"
-          role="tablist"
-          aria-label="Order lists"
-        >
-          {(
-            [
-              { id: "open" as const, label: "Open", count: openOrdersCount },
-              {
-                id: "completed" as const,
-                label: "Completed",
-                count: completedOrdersCount,
-              },
-              { id: "all" as const, label: "All", count: orders.length },
-            ] as const
-          ).map((view) => (
-            <button
-              key={view.id}
-              type="button"
-              role="tab"
-              aria-selected={ordersView === view.id}
-              onClick={() => {
-                setOrdersView(view.id);
-                setStatusFilter("all");
-              }}
-              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-                ordersView === view.id
-                  ? "bg-black text-white"
-                  : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
-              }`}
-            >
-              {view.label}
-              <span
-                className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${
+        <div className="space-y-2 print:hidden">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+            Filter
+          </p>
+          <div
+            className="flex flex-wrap gap-2"
+            role="tablist"
+            aria-label="Order filters"
+          >
+            {(
+              [
+                {
+                  id: "open" as const,
+                  label: "Uncompleted",
+                  count: openOrdersCount,
+                },
+                {
+                  id: "completed" as const,
+                  label: "Completed",
+                  count: completedOrdersCount,
+                },
+                { id: "all" as const, label: "All", count: orders.length },
+              ] as const
+            ).map((view) => (
+              <button
+                key={view.id}
+                type="button"
+                role="tab"
+                aria-selected={ordersView === view.id}
+                onClick={() => {
+                  setOrdersView(view.id);
+                  setStatusFilter("all");
+                  setExpandedId(null);
+                }}
+                className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
                   ordersView === view.id
-                    ? "bg-white/20 text-white"
-                    : "bg-neutral-100 text-neutral-600"
+                    ? "bg-black text-white"
+                    : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
                 }`}
               >
-                {view.count}
-              </span>
-            </button>
-          ))}
+                {view.label}
+                <span
+                  className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${
+                    ordersView === view.id
+                      ? "bg-white/20 text-white"
+                      : "bg-neutral-100 text-neutral-600"
+                  }`}
+                >
+                  {view.count}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 print:hidden">
@@ -1016,7 +977,7 @@ export default function OrdersAdminClient() {
             </select>
           ) : null}
           {ordersView === "all" ? (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <SortButton
                 label="Date"
                 active={sortKey === "date"}
@@ -1041,11 +1002,12 @@ export default function OrdersAdminClient() {
                 direction={sortDir}
                 onClick={() => toggleSort("status")}
               />
+              <p className="text-xs text-neutral-500">Uncompleted first</p>
             </div>
           ) : (
             <p className="text-xs text-neutral-500">
               {ordersView === "open"
-                ? "Oldest first"
+                ? "Uncompleted · oldest first"
                 : "Newest first"}
             </p>
           )}
@@ -1070,58 +1032,83 @@ export default function OrdersAdminClient() {
         ) : filteredOrders.length === 0 ? (
           <div className="rounded-2xl bg-white p-12 text-center text-neutral-500 ring-1 ring-black/5">
             {ordersView === "open"
-              ? "No open orders."
+              ? "No uncompleted orders."
               : ordersView === "completed"
                 ? "No completed orders yet."
                 : "No orders match your filters."}
           </div>
         ) : (
-          <div className="space-y-4">
-            {filteredOrders.map((order) => {
+          <div className="space-y-1.5">
+            {filteredOrders.map((order, index) => {
               const expanded = expandedId === order.id;
               const shipName = order.shipping?.name || order.customer?.name || "—";
               const addressText = formatShippingAddress(order.shipping);
+              const showUncompletedSection =
+                ordersView === "all" &&
+                index === 0 &&
+                isUncompletedOrder(order);
+              const showCompletedSection =
+                ordersView === "all" &&
+                order.status === "completed" &&
+                (index === 0 || isUncompletedOrder(filteredOrders[index - 1]));
 
               return (
+                <div key={order.id} className="space-y-1.5">
+                  {showUncompletedSection ? (
+                    <p className="pt-1 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                      Uncompleted
+                    </p>
+                  ) : null}
+                  {showCompletedSection ? (
+                    <p className="pt-2 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                      Completed
+                    </p>
+                  ) : null}
                 <article
-                  key={order.id}
-                  className="rounded-2xl bg-white ring-1 ring-black/5 overflow-hidden print:break-inside-avoid print:ring-black/20"
+                  className="rounded-xl bg-white ring-1 ring-black/5 overflow-hidden print:break-inside-avoid print:ring-black/20"
                 >
                   <button
                     type="button"
                     onClick={() => setExpandedId(expanded ? null : order.id)}
-                    className="w-full text-left px-5 py-4 flex flex-wrap items-start justify-between gap-4 hover:bg-neutral-50/80 print:hover:bg-transparent"
+                    aria-expanded={expanded}
+                    className="w-full text-left px-3 sm:px-4 py-2.5 flex items-center gap-3 hover:bg-neutral-50/80 print:hover:bg-transparent"
                   >
-                    <div className="space-y-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold">
+                    {expanded ? (
+                      <ChevronUp className="h-4 w-4 shrink-0 text-neutral-400" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 shrink-0 text-neutral-400" />
+                    )}
+                    <div className="min-w-0 flex-1 grid gap-x-4 gap-y-0.5 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)_auto] sm:items-center">
+                      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                        <span className="font-semibold text-sm truncate">
                           {order.orderNumber || order.id.slice(-8).toUpperCase()}
                         </span>
                         <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium capitalize ${statusClass(order.status)}`}
+                          className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium capitalize ${statusClass(order.status)}`}
                         >
                           {order.status.replace(/_/g, " ")}
                         </span>
                         {order.adminNotes ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-900">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-900">
                             <StickyNote className="h-3 w-3" />
                             Note
                           </span>
                         ) : null}
                       </div>
-                      <p className="text-sm text-neutral-800 font-medium">{shipName}</p>
-                      <p className="text-sm text-neutral-500">{formatDate(order.createdAt)}</p>
-                      {order.customer?.email && (
-                        <p className="text-sm text-neutral-500 truncate">{order.customer.email}</p>
-                      )}
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-lg font-semibold">
-                        {formatCentsAsCurrency(order.totalCents, order.currency)}
-                      </p>
-                      <p className="text-xs text-neutral-500">
-                        {order.lineItems.length} item{order.lineItems.length === 1 ? "" : "s"}
-                      </p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-neutral-800 truncate">{shipName}</p>
+                        <p className="text-xs text-neutral-500 truncate">
+                          {lineItemSummary(order.lineItems)}
+                        </p>
+                      </div>
+                      <div className="flex items-baseline justify-between gap-4 sm:justify-end sm:text-right">
+                        <p className="text-xs text-neutral-500 whitespace-nowrap">
+                          {formatDate(order.createdAt)}
+                        </p>
+                        <p className="text-sm font-semibold tabular-nums">
+                          {formatCentsAsCurrency(order.totalCents, order.currency)}
+                        </p>
+                      </div>
                     </div>
                   </button>
 
@@ -1262,6 +1249,7 @@ export default function OrdersAdminClient() {
                     </div>
                   )}
                 </article>
+                </div>
               );
             })}
           </div>
