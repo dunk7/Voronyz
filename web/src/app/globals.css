@@ -168,17 +168,35 @@ video {
   position: absolute;
   inset: -8%;
   background: url("/hero-bg.jpg") center bottom / cover no-repeat;
-  opacity: 0.5;
-  filter: brightness(1.05);
+  opacity: 0.42;
+  filter: brightness(0.95);
+}
+
+/* Keep the foam mask still; only the orb moves so struts light up. */
+.hero-voronoi-lattice-light {
+  position: absolute;
+  inset: -8%;
+  pointer-events: none;
+  -webkit-mask-image: url("/hero-bg.jpg");
+  mask-image: url("/hero-bg.jpg");
+  -webkit-mask-size: cover;
+  mask-size: cover;
+  -webkit-mask-position: center bottom;
+  mask-position: center bottom;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 
 .hero-voronoi-lattice-glow {
   position: absolute;
-  inset: -40%;
+  width: 75%;
+  height: 75%;
+  left: 12%;
+  top: 12%;
   background: radial-gradient(
-    ellipse 48% 52% at 50% 46%,
-    rgb(255 255 255 / 0.55),
-    rgb(255 255 255 / 0.16) 36%,
+    circle,
+    rgb(255 255 255 / 0.95) 0%,
+    rgb(255 255 255 / 0.35) 38%,
     transparent 68%
   );
   mix-blend-mode: screen;
@@ -188,11 +206,11 @@ video {
 @keyframes hero-lattice-light {
   0%,
   100% {
-    transform: translate(-16%, -12%);
-    opacity: 0.4;
+    transform: translate(-22%, -16%);
+    opacity: 0.55;
   }
   50% {
-    transform: translate(18%, 14%);
+    transform: translate(24%, 18%);
     opacity: 1;
   }
 }
