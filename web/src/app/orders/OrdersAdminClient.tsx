@@ -58,6 +58,20 @@ type AdminTab =
   | "quiz"
   | "affiliates";
 
+const ADMIN_SECTIONS = [
+  { id: "orders" as const, label: "Orders", icon: Package },
+  { id: "stats" as const, label: "Stats", icon: TrendingUp },
+  { id: "discounts" as const, label: "Discount codes", icon: Tag },
+  { id: "uploads" as const, label: "Uploads", icon: Upload },
+  { id: "gallery" as const, label: "Gallery", icon: ImageIcon },
+  { id: "quiz" as const, label: "Quiz results", icon: BarChart3 },
+  { id: "affiliates" as const, label: "Affiliates", icon: Users },
+] satisfies {
+  id: AdminTab;
+  label: string;
+  icon: typeof Package;
+}[];
+
 const MAX_ADMIN_NOTES_LENGTH = 4000;
 
 const STATUS_STYLES: Record<string, string> = {
@@ -267,6 +281,7 @@ export default function OrdersAdminClient() {
   const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null);
   const [tab, setTab] = useState<AdminTab>("orders");
   const [ordersOpen, setOrdersOpen] = useState(true);
+  const [sectionsOpen, setSectionsOpen] = useState(false);
   const [uploadsRefresh, setUploadsRefresh] = useState(0);
   const [galleryRefresh, setGalleryRefresh] = useState(0);
   const [quizRefresh, setQuizRefresh] = useState(0);
@@ -393,14 +408,12 @@ export default function OrdersAdminClient() {
     setExpandedId(null);
     setTab("orders");
     setOrdersOpen(false);
+    setSectionsOpen(false);
   }
 
   function selectTab(next: AdminTab) {
+    setSectionsOpen(false);
     if (next === "orders") {
-      if (tab === "orders") {
-        setOrdersOpen((open) => !open);
-        return;
-      }
       setTab("orders");
       setOrdersOpen(true);
       return;
@@ -538,6 +551,15 @@ export default function OrdersAdminClient() {
     () => orders.filter((o) => Boolean(o.discountCode?.trim())).length,
     [orders]
   );
+  const currentSection =
+    ADMIN_SECTIONS.find((section) => section.id === tab) ?? ADMIN_SECTIONS[0];
+  const CurrentSectionIcon = currentSection.icon;
+  const currentSectionBadge =
+    tab === "orders" && orders.length > 0
+      ? openOrdersCount
+      : tab === "discounts" && discountOrdersCount > 0
+        ? discountOrdersCount
+        : undefined;
 
   const filteredOrders = useMemo(
     () =>
@@ -728,79 +750,69 @@ export default function OrdersAdminClient() {
           </div>
         </div>
         <nav
-          className="min-w-0 border-t border-black/5 bg-neutral-50"
+          className="min-w-0 border-t border-black/5 bg-neutral-50 print:hidden"
           aria-label="Admin sections"
         >
-          <div className="container grid min-w-0 grid-cols-2 gap-2 py-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7">
-            {(
-              [
-                {
-                  id: "orders" as const,
-                  label: "Orders",
-                  icon: Package,
-                  badge: orders.length > 0 ? openOrdersCount : undefined,
-                },
-                { id: "stats" as const, label: "Stats", icon: TrendingUp },
-                {
-                  id: "discounts" as const,
-                  label: "Discount codes",
-                  icon: Tag,
-                  badge:
-                    discountOrdersCount > 0 ? discountOrdersCount : undefined,
-                },
-                { id: "uploads" as const, label: "Uploads", icon: Upload },
-                { id: "gallery" as const, label: "Gallery", icon: ImageIcon },
-                { id: "quiz" as const, label: "Quiz results", icon: BarChart3 },
-                {
-                  id: "affiliates" as const,
-                  label: "Affiliates",
-                  icon: Users,
-                },
-              ] satisfies {
-                id: AdminTab;
-                label: string;
-                icon: typeof Package;
-                badge?: number;
-              }[]
-            ).map(({ id, label, icon: Icon, badge }) => {
-              const active = tab === id;
-              const ordersExpanded = id === "orders" && ordersOpen;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => selectTab(id)}
-                  aria-pressed={id === "orders" ? ordersOpen : active}
-                  aria-expanded={id === "orders" ? ordersOpen : undefined}
-                  className={`inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                    active
-                      ? "bg-black text-white"
-                      : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
-                  }`}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{label}</span>
-                  {badge != null ? (
-                    <span
-                      className={`shrink-0 rounded-md px-1.5 py-0.5 text-xs font-medium ${
+          <div className="container py-2 space-y-2">
+            <button
+              type="button"
+              onClick={() => setSectionsOpen((open) => !open)}
+              aria-expanded={sectionsOpen}
+              className="inline-flex max-w-full items-center gap-2 rounded-xl bg-black px-3 py-2 text-sm font-semibold text-white"
+            >
+              <CurrentSectionIcon className="h-4 w-4 shrink-0" />
+              <span className="truncate">{currentSection.label}</span>
+              {currentSectionBadge != null ? (
+                <span className="shrink-0 rounded-md bg-white/20 px-1.5 py-0.5 text-xs font-medium">
+                  {currentSectionBadge}
+                </span>
+              ) : null}
+              {sectionsOpen ? (
+                <ChevronUp className="h-3.5 w-3.5 shrink-0 opacity-80" />
+              ) : (
+                <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-80" />
+              )}
+            </button>
+            {sectionsOpen ? (
+              <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7">
+                {ADMIN_SECTIONS.map(({ id, label, icon: Icon }) => {
+                  const active = tab === id;
+                  const badge =
+                    id === "orders" && orders.length > 0
+                      ? openOrdersCount
+                      : id === "discounts" && discountOrdersCount > 0
+                        ? discountOrdersCount
+                        : undefined;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => selectTab(id)}
+                      aria-pressed={active}
+                      className={`inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                         active
-                          ? "bg-white/20 text-white"
-                          : "bg-neutral-100 text-neutral-600"
+                          ? "bg-black text-white"
+                          : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
                       }`}
                     >
-                      {badge}
-                    </span>
-                  ) : null}
-                  {id === "orders" ? (
-                    ordersExpanded ? (
-                      <ChevronUp className="h-3.5 w-3.5 shrink-0 opacity-80" />
-                    ) : (
-                      <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-80" />
-                    )
-                  ) : null}
-                </button>
-              );
-            })}
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span className="truncate">{label}</span>
+                      {badge != null ? (
+                        <span
+                          className={`shrink-0 rounded-md px-1.5 py-0.5 text-xs font-medium ${
+                            active
+                              ? "bg-white/20 text-white"
+                              : "bg-neutral-100 text-neutral-600"
+                          }`}
+                        >
+                          {badge}
+                        </span>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
           </div>
         </nav>
       </header>
