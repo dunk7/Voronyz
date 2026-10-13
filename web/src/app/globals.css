@@ -174,26 +174,26 @@ video {
 
 .hero-voronoi-lattice-glow {
   position: absolute;
-  inset: -30%;
+  inset: -40%;
   background: radial-gradient(
-    ellipse 42% 48% at 50% 46%,
-    rgb(255 255 255 / 0.28),
-    rgb(255 255 255 / 0.08) 42%,
-    transparent 70%
+    ellipse 48% 52% at 50% 46%,
+    rgb(255 255 255 / 0.55),
+    rgb(255 255 255 / 0.16) 36%,
+    transparent 68%
   );
   mix-blend-mode: screen;
-  animation: hero-lattice-light 9s ease-in-out infinite;
+  animation: hero-lattice-light 7s ease-in-out infinite;
 }
 
 @keyframes hero-lattice-light {
   0%,
   100% {
-    transform: translate(-6%, -4%);
-    opacity: 0.55;
+    transform: translate(-16%, -12%);
+    opacity: 0.4;
   }
   50% {
-    transform: translate(7%, 5%);
-    opacity: 0.95;
+    transform: translate(18%, 14%);
+    opacity: 1;
   }
 }
 
