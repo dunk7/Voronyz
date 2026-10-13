@@ -49,6 +49,7 @@ test("hex honeycomb is reserved for hard seams and stays static", () => {
   const hexMesh = css.match(/\.bg-texture-hex::before \{[\s\S]*?\n\}/);
   assert.ok(hexMesh, "expected a hex overlay for accent seams");
   assert.match(hexMesh[0], /stroke='%23000000'/);
+  assert.match(hexMesh[0], /stroke-opacity='0\.14'/);
   assert.doesNotMatch(hexMesh[0], /animation/);
   assert.doesNotMatch(hexMesh[0], /--hex-shift/);
   assert.match(css, /\.shop-hex-rail \{/);
