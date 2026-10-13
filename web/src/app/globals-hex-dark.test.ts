@@ -37,10 +37,7 @@ test("hero animation lattice uses the rounded Voronoi foam and a CSS glow", () =
   assert.ok(cells, "expected the hero-bg Voronoi foam behind the shoe animation");
   assert.match(cells[0], /hero-bg\.jpg/);
 
-  const light = css.match(/\.hero-voronoi-lattice-light \{[\s\S]*?\n\}/);
-  assert.ok(light, "expected the lattice image to mask the moving light");
-  assert.match(light[0], /hero-bg\.jpg/);
-
+  assert.match(css, /hero-lattice-breathe/);
   const glow = css.match(/\.hero-voronoi-lattice-glow \{[\s\S]*?\n\}/);
   assert.ok(glow, "expected a light-up layer on the lattice");
   assert.match(glow[0], /hero-lattice-light/);

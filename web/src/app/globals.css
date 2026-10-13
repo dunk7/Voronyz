@@ -168,49 +168,46 @@ video {
   position: absolute;
   inset: -8%;
   background: url("/hero-bg.jpg") center bottom / cover no-repeat;
-  opacity: 0.42;
-  filter: brightness(0.95);
+  animation: hero-lattice-breathe 5.5s ease-in-out infinite;
 }
 
-/* Keep the foam mask still; only the orb moves so struts light up. */
 .hero-voronoi-lattice-light {
   position: absolute;
-  inset: -8%;
+  inset: 0;
   pointer-events: none;
-  -webkit-mask-image: url("/hero-bg.jpg");
-  mask-image: url("/hero-bg.jpg");
-  -webkit-mask-size: cover;
-  mask-size: cover;
-  -webkit-mask-position: center bottom;
-  mask-position: center bottom;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
 }
 
 .hero-voronoi-lattice-glow {
   position: absolute;
-  width: 75%;
-  height: 75%;
-  left: 12%;
-  top: 12%;
+  inset: -10%;
   background: radial-gradient(
-    circle,
-    rgb(255 255 255 / 0.95) 0%,
-    rgb(255 255 255 / 0.35) 38%,
-    transparent 68%
+    ellipse 58% 62% at 55% 48%,
+    rgb(255 255 255 / 0.2),
+    rgb(255 255 255 / 0.06) 45%,
+    transparent 72%
   );
   mix-blend-mode: screen;
-  animation: hero-lattice-light 7s ease-in-out infinite;
+  animation: hero-lattice-light 5.5s ease-in-out infinite;
+}
+
+@keyframes hero-lattice-breathe {
+  0%,
+  100% {
+    opacity: 0.32;
+    filter: brightness(0.88);
+  }
+  50% {
+    opacity: 0.62;
+    filter: brightness(1.18);
+  }
 }
 
 @keyframes hero-lattice-light {
   0%,
   100% {
-    transform: translate(-22%, -16%);
-    opacity: 0.55;
+    opacity: 0.35;
   }
   50% {
-    transform: translate(24%, 18%);
     opacity: 1;
   }
 }
@@ -365,10 +362,12 @@ html.site-dark .bg-texture-white .bg-texture-white::before {
     will-change: auto;
   }
 
+  .hero-voronoi-lattice-cells,
   .hero-voronoi-lattice-glow {
     animation: none;
     transform: none;
-    opacity: 0.75;
+    filter: none;
+    opacity: 0.5;
   }
 
   .motion-media-track {
