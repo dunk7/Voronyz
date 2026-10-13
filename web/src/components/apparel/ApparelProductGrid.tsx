@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { type ApparelSubcategoryId } from "@/lib/apparel";
+import {
+  apparelCoverObjectPositionClass,
+  type ApparelSubcategoryId,
+} from "@/lib/apparel";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 
@@ -55,7 +58,7 @@ export default function ApparelProductGrid({
                 src={product.cover}
                 alt={product.name}
                 fill
-                className={`object-cover transition duration-500 ${
+                className={`object-cover ${apparelCoverObjectPositionClass(product.cover)} transition duration-500 ${
                   isNavigating ? "scale-105 brightness-90" : "group-hover:scale-105"
                 }`}
                 sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"

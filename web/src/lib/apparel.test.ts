@@ -5,6 +5,7 @@ import {
   apparelProductShopLabel,
   apparelUnavailableSizes,
   apparelVariantStock,
+  apparelCoverObjectPositionClass,
   getApparelImages,
   getApparelItem,
   isApparelColorOutOfStock,
@@ -31,15 +32,30 @@ test("tee listing back link returns to Apparel", () => {
   assert.equal(apparelProductShopLabel("voronyz-oversized-tee"), "Back to Apparel");
 });
 
-test("oversized tee keeps the original shirt photo first and adds two more gallery shots", () => {
+test("oversized tee leads with the chest-logo front shot, then back and lifestyle photos", () => {
   const tee = getApparelItem("voronyz-oversized-tee");
   assert.ok(tee);
-  assert.equal(tee.image, "/products/apparel/shirt.jpg");
+  assert.equal(tee.image, "/products/apparel/shirt-front.jpg");
   assert.deepEqual(getApparelImages(tee), [
-    "/products/apparel/shirt.jpg",
+    "/products/apparel/shirt-front.jpg",
     "/products/apparel/shirt-back.jpg",
     "/products/apparel/shirt-lifestyle.jpg",
   ]);
+});
+
+test("on-model tee back photo keeps a square crop but pins to the top so the head is visible", () => {
+  assert.equal(
+    apparelCoverObjectPositionClass("/products/apparel/shirt-back.jpg"),
+    "object-top",
+  );
+  assert.equal(
+    apparelCoverObjectPositionClass("/products/apparel/shirt-front.jpg"),
+    "object-center",
+  );
+  assert.equal(
+    apparelCoverObjectPositionClass("/products/apparel/shirt-lifestyle.jpg"),
+    "object-center",
+  );
 });
 
 test("accessory listings still return to Accessories", () => {
