@@ -40,7 +40,7 @@ export default function Footer() {
           <Link className="hover:text-black" href="/privacy">Privacy</Link>
         </div>
       </div>
-      <div className="border-t border-black/5 py-4 text-center text-xs text-neutral-500 bg-texture-white">© {new Date().getFullYear()} Voronyz. All rights reserved.</div>
+      <div className="border-t border-black/5 py-4 text-center text-xs text-neutral-500 bg-texture-hex">© {new Date().getFullYear()} Voronyz. All rights reserved.</div>
     </footer>
   );
 }
