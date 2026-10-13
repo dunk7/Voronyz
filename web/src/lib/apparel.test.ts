@@ -32,7 +32,7 @@ test("tee listing back link returns to Apparel", () => {
   assert.equal(apparelProductShopLabel("voronyz-oversized-tee"), "Back to Apparel");
 });
 
-test("oversized tee leads with the chest-logo front shot, then back and lifestyle photos", () => {
+test("oversized tee leads with the chest-logo front shot, then blank back and lifestyle photos", () => {
   const tee = getApparelItem("voronyz-oversized-tee");
   assert.ok(tee);
   assert.equal(tee.image, "/products/apparel/shirt-front.jpg");
@@ -43,10 +43,10 @@ test("oversized tee leads with the chest-logo front shot, then back and lifestyl
   ]);
 });
 
-test("on-model tee back photo keeps a square crop but pins to the top so the head is visible", () => {
+test("flat-lay tee photos keep a centered square crop", () => {
   assert.equal(
     apparelCoverObjectPositionClass("/products/apparel/shirt-back.jpg"),
-    "object-top",
+    "object-center",
   );
   assert.equal(
     apparelCoverObjectPositionClass("/products/apparel/shirt-front.jpg"),
