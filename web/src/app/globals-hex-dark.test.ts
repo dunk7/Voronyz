@@ -43,10 +43,16 @@ test("hero animation lattice uses the rounded Voronoi foam and a CSS glow", () =
   assert.ok(glow, "expected a light-up layer on the lattice");
   assert.match(glow[0], /hero-lattice-light/);
   assert.doesNotMatch(css, /pointermove|mousemove/);
+});
 
+test("hero Voronoi lattice extends past the shoe and fades on the edges", () => {
   const lattice = css.match(/\.hero-voronoi-lattice \{[\s\S]*?\n\}/);
-  assert.ok(lattice, "expected a lattice wrapper mask");
-  assert.match(lattice[0], /linear-gradient\(to bottom/);
-  assert.doesNotMatch(lattice[0], /radial-gradient/);
-  assert.doesNotMatch(glow[0], /radial-gradient/);
+  assert.ok(lattice, "expected a hero Voronoi lattice layer");
+  assert.match(lattice[0], /top:\s*-/);
+  assert.match(lattice[0], /bottom:\s*-/);
+  assert.match(lattice[0], /left:\s*-/);
+  assert.match(lattice[0], /right:\s*-/);
+  assert.match(lattice[0], /radial-gradient/);
+  assert.match(lattice[0], /linear-gradient\(to right/);
+  assert.match(lattice[0], /mask-composite:\s*intersect/);
 });

@@ -154,12 +154,37 @@ video {
 */
 .hero-voronoi-lattice {
   position: absolute;
-  inset: 0;
+  /* Bleed past the shoe: a bit more above, a little below, then fade. */
+  top: -18%;
+  right: -10%;
+  bottom: -14%;
+  left: -10%;
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 48%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 48%, transparent 100%);
+  -webkit-mask-image:
+    radial-gradient(ellipse 62% 58% at 56% 46%, #000 12%, transparent 70%),
+    linear-gradient(to right, transparent, #000 22%, #000 78%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    radial-gradient(ellipse 62% 58% at 56% 46%, #000 12%, transparent 70%),
+    linear-gradient(to right, transparent, #000 22%, #000 78%, transparent);
+  mask-composite: intersect;
+}
+
+@media (min-width: 1024px) {
+  .hero-voronoi-lattice {
+    top: -28%;
+    right: -18%;
+    bottom: -16%;
+    left: -18%;
+    -webkit-mask-image:
+      radial-gradient(ellipse 64% 60% at 56% 46%, #000 14%, transparent 72%),
+      linear-gradient(to right, transparent, #000 16%, #000 84%, transparent);
+    mask-image:
+      radial-gradient(ellipse 64% 60% at 56% 46%, #000 14%, transparent 72%),
+      linear-gradient(to right, transparent, #000 16%, #000 84%, transparent);
+  }
 }
 
 .hero-voronoi-lattice-cells {
@@ -177,12 +202,12 @@ video {
 
 .hero-voronoi-lattice-glow {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgb(255 255 255 / 0.16),
-    rgb(255 255 255 / 0.05) 42%,
-    transparent 78%
+  inset: -10%;
+  background: radial-gradient(
+    ellipse 62% 68% at 55% 46%,
+    rgb(255 255 255 / 0.18),
+    rgb(255 255 255 / 0.05) 48%,
+    transparent 76%
   );
   mix-blend-mode: screen;
   animation: hero-lattice-light 5.5s ease-in-out infinite;
