@@ -25,11 +25,12 @@ test("homepage hero stage stays black and does not reuse the shop hex tile", () 
   assert.match(hero[0], /background-color:\s*#000/);
 });
 
-test("shop hex tiles follow the same --hex-shift motion variables", () => {
+test("shop hex tiles stay static and are not pointer-driven", () => {
   const shopMesh = css.match(/\.bg-texture-white::before \{[\s\S]*?\n\}/);
   assert.ok(shopMesh, "expected a hex overlay on shop panels");
-  assert.match(shopMesh[0], /--hex-shift-x/);
-  assert.match(shopMesh[0], /--hex-shift-y/);
+  assert.doesNotMatch(shopMesh[0], /--hex-shift/);
+  assert.doesNotMatch(shopMesh[0], /translate3d/);
+  assert.doesNotMatch(css, /HexTextureMotion/);
 });
 
 test("hero animation lattice uses the rounded Voronoi foam and a CSS glow", () => {
@@ -42,4 +43,10 @@ test("hero animation lattice uses the rounded Voronoi foam and a CSS glow", () =
   assert.ok(glow, "expected a light-up layer on the lattice");
   assert.match(glow[0], /hero-lattice-light/);
   assert.doesNotMatch(css, /pointermove|mousemove/);
+
+  const lattice = css.match(/\.hero-voronoi-lattice \{[\s\S]*?\n\}/);
+  assert.ok(lattice, "expected a lattice wrapper mask");
+  assert.match(lattice[0], /linear-gradient\(to bottom/);
+  assert.doesNotMatch(lattice[0], /radial-gradient/);
+  assert.doesNotMatch(glow[0], /radial-gradient/);
 });
