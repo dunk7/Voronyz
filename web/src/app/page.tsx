@@ -42,9 +42,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* One hex layer from the slip-ons video through All Footwear. */}
+      {/*
+        Sequence: flashing GIF Voronoi → black fade (hero-stage) → hard hex
+        rail (does not fade) → static Voronoi for the shop. Never stacked.
+      */}
+      <div className="shop-hex-rail bg-texture-hex" aria-hidden />
+
       <div className="bg-texture-white">
-        <section className="border-t border-neutral-200">
+        <section>
           <div className="container py-16">
             <MotionMediaCarousel href="/products" linkLabel="Shop all footwear" />
           </div>

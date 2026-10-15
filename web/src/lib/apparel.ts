@@ -104,9 +104,7 @@ export function getApparelImages(item: ApparelCatalogItem): string[] {
  * Portrait on-model shots that a centered square crop would clip at the head.
  * Keep the same square frame and pin the photo to the top so the model stays in view.
  */
-const APPAREL_COVER_OBJECT_TOP = new Set([
-  "/products/apparel/shirt-back.jpg",
-]);
+const APPAREL_COVER_OBJECT_TOP = new Set<string>([]);
 
 /** Tailwind object-position class for apparel photos shown with object-cover. */
 export function apparelCoverObjectPositionClass(src: string): string {
@@ -155,8 +153,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     image: "/products/apparel/shirt-front.jpg",
     images: [
       "/products/apparel/shirt-front.jpg",
-      "/products/apparel/shirt-back.jpg",
-      "/products/apparel/shirt-lifestyle.jpg",
+      "/products/apparel/shirt-back-blank.jpg",
     ],
     skuPrefix: "APP-TEE",
     comingSoon: false,
