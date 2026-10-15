@@ -142,7 +142,8 @@ video {
   Homepage hero: charcoal in the middle, black on the left and right.
   Desktop only — on stacked mobile the left-to-right fade makes the
   headline look uneven.
-  The Voronoi lattice lives only on the shoe animation, not this stage.
+  The flashing Voronoi lattice lives only on the shoe animation; it
+  fades into this black field. Shop panels use a static copy instead.
 */
 .hero-stage {
   background-color: #000;
@@ -225,31 +226,24 @@ video {
   }
 }
 
+/*
+  Shop field: the same rounded Voronoi foam as the hero, held still.
+  Pulse/glow stay on .hero-voronoi-lattice only.
+*/
 .bg-texture-white {
   background-color: #ffffff !important;
   position: relative;
   overflow: clip;
+  isolation: isolate;
 }
 
-/* Original 50×43 overlapping hex tile. Static — not pointer-driven. */
 .bg-texture-white::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  /*
-    Odd-row hexes extend 8 units past the tile. CSS clips that overflow,
-    so draw the missing bottom tips as open paths at the top of the tile
-    (fully inside the viewBox). 2× SVG pixels so those tips still rasterize
-    at the 50×43 display size.
-  */
-  background-image:
-    url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='0.08' stroke-width='0.8' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: 50px 43px;
-  background-position: 0 0;
-  background-repeat: repeat;
+  inset: 0;
+  background: url("/hero-bg.jpg") 0 0 / 560px auto repeat;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
   pointer-events: none;
   z-index: 0;
 }
@@ -260,10 +254,10 @@ video {
 }
 
 /*
-  Nested texture wrappers must not paint a second hex layer.
+  Nested texture wrappers must not paint a second Voronoi layer.
   Each ::before origins at its own top, so a nested or stacked
   restart reads as a layer shift (homepage video → All Footwear).
-  Stay transparent so the parent honeycomb shows through.
+  Stay transparent so the parent lattice shows through.
 */
 .bg-texture-white .bg-texture-white,
 html.site-dark .bg-texture-white .bg-texture-white {
@@ -274,6 +268,52 @@ html.site-dark .bg-texture-white .bg-texture-white {
 .bg-texture-white .bg-texture-white::before,
 html.site-dark .bg-texture-white .bg-texture-white::before {
   content: none;
+}
+
+/*
+  Hex honeycomb is an accent only — hard seams, footer strip.
+  It does not fade; the hero Voronoi fades to black first.
+  Static 50×43 overlapping tile. Not pointer-driven.
+*/
+.bg-texture-hex {
+  background-color: #ffffff;
+  position: relative;
+  overflow: clip;
+}
+
+.bg-texture-hex::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /*
+    Odd-row hexes extend 8 units past the tile. CSS clips that overflow,
+    so draw the missing bottom tips as open paths at the top of the tile
+    (fully inside the viewBox). 2× SVG pixels so those tips still rasterize
+    at the 50×43 display size.
+  */
+  background-image:
+    url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='0.14' stroke-width='0.8' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 50px 43px;
+  background-position: 0 0;
+  background-repeat: repeat;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-texture-hex > * {
+  position: relative;
+  z-index: 1;
+}
+
+.shop-hex-rail {
+  height: 3.25rem;
+  background-color: #f4f4f4;
+  border-block: 1px solid rgb(0 0 0 / 0.08);
+}
+
+.shop-hex-rail.bg-texture-hex::before {
+  background-image:
+    url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='0.22' stroke-width='0.9' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 /* Messenger: allow copying bubble text (site default is select-none) */
@@ -471,20 +511,34 @@ html.site-dark footer .disabled\:hover\:bg-white:hover:disabled {
 }
 
 /*
-  Hex panels follow regular dark mode: mostly black.
-  Only the tiny hex traces stay light so the honeycomb is still visible.
+  Shop Voronoi follows regular dark mode: mostly black field, foam
+  held at a whisper so copy still leads. Hex rails invert traces.
 */
 html.site-dark .bg-texture-white {
   background-color: #0a0a0a !important;
 }
 
 html.site-dark .bg-texture-white::before {
-  background-image:
-    url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.34' stroke-width='0.9' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.22;
+  mix-blend-mode: soft-light;
 }
 
 html.site-dark .bg-texture-white .bg-texture-white {
   background-color: transparent !important;
+}
+
+html.site-dark .bg-texture-hex {
+  background-color: #0a0a0a;
+}
+
+html.site-dark .bg-texture-hex::before {
+  background-image:
+    url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.34' stroke-width='0.9' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+html.site-dark .shop-hex-rail {
+  background-color: #111111;
+  border-color: rgb(255 255 255 / 0.1);
 }
 
 html.site-dark main .bg-white\/95,
