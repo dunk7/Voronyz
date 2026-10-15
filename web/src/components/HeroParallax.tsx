@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import HeroVoronoiLattice from "@/components/HeroVoronoiLattice";
 
 type FrameSource = HTMLCanvasElement | HTMLImageElement;
 
@@ -220,7 +219,6 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
       ref={ref}
       className="relative overflow-visible bg-transparent min-h-[300px] md:min-h-[60vh] lg:min-h-[80vh] xl:min-h-[100vh] 2xl:min-h-[100vh]"
     >
-      <HeroVoronoiLattice />
       <canvas
         ref={canvasRef}
         className="pointer-events-none absolute inset-0 z-[1] h-full w-full bg-transparent"

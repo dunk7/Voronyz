@@ -57,6 +57,7 @@ test("hex honeycomb is reserved for hard seams and stays static", () => {
 });
 
 test("homepage sequences flashing Voronoi, a hard hex rail, then static Voronoi", () => {
+  assert.match(home, /<HeroVoronoiLattice/);
   assert.match(home, /shop-hex-rail bg-texture-hex/);
   assert.match(home, /className="bg-texture-white"/);
   assert.match(footer, /bg-texture-hex/);
@@ -64,10 +65,16 @@ test("homepage sequences flashing Voronoi, a hard hex rail, then static Voronoi"
 });
 
 test("hero animation lattice uses the rounded Voronoi foam and a CSS glow", () => {
+  const wrap = css.match(/\.hero-voronoi-lattice \{[\s\S]*?\n\}/);
+  assert.ok(wrap, "expected the Voronoi lattice on the hero stage");
+  assert.match(wrap[0], /linear-gradient\(to bottom/);
+  assert.doesNotMatch(wrap[0], /radial-gradient\(ellipse/);
+
   const cells = css.match(/\.hero-voronoi-lattice-cells \{[\s\S]*?\n\}/);
-  assert.ok(cells, "expected the hero-bg Voronoi foam behind the shoe animation");
+  assert.ok(cells, "expected the hero-bg Voronoi foam filling the hero stage");
   assert.match(cells[0], /hero-bg\.jpg/);
   assert.match(cells[0], /hero-lattice-breathe/);
+  assert.match(cells[0], /center top/);
 
   assert.match(css, /hero-lattice-breathe/);
   const glow = css.match(/\.hero-voronoi-lattice-glow \{[\s\S]*?\n\}/);
@@ -76,14 +83,10 @@ test("hero animation lattice uses the rounded Voronoi foam and a CSS glow", () =
   assert.doesNotMatch(css, /pointermove|mousemove/);
 });
 
-test("hero Voronoi lattice extends past the shoe and fades on the edges", () => {
+test("hero Voronoi lattice fills the stage up to the header", () => {
   const lattice = css.match(/\.hero-voronoi-lattice \{[\s\S]*?\n\}/);
   assert.ok(lattice, "expected a hero Voronoi lattice layer");
-  assert.match(lattice[0], /top:\s*-/);
-  assert.match(lattice[0], /bottom:\s*-/);
-  assert.match(lattice[0], /left:\s*-/);
-  assert.match(lattice[0], /right:\s*-/);
-  assert.match(lattice[0], /radial-gradient/);
-  assert.match(lattice[0], /linear-gradient\(to right/);
-  assert.match(lattice[0], /mask-composite:\s*intersect/);
+  assert.match(lattice[0], /inset:\s*0/);
+  assert.match(lattice[0], /linear-gradient\(to bottom/);
+  assert.doesNotMatch(lattice[0], /radial-gradient/);
 });

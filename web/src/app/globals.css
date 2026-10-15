@@ -142,8 +142,8 @@ video {
   Homepage hero: charcoal in the middle, black on the left and right.
   Desktop only — on stacked mobile the left-to-right fade makes the
   headline look uneven.
-  The flashing Voronoi lattice lives only on the shoe animation; it
-  fades into this black field. Shop panels use a static copy instead.
+  The flashing Voronoi lattice fills this stage from the Voronyz header
+  down, then fades into the hex rail. Shop panels use a static copy.
 */
 .hero-stage {
   background-color: #000;
@@ -151,47 +151,23 @@ video {
 
 /*
   Real Voronyz lattice: rounded foam cells from /hero-bg.jpg.
+  Full hero-stage (not the GIF box). Fade at the bottom into the hex rail.
   Glow is a slow CSS drift so it lights up without a mouse (phones included).
 */
 .hero-voronoi-lattice {
   position: absolute;
-  /* Bleed past the shoe: a bit more above, a little below, then fade. */
-  top: -18%;
-  right: -10%;
-  bottom: -14%;
-  left: -10%;
+  inset: 0;
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  -webkit-mask-image:
-    radial-gradient(ellipse 62% 58% at 56% 46%, #000 12%, transparent 70%),
-    linear-gradient(to right, transparent, #000 22%, #000 78%, transparent);
-  -webkit-mask-composite: source-in;
-  mask-image:
-    radial-gradient(ellipse 62% 58% at 56% 46%, #000 12%, transparent 70%),
-    linear-gradient(to right, transparent, #000 22%, #000 78%, transparent);
-  mask-composite: intersect;
-}
-
-@media (min-width: 1024px) {
-  .hero-voronoi-lattice {
-    top: -28%;
-    right: -18%;
-    bottom: -16%;
-    left: -18%;
-    -webkit-mask-image:
-      radial-gradient(ellipse 64% 60% at 56% 46%, #000 14%, transparent 72%),
-      linear-gradient(to right, transparent, #000 16%, #000 84%, transparent);
-    mask-image:
-      radial-gradient(ellipse 64% 60% at 56% 46%, #000 14%, transparent 72%),
-      linear-gradient(to right, transparent, #000 16%, #000 84%, transparent);
-  }
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
 }
 
 .hero-voronoi-lattice-cells {
   position: absolute;
   inset: 0;
-  background: url("/hero-bg.jpg") center center / cover no-repeat;
+  background: url("/hero-bg.jpg") center top / cover no-repeat;
   animation: hero-lattice-breathe 5.5s ease-in-out infinite;
 }
 
