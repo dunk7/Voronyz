@@ -45,12 +45,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/*
-        Sequence: flashing Voronoi on the hero stage (header → hex rail) →
-        hard hex rail (does not fade) → static Voronoi for the shop. Never stacked.
-      */}
-      <div className="shop-hex-rail bg-texture-hex" aria-hidden />
-
+      {/* One hex layer from the slip-ons video through All Footwear. */}
       <div className="bg-texture-white">
         <section>
           <div className="container py-16">
