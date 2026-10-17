@@ -1,4 +1,4 @@
-/** Rounded Voronoi foam from /hero-bg.jpg, filling the hero up to the header. */
+/** Hole-scale colorful Voronoi foam from /hero-bg.jpg, filling the hero up to the header. */
 export default function HeroVoronoiLattice() {
   return (
     <div className="hero-voronoi-lattice" aria-hidden>

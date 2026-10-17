@@ -38,7 +38,9 @@ import {
   type OrderLineItem,
 } from "@/lib/orderTypes";
 import {
+  canMarkOrderComplete,
   filterAndSortAdminOrders,
+  isExpiredOrder,
   isUncompletedOrder,
   lineItemSummary,
   type OrdersSortDir,
@@ -547,6 +549,14 @@ export default function OrdersAdminClient() {
     () => orders.filter((o) => o.status === "completed").length,
     [orders]
   );
+  const expiredOrdersCount = useMemo(
+    () => orders.filter(isExpiredOrder).length,
+    [orders]
+  );
+  const activeOrdersCount = useMemo(
+    () => orders.filter((o) => !isExpiredOrder(o)).length,
+    [orders]
+  );
   const discountOrdersCount = useMemo(
     () => orders.filter((o) => Boolean(o.discountCode?.trim())).length,
     [orders]
@@ -579,7 +589,9 @@ export default function OrdersAdminClient() {
         ? orders.filter(isUncompletedOrder)
         : ordersView === "completed"
           ? orders.filter((o) => o.status === "completed")
-          : orders;
+          : ordersView === "expired"
+            ? orders.filter(isExpiredOrder)
+            : orders.filter((o) => !isExpiredOrder(o));
     const set = new Set(scoped.map((o) => o.status));
     return ["all", ...Array.from(set).sort()];
   }, [orders, ordersView]);
@@ -649,8 +661,8 @@ export default function OrdersAdminClient() {
             <p className="text-sm text-neutral-500">
               {tab === "orders"
                 ? ordersOpen
-                  ? `${filteredOrders.length} shown · ${openOrdersCount} uncompleted · ${completedOrdersCount} completed`
-                  : `${openOrdersCount} uncompleted · ${completedOrdersCount} completed — click to expand`
+                  ? `${filteredOrders.length} shown · ${openOrdersCount} uncompleted · ${completedOrdersCount} completed · ${expiredOrdersCount} expired`
+                  : `${openOrdersCount} uncompleted · ${completedOrdersCount} completed · ${expiredOrdersCount} expired — click to expand`
                 : tab === "stats"
                   ? "Revenue and order performance"
                   : tab === "discounts"
@@ -886,10 +898,10 @@ export default function OrdersAdminClient() {
                 Orders
               </div>
               <h2 className="mt-1 text-base font-semibold text-neutral-900">
-                Uncompleted and completed orders
+                Uncompleted, completed, and expired orders
               </h2>
               <p className="mt-1 text-sm text-neutral-500 max-w-2xl">
-                {openOrdersCount} uncompleted · {completedOrdersCount} completed.{" "}
+                {openOrdersCount} uncompleted · {completedOrdersCount} completed · {expiredOrdersCount} expired.{" "}
                 {ordersOpen
                   ? "Rows stay collapsed so you can scan the full list; click one to expand details."
                   : "Click to open the compact order list."}
@@ -930,7 +942,12 @@ export default function OrdersAdminClient() {
                   label: "Completed",
                   count: completedOrdersCount,
                 },
-                { id: "all" as const, label: "All", count: orders.length },
+                {
+                  id: "expired" as const,
+                  label: "Expired",
+                  count: expiredOrdersCount,
+                },
+                { id: "all" as const, label: "All", count: activeOrdersCount },
               ] as const
             ).map((view) => (
               <button
@@ -975,7 +992,7 @@ export default function OrdersAdminClient() {
               className="w-full rounded-xl border border-black/10 bg-white pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
             />
           </div>
-          {ordersView !== "completed" ? (
+          {ordersView !== "completed" && ordersView !== "expired" ? (
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -1020,7 +1037,9 @@ export default function OrdersAdminClient() {
             <p className="text-xs text-neutral-500">
               {ordersView === "open"
                 ? "Uncompleted · oldest first"
-                : "Newest first"}
+                : ordersView === "expired"
+                  ? "Expired unpaid · newest first"
+                  : "Newest first"}
             </p>
           )}
         </div>
@@ -1047,7 +1066,9 @@ export default function OrdersAdminClient() {
               ? "No uncompleted orders."
               : ordersView === "completed"
                 ? "No completed orders yet."
-                : "No orders match your filters."}
+                : ordersView === "expired"
+                  ? "No expired unpaid checkouts."
+                  : "No orders match your filters."}
           </div>
         ) : (
           <div className="space-y-1.5">
@@ -1126,11 +1147,10 @@ export default function OrdersAdminClient() {
 
                   {expanded && (
                     <div className="border-t border-black/5 px-5 py-5 space-y-5">
-                      {(order.status === "paid" ||
-                        order.status === "preorder" ||
+                      {(canMarkOrderComplete(order) ||
                         order.status === "completed") && (
                         <div className="flex flex-wrap items-center gap-2 print:hidden">
-                          {order.status === "paid" || order.status === "preorder" ? (
+                          {canMarkOrderComplete(order) ? (
                             <button
                               type="button"
                               onClick={() => updateOrderStatus(order.id, "completed")}

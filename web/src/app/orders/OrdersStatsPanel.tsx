@@ -207,7 +207,9 @@ export default function OrdersStatsPanel({
       paymentBreakdown.set(method, (paymentBreakdown.get(method) ?? 0) + 1);
     }
 
-    const openCount = orders.filter((o) => o.status !== "completed").length;
+    const openCount = orders.filter(
+      (o) => o.status !== "completed" && o.status !== "expired"
+    ).length;
     const completedCount = orders.filter((o) => o.status === "completed").length;
     const preorderCount = orders.filter((o) => o.status === "preorder").length;
     const buckets = buildMonthBuckets(revenueOrders, 12);
