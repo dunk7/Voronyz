@@ -1,11 +1,27 @@
 import type { AdminOrder, OrderLineItem } from "./orderTypes";
 
-export type OrdersView = "open" | "completed" | "all";
+export type OrdersView = "open" | "completed" | "expired" | "all";
 export type OrdersSortKey = "date" | "price" | "name" | "status";
 export type OrdersSortDir = "asc" | "desc";
 
+/** Abandoned unpaid Nano checkouts — never received money. */
+export function isExpiredOrder(order: Pick<AdminOrder, "status">) {
+  return order.status === "expired";
+}
+
+/** Paid or pre-order work that still needs fulfillment. */
 export function isUncompletedOrder(order: Pick<AdminOrder, "status">) {
-  return order.status !== "completed";
+  return order.status !== "completed" && !isExpiredOrder(order);
+}
+
+export const ALLOWED_ORDER_STATUS_FROM: Record<string, string[]> = {
+  completed: ["paid", "preorder", "expired"],
+  paid: ["completed"],
+  preorder: ["completed"],
+};
+
+export function canMarkOrderComplete(order: Pick<AdminOrder, "status">) {
+  return ALLOWED_ORDER_STATUS_FROM.completed.includes(order.status);
 }
 
 export function lineItemSummary(items: OrderLineItem[]) {
@@ -84,6 +100,10 @@ export function filterAndSortAdminOrders(
     list = list.filter(isUncompletedOrder);
   } else if (ordersView === "completed") {
     list = list.filter((order) => order.status === "completed");
+  } else if (ordersView === "expired") {
+    list = list.filter(isExpiredOrder);
+  } else {
+    list = list.filter((order) => !isExpiredOrder(order));
   }
 
   if (statusFilter !== "all") {
@@ -96,7 +116,11 @@ export function filterAndSortAdminOrders(
   }
 
   return [...list].sort((a, b) => {
-    if (ordersView === "open" || ordersView === "completed") {
+    if (
+      ordersView === "open" ||
+      ordersView === "completed" ||
+      ordersView === "expired"
+    ) {
       const cmp =
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       return ordersView === "open" ? cmp : -cmp;
