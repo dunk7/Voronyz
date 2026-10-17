@@ -169,27 +169,26 @@ video {
 .hero-voronoi-lattice-cells {
   position: absolute;
   inset: 0;
-  isolation: isolate;
-  background: url("/hero-bg.jpg") 0 0 / 320px auto repeat;
+  /*
+    Color lives on this layer; /hero-bg.jpg is only a repeating hole mask.
+    Tinting the jpeg itself at 320px painted rainbow columns.
+  */
+  background:
+    radial-gradient(ellipse 72% 78% at 14% 28%, #ff4d6d 0%, transparent 58%),
+    radial-gradient(ellipse 68% 72% at 86% 22%, #4cc9f0 0%, transparent 60%),
+    radial-gradient(ellipse 64% 70% at 52% 84%, #7b2cbf 0%, transparent 62%),
+    radial-gradient(ellipse 58% 56% at 38% 48%, #80ffdb 0%, transparent 54%),
+    radial-gradient(ellipse 52% 50% at 72% 62%, #ffd60a 0%, transparent 52%),
+    #ff9f1c;
+  -webkit-mask-image: url("/hero-bg.jpg");
+  mask-image: url("/hero-bg.jpg");
+  -webkit-mask-size: 320px auto;
+  mask-size: 320px auto;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  -webkit-mask-position: 0 0;
+  mask-position: 0 0;
   animation: hero-lattice-breathe 5.5s ease-in-out infinite;
-}
-
-.hero-voronoi-lattice-cells::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    118deg,
-    #ff4d6d 0%,
-    #ff9f1c 16%,
-    #ffd60a 32%,
-    #80ffdb 48%,
-    #4cc9f0 64%,
-    #7b2cbf 80%,
-    #ff4d6d 100%
-  );
-  mix-blend-mode: color;
-  pointer-events: none;
 }
 
 .hero-voronoi-lattice-light {
