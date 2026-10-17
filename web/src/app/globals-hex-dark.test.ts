@@ -40,8 +40,8 @@ test("shop hex tiles stay static and are not pointer-driven", () => {
   assert.doesNotMatch(css, /HexTextureMotion/);
 });
 
-test("homepage keeps hex shop panels without a hex/Voronoi seam", () => {
-  assert.match(home, /<HeroVoronoiLattice/);
+test("homepage keeps hex shop panels without a hero Voronoi lattice", () => {
+  assert.doesNotMatch(home, /HeroVoronoiLattice/);
   assert.doesNotMatch(home, /shop-hex-rail/);
   assert.doesNotMatch(home, /bg-texture-hex/);
   assert.match(home, /className="bg-texture-white"/);
@@ -51,38 +51,14 @@ test("homepage keeps hex shop panels without a hex/Voronoi seam", () => {
   assert.doesNotMatch(css, /\.bg-texture-hex/);
 });
 
-test("hero animation lattice uses the rounded Voronoi foam and a CSS glow", () => {
-  const wrap = css.match(/\.hero-voronoi-lattice \{[\s\S]*?\n\}/);
-  assert.ok(wrap, "expected the Voronoi lattice on the hero stage");
-  assert.match(wrap[0], /linear-gradient\(to bottom/);
-  assert.doesNotMatch(wrap[0], /radial-gradient\(ellipse/);
-
-  const cells = css.match(/\.hero-voronoi-lattice-cells \{[\s\S]*?\n\}/);
-  assert.ok(cells, "expected the hero-bg Voronoi foam filling the hero stage");
-  assert.match(cells[0], /hero-bg\.jpg/);
-  assert.match(cells[0], /hero-lattice-breathe/);
-  assert.match(cells[0], /mask-size:\s*320px auto/);
-  assert.match(cells[0], /mask-repeat:\s*repeat/);
-  assert.match(cells[0], /mask-mode:\s*luminance/);
-  assert.match(cells[0], /#ff4d6d/);
-  assert.match(cells[0], /#4cc9f0/);
-  assert.doesNotMatch(cells[0], /\bcover\b/);
-  assert.doesNotMatch(cells[0], /mix-blend-mode:\s*color/);
-  assert.doesNotMatch(css, /\.hero-voronoi-lattice-cells::after/);
-
-  assert.match(css, /hero-lattice-breathe/);
-  const glow = css.match(/\.hero-voronoi-lattice-glow \{[\s\S]*?\n\}/);
-  assert.ok(glow, "expected a light-up layer on the lattice");
-  assert.match(glow[0], /hero-lattice-light/);
-  assert.match(glow[0], /255 77 109/);
-  assert.match(glow[0], /76 201 240/);
-  assert.doesNotMatch(css, /pointermove|mousemove/);
-});
-
-test("hero Voronoi lattice fills the stage up to the header", () => {
-  const lattice = css.match(/\.hero-voronoi-lattice \{[\s\S]*?\n\}/);
-  assert.ok(lattice, "expected a hero Voronoi lattice layer");
-  assert.match(lattice[0], /inset:\s*0/);
-  assert.match(lattice[0], /linear-gradient\(to bottom/);
-  assert.doesNotMatch(lattice[0], /radial-gradient/);
+test("hero stage has no colorful Voronoi topology behind the GIF", () => {
+  assert.doesNotMatch(css, /\.hero-voronoi-lattice/);
+  assert.doesNotMatch(css, /hero-lattice-breathe/);
+  assert.doesNotMatch(css, /hero-lattice-light/);
+  assert.doesNotMatch(css, /#ff4d6d/);
+  assert.doesNotMatch(css, /#4cc9f0/);
+  const hero = css.match(/\.hero-stage \{[^}]+\}/);
+  assert.ok(hero, "expected a homepage hero stage");
+  assert.match(hero[0], /background-color:\s*#000/);
+  assert.doesNotMatch(hero[0], /background-image/);
 });
