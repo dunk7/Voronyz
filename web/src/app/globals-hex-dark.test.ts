@@ -61,12 +61,21 @@ test("hero animation lattice uses the rounded Voronoi foam and a CSS glow", () =
   assert.ok(cells, "expected the hero-bg Voronoi foam filling the hero stage");
   assert.match(cells[0], /hero-bg\.jpg/);
   assert.match(cells[0], /hero-lattice-breathe/);
-  assert.match(cells[0], /center top/);
+  assert.match(cells[0], /mask-size:\s*320px auto/);
+  assert.match(cells[0], /mask-repeat:\s*repeat/);
+  assert.match(cells[0], /mask-mode:\s*luminance/);
+  assert.match(cells[0], /#ff4d6d/);
+  assert.match(cells[0], /#4cc9f0/);
+  assert.doesNotMatch(cells[0], /\bcover\b/);
+  assert.doesNotMatch(cells[0], /mix-blend-mode:\s*color/);
+  assert.doesNotMatch(css, /\.hero-voronoi-lattice-cells::after/);
 
   assert.match(css, /hero-lattice-breathe/);
   const glow = css.match(/\.hero-voronoi-lattice-glow \{[\s\S]*?\n\}/);
   assert.ok(glow, "expected a light-up layer on the lattice");
   assert.match(glow[0], /hero-lattice-light/);
+  assert.match(glow[0], /255 77 109/);
+  assert.match(glow[0], /76 201 240/);
   assert.doesNotMatch(css, /pointermove|mousemove/);
 });
 
