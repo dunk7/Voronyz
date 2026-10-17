@@ -152,6 +152,8 @@ video {
 /*
   Real Voronyz lattice: rounded foam cells from /hero-bg.jpg.
   Full hero-stage (not the GIF box). Fade at the bottom into the hex rail.
+  Tile small — hole-scale, not cover — so cells match the shoe foam.
+  Color wash tints the grey walls; black holes stay knocked out.
   Glow is a slow CSS drift so it lights up without a mouse (phones included).
 */
 .hero-voronoi-lattice {
@@ -167,7 +169,22 @@ video {
 .hero-voronoi-lattice-cells {
   position: absolute;
   inset: 0;
-  background: url("/hero-bg.jpg") center top / cover no-repeat;
+  background-image:
+    linear-gradient(
+      118deg,
+      #ff4d6d 0%,
+      #ff9f1c 16%,
+      #ffd60a 32%,
+      #80ffdb 48%,
+      #4cc9f0 64%,
+      #7b2cbf 80%,
+      #ff4d6d 100%
+    ),
+    url("/hero-bg.jpg");
+  background-size: 320px auto;
+  background-repeat: repeat;
+  background-position: 0 0;
+  background-blend-mode: color;
   animation: hero-lattice-breathe 5.5s ease-in-out infinite;
 }
 
@@ -180,12 +197,10 @@ video {
 .hero-voronoi-lattice-glow {
   position: absolute;
   inset: -10%;
-  background: radial-gradient(
-    ellipse 62% 68% at 55% 46%,
-    rgb(255 255 255 / 0.18),
-    rgb(255 255 255 / 0.05) 48%,
-    transparent 76%
-  );
+  background:
+    radial-gradient(ellipse 48% 54% at 28% 36%, rgb(255 77 109 / 0.32), transparent 64%),
+    radial-gradient(ellipse 44% 50% at 74% 40%, rgb(76 201 240 / 0.3), transparent 66%),
+    radial-gradient(ellipse 50% 46% at 52% 70%, rgb(128 255 219 / 0.22), transparent 68%);
   mix-blend-mode: screen;
   animation: hero-lattice-light 5.5s ease-in-out infinite;
 }
