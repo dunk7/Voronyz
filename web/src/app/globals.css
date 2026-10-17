@@ -143,7 +143,7 @@ video {
   Desktop only — on stacked mobile the left-to-right fade makes the
   headline look uneven.
   The flashing Voronoi lattice fills this stage from the Voronyz header
-  down, then fades into the hex rail. Shop panels use a static copy.
+  down, then fades to black. Shop panels use the hex honeycomb.
 */
 .hero-stage {
   background-color: #000;
@@ -151,7 +151,7 @@ video {
 
 /*
   Real Voronyz lattice: rounded foam cells from /hero-bg.jpg.
-  Full hero-stage (not the GIF box). Fade at the bottom into the hex rail.
+  Full hero-stage (not the GIF box). Fade at the bottom into black.
   Glow is a slow CSS drift so it lights up without a mouse (phones included).
 */
 .hero-voronoi-lattice {
@@ -227,10 +227,6 @@ video {
   }
 }
 
-/*
-  Shop field: the same rounded Voronoi foam as the hero, held still.
-  Pulse/glow stay on .hero-voronoi-lattice only.
-*/
 .bg-texture-white {
   background-color: #ffffff !important;
   position: relative;
@@ -238,51 +234,8 @@ video {
   isolation: isolate;
 }
 
+/* Original 50×43 overlapping hex tile. Static — not pointer-driven. */
 .bg-texture-white::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: url("/hero-bg.jpg") 0 0 / 560px auto repeat;
-  opacity: 0.05;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.bg-texture-white > * {
-  position: relative;
-  z-index: 1;
-}
-
-/*
-  Nested texture wrappers must not paint a second Voronoi layer.
-  Each ::before origins at its own top, so a nested or stacked
-  restart reads as a layer shift (homepage video → All Footwear).
-  Stay transparent so the parent lattice shows through.
-*/
-.bg-texture-white .bg-texture-white,
-html.site-dark .bg-texture-white .bg-texture-white {
-  background-color: transparent !important;
-  overflow: visible;
-}
-
-.bg-texture-white .bg-texture-white::before,
-html.site-dark .bg-texture-white .bg-texture-white::before {
-  content: none;
-}
-
-/*
-  Hex honeycomb is an accent only — hard seams, footer strip.
-  It does not fade; the hero Voronoi fades to black first.
-  Static 50×43 overlapping tile. Not pointer-driven.
-*/
-.bg-texture-hex {
-  background-color: #ffffff;
-  position: relative;
-  overflow: clip;
-}
-
-.bg-texture-hex::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -293,7 +246,7 @@ html.site-dark .bg-texture-white .bg-texture-white::before {
     at the 50×43 display size.
   */
   background-image:
-    url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='0.14' stroke-width='0.8' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
+    url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='0.08' stroke-width='0.8' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
   background-size: 50px 43px;
   background-position: 0 0;
   background-repeat: repeat;
@@ -301,20 +254,26 @@ html.site-dark .bg-texture-white .bg-texture-white::before {
   z-index: 0;
 }
 
-.bg-texture-hex > * {
+.bg-texture-white > * {
   position: relative;
   z-index: 1;
 }
 
-.shop-hex-rail {
-  height: 3.25rem;
-  background-color: #f4f4f4;
-  border-block: 1px solid rgb(0 0 0 / 0.08);
+/*
+  Nested texture wrappers must not paint a second hex layer.
+  Each ::before origins at its own top, so a nested or stacked
+  restart reads as a layer shift (homepage video → All Footwear).
+  Stay transparent so the parent honeycomb shows through.
+*/
+.bg-texture-white .bg-texture-white,
+html.site-dark .bg-texture-white .bg-texture-white {
+  background-color: transparent !important;
+  overflow: visible;
 }
 
-.shop-hex-rail.bg-texture-hex::before {
-  background-image:
-    url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23000000' stroke-opacity='0.22' stroke-width='0.9' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
+.bg-texture-white .bg-texture-white::before,
+html.site-dark .bg-texture-white .bg-texture-white::before {
+  content: none;
 }
 
 /* Messenger: allow copying bubble text (site default is select-none) */
@@ -512,34 +471,20 @@ html.site-dark footer .disabled\:hover\:bg-white:hover:disabled {
 }
 
 /*
-  Shop Voronoi follows regular dark mode: mostly black field, foam
-  held at a whisper so copy still leads. Hex rails invert traces.
+  Hex panels follow regular dark mode: mostly black.
+  Only the tiny hex traces stay light so the honeycomb is still visible.
 */
 html.site-dark .bg-texture-white {
   background-color: #0a0a0a !important;
 }
 
 html.site-dark .bg-texture-white::before {
-  opacity: 0.22;
-  mix-blend-mode: soft-light;
-}
-
-html.site-dark .bg-texture-white .bg-texture-white {
-  background-color: transparent !important;
-}
-
-html.site-dark .bg-texture-hex {
-  background-color: #0a0a0a;
-}
-
-html.site-dark .bg-texture-hex::before {
   background-image:
     url("data:image/svg+xml,%3Csvg width='240' height='208' viewBox='0 0 120 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.34' stroke-width='0.9' stroke-linecap='square'%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 0)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(30, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(90, 52)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(-30, 52)'/%3E%3Cpath d='M46.14 0 L60 8 L73.86 0'/%3E%3Cpath d='M106.14 0 L120 8'/%3E%3Cpath d='M0 8 L13.86 0'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(0, 104)'/%3E%3Cpath d='M30 0 L55.98 15 L55.98 45 L30 60 L4.02 45 L4.02 15 Z' transform='translate(60, 104)'/%3E%3C/g%3E%3C/svg%3E");
 }
 
-html.site-dark .shop-hex-rail {
-  background-color: #111111;
-  border-color: rgb(255 255 255 / 0.1);
+html.site-dark .bg-texture-white .bg-texture-white {
+  background-color: transparent !important;
 }
 
 html.site-dark main .bg-white\/95,
