@@ -76,6 +76,7 @@ test("hero animation lattice uses the rounded Voronoi foam and a CSS glow", () =
   assert.match(cells[0], /hero-lattice-breathe/);
   assert.match(cells[0], /mask-size:\s*320px auto/);
   assert.match(cells[0], /mask-repeat:\s*repeat/);
+  assert.match(cells[0], /mask-mode:\s*luminance/);
   assert.match(cells[0], /#ff4d6d/);
   assert.match(cells[0], /#4cc9f0/);
   assert.doesNotMatch(cells[0], /\bcover\b/);

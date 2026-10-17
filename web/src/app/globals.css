@@ -188,6 +188,9 @@ video {
   mask-repeat: repeat;
   -webkit-mask-position: 0 0;
   mask-position: 0 0;
+  /* JPEG has no alpha; without luminance the mask is a solid rectangle. */
+  -webkit-mask-source-type: luminance;
+  mask-mode: luminance;
   animation: hero-lattice-breathe 5.5s ease-in-out infinite;
 }
 
@@ -211,12 +214,12 @@ video {
 @keyframes hero-lattice-breathe {
   0%,
   100% {
-    opacity: 0.32;
-    filter: brightness(0.88);
+    opacity: 0.55;
+    filter: brightness(0.95);
   }
   50% {
-    opacity: 0.62;
-    filter: brightness(1.18);
+    opacity: 0.9;
+    filter: brightness(1.12);
   }
 }
 
