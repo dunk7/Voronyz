@@ -169,23 +169,27 @@ video {
 .hero-voronoi-lattice-cells {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(
-      118deg,
-      #ff4d6d 0%,
-      #ff9f1c 16%,
-      #ffd60a 32%,
-      #80ffdb 48%,
-      #4cc9f0 64%,
-      #7b2cbf 80%,
-      #ff4d6d 100%
-    ),
-    url("/hero-bg.jpg");
-  background-size: 320px auto;
-  background-repeat: repeat;
-  background-position: 0 0;
-  background-blend-mode: color;
+  isolation: isolate;
+  background: url("/hero-bg.jpg") 0 0 / 320px auto repeat;
   animation: hero-lattice-breathe 5.5s ease-in-out infinite;
+}
+
+.hero-voronoi-lattice-cells::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    118deg,
+    #ff4d6d 0%,
+    #ff9f1c 16%,
+    #ffd60a 32%,
+    #80ffdb 48%,
+    #4cc9f0 64%,
+    #7b2cbf 80%,
+    #ff4d6d 100%
+  );
+  mix-blend-mode: color;
+  pointer-events: none;
 }
 
 .hero-voronoi-lattice-light {
