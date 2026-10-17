@@ -72,7 +72,7 @@ function BrowseItem({
   return (
     <article
       ref={itemRef}
-      className={`footwear-browse-item h-full w-[min(85%,20.5rem)] shrink-0 snap-start sm:w-[21.5rem] lg:w-[23rem] transition-all duration-500 ease-out ${
+      className={`footwear-browse-item h-full w-[min(88%,22.5rem)] shrink-0 snap-start sm:w-[24rem] lg:w-[26rem] transition-all duration-500 ease-out ${
         visible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-3"
       }`}
       style={{ transitionDelay: visible ? `${Math.min(index, 4) * 40}ms` : "0ms" }}
@@ -80,42 +80,39 @@ function BrowseItem({
       <Link
         href={`/products/${product.slug}`}
         onClick={handleClick}
-        className={`group flex h-full flex-col rounded-2xl bg-white/55 p-2.5 ring-1 ring-black/[0.06] outline-none transition-all duration-300 hover:bg-white/90 hover:shadow-[0_10px_28px_-16px_rgba(0,0,0,0.35)] hover:ring-black/10 focus-visible:ring-2 focus-visible:ring-neutral-900 sm:p-3.5 md:p-4 ${
+        className={`group flex h-full flex-col outline-none transition-transform duration-200 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2 ${
           navigating ? "pointer-events-none" : ""
         }`}
       >
-        <div className="relative aspect-[16/10] shrink-0 overflow-hidden rounded-xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:ring-black/10 sm:rounded-2xl">
-          <div className="absolute inset-0 p-[7%] sm:p-[8%]">
-            <div className="relative h-full w-full">
-              <SoftImage
-                key={coverSrc}
-                src={coverSrc}
-                alt={product.name}
-                fill
-                className={`object-contain object-center transition-opacity duration-500 ease-out ${
-                  altSrc ? "group-hover:opacity-0" : ""
-                } ${navigating ? "brightness-90" : ""}`}
-                sizes="(max-width: 640px) 78vw, 368px"
-                priority={index < 2}
-              />
-              {altSrc && (
-                <SoftImage
-                  key={altSrc}
-                  src={altSrc}
-                  alt={`${product.name} – alternate view`}
-                  fill
-                  showLogoPlaceholder={false}
-                  className="object-contain object-center opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100"
-                  sizes="(max-width: 640px) 78vw, 368px"
-                  loading="lazy"
-                />
-              )}
-            </div>
-          </div>
+        {/* Square photo only — no extra frame, padding, or card around the image. */}
+        <div className="relative aspect-square w-full overflow-hidden rounded-2xl">
+          <SoftImage
+            key={coverSrc}
+            src={coverSrc}
+            alt={product.name}
+            fill
+            className={`object-cover object-center transition-all duration-500 ease-out ${
+              altSrc ? "group-hover:opacity-0" : "group-hover:scale-[1.03]"
+            } ${navigating ? "brightness-90" : ""}`}
+            sizes="(max-width: 640px) 88vw, 416px"
+            priority={index < 2}
+          />
+          {altSrc && (
+            <SoftImage
+              key={altSrc}
+              src={altSrc}
+              alt={`${product.name} – alternate view`}
+              fill
+              showLogoPlaceholder={false}
+              className="object-cover object-center opacity-0 transition-all duration-500 ease-out group-hover:opacity-100 group-hover:scale-[1.03]"
+              sizes="(max-width: 640px) 88vw, 416px"
+              loading="lazy"
+            />
+          )}
 
           {slugKey === TRAIL_MIX_SLUG && (
-            <div className="absolute top-2 left-2 z-10 sm:top-3 sm:left-3">
-              <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider shadow-sm bg-neutral-900 text-white sm:px-3 sm:text-[11px]">
+            <div className="absolute top-3 left-3 z-10">
+              <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-neutral-900 text-white">
                 Sold Out
               </span>
             </div>
@@ -132,19 +129,19 @@ function BrowseItem({
           )}
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col px-0.5 pt-3 sm:pt-4">
-          <h2 className="text-[15px] font-semibold leading-snug tracking-tight text-neutral-900 transition-colors group-hover:text-black sm:text-[1.05rem] lg:text-lg">
+        <div className="flex min-w-0 flex-1 flex-col pt-4 sm:pt-5">
+          <h2 className="text-lg font-semibold leading-snug tracking-tight text-neutral-900 transition-colors group-hover:text-black sm:text-xl">
             {product.name}
           </h2>
           {product.description ? (
-            <p className="mt-1.5 line-clamp-4 text-[13px] leading-relaxed text-neutral-600 sm:mt-2 sm:text-sm">
+            <p className="mt-2 line-clamp-4 text-[15px] leading-relaxed text-neutral-600 sm:mt-2.5 sm:text-base">
               {product.description}
             </p>
           ) : null}
-          <span className="mt-auto ml-auto inline-flex min-h-10 items-center gap-1.5 pt-3 text-xs font-semibold text-neutral-900 transition-all group-hover:gap-2.5 sm:min-h-0 sm:pt-4 sm:text-sm">
+          <span className="mt-auto inline-flex min-h-11 items-center gap-2 border-t border-black/10 pt-4 text-sm font-semibold tracking-wide text-neutral-900 transition-all group-hover:gap-3">
             Shop
             <svg
-              className="h-3.5 w-3.5 shrink-0 opacity-60 transition-transform duration-200 group-hover:translate-x-0.5"
+              className="h-3.5 w-3.5 shrink-0 opacity-70 transition-transform duration-200 group-hover:translate-x-0.5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -217,7 +214,7 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
           scrollByCard(1);
         }
       }}
-      className="footwear-browse no-scrollbar flex snap-x snap-proximity gap-3 overflow-x-auto overscroll-x-contain py-1 outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/20 sm:gap-4 lg:gap-5"
+      className="footwear-browse no-scrollbar flex snap-x snap-proximity gap-5 overflow-x-auto overscroll-x-contain py-1 outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/20 sm:gap-6 lg:gap-8"
     >
       {products.map((product, index) => {
         const { cover, alt } = getImages(product);
