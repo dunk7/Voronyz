@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getProductThumbnail } from "@/lib/productImages";
 import { parseOrderMetadata, type AdminOrder, type OrderLineItem } from "@/lib/orderTypes";
+import { ALLOWED_ORDER_STATUS_FROM } from "@/lib/ordersAdminList";
 import {
   isOrdersAdminAuthenticated,
   isOrdersAdminConfigured,
@@ -48,12 +49,6 @@ function toAdminOrder(order: {
     adminNotes: parsed.adminNotes,
   };
 }
-
-const ALLOWED_FROM: Record<string, string[]> = {
-  completed: ["paid", "preorder"],
-  paid: ["completed"],
-  preorder: ["completed"],
-};
 
 export async function PATCH(
   request: NextRequest,
@@ -104,14 +99,14 @@ export async function PATCH(
 
   if (hasStatus) {
     const newStatus = body.status!.trim();
-    if (!(newStatus in ALLOWED_FROM)) {
+    if (!(newStatus in ALLOWED_ORDER_STATUS_FROM)) {
       return NextResponse.json(
         { error: 'Status must be "completed", "paid", or "preorder"' },
         { status: 400 }
       );
     }
 
-    const allowedCurrent = ALLOWED_FROM[newStatus];
+    const allowedCurrent = ALLOWED_ORDER_STATUS_FROM[newStatus];
     if (!allowedCurrent.includes(order.status)) {
       return NextResponse.json(
         {
