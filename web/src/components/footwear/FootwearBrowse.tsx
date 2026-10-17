@@ -72,7 +72,7 @@ function BrowseItem({
   return (
     <article
       ref={itemRef}
-      className={`footwear-browse-item h-full w-[min(88%,22.5rem)] shrink-0 snap-start sm:w-[24rem] lg:w-[26rem] transition-all duration-500 ease-out ${
+      className={`footwear-browse-item h-full w-[min(85%,20.5rem)] shrink-0 snap-start sm:w-[21.5rem] lg:w-[23rem] transition-all duration-500 ease-out ${
         visible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-3"
       }`}
       style={{ transitionDelay: visible ? `${Math.min(index, 4) * 40}ms` : "0ms" }}
@@ -178,6 +178,7 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
     };
     pinStart();
     const raf = requestAnimationFrame(pinStart);
+    const retry = window.setTimeout(pinStart, 120);
 
     const onWheel = (e: WheelEvent) => {
       const absX = Math.abs(e.deltaX);
@@ -195,6 +196,7 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
 
     return () => {
       cancelAnimationFrame(raf);
+      window.clearTimeout(retry);
       el.removeEventListener("wheel", onWheel);
     };
   }, [products.length]);
@@ -214,7 +216,7 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
           scrollByCard(1);
         }
       }}
-      className="footwear-browse no-scrollbar flex snap-x snap-proximity gap-5 overflow-x-auto overscroll-x-contain py-1 outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/20 sm:gap-6 lg:gap-8"
+      className="footwear-browse no-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto overscroll-x-contain py-1 outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/20 sm:gap-6 lg:gap-8"
     >
       {products.map((product, index) => {
         const { cover, alt } = getImages(product);
