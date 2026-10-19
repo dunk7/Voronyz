@@ -65,6 +65,78 @@ export const APPAREL_COLLECTION_SUBCATEGORIES = APPAREL_SUBCATEGORIES.filter(
   (item) => item.listing === "collection",
 );
 
+/** Live hoodie listing — size changes the paid price and the advertised compare-at. */
+export const CORE_HOODIE_SLUG = "voronyz-core-hoodie";
+export const HOODIE_DEFAULT_SIZE = "M";
+/** Paid hoodie price never drops below this, even after the advertised slash. */
+export const HOODIE_MIN_SALE_CENTS = 7000;
+
+export type ApparelPriceOffer = {
+  /** Amount charged (sale / after advertised discount). */
+  priceCents: number;
+  /** Inflated “was” price shown struck through. */
+  compareAtCents: number;
+  percentOff: number;
+};
+
+/**
+ * Hoodie size ladder: marked-up compare-at, then ~55–62% off so the paid
+ * price lands in the $74–$99 range (never under $70).
+ */
+const HOODIE_SIZE_PRICES: Record<string, { priceCents: number; compareAtCents: number }> = {
+  XS: { priceCents: 7400, compareAtCents: 18500 }, // 60% off
+  S: { priceCents: 7800, compareAtCents: 19500 }, // 60% off
+  M: { priceCents: 8400, compareAtCents: 21000 }, // 60% off
+  L: { priceCents: 9000, compareAtCents: 22500 }, // 60% off
+  XL: { priceCents: 9600, compareAtCents: 22900 }, // 58% off
+  XXL: { priceCents: 9900, compareAtCents: 24900 }, // 60% off
+};
+
+export function isCoreHoodieSlug(slug: string | null | undefined): boolean {
+  return (slug || "").trim().toLowerCase() === CORE_HOODIE_SLUG;
+}
+
+function percentOffFrom(compareAtCents: number, priceCents: number): number {
+  if (compareAtCents <= 0 || priceCents >= compareAtCents) return 0;
+  return Math.round((1 - priceCents / compareAtCents) * 100);
+}
+
+function hoodieOfferFromRow(row: { priceCents: number; compareAtCents: number }): ApparelPriceOffer {
+  const priceCents = Math.max(HOODIE_MIN_SALE_CENTS, row.priceCents);
+  return {
+    priceCents,
+    compareAtCents: row.compareAtCents,
+    percentOff: percentOffFrom(row.compareAtCents, priceCents),
+  };
+}
+
+/** Size-based sale for The Atelier Hoodie. Other apparel returns null. */
+export function getApparelSizeOffer(
+  slug: string | null | undefined,
+  size: string | null | undefined,
+): ApparelPriceOffer | null {
+  if (!isCoreHoodieSlug(slug)) return null;
+  const key = (size || HOODIE_DEFAULT_SIZE).trim().toUpperCase();
+  const row = HOODIE_SIZE_PRICES[key] ?? HOODIE_SIZE_PRICES[HOODIE_DEFAULT_SIZE];
+  return hoodieOfferFromRow(row);
+}
+
+/** Listing / default hoodie deal (Medium). */
+export function getApparelListingOffer(slug: string | null | undefined): ApparelPriceOffer | null {
+  return getApparelSizeOffer(slug, HOODIE_DEFAULT_SIZE);
+}
+
+/**
+ * Server-trusted unit price for checkout/cart. Hoodies charge the size sale
+ * (not the struck-through compare-at). Other products return null.
+ */
+export function catalogOverrideUnitCents(
+  slug: string | null | undefined,
+  size: string | null | undefined,
+): number | null {
+  return getApparelSizeOffer(slug, size)?.priceCents ?? null;
+}
+
 export type ApparelCatalogItem = {
   slug: string;
   subcategory: ApparelSubcategoryId;
@@ -160,11 +232,11 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
   },
   // ── Sweaters (multi-product) ────────────────────────────────────────────
   {
-    slug: "voronyz-core-hoodie",
+    slug: CORE_HOODIE_SLUG,
     subcategory: "sweaters",
     name: "The Atelier Hoodie",
     description: "Heavyweight fleece hoodie with a clean, modern cut.",
-    priceCents: 7800,
+    priceCents: HOODIE_SIZE_PRICES[HOODIE_DEFAULT_SIZE].priceCents,
     colors: ["black", "grey"],
     outOfStockColors: ["grey"],
     sizes: [...APPAREL_SIZES],

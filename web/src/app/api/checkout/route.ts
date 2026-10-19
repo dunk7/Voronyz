@@ -27,6 +27,7 @@ import {
   SHIPPING_INSURANCE_DESCRIPTION,
   SHIPPING_INSURANCE_PRODUCT_NAME,
 } from "@/lib/shippingInsurance";
+import { catalogOverrideUnitCents } from "@/lib/apparel";
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -140,11 +141,14 @@ export async function POST(request: NextRequest) {
 
         const productSlug = variant?.product?.slug || item.productSlug || '';
         const productNameForDiscount = variant?.product?.name || item.productName || '';
-        const baseUnitAmount = variant
-          ? (variant.priceCents || variant.product.priceCents || 0)
-          : typeof item.priceCents === "number" && item.priceCents > 0
-            ? item.priceCents
-            : 7500;
+        const catalogUnit = catalogOverrideUnitCents(productSlug, item.size);
+        const baseUnitAmount = catalogUnit != null
+          ? catalogUnit
+          : variant
+            ? (variant.priceCents || variant.product.priceCents || 0)
+            : typeof item.priceCents === "number" && item.priceCents > 0
+              ? item.priceCents
+              : 7500;
         const unitAmount = getDiscountedUnitPriceCents(
           baseUnitAmount,
           activeDiscountCode,
@@ -205,8 +209,13 @@ export async function POST(request: NextRequest) {
         // Fallback logic...
         const fallbackSlug = item.productSlug || '';
         const fallbackProductName = item.productName || '';
+        const fallbackCatalog = catalogOverrideUnitCents(fallbackSlug, item.size);
         const unitAmount = getDiscountedUnitPriceCents(
-          typeof item.priceCents === "number" && item.priceCents > 0 ? item.priceCents : 7500,
+          fallbackCatalog != null
+            ? fallbackCatalog
+            : typeof item.priceCents === "number" && item.priceCents > 0
+              ? item.priceCents
+              : 7500,
           activeDiscountCode,
           {
             productSlug: fallbackSlug,

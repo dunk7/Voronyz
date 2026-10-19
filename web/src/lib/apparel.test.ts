@@ -1,13 +1,18 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  APPAREL_SIZES,
+  HOODIE_MIN_SALE_CENTS,
   apparelProductShopHref,
   apparelProductShopLabel,
   apparelUnavailableSizes,
   apparelVariantStock,
   apparelCoverObjectPositionClass,
+  catalogOverrideUnitCents,
   getApparelImages,
   getApparelItem,
+  getApparelListingOffer,
+  getApparelSizeOffer,
   isApparelColorOutOfStock,
   isApparelSizeAvailable,
 } from "./apparel";
@@ -84,7 +89,36 @@ test("grey is out of stock across apparel; shirt white Medium and Large are in s
   assert.equal(apparelVariantStock(hoodie, "grey"), 0);
   assert.equal(isApparelSizeAvailable(hoodie, "M"), true);
 
+  const hoodieOffer = getApparelListingOffer("voronyz-core-hoodie");
+  assert.ok(hoodieOffer);
+  assert.equal(hoodie.priceCents, hoodieOffer.priceCents);
+
   assert.equal(isApparelColorOutOfStock(shades, "grey"), true);
   assert.equal(apparelVariantStock(shades, "black"), 0);
   assert.equal(apparelVariantStock(shades, "grey"), 0);
+});
+
+test("hoodie sale prices change by size, stay $70–$100, and advertise a deep cut off the raised compare-at", () => {
+  const xs = getApparelSizeOffer("voronyz-core-hoodie", "xs");
+  const m = getApparelSizeOffer("voronyz-core-hoodie", "M");
+  const xxl = getApparelSizeOffer("voronyz-core-hoodie", "XXL");
+  assert.ok(xs && m && xxl);
+
+  assert.ok(xs.priceCents < m.priceCents);
+  assert.ok(m.priceCents < xxl.priceCents);
+
+  for (const size of APPAREL_SIZES) {
+    const offer = getApparelSizeOffer("voronyz-core-hoodie", size);
+    assert.ok(offer);
+    assert.ok(offer.priceCents >= HOODIE_MIN_SALE_CENTS);
+    assert.ok(offer.priceCents <= 10000);
+    assert.ok(offer.compareAtCents > offer.priceCents);
+    assert.ok(offer.percentOff >= 55);
+    assert.ok(offer.percentOff <= 62);
+    assert.equal(catalogOverrideUnitCents("voronyz-core-hoodie", size), offer.priceCents);
+  }
+
+  assert.equal(getApparelSizeOffer("voronyz-core-hoodie", "M")?.percentOff, 60);
+  assert.equal(getApparelSizeOffer("voronyz-oversized-tee", "M"), null);
+  assert.equal(catalogOverrideUnitCents("voronyz-oversized-tee", "M"), null);
 });
