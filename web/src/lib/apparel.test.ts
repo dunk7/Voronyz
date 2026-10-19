@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  apparelCatalogProduct,
   apparelProductShopHref,
   apparelProductShopLabel,
   apparelUnavailableSizes,
@@ -50,6 +51,13 @@ test("The Atelier Hoodie ships in grey and white with matching front and back sh
   assert.equal(isApparelColorOutOfStock(hoodie, "white"), false);
   assert.equal(apparelVariantStock(hoodie, "grey"), 999);
   assert.equal(apparelVariantStock(hoodie, "white"), 999);
+
+  const listing = apparelCatalogProduct(hoodie);
+  assert.deepEqual(listing.primaryColors, ["grey", "white"]);
+  assert.deepEqual(
+    listing.variants.map((variant) => variant.color),
+    ["grey", "white"],
+  );
 });
 
 test("tee listing back link returns to Apparel", () => {

@@ -277,6 +277,32 @@ export function getApparelItem(slug: string | null | undefined) {
   return APPAREL_CATALOG.find((item) => item.slug === key) ?? null;
 }
 
+/** In-memory product shape used when the catalog listing is known but the DB is unreachable. */
+export function apparelCatalogProduct(item: ApparelCatalogItem) {
+  const now = new Date(0);
+  return {
+    id: item.slug,
+    slug: item.slug,
+    name: item.name,
+    description: item.description,
+    priceCents: item.priceCents,
+    currency: "usd",
+    images: getApparelImages(item),
+    primaryColors: [...item.colors],
+    secondaryColors: [] as string[],
+    sizes: [...item.sizes],
+    variants: item.colors.map((color) => ({
+      id: `${item.skuPrefix}-${color}`,
+      color,
+      sku: apparelSku(item.skuPrefix, color),
+      stock: apparelVariantStock(item, color),
+      priceCents: item.priceCents,
+    })),
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
 export function getApparelSubcategory(id: string | null | undefined) {
   return APPAREL_SUBCATEGORIES.find((item) => item.id === id) ?? null;
 }

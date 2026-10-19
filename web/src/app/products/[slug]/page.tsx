@@ -59,6 +59,7 @@ import {
 import { isAccessorySlug, isApparelSlug, isFootwearSlug, isHealthSlug } from "@/lib/productCategories";
 import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION } from "@/lib/footwear";
 import {
+  apparelCatalogProduct,
   apparelProductShopHref,
   apparelProductShopLabel,
   apparelUnavailableSizes,
@@ -130,7 +131,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   if (obsoleteRedirect || isObsoleteApparelSlug(slug)) {
     redirect(obsoleteRedirect ?? "/apparel");
   }
-  let product: ProductWithVariants;
+  let product: ProductWithVariants | null = null;
   try {
     await ensureCatalogProducts();
     product = await prisma.product.findUnique({ 
@@ -149,17 +150,25 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     }) as ProductWithVariants;
   } catch (error) {
     console.error(`Failed to load product "${slug}":`, error);
-    return (
-      <div className="bg-texture-white">
-        <div className="container py-12 text-center">
-          <h1 className="text-2xl font-semibold text-neutral-900 mb-4">Something went wrong</h1>
-          <p className="text-neutral-600 mb-6">We couldn&apos;t load this product right now. Please try again later.</p>
-          <Link href="/products" className="inline-flex items-center justify-center rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800">
-            Back to Shop
-          </Link>
+    const catalogFallback = getApparelItem(slug);
+    if (!catalogFallback) {
+      return (
+        <div className="bg-texture-white">
+          <div className="container py-12 text-center">
+            <h1 className="text-2xl font-semibold text-neutral-900 mb-4">Something went wrong</h1>
+            <p className="text-neutral-600 mb-6">We couldn&apos;t load this product right now. Please try again later.</p>
+            <Link href="/products" className="inline-flex items-center justify-center rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800">
+              Back to Shop
+            </Link>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+    product = apparelCatalogProduct(catalogFallback);
+  }
+  if (!product) {
+    const catalogFallback = getApparelItem(slug);
+    if (catalogFallback) product = apparelCatalogProduct(catalogFallback);
   }
   if (!product) return <div className="container py-12 text-neutral-900">Not found.</div>;
 
