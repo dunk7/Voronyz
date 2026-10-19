@@ -57,7 +57,7 @@ import {
   LATTICE_INSOLES_THUMBNAIL_URL,
 } from "@/lib/latticeInsoles";
 import { isAccessorySlug, isApparelSlug, isFootwearSlug, isHealthSlug } from "@/lib/productCategories";
-import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION } from "@/lib/footwear";
+import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION, slipOnsImagesForColor } from "@/lib/footwear";
 import {
   apparelCatalogProduct,
   apparelProductShopHref,
@@ -65,6 +65,7 @@ import {
   apparelUnavailableSizes,
   getApparelItem,
   getApparelImages,
+  getApparelImagesForColor,
   isObsoleteApparelSlug,
 } from "@/lib/apparel";
 import { redirect } from "next/navigation";
@@ -257,6 +258,37 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isLatticeInsoles = slug === LATTICE_INSOLES_SLUG;
   const apparelItem = getApparelItem(slug);
   const isApparel = Boolean(apparelItem);
+  const apparelImagesByColor = apparelItem
+    ? Object.fromEntries(
+        apparelItem.colors.map((color) => [color, getApparelImagesForColor(apparelItem, color)]),
+      )
+    : undefined;
+  const apparelCoverByColor = apparelImagesByColor
+    ? Object.fromEntries(
+        Object.entries(apparelImagesByColor).map(([color, colorImages]) => [
+          color,
+          colorImages[0],
+        ]),
+      )
+    : undefined;
+  const slipOnsImagesByColor = isSlipOns
+    ? Object.fromEntries(
+        (product.primaryColors as string[]).map((color) => [
+          color.trim().toLowerCase(),
+          slipOnsImagesForColor(images, color),
+        ]),
+      )
+    : undefined;
+  const galleryImagesByColor = apparelImagesByColor ?? slipOnsImagesByColor;
+  const galleryCoverByColor = apparelCoverByColor
+    ?? (slipOnsImagesByColor
+      ? Object.fromEntries(
+          Object.entries(slipOnsImagesByColor).map(([color, colorImages]) => [
+            color,
+            colorImages[0],
+          ]),
+        )
+      : undefined);
   const shopHref = isAccessorySlug(slug)
     ? "/accessories"
     : isHealthSlug(slug)
@@ -399,7 +431,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         {/* Gallery-first retail layout: large photos lead, buy box sits beside */}
         <PdpGalleryBuyBox
           media={galleryMedia}
-          colorImages={apparelItem?.colorImages}
+          colorImages={galleryImagesByColor}
           fit={isFootwearSlug(slug) ? "contain" : "cover"}
           galleryClassName="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
           addToCartProps={{
@@ -444,6 +476,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             ...(isLatticeInsoles && {
               useCatalogSizes: true,
             }),
+            ...(isSlipOns && {
+              allowOutOfStockColorPreview: true,
+            }),
             ...(isApparel && {
               useCatalogSizes: true,
               preOrder: Boolean(apparelItem?.comingSoon),
@@ -455,6 +490,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             sizes: product.sizes as string[],
             productName: displayName,
             coverImage: (images[0] as string) || defaultImages[0],
+            coverImagesByColor: galleryCoverByColor,
             productSlug: slug,
           }}
           footer={
@@ -527,7 +563,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               : apparelItem?.slug === "voronyz-oversized-tee"
               ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Shipping now in black and white, XS through XXL — grey is out of stock. Price steps down for smaller sizes and up for larger ones from Medium."
               : apparelItem?.slug === "voronyz-core-hoodie"
-              ? "Heavyweight fleece with a clean, modern cut. Grey and white — pick a color to see the matching hoodie, then swipe to the second photo for the back."
+              ? "Heavyweight fleece with a clean, modern cut. Grey and white — pick a color to see the matching hoodie, then swipe to the second photo for the back. Pick a size to see the sale price (about 60% off the marked compare-at)."
               : isApparel && apparelItem?.comingSoon
               ? "Pre-order Voronyz Apparel — pay now to join the waitlist, and we ship when the drop arrives."
               : isApparel
@@ -583,6 +619,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 : apparelItem?.outOfStockColors?.includes("grey")
                   ? "Grey is currently out of stock. Choose another listed color."
                   : "Pick any listed color that is in stock." },
+              ...(apparelItem?.slug === "voronyz-core-hoodie"
+                ? [{ q: "How much does it cost?", a: "Price depends on size. Each hoodie is marked down about 60% from the listed compare-at — sale prices run from $74 (XS) to $99 (XXL), never under $70." }]
+                : []),
               { q: "When will my order ship?", a: "Orders typically ship within a few business days. You'll get updates by email." },
               { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Accessories (shades, jewelry, lace locks, drone parts) live under their own Apparel section." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },

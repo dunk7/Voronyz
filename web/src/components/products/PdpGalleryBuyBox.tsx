@@ -37,10 +37,15 @@ export default function PdpGalleryBuyBox({
 
   const galleryMedia = useMemo(() => {
     if (color && colorImages) {
-      const shots = colorImages[color.trim().toLowerCase()];
+      const key = color.trim().toLowerCase();
+      const shots = colorImages[key] ?? colorImages[color];
       if (shots && shots.length > 0) {
         const alt = media[0]?.alt;
-        return shots.map((src) => ({ type: "image" as const, src, alt }));
+        const videos = media.filter((item) => item.type === "video");
+        return [
+          ...shots.map((src) => ({ type: "image" as const, src, alt })),
+          ...videos,
+        ];
       }
     }
     return media;
