@@ -38,7 +38,7 @@ function BrowseItem({
 }) {
   const router = useRouter();
   const [navigating, setNavigating] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(index === 0);
   const itemRef = useRef<HTMLElement>(null);
   const slugKey = (product.slug || "").trim().toLowerCase();
 
@@ -72,8 +72,8 @@ function BrowseItem({
   return (
     <article
       ref={itemRef}
-      className={`footwear-browse-item h-full w-[min(85%,20.5rem)] shrink-0 snap-start sm:w-[21.5rem] lg:w-[23rem] transition-all duration-500 ease-out ${
-        visible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-3"
+      className={`footwear-browse-item h-full w-[min(85%,20.5rem)] shrink-0 snap-start sm:w-[21.5rem] lg:w-[23rem] transition-opacity duration-500 ease-out ${
+        visible ? "opacity-100" : "opacity-0"
       }`}
       style={{ transitionDelay: visible ? `${Math.min(index, 4) * 40}ms` : "0ms" }}
     >
@@ -173,31 +173,48 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
+
+    let allowPin = true;
+    const restoreSnap = () => {
+      el.style.scrollSnapType = "";
+    };
     const pinStart = () => {
+      if (!allowPin) return;
       if (el.scrollLeft !== 0) el.scrollLeft = 0;
     };
-    pinStart();
-    const raf = requestAnimationFrame(pinStart);
-    const retry = window.setTimeout(pinStart, 120);
 
-    const onWheel = (e: WheelEvent) => {
-      const absX = Math.abs(e.deltaX);
-      const absY = Math.abs(e.deltaY);
-      if (absY <= absX) return;
-      const max = el.scrollWidth - el.clientWidth;
-      if (max <= 0) return;
-      if ((e.deltaY > 0 && el.scrollLeft >= max) || (e.deltaY < 0 && el.scrollLeft <= 0)) {
-        return;
-      }
-      e.preventDefault();
-      el.scrollLeft = Math.max(0, Math.min(max, el.scrollLeft + e.deltaY));
+    // Snap on load auto-animates the row and can rest between cards,
+    // cutting the first photo in half. Hold snap off until we pin to 0.
+    el.style.scrollSnapType = "none";
+    pinStart();
+
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      pinStart();
+      raf2 = requestAnimationFrame(pinStart);
+    });
+    const retry = window.setTimeout(() => {
+      pinStart();
+      if (allowPin) restoreSnap();
+      allowPin = false;
+    }, 200);
+
+    const releasePin = () => {
+      allowPin = false;
+      restoreSnap();
     };
-    el.addEventListener("wheel", onWheel, { passive: false });
+    el.addEventListener("pointerdown", releasePin, { passive: true });
+    el.addEventListener("wheel", releasePin, { passive: true });
+    el.addEventListener("touchstart", releasePin, { passive: true });
 
     return () => {
-      cancelAnimationFrame(raf);
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
       window.clearTimeout(retry);
-      el.removeEventListener("wheel", onWheel);
+      restoreSnap();
+      el.removeEventListener("pointerdown", releasePin);
+      el.removeEventListener("wheel", releasePin);
+      el.removeEventListener("touchstart", releasePin);
     };
   }, [products.length]);
 
@@ -216,7 +233,7 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
           scrollByCard(1);
         }
       }}
-      className="footwear-browse no-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto overscroll-x-contain py-1 outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/20 sm:gap-6 lg:gap-8"
+      className="footwear-browse no-scrollbar flex snap-x snap-proximity gap-5 overflow-x-auto overscroll-x-contain py-1 outline-none [overflow-anchor:none] focus-visible:ring-2 focus-visible:ring-neutral-900/20 sm:gap-6 lg:gap-8"
     >
       {products.map((product, index) => {
         const { cover, alt } = getImages(product);
