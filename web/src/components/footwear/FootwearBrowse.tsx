@@ -82,7 +82,7 @@ function RankCard({
           <div className="relative z-10 flex items-start justify-between">
             <div className="flex items-center gap-2">
               {featured ? (
-                <span className="text-[1.65rem] font-bold leading-none tracking-tight">
+                <span className="text-[2.1rem] font-bold leading-none tracking-tight">
                   {rank}
                 </span>
               ) : (
@@ -112,7 +112,7 @@ function RankCard({
             ) : null}
           </div>
 
-          <div className="relative mx-auto -mt-2 h-[9.75rem] w-full max-w-[16.5rem] sm:h-[11.5rem] sm:max-w-[19rem]">
+          <div className="relative mx-auto -mt-3 h-[12.25rem] w-full max-w-[22rem] sm:h-[14rem]">
             <SoftImage
               key={coverSrc}
               src={coverSrc}
@@ -121,7 +121,7 @@ function RankCard({
               className={`object-contain object-center transition-opacity duration-500 ${
                 altSrc ? "group-hover:opacity-0" : ""
               } ${navigating ? "brightness-90" : ""}`}
-              sizes="(max-width: 640px) 70vw, 320px"
+              sizes="(max-width: 640px) 90vw, 360px"
               priority={rank < 3}
             />
             {altSrc ? (
@@ -132,7 +132,7 @@ function RankCard({
                 fill
                 showLogoPlaceholder={false}
                 className="object-contain object-center opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                sizes="(max-width: 640px) 70vw, 320px"
+                sizes="(max-width: 640px) 90vw, 360px"
                 loading="lazy"
               />
             ) : null}
