@@ -108,7 +108,14 @@ export async function POST(request: NextRequest) {
       } catch {
         // Fallback pricing when DB is unavailable
         unitAmount = getDiscountedUnitPriceCents(
-          typeof item.priceCents === "number" && item.priceCents > 0 ? item.priceCents : 7500,
+          catalogUnitPriceCents({
+            productSlug,
+            size: item.size,
+            fallbackCents:
+              typeof item.priceCents === "number" && item.priceCents > 0
+                ? item.priceCents
+                : 7500,
+          }),
           normalizedDiscountCode,
           {
             productSlug,
