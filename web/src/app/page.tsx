@@ -1,6 +1,5 @@
 import Image from "next/image";
 import HeroParallax from "@/components/HeroParallax";
-import HeroVoronoiLattice from "@/components/HeroVoronoiLattice";
 import MotionMediaCarousel from "@/components/MotionMediaCarousel";
 import { Suspense } from "react";
 import ProductsContent from "@/app/products/ProductsContent";
@@ -10,8 +9,6 @@ export default function Home() {
   return (
     <div className="relative">
       <section className="hero-stage relative overflow-hidden">
-        {/* Full hero foam — from the Voronyz header down, not clipped to the GIF. */}
-        <HeroVoronoiLattice />
         {/* Hero content */}
         <div className="relative z-[1] mx-auto max-w-7xl px-4 sm:px-6 py-20 sm:py-24 md:py-28 lg:py-12 xl:py-14 2xl:py-16 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-10 sm:gap-12 lg:gap-16">
@@ -29,14 +26,14 @@ export default function Home() {
             {/* Image / Parallax Column */}
             <div className="lg:col-span-8 order-1 lg:order-2 hero-stagger-image">
               <HeroParallax>
-                <div className="relative w-full overflow-visible aspect-[4/3] sm:aspect-[4/3] lg:h-full xl:h-full 2xl:h-full bg-transparent">
+                <div className="relative w-full overflow-visible aspect-[4/3] sm:aspect-[4/3] lg:h-full xl:h-full 2xl:h-full bg-black">
                   <Image
                     src="/products/v3-slides/side-render-of-both.jpg"
                     alt="Voronyz V3 Slides"
                     fill
                     priority
                     sizes="(max-width: 1024px) 100vw, 66vw"
-                    className="object-contain object-[60%_50%] bg-transparent"
+                    className="object-contain object-[60%_50%] bg-black"
                   />
                 </div>
               </HeroParallax>
