@@ -470,6 +470,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     hideSizeSelector: apparelItem?.sizes.length === 1,
                     unavailableColors: apparelItem?.outOfStockColors ?? [],
                     unavailableSizes: apparelItem ? apparelUnavailableSizes(apparelItem) : [],
+                    sizePriceCents: apparelItem?.sizePriceCents ?? {},
                   })}
                   sizes={product.sizes as string[]}
                   productName={displayName}
@@ -534,7 +535,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               : isViolettePonybead
               ? VIOLETTE_PONYBEAD_HOW_ITS_MADE
               : apparelItem?.slug === "voronyz-oversized-tee"
-              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Shipping now in black and white, Medium and Large — grey and other sizes are out of stock."
+              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Shipping now in black and white, XS through XXL — grey is out of stock. Price steps down for smaller sizes and up for larger ones from Medium."
               : apparelItem?.slug === "voronyz-core-hoodie"
               ? "Heavyweight fleece with a clean, modern cut. Ready to ship in your size and color."
               : isApparel && apparelItem?.comingSoon
@@ -583,7 +584,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isApparel && !apparelItem?.comingSoon ? [
               { q: "What sizes are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
-                ? "The Oversized Tee currently ships in Medium and Large. XS, S, XL, and XXL are listed but out of stock."
+                ? "The Oversized Tee ships in XS, S, M, L, XL, and XXL. Smaller sizes cost less than Medium; larger sizes cost more."
                 : "This piece runs XS–XXL." },
               { q: "What colors are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
                 ? "Black and white are in stock. Grey is currently out of stock."

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { formatCentsAsCurrency, SHOP_PRICE_CLASS } from "@/lib/money";
+import { apparelPriceCentsForSize, getApparelItem } from "@/lib/apparel";
 import {
   QUIZ_QUESTIONS,
   type QuizAnswers,
@@ -88,6 +89,7 @@ function colorLabel(color: string) {
 
 function defaultSizeForProduct(slug: string, sizes: string[]): string {
   if (slug === "magikid-shoes") return sizes.includes("3") ? "3" : sizes[0] || "3";
+  if (getApparelItem(slug) && sizes.includes("M")) return "M";
   return sizes.includes("9") ? "9" : sizes[0] || "9";
 }
 
@@ -323,7 +325,10 @@ export default function QuizClient() {
     const variant = stocked.find((v) => v.color === color) ?? stocked[0];
     const size =
       selection?.size || defaultSizeForProduct(product.slug, product.sizes);
-    const priceCents = variant.priceCents ?? product.priceCents;
+    const apparelItem = getApparelItem(product.slug);
+    const priceCents = apparelItem
+      ? apparelPriceCentsForSize(apparelItem, size)
+      : variant.priceCents ?? product.priceCents;
     const gender = product.slug === "magikid-shoes" ? "kids" : "men";
 
     const cart = loadCart();

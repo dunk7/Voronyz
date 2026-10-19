@@ -6,6 +6,8 @@ import {
   apparelUnavailableSizes,
   apparelVariantStock,
   apparelCoverObjectPositionClass,
+  apparelPriceCentsForSize,
+  catalogUnitPriceCents,
   getApparelImages,
   getApparelItem,
   isApparelColorOutOfStock,
@@ -63,7 +65,7 @@ test("unknown apparel slugs fall back to Apparel", () => {
   assert.equal(apparelProductShopLabel("not-a-product"), "Back to Apparel");
 });
 
-test("grey is out of stock across apparel; shirt white Medium and Large are in stock", () => {
+test("grey is out of stock across apparel; oversized tee sizes XS–XXL are in stock", () => {
   const tee = getApparelItem("voronyz-oversized-tee");
   const hoodie = getApparelItem("voronyz-core-hoodie");
   const shades = getApparelItem("voronyz-cool-shades");
@@ -75,9 +77,10 @@ test("grey is out of stock across apparel; shirt white Medium and Large are in s
   assert.equal(apparelVariantStock(tee, "black"), 999);
   assert.equal(apparelVariantStock(tee, "white"), 999);
   assert.equal(apparelVariantStock(tee, "grey"), 0);
-  assert.equal(isApparelSizeAvailable(tee, "L"), true);
-  assert.equal(isApparelSizeAvailable(tee, "M"), true);
-  assert.deepEqual(apparelUnavailableSizes(tee), ["XS", "S", "XL", "XXL"]);
+  for (const size of tee.sizes) {
+    assert.equal(isApparelSizeAvailable(tee, size), true);
+  }
+  assert.deepEqual(apparelUnavailableSizes(tee), []);
 
   assert.equal(isApparelColorOutOfStock(hoodie, "grey"), true);
   assert.equal(isApparelColorOutOfStock(hoodie, "black"), false);
@@ -87,4 +90,32 @@ test("grey is out of stock across apparel; shirt white Medium and Large are in s
   assert.equal(isApparelColorOutOfStock(shades, "grey"), true);
   assert.equal(apparelVariantStock(shades, "black"), 0);
   assert.equal(apparelVariantStock(shades, "grey"), 0);
+});
+
+test("oversized tee price goes down for smaller sizes and up for larger sizes", () => {
+  const tee = getApparelItem("voronyz-oversized-tee");
+  assert.ok(tee);
+  assert.equal(apparelPriceCentsForSize(tee, "XS"), 4200);
+  assert.equal(apparelPriceCentsForSize(tee, "S"), 4500);
+  assert.equal(apparelPriceCentsForSize(tee, "M"), 4800);
+  assert.equal(apparelPriceCentsForSize(tee, "L"), 5100);
+  assert.equal(apparelPriceCentsForSize(tee, "XL"), 5400);
+  assert.equal(apparelPriceCentsForSize(tee, "XXL"), 5700);
+  assert.equal(apparelPriceCentsForSize(tee, "XS") < apparelPriceCentsForSize(tee, "M"), true);
+  assert.equal(apparelPriceCentsForSize(tee, "XXL") > apparelPriceCentsForSize(tee, "M"), true);
+  assert.equal(catalogUnitPriceCents({
+    productSlug: "voronyz-oversized-tee",
+    size: "XL",
+    fallbackCents: 4800,
+  }), 5400);
+  assert.equal(catalogUnitPriceCents({
+    productSlug: "voronyz-core-hoodie",
+    size: "XS",
+    fallbackCents: 7800,
+  }), 7800);
+  assert.equal(catalogUnitPriceCents({
+    productSlug: "v3-slides",
+    size: "9",
+    fallbackCents: 7500,
+  }), 7500);
 });
