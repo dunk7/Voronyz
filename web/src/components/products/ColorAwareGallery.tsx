@@ -10,6 +10,7 @@ import {
 } from "react";
 import V3Gallery from "@/components/V3Gallery";
 import AddToCart from "@/components/cart/AddToCart";
+import { slipOnsImagesForColor } from "@/lib/footwear";
 
 type ProductColorContextValue = {
   color: string | undefined;
@@ -37,26 +38,36 @@ export function ProductColorProvider({
 export function ColorAwareGallery({
   imagesByColor,
   fallbackImages,
+  extraMedia = [],
+  leadWhiteSlipOns = false,
   productName,
   fit = "cover",
   className = "",
 }: {
   imagesByColor?: Record<string, string[]>;
   fallbackImages: string[];
+  extraMedia?: Array<{ type: "image" | "video"; src: string; alt?: string; poster?: string }>;
+  leadWhiteSlipOns?: boolean;
   productName: string;
   fit?: "cover" | "contain";
   className?: string;
 }) {
   const ctx = useContext(ProductColorContext);
   const color = ctx?.color;
-  const images =
+  const baseImages =
     (color && imagesByColor?.[color]?.length ? imagesByColor[color] : null) ??
     fallbackImages;
-  const media = images.map((src) => ({
-    type: "image" as const,
-    src,
-    alt: productName,
-  }));
+  const images = leadWhiteSlipOns
+    ? slipOnsImagesForColor(baseImages, color)
+    : baseImages;
+  const media = [
+    ...images.map((src) => ({
+      type: "image" as const,
+      src,
+      alt: productName,
+    })),
+    ...extraMedia,
+  ];
 
   return (
     <V3Gallery

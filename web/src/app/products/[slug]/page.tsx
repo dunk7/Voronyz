@@ -421,10 +421,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <div className="lg:col-span-8">
             {/* Full-bleed on mobile so product photos dominate the viewport */}
             <div className="lg:rounded-none -mx-0 sm:mx-0">
-              {apparelItem ? (
+              {apparelItem || isSlipOns ? (
                 <ColorAwareGallery
                   imagesByColor={apparelImagesByColor}
                   fallbackImages={images}
+                  extraMedia={isSlipOns ? galleryMedia.filter((item) => item.type === "video") : []}
+                  leadWhiteSlipOns={isSlipOns}
                   productName={displayName}
                   fit={isFootwearSlug(slug) ? "contain" : "cover"}
                   className="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
@@ -513,6 +515,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   coverImage={(images[0] as string) || defaultImages[0]}
                   coverImagesByColor={apparelCoverByColor}
                   productSlug={slug}
+                  allowOutOfStockColorPreview={isSlipOns}
                 />
               </Suspense>
 

@@ -274,6 +274,14 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     priceCents: HOODIE_SIZE_PRICES[HOODIE_DEFAULT_SIZE].priceCents,
     colors: ["grey", "white"],
     sizes: [...APPAREL_SIZES],
+    sizePriceCents: {
+      XS: HOODIE_SIZE_PRICES.XS.priceCents,
+      S: HOODIE_SIZE_PRICES.S.priceCents,
+      M: HOODIE_SIZE_PRICES.M.priceCents,
+      L: HOODIE_SIZE_PRICES.L.priceCents,
+      XL: HOODIE_SIZE_PRICES.XL.priceCents,
+      XXL: HOODIE_SIZE_PRICES.XXL.priceCents,
+    },
     image: "/products/apparel/hoodie-grey-front.jpg",
     images: [
       "/products/apparel/hoodie-grey-front.jpg",

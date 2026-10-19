@@ -23,6 +23,25 @@ import { catalogSeedListedAt } from "@/lib/newListing";
 export const SLIP_ONS_PRICE_CENTS = 6500; // $65
 export const DRAGONFLY_PRICE_CENTS = 16000; // $160
 
+/** Lifestyle / ad photo of white Slip Ons — leads the PDP gallery when White is selected. */
+export const SLIP_ONS_WHITE_AD_IMAGE = "/products/slip-ons/white-ad.jpg";
+
+export function isWhiteColor(color: string | undefined | null): boolean {
+  return color?.trim().toLowerCase() === "white";
+}
+
+/**
+ * When White is selected, the white Slip Ons ad leads.
+ * Other colors keep the studio sequence and omit the white ad so the gallery matches the swatch.
+ */
+export function slipOnsImagesForColor(baseImages: string[], color?: string | null): string[] {
+  const withoutWhiteAd = baseImages.filter((src) => src !== SLIP_ONS_WHITE_AD_IMAGE);
+  if (isWhiteColor(color)) {
+    return [SLIP_ONS_WHITE_AD_IMAGE, ...withoutWhiteAd];
+  }
+  return withoutWhiteAd;
+}
+
 /** PDP / listing copy — colors live on the swatches, not in this paragraph. */
 export const SLIP_ONS_DESCRIPTION =
   "Engineered for easy everyday wear, built to last. Minimal 3D-printed slip-ons with a flexible lattice sole and a clean, easy-on silhouette.";
