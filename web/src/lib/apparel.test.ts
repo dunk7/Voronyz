@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  APPAREL_SIZES,
+  HOODIE_MIN_SALE_CENTS,
   apparelCatalogProduct,
   apparelProductShopHref,
   apparelProductShopLabel,
@@ -12,6 +14,8 @@ import {
   getApparelImages,
   getApparelImagesForColor,
   getApparelItem,
+  getApparelListingOffer,
+  getApparelSizeOffer,
   isApparelColorOutOfStock,
   isApparelSizeAvailable,
 } from "./apparel";
@@ -144,11 +148,44 @@ test("oversized tee price goes down for smaller sizes and up for larger sizes", 
   assert.equal(catalogUnitPriceCents({
     productSlug: "voronyz-core-hoodie",
     size: "XS",
-    fallbackCents: 7800,
-  }), 7800);
+    fallbackCents: 8400,
+  }), 7400);
   assert.equal(catalogUnitPriceCents({
     productSlug: "v3-slides",
     size: "9",
     fallbackCents: 7500,
   }), 7500);
+});
+
+test("hoodie sale prices change by size, stay $70–$100, and advertise a deep cut off the raised compare-at", () => {
+  const xs = getApparelSizeOffer("voronyz-core-hoodie", "xs");
+  const m = getApparelSizeOffer("voronyz-core-hoodie", "M");
+  const xxl = getApparelSizeOffer("voronyz-core-hoodie", "XXL");
+  assert.ok(xs && m && xxl);
+
+  assert.ok(xs.priceCents < m.priceCents);
+  assert.ok(m.priceCents < xxl.priceCents);
+  assert.equal(getApparelListingOffer("voronyz-core-hoodie")?.priceCents, m.priceCents);
+  assert.equal(getApparelItem("voronyz-core-hoodie")?.priceCents, m.priceCents);
+
+  for (const size of APPAREL_SIZES) {
+    const offer = getApparelSizeOffer("voronyz-core-hoodie", size);
+    assert.ok(offer);
+    assert.ok(offer.priceCents >= HOODIE_MIN_SALE_CENTS);
+    assert.ok(offer.priceCents <= 10000);
+    assert.ok(offer.compareAtCents > offer.priceCents);
+    assert.ok(offer.percentOff >= 55);
+    assert.ok(offer.percentOff <= 62);
+    assert.equal(
+      catalogUnitPriceCents({
+        productSlug: "voronyz-core-hoodie",
+        size,
+        fallbackCents: 8400,
+      }),
+      offer.priceCents,
+    );
+  }
+
+  assert.equal(getApparelSizeOffer("voronyz-core-hoodie", "M")?.percentOff, 60);
+  assert.equal(getApparelSizeOffer("voronyz-oversized-tee", "M"), null);
 });

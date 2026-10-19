@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { formatCentsAsCurrency, SHOP_PRICE_CLASS } from "@/lib/money";
-import { apparelPriceCentsForSize, getApparelItem } from "@/lib/apparel";
+import { apparelPriceCentsForSize, getApparelItem, getApparelSizeOffer } from "@/lib/apparel";
+import SalePrice from "@/components/ui/SalePrice";
 import {
   QUIZ_QUESTIONS,
   type QuizAnswers,
@@ -468,9 +469,29 @@ export default function QuizClient() {
                         {product.description}
                       </p>
                     </div>
-                    <p className={`shrink-0 ${SHOP_PRICE_CLASS}`}>
-                      {formatCentsAsCurrency(product.priceCents, product.currency)}
-                    </p>
+                    {(() => {
+                      const size =
+                        selection?.size ||
+                        defaultSizeForProduct(product.slug, product.sizes);
+                      const offer = getApparelSizeOffer(product.slug, size);
+                      if (offer) {
+                        return (
+                          <div className="shrink-0">
+                            <SalePrice
+                              size="card"
+                              priceCents={offer.priceCents}
+                              compareAtCents={offer.compareAtCents}
+                              percentOff={offer.percentOff}
+                            />
+                          </div>
+                        );
+                      }
+                      return (
+                        <p className={`shrink-0 ${SHOP_PRICE_CLASS}`}>
+                          {formatCentsAsCurrency(product.priceCents, product.currency)}
+                        </p>
+                      );
+                    })()}
                   </div>
 
                   {!soldOut ? (
