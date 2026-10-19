@@ -5,7 +5,14 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { formatCentsAsCurrency, SHOP_PRICE_CLASS } from "@/lib/money";
-import { apparelPriceCentsForSize, getApparelItem } from "@/lib/apparel";
+import {
+  apparelPriceCentsForSize,
+  CORE_HOODIE_SLUG,
+  getApparelItem,
+  getApparelSizeOffer,
+  HOODIE_DEFAULT_SIZE,
+} from "@/lib/apparel";
+import SalePrice from "@/components/ui/SalePrice";
 import {
   QUIZ_QUESTIONS,
   type QuizAnswers,
@@ -88,6 +95,9 @@ function colorLabel(color: string) {
 }
 
 function defaultSizeForProduct(slug: string, sizes: string[]): string {
+  if (slug === CORE_HOODIE_SLUG) {
+    return sizes.includes(HOODIE_DEFAULT_SIZE) ? HOODIE_DEFAULT_SIZE : sizes[0] || HOODIE_DEFAULT_SIZE;
+  }
   if (slug === "magikid-shoes") return sizes.includes("3") ? "3" : sizes[0] || "3";
   if (getApparelItem(slug) && sizes.includes("M")) return "M";
   return sizes.includes("9") ? "9" : sizes[0] || "9";
@@ -326,9 +336,11 @@ export default function QuizClient() {
     const size =
       selection?.size || defaultSizeForProduct(product.slug, product.sizes);
     const apparelItem = getApparelItem(product.slug);
-    const priceCents = apparelItem
-      ? apparelPriceCentsForSize(apparelItem, size)
-      : variant.priceCents ?? product.priceCents;
+    const priceCents =
+      getApparelSizeOffer(product.slug, size)?.priceCents ??
+      (apparelItem
+        ? apparelPriceCentsForSize(apparelItem, size)
+        : variant.priceCents ?? product.priceCents);
     const gender = product.slug === "magikid-shoes" ? "kids" : "men";
 
     const cart = loadCart();
@@ -468,9 +480,29 @@ export default function QuizClient() {
                         {product.description}
                       </p>
                     </div>
-                    <p className={`shrink-0 ${SHOP_PRICE_CLASS}`}>
-                      {formatCentsAsCurrency(product.priceCents, product.currency)}
-                    </p>
+                    {(() => {
+                      const size =
+                        selection?.size ||
+                        defaultSizeForProduct(product.slug, product.sizes);
+                      const offer = getApparelSizeOffer(product.slug, size);
+                      if (offer) {
+                        return (
+                          <div className="shrink-0">
+                            <SalePrice
+                              size="card"
+                              priceCents={offer.priceCents}
+                              compareAtCents={offer.compareAtCents}
+                              percentOff={offer.percentOff}
+                            />
+                          </div>
+                        );
+                      }
+                      return (
+                        <p className={`shrink-0 ${SHOP_PRICE_CLASS}`}>
+                          {formatCentsAsCurrency(product.priceCents, product.currency)}
+                        </p>
+                      );
+                    })()}
                   </div>
 
                   {!soldOut ? (

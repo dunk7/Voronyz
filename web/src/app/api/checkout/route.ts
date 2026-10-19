@@ -28,7 +28,6 @@ import {
   SHIPPING_INSURANCE_DESCRIPTION,
   SHIPPING_INSURANCE_PRODUCT_NAME,
 } from "@/lib/shippingInsurance";
-
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: "2025-08-27.basil",
@@ -211,8 +210,13 @@ export async function POST(request: NextRequest) {
         // Fallback logic...
         const fallbackSlug = item.productSlug || '';
         const fallbackProductName = item.productName || '';
+        const fallbackCatalog = catalogOverrideUnitCents(fallbackSlug, item.size);
         const unitAmount = getDiscountedUnitPriceCents(
-          typeof item.priceCents === "number" && item.priceCents > 0 ? item.priceCents : 7500,
+          fallbackCatalog != null
+            ? fallbackCatalog
+            : typeof item.priceCents === "number" && item.priceCents > 0
+              ? item.priceCents
+              : 7500,
           activeDiscountCode,
           {
             productSlug: fallbackSlug,

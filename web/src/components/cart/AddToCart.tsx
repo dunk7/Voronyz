@@ -4,6 +4,8 @@ import { formatCentsAsCurrency, SHOP_PRICE_CLASS } from "@/lib/money";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { normalizeStudentName } from "@/lib/magikidShoesThumbnail";
+import { getApparelSizeOffer } from "@/lib/apparel";
+import SalePrice from "@/components/ui/SalePrice";
 
 interface VariantProps {
   id: string;
@@ -284,13 +286,16 @@ export default function AddToCart({
     [fulfillmentOptions, selectedFulfillment]
   );
 
+  const apparelOffer = getApparelSizeOffer(productSlug, selectedSize);
   const sizeUnitPrice =
     selectedSize && typeof sizePriceCents[selectedSize] === "number"
       ? sizePriceCents[selectedSize]
       : undefined;
-  const priceCents = hasFulfillmentOptions
-    ? (selectedFulfillmentOption?.priceCents ?? productPriceCents ?? 7500)
-    : (sizeUnitPrice ?? selectedVariant?.priceCents ?? productPriceCents ?? 7500);
+  const priceCents = apparelOffer
+    ? apparelOffer.priceCents
+    : hasFulfillmentOptions
+      ? (selectedFulfillmentOption?.priceCents ?? productPriceCents ?? 7500)
+      : (sizeUnitPrice ?? selectedVariant?.priceCents ?? productPriceCents ?? 7500);
   const hasSizePrices = Object.keys(sizePriceCents).length > 0;
   const totalCents = priceCents * quantity;
   const formattedTotal = formatCentsAsCurrency(totalCents);
@@ -861,6 +866,14 @@ export default function AddToCart({
           </div>
         )}
 
+        {apparelOffer ? (
+          <SalePrice
+            priceCents={priceCents}
+            compareAtCents={apparelOffer.compareAtCents}
+            percentOff={apparelOffer.percentOff}
+            quantity={quantity}
+          />
+        ) : null}
         <div className="flex items-center gap-3">
           <input
             type="number"
@@ -869,9 +882,11 @@ export default function AddToCart({
             onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
             className="w-20 h-[48px] rounded-md border border-black/10 px-3 py-2 text-sm text-neutral-900"
           />
-          <div className="flex items-center">
-            <span className={SHOP_PRICE_CLASS}>{formattedTotal}</span>
-          </div>
+          {!apparelOffer ? (
+            <div className="flex items-center">
+              <span className={SHOP_PRICE_CLASS}>{formattedTotal}</span>
+            </div>
+          ) : null}
           <div className="button-container flex-1">
             {added ? (
               <div className="button-split-wrapper">

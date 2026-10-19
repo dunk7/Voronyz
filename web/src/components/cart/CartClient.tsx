@@ -30,6 +30,7 @@ import LogoLoader from "@/components/ui/LogoLoader";
 import { catalogUnitPriceCents } from "@/lib/apparel";
 import { trailMixFlavorLabel } from "@/lib/trailMix";
 import { violetteAnimalLabel, isViolettePonybeadSlug, VIOLETTE_PONYBEAD_NAME, VIOLETTE_PONYBEAD_SLUG } from "@/lib/violettePonybeadAnimals";
+import { getApparelSizeOffer } from "@/lib/apparel";
 
 interface CartItem {
   id: string;
@@ -80,11 +81,14 @@ export default function CartClient() {
     return isValidDiscountCode(normalized);
   };
 
+  const cartItemSize = (it: CartItem) =>
+    it.attributes?.size != null ? String(it.attributes.size) : undefined;
+
   const getBaseUnitPriceCents = (it: CartItem) => {
     const stored = typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
     return catalogUnitPriceCents({
       productSlug: it.productSlug,
-      size: it.attributes?.size != null ? String(it.attributes.size) : undefined,
+      size: cartItemSize(it),
       fallbackCents: stored,
     });
   };
@@ -583,17 +587,32 @@ export default function CartClient() {
                   if (idx === freeItemLineIndex && oneItemFreeOff > 0) {
                     discountedLine = Math.max(0, discountedLine - unit);
                   }
-                  const hasLineDiscount = discountedLine < baseLine;
+                  const offer = getApparelSizeOffer(it.productSlug, cartItemSize(it));
+                  const compareLine = offer ? offer.compareAtCents * it.quantity : null;
+                  const strikeLine =
+                    compareLine != null && compareLine > discountedLine && discountedLine === baseLine
+                      ? compareLine
+                      : discountedLine < baseLine
+                        ? baseLine
+                        : null;
+                  const hasLineDiscount = strikeLine != null;
                   return (
                     <div className="text-right flex-1 lg:flex-none">
                       {hasLineDiscount && (
                         <div className="text-xs text-neutral-500 line-through">
-                          {formatCentsAsCurrency(baseLine)}
+                          {formatCentsAsCurrency(strikeLine)}
                         </div>
                       )}
+                      {offer && discountedLine === baseLine && offer.percentOff > 0 ? (
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-red-600">
+                          {offer.percentOff}% off
+                        </div>
+                      ) : null}
                       <div
                         className={`text-base font-semibold ${
-                          hasLineDiscount ? "text-emerald-700" : "text-neutral-900"
+                          hasLineDiscount && discountedLine < baseLine
+                            ? "text-emerald-700"
+                            : "text-neutral-900"
                         }`}
                       >
                         {formatCentsAsCurrency(discountedLine)}
