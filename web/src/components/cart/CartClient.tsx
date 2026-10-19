@@ -27,7 +27,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import LogoLoader from "@/components/ui/LogoLoader";
-import { catalogUnitPriceCents } from "@/lib/apparel";
+import { catalogUnitPriceCents, getApparelSizeOffer } from "@/lib/apparel";
 import { trailMixFlavorLabel } from "@/lib/trailMix";
 import { violetteAnimalLabel, isViolettePonybeadSlug, VIOLETTE_PONYBEAD_NAME, VIOLETTE_PONYBEAD_SLUG } from "@/lib/violettePonybeadAnimals";
 
@@ -80,11 +80,14 @@ export default function CartClient() {
     return isValidDiscountCode(normalized);
   };
 
+  const cartItemSize = (it: CartItem) =>
+    it.attributes?.size != null ? String(it.attributes.size) : undefined;
+
   const getBaseUnitPriceCents = (it: CartItem) => {
     const stored = typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
     return catalogUnitPriceCents({
       productSlug: it.productSlug,
-      size: it.attributes?.size != null ? String(it.attributes.size) : undefined,
+      size: cartItemSize(it),
       fallbackCents: stored,
     });
   };
@@ -583,17 +586,32 @@ export default function CartClient() {
                   if (idx === freeItemLineIndex && oneItemFreeOff > 0) {
                     discountedLine = Math.max(0, discountedLine - unit);
                   }
-                  const hasLineDiscount = discountedLine < baseLine;
+                  const offer = getApparelSizeOffer(it.productSlug, cartItemSize(it));
+                  const compareLine = offer ? offer.compareAtCents * it.quantity : null;
+                  const strikeLine =
+                    compareLine != null && compareLine > discountedLine && discountedLine === baseLine
+                      ? compareLine
+                      : discountedLine < baseLine
+                        ? baseLine
+                        : null;
+                  const hasLineDiscount = strikeLine != null;
                   return (
                     <div className="text-right flex-1 lg:flex-none">
                       {hasLineDiscount && (
                         <div className="text-xs text-neutral-500 line-through">
-                          {formatCentsAsCurrency(baseLine)}
+                          {formatCentsAsCurrency(strikeLine)}
                         </div>
                       )}
+                      {offer && discountedLine === baseLine && offer.percentOff > 0 ? (
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-red-600">
+                          {offer.percentOff}% off
+                        </div>
+                      ) : null}
                       <div
                         className={`text-base font-semibold ${
-                          hasLineDiscount ? "text-emerald-700" : "text-neutral-900"
+                          hasLineDiscount && discountedLine < baseLine
+                            ? "text-emerald-700"
+                            : "text-neutral-900"
                         }`}
                       >
                         {formatCentsAsCurrency(discountedLine)}
@@ -618,60 +636,6 @@ export default function CartClient() {
             <span className="font-semibold text-neutral-900">Pre-order waitlist:</span>{" "}
             you pay now to reserve your spot. Pre-order items ship when we receive them — timing can range from a day to much longer.
           </div>
-        )}
-        {canOfferShippingInsurance && (
-          <button
-            type="button"
-            onClick={() => toggleShippingInsurance(!shippingInsurance)}
-            aria-pressed={shippingInsurance}
-            aria-describedby="shipping-insurance-help"
-            className={`w-full rounded-2xl border-2 px-5 py-5 text-left transition-all active:scale-[0.99] ${
-              shippingInsurance
-                ? "border-neutral-900 bg-neutral-900 text-white shadow-md"
-                : "border-neutral-900/15 bg-white text-neutral-900 hover:border-neutral-900/40 hover:bg-neutral-50"
-            }`}
-          >
-            <span className="flex items-center justify-between gap-4">
-              <span className="min-w-0">
-                <span className="block text-lg font-semibold tracking-tight sm:text-xl">
-                  {shippingInsurance ? "Shipping insurance added" : "Add shipping insurance"}
-                </span>
-                <span
-                  id="shipping-insurance-help"
-                  className={`mt-1.5 block text-sm leading-snug sm:text-base ${
-                    shippingInsurance ? "text-white/75" : "text-neutral-600"
-                  }`}
-                >
-                  {SHIPPING_INSURANCE_DESCRIPTION}
-                </span>
-              </span>
-              <span className="shrink-0 text-right">
-                <span className="block text-2xl font-bold tabular-nums sm:text-3xl">
-                  {formatCentsAsCurrency(
-                    getShippingInsuranceCents(items) || SHIPPING_INSURANCE_CENTS_PER_ITEM
-                  )}
-                </span>
-                <span
-                  className={`mt-1 block text-xs font-medium uppercase tracking-[0.14em] ${
-                    shippingInsurance ? "text-white/60" : "text-neutral-500"
-                  }`}
-                >
-                  {formatCentsAsCurrency(SHIPPING_INSURANCE_CENTS_PER_ITEM)} / item
-                </span>
-              </span>
-            </span>
-            <span
-              className={`mt-4 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-semibold ${
-                shippingInsurance
-                  ? "bg-white text-neutral-900"
-                  : "bg-neutral-900 text-white"
-              }`}
-            >
-              {shippingInsurance
-                ? "Tap to remove"
-                : `Tap to add · ${formatCentsAsCurrency(SHIPPING_INSURANCE_CENTS_PER_ITEM)}`}
-            </span>
-          </button>
         )}
         {/* Combined Discount and Subtotal Section */}
         <div className="rounded-xl border border-black/10 p-4 space-y-4 bg-white">
@@ -758,6 +722,60 @@ export default function CartClient() {
             </div>
           </div>
         </div>
+        {canOfferShippingInsurance && (
+          <button
+            type="button"
+            onClick={() => toggleShippingInsurance(!shippingInsurance)}
+            aria-pressed={shippingInsurance}
+            aria-describedby="shipping-insurance-help"
+            className={`w-full rounded-2xl border-2 px-5 py-5 text-left transition-all active:scale-[0.99] ${
+              shippingInsurance
+                ? "border-neutral-900 bg-neutral-900 text-white shadow-md"
+                : "border-neutral-900/15 bg-white text-neutral-900 hover:border-neutral-900/40 hover:bg-neutral-50"
+            }`}
+          >
+            <span className="flex items-center justify-between gap-4">
+              <span className="min-w-0">
+                <span className="block text-lg font-semibold tracking-tight sm:text-xl">
+                  {shippingInsurance ? "Shipping insurance added" : "Add shipping insurance"}
+                </span>
+                <span
+                  id="shipping-insurance-help"
+                  className={`mt-1.5 block text-sm leading-snug sm:text-base ${
+                    shippingInsurance ? "text-white/75" : "text-neutral-600"
+                  }`}
+                >
+                  {SHIPPING_INSURANCE_DESCRIPTION}
+                </span>
+              </span>
+              <span className="shrink-0 text-right">
+                <span className="block text-2xl font-bold tabular-nums sm:text-3xl">
+                  {formatCentsAsCurrency(
+                    getShippingInsuranceCents(items) || SHIPPING_INSURANCE_CENTS_PER_ITEM
+                  )}
+                </span>
+                <span
+                  className={`mt-1 block text-xs font-medium uppercase tracking-[0.14em] ${
+                    shippingInsurance ? "text-white/60" : "text-neutral-500"
+                  }`}
+                >
+                  {formatCentsAsCurrency(SHIPPING_INSURANCE_CENTS_PER_ITEM)} / item
+                </span>
+              </span>
+            </span>
+            <span
+              className={`mt-4 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-semibold ${
+                shippingInsurance
+                  ? "bg-white text-neutral-900"
+                  : "bg-neutral-900 text-white"
+              }`}
+            >
+              {shippingInsurance
+                ? "Tap to remove"
+                : `Tap to add · ${formatCentsAsCurrency(SHIPPING_INSURANCE_CENTS_PER_ITEM)}`}
+            </span>
+          </button>
+        )}
         <button
           type="button"
           disabled={stripeBusy || isNanoCheckingOut}
