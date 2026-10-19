@@ -91,6 +91,11 @@ export type ApparelCatalogItem = {
   image: string;
   /** Full gallery; defaults to `[image]` when omitted. */
   images?: string[];
+  /**
+   * Per-color gallery. Missing colors fall back to `images`.
+   * Use this when a colorway needs its own mockup (e.g. white tee + black logo).
+   */
+  imagesByColor?: Record<string, string[]>;
   skuPrefix: string;
   /**
    * Coming-soon items are pre-orderable: customers pay now and join the
@@ -102,6 +107,19 @@ export type ApparelCatalogItem = {
 export function getApparelImages(item: ApparelCatalogItem): string[] {
   if (item.images && item.images.length > 0) return [...item.images];
   return [item.image];
+}
+
+/** Gallery for a selected colorway, falling back to the default product photos. */
+export function getApparelImagesForColor(
+  item: ApparelCatalogItem,
+  color?: string | null,
+): string[] {
+  if (color) {
+    const key = color.trim().toLowerCase();
+    const specific = item.imagesByColor?.[key];
+    if (specific && specific.length > 0) return [...specific];
+  }
+  return getApparelImages(item);
 }
 
 /**
@@ -166,6 +184,12 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
       "/products/apparel/shirt-front.jpg",
       "/products/apparel/shirt-back-blank.jpg",
     ],
+    imagesByColor: {
+      white: [
+        "/products/apparel/shirt-front-white.jpg",
+        "/products/apparel/shirt-back-blank-white.jpg",
+      ],
+    },
     skuPrefix: "APP-TEE",
     comingSoon: false,
   },

@@ -9,6 +9,7 @@ import {
   apparelPriceCentsForSize,
   catalogUnitPriceCents,
   getApparelImages,
+  getApparelImagesForColor,
   getApparelItem,
   isApparelColorOutOfStock,
   isApparelSizeAvailable,
@@ -39,6 +40,19 @@ test("oversized tee leads with the chest-logo front shot, then the blank back ph
   assert.ok(tee);
   assert.equal(tee.image, "/products/apparel/shirt-front.jpg");
   assert.deepEqual(getApparelImages(tee), [
+    "/products/apparel/shirt-front.jpg",
+    "/products/apparel/shirt-back-blank.jpg",
+  ]);
+});
+
+test("white oversized tee uses the black-logo mockup and a plain white back", () => {
+  const tee = getApparelItem("voronyz-oversized-tee");
+  assert.ok(tee);
+  assert.deepEqual(getApparelImagesForColor(tee, "white"), [
+    "/products/apparel/shirt-front-white.jpg",
+    "/products/apparel/shirt-back-blank-white.jpg",
+  ]);
+  assert.deepEqual(getApparelImagesForColor(tee, "black"), [
     "/products/apparel/shirt-front.jpg",
     "/products/apparel/shirt-back-blank.jpg",
   ]);
