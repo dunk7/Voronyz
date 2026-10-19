@@ -62,6 +62,8 @@ export type AddToCartProps = {
   carryStyles?: CarryStyleOption[];
   selectedCarryStyleId?: string;
   onCarryStyleChange?: (id: string) => void;
+  /** Fires on mount and whenever the primary color/flavor swatch changes. */
+  onPrimaryColorChange?: (color: string) => void;
   /** Replace color swatches with flavor choices (e.g. trail mix). */
   flavorOptions?: FlavorOption[];
   /** Label above flavor/style options. Defaults to "Flavor". */
@@ -147,6 +149,7 @@ export default function AddToCart({
   carryStyles = [],
   selectedCarryStyleId,
   onCarryStyleChange,
+  onPrimaryColorChange,
   flavorOptions = [],
   flavorLabel = "Flavor",
   soldOut = false,
@@ -352,6 +355,11 @@ export default function AddToCart({
       setSelectedSize(selectedCarryStyleId);
     }
   }, [hasCarryStyles, selectedCarryStyleId, selectedSize]);
+
+  useEffect(() => {
+    if (!selectedPrimary) return;
+    onPrimaryColorChange?.(selectedPrimary);
+  }, [selectedPrimary, onPrimaryColorChange]);
 
   // Reset selected size when gender changes if current size is not in new array
   useEffect(() => {
