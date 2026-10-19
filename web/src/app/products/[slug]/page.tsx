@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/prisma";
-import AddToCart from "@/components/cart/AddToCart";
 import V3Gallery from "@/components/V3Gallery";
+import {
+  ColorAwareGallery,
+  ProductColorAddToCart,
+  ProductColorProvider,
+} from "@/components/products/ColorAwareGallery";
 import FAQ from "@/components/FAQ";
 import { Suspense } from "react";
 import Link from "next/link";
@@ -66,6 +70,7 @@ import {
   apparelUnavailableSizes,
   getApparelItem,
   getApparelImages,
+  getApparelImagesForColor,
   isObsoleteApparelSlug,
 } from "@/lib/apparel";
 import LogoLoader from "@/components/ui/LogoLoader";
@@ -251,6 +256,19 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isLatticeInsoles = slug === LATTICE_INSOLES_SLUG;
   const apparelItem = getApparelItem(slug);
   const isApparel = Boolean(apparelItem);
+  const apparelImagesByColor = apparelItem
+    ? Object.fromEntries(
+        apparelItem.colors.map((color) => [color, getApparelImagesForColor(apparelItem, color)]),
+      )
+    : undefined;
+  const apparelCoverByColor = apparelImagesByColor
+    ? Object.fromEntries(
+        Object.entries(apparelImagesByColor).map(([color, colorImages]) => [
+          color,
+          colorImages[0],
+        ]),
+      )
+    : undefined;
   const shopHref = isAccessorySlug(slug)
     ? "/accessories"
     : isHealthSlug(slug)
@@ -391,16 +409,27 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         </div>
 
         {/* Gallery-first retail layout: large photos lead, buy box sits beside */}
+        <ProductColorProvider initialColor={apparelItem?.colors[0] ?? (product.primaryColors as string[])[0]}>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 xl:gap-12 items-start">
           <div className="lg:col-span-8">
             {/* Full-bleed on mobile so product photos dominate the viewport */}
             <div className="lg:rounded-none -mx-0 sm:mx-0">
-              <V3Gallery
-                media={galleryMedia}
-                aspect="square"
-                fit={isFootwearSlug(slug) ? "contain" : "cover"}
-                className="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
-              />
+              {apparelItem?.imagesByColor ? (
+                <ColorAwareGallery
+                  imagesByColor={apparelImagesByColor}
+                  fallbackImages={images}
+                  productName={displayName}
+                  fit={isFootwearSlug(slug) ? "contain" : "cover"}
+                  className="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
+                />
+              ) : (
+                <V3Gallery
+                  media={galleryMedia}
+                  aspect="square"
+                  fit={isFootwearSlug(slug) ? "contain" : "cover"}
+                  className="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
+                />
+              )}
             </div>
           </div>
           <div className="lg:col-span-4 px-4 sm:px-6 lg:px-0">
@@ -422,7 +451,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   <LogoLoader size="sm" showBar={false} className="!gap-0 scale-75" />
                 </div>
               }>
-                <AddToCart
+                <ProductColorAddToCart
                   variants={product.variants}
                   primaryColors={isTrailMix || isViolettePonybead ? trailMixColors : (product.primaryColors as string[])}
                   productPriceCents={product.priceCents}
@@ -475,6 +504,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   sizes={product.sizes as string[]}
                   productName={displayName}
                   coverImage={(images[0] as string) || defaultImages[0]}
+                  coverImagesByColor={apparelCoverByColor}
                   productSlug={slug}
                 />
               </Suspense>
@@ -498,6 +528,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             </div>
           </div>
         </div>
+        </ProductColorProvider>
       </div>
 
       <div className="container pb-12">
