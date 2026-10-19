@@ -2,13 +2,18 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 import NewListingBadge from "@/components/NewListingBadge";
 import { isNewListing } from "@/lib/newListing";
 import type { FootwearListProduct } from "@/lib/footwear";
 import { TRAIL_MIX_SLUG } from "@/lib/trailMix";
+import {
+  FOOTWEAR_BROWSE_LOOP_COPIES,
+  loopPeriodFromOffsets,
+  wrapToMiddleCopy,
+} from "@/components/footwear/footwearBrowseLoop";
 
 type BrowseProduct = FootwearListProduct;
 
@@ -23,24 +28,42 @@ const SLIP_ONS_BROWSE = {
   alt: "/products/slip-ons/listing-alt.jpg",
 } as const;
 
+function measureLoopPeriod(el: HTMLElement, productCount: number): number {
+  if (productCount <= 0) return 0;
+  const cards = el.querySelectorAll<HTMLElement>(".footwear-browse-item");
+  if (cards.length < productCount * 2) return 0;
+  return loopPeriodFromOffsets(cards[0].offsetLeft, cards[productCount].offsetLeft);
+}
+
+function jumpScrollLeft(el: HTMLElement, left: number) {
+  if (Math.abs(el.scrollLeft - left) < 0.5) return;
+  const snap = el.style.scrollSnapType;
+  el.style.scrollSnapType = "none";
+  el.scrollLeft = left;
+  el.style.scrollSnapType = snap;
+}
+
 function BrowseItem({
   product,
   cover,
   alt,
   index,
+  copy,
   scrollRoot,
 }: {
   product: BrowseProduct;
   cover: string;
   alt?: string;
   index: number;
+  copy: number;
   scrollRoot: RefObject<HTMLDivElement | null>;
 }) {
   const router = useRouter();
   const [navigating, setNavigating] = useState(false);
-  const [visible, setVisible] = useState(index === 0);
+  const [visible, setVisible] = useState(true);
   const itemRef = useRef<HTMLElement>(null);
   const slugKey = (product.slug || "").trim().toLowerCase();
+  const isPrimaryCopy = copy === 1;
 
   useEffect(() => {
     const el = itemRef.current;
@@ -76,10 +99,12 @@ function BrowseItem({
         visible ? "opacity-100" : "opacity-0"
       }`}
       style={{ transitionDelay: visible ? `${Math.min(index, 4) * 40}ms` : "0ms" }}
+      aria-hidden={isPrimaryCopy ? undefined : true}
     >
       <Link
         href={`/products/${product.slug}`}
         onClick={handleClick}
+        tabIndex={isPrimaryCopy ? undefined : -1}
         className={`group flex h-full flex-col outline-none transition-transform duration-200 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2 ${
           navigating ? "pointer-events-none" : ""
         }`}
@@ -89,19 +114,19 @@ function BrowseItem({
           <SoftImage
             key={coverSrc}
             src={coverSrc}
-            alt={product.name}
+            alt={isPrimaryCopy ? product.name : ""}
             fill
             className={`object-cover object-center transition-all duration-500 ease-out ${
               altSrc ? "group-hover:opacity-0" : "group-hover:scale-[1.03]"
             } ${navigating ? "brightness-90" : ""}`}
             sizes="(max-width: 640px) 88vw, 416px"
-            priority={index < 2}
+            priority={isPrimaryCopy && index < 2}
           />
           {altSrc && (
             <SoftImage
               key={altSrc}
               src={altSrc}
-              alt={`${product.name} – alternate view`}
+              alt={isPrimaryCopy ? `${product.name} – alternate view` : ""}
               fill
               showLogoPlaceholder={false}
               className="object-cover object-center opacity-0 transition-all duration-500 ease-out group-hover:opacity-100 group-hover:scale-[1.03]"
@@ -159,6 +184,26 @@ function BrowseItem({
 
 export default function FootwearBrowse({ products, getImages }: FootwearBrowseProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const loopSlides = useMemo(() => {
+    if (products.length === 0) return [];
+    const slides: { product: BrowseProduct; copy: number; index: number }[] = [];
+    for (let copy = 0; copy < FOOTWEAR_BROWSE_LOOP_COPIES; copy++) {
+      products.forEach((product, index) => {
+        slides.push({ product, copy, index });
+      });
+    }
+    return slides;
+  }, [products]);
+
+  const wrapScroller = useCallback(() => {
+    const el = scrollerRef.current;
+    if (!el || products.length === 0) return;
+    const period = measureLoopPeriod(el, products.length);
+    if (!period) return;
+    jumpScrollLeft(el, wrapToMiddleCopy(el.scrollLeft, period));
+  }, [products.length]);
+
+  const smoothScrollUntil = useRef(0);
 
   const scrollByCard = useCallback((direction: -1 | 1) => {
     const el = scrollerRef.current;
@@ -167,6 +212,8 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
     const styles = getComputedStyle(el);
     const gap = Number.parseFloat(styles.columnGap || styles.gap || "16") || 16;
     const delta = (card?.offsetWidth ?? el.clientWidth * 0.8) + gap;
+    // Let the step run into the peek copy; wrapping on scrollend keeps it seamless.
+    smoothScrollUntil.current = performance.now() + 900;
     el.scrollBy({ left: direction * delta, behavior: "smooth" });
   }, []);
 
@@ -180,11 +227,14 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
     };
     const pinStart = () => {
       if (!allowPin) return;
-      if (el.scrollLeft !== 0) el.scrollLeft = 0;
+      const period = measureLoopPeriod(el, products.length);
+      const target = period > 0 ? period : 0;
+      if (Math.abs(el.scrollLeft - target) > 0.5) el.scrollLeft = target;
     };
 
     // Snap on load auto-animates the row and can rest between cards,
-    // cutting the first photo in half. Hold snap off until we pin to 0.
+    // cutting the first photo in half. Hold snap off until we pin to the
+    // middle copy (V3 Slides), not the duplicated left peek.
     el.style.scrollSnapType = "none";
     pinStart();
 
@@ -203,20 +253,48 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
       allowPin = false;
       restoreSnap();
     };
+
+    let wrapRaf = 0;
+    const scheduleWrap = () => {
+      if (wrapRaf) return;
+      wrapRaf = requestAnimationFrame(() => {
+        wrapRaf = 0;
+        wrapScroller();
+      });
+    };
+    const onScroll = () => {
+      // Don't fight CSS smooth-scroll's target; wrap when it settles instead.
+      if (performance.now() < smoothScrollUntil.current) return;
+      scheduleWrap();
+    };
+    const onScrollEnd = () => {
+      smoothScrollUntil.current = 0;
+      scheduleWrap();
+    };
+
     el.addEventListener("pointerdown", releasePin, { passive: true });
     el.addEventListener("wheel", releasePin, { passive: true });
     el.addEventListener("touchstart", releasePin, { passive: true });
+    el.addEventListener("scroll", onScroll, { passive: true });
+    el.addEventListener("scrollend", onScrollEnd);
+
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => wrapScroller()) : null;
+    ro?.observe(el);
 
     return () => {
       cancelAnimationFrame(raf1);
       cancelAnimationFrame(raf2);
+      if (wrapRaf) cancelAnimationFrame(wrapRaf);
       window.clearTimeout(retry);
       restoreSnap();
+      ro?.disconnect();
       el.removeEventListener("pointerdown", releasePin);
       el.removeEventListener("wheel", releasePin);
       el.removeEventListener("touchstart", releasePin);
+      el.removeEventListener("scroll", onScroll);
+      el.removeEventListener("scrollend", onScrollEnd);
     };
-  }, [products.length]);
+  }, [products.length, wrapScroller]);
 
   return (
     <div
@@ -235,15 +313,16 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
       }}
       className="footwear-browse no-scrollbar flex snap-x snap-proximity gap-5 overflow-x-auto overscroll-x-contain py-1 outline-none [overflow-anchor:none] focus-visible:ring-2 focus-visible:ring-neutral-900/20 sm:gap-6 lg:gap-8"
     >
-      {products.map((product, index) => {
+      {loopSlides.map(({ product, copy, index }) => {
         const { cover, alt } = getImages(product);
         return (
           <BrowseItem
-            key={product.id}
+            key={`${copy}-${product.id}`}
             product={product}
             cover={cover}
             alt={alt}
             index={index}
+            copy={copy}
             scrollRoot={scrollerRef}
           />
         );
