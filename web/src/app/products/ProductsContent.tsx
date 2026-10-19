@@ -316,22 +316,61 @@ export default function ProductsContent({
     return { cover, alt };
   }
 
+  const catalogHeading = (
+    <div className="mb-12 text-center">
+      <TitleTag className={titleClass}>
+        {headingNode}
+      </TitleTag>
+      {scrollCue}
+      {!searchQuery && subheading && (
+        <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
+          {subheading}
+        </p>
+      )}
+      {!showScrollCue && subheading && <div className="mt-6 h-px bg-neutral-200" />}
+    </div>
+  );
+
+  const apparelSection =
+    showApparelContinuation && apparelTeaserProducts.length > 0 ? (
+      <section
+        id="apparel"
+        aria-labelledby="footwear-apparel-heading"
+        className={useFootwearBrowse ? "container py-16 sm:py-24" : "mt-16 sm:mt-24 lg:mt-28"}
+      >
+        <div className="mb-8 sm:mb-10 text-center">
+          <h2
+            id="footwear-apparel-heading"
+            className={homeSectionTitleClass}
+          >
+            Apparel
+          </h2>
+          {scrollCue}
+        </div>
+
+        <ApparelProductGrid products={apparelTeaserProducts} />
+
+        <div className="mt-10 sm:mt-12 flex justify-center">
+          <Link
+            href="/apparel"
+            className={SHOP_ALL_CTA_CLASS}
+          >
+            Shop all apparel
+          </Link>
+        </div>
+      </section>
+    ) : null;
+
   return (
     <div className={shellClass}>
+      {useFootwearBrowse ? (
+        <>
+          <FootwearBrowse products={products} getImages={getImages} />
+          {apparelSection}
+        </>
+      ) : (
       <div className="container py-16">
-        {/* ── Header ── */}
-        <div className="mb-12 text-center">
-          <TitleTag className={titleClass}>
-            {headingNode}
-          </TitleTag>
-          {scrollCue}
-          {!searchQuery && subheading && (
-            <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
-              {subheading}
-            </p>
-          )}
-          {!showScrollCue && subheading && <div className="mt-6 h-px bg-neutral-200" />}
-        </div>
+        {catalogHeading}
 
         {/* ── Empty state ── */}
         {displayProducts.length === 0 && searchQuery ? (
@@ -352,9 +391,6 @@ export default function ProductsContent({
               {emptyLabel}
             </Link>
           </div>
-        ) : useFootwearBrowse ? (
-          /* ── Footwear shop: left-to-right cards with full listing copy ── */
-          <FootwearBrowse products={products} getImages={getImages} />
         ) : (
           /* ── Product grid (home teaser / Engineering / Collaborative / search) ── */
           <>
@@ -462,40 +498,13 @@ export default function ProductsContent({
           </>
         )}
 
-        {/* ── Apparel teaser after footwear (full catalog lives on /apparel) ── */}
-        {showApparelContinuation && apparelTeaserProducts.length > 0 && (
-          <section
-            id="apparel"
-            aria-labelledby="footwear-apparel-heading"
-            className="mt-16 sm:mt-24 lg:mt-28"
-          >
-            <div className="mb-8 sm:mb-10 text-center">
-              <h2
-                id="footwear-apparel-heading"
-                className={homeSectionTitleClass}
-              >
-                Apparel
-              </h2>
-              {scrollCue}
-            </div>
-
-            <ApparelProductGrid products={apparelTeaserProducts} />
-
-            <div className="mt-10 sm:mt-12 flex justify-center">
-              <Link
-                href="/apparel"
-                className={SHOP_ALL_CTA_CLASS}
-              >
-                Shop all apparel
-              </Link>
-            </div>
-          </section>
-        )}
+        {apparelSection}
 
         {isHomeFootwearTeaser && (
           <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
         )}
       </div>
+      )}
     </div>
   );
 }
