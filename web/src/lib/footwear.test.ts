@@ -20,8 +20,14 @@ test("white color names match the White swatch", () => {
 });
 
 test("slip-ons gallery leads with the white ad only when White is selected", () => {
-  assert.deepEqual(slipOnsImagesForColor(studio, "black"), studio);
-  assert.deepEqual(slipOnsImagesForColor(studio, undefined), studio);
+  assert.deepEqual(slipOnsImagesForColor(studio, "black"), [
+    ...studio,
+    SLIP_ONS_WHITE_AD_IMAGE,
+  ]);
+  assert.deepEqual(slipOnsImagesForColor(studio, undefined), [
+    ...studio,
+    SLIP_ONS_WHITE_AD_IMAGE,
+  ]);
   assert.deepEqual(slipOnsImagesForColor(studio, "white"), [
     SLIP_ONS_WHITE_AD_IMAGE,
     ...studio,
@@ -36,5 +42,9 @@ test("white ad is not duplicated if it is already in the studio list", () => {
     studio[0],
     studio[1],
   ]);
-  assert.deepEqual(slipOnsImagesForColor(withAd, "grey"), studio);
+  assert.deepEqual(slipOnsImagesForColor(withAd, "grey"), [
+    studio[0],
+    studio[1],
+    SLIP_ONS_WHITE_AD_IMAGE,
+  ]);
 });

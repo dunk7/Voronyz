@@ -31,15 +31,15 @@ export function isWhiteColor(color: string | undefined | null): boolean {
 }
 
 /**
- * When White is selected, the white Slip Ons ad leads.
- * Other colors keep the studio sequence and omit the white ad so the gallery matches the swatch.
+ * The white Slip Ons ad is always in the live PDP gallery.
+ * When White is selected it leads; other colors keep studio shots first.
  */
 export function slipOnsImagesForColor(baseImages: string[], color?: string | null): string[] {
   const withoutWhiteAd = baseImages.filter((src) => src !== SLIP_ONS_WHITE_AD_IMAGE);
   if (isWhiteColor(color)) {
     return [SLIP_ONS_WHITE_AD_IMAGE, ...withoutWhiteAd];
   }
-  return withoutWhiteAd;
+  return [...withoutWhiteAd, SLIP_ONS_WHITE_AD_IMAGE];
 }
 
 /** PDP / listing copy — colors live on the swatches, not in this paragraph. */

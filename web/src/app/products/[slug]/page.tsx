@@ -59,7 +59,7 @@ import {
   LATTICE_INSOLES_THUMBNAIL_URL,
 } from "@/lib/latticeInsoles";
 import { isAccessorySlug, isApparelSlug, isFootwearSlug, isHealthSlug } from "@/lib/productCategories";
-import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION } from "@/lib/footwear";
+import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION, SLIP_ONS_WHITE_AD_IMAGE } from "@/lib/footwear";
 import {
   apparelProductShopHref,
   apparelProductShopLabel,
@@ -199,6 +199,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     "/products/slip-ons/InShot_20260405_203930832.jpg",
     "/products/slip-ons/InShot_20260405_204113872.jpg",
     "/products/slip-ons/InShot_20260405_204333303.jpg",
+    SLIP_ONS_WHITE_AD_IMAGE,
   ];
   const magikidShoesImages = [
     MAGIKID_SHOES_THUMBNAIL_URL,
