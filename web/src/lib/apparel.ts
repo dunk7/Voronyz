@@ -84,9 +84,14 @@ export type ApparelCatalogItem = {
    */
   availableSizes?: string[];
   /**
-   * Per-size unit price. Omitted sizes use `priceCents` (typically Medium).
+   * Per-size unit price (the amount charged). Omitted sizes use `priceCents`.
    */
   sizePriceCents?: Record<string, number>;
+  /**
+   * Inflated “was” price shown struck through when a size is on advertised sale.
+   * Checkout still charges `sizePriceCents` / `priceCents`.
+   */
+  sizeCompareAtCents?: Record<string, number>;
   /** Primary cover / thumbnail image. */
   image: string;
   /** Full gallery; defaults to `[image]` when omitted. */
@@ -193,9 +198,25 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     subcategory: "sweaters",
     name: "The Atelier Hoodie",
     description: "Heavyweight fleece hoodie with a clean, modern cut.",
-    priceCents: 7800,
+    priceCents: 8400,
     colors: ["grey", "white"],
     sizes: [...APPAREL_SIZES],
+    sizePriceCents: {
+      XS: 7400,
+      S: 7800,
+      M: 8400,
+      L: 9000,
+      XL: 9600,
+      XXL: 9900,
+    },
+    sizeCompareAtCents: {
+      XS: 18500, // 60% off → $74
+      S: 19500, // 60% off → $78
+      M: 21000, // 60% off → $84
+      L: 22500, // 60% off → $90
+      XL: 22900, // 58% off → $96
+      XXL: 24900, // 60% off → $99
+    },
     image: "/products/apparel/hoodie-grey-front.jpg",
     images: [
       "/products/apparel/hoodie-grey-front.jpg",
@@ -437,14 +458,54 @@ export function apparelUnavailableSizes(item: ApparelCatalogItem): string[] {
   return item.sizes.filter((size) => !item.availableSizes!.includes(size));
 }
 
+function normalizeApparelSizeKey(size: string | null | undefined): string {
+  return (size || "").trim().toUpperCase();
+}
+
 /** Unit price for a catalog size. Medium / omitted sizes use `priceCents`. */
 export function apparelPriceCentsForSize(
   item: ApparelCatalogItem,
   size?: string | null,
 ): number {
-  if (!size) return item.priceCents;
-  const keyed = item.sizePriceCents?.[size];
+  const key = normalizeApparelSizeKey(size);
+  if (!key) return item.priceCents;
+  const keyed = item.sizePriceCents?.[key];
   return typeof keyed === "number" && keyed > 0 ? keyed : item.priceCents;
+}
+
+export const HOODIE_MIN_SALE_CENTS = 7000;
+
+export type ApparelPriceOffer = {
+  priceCents: number;
+  compareAtCents: number;
+  percentOff: number;
+};
+
+function percentOffFrom(compareAtCents: number, priceCents: number): number {
+  if (compareAtCents <= 0 || priceCents >= compareAtCents) return 0;
+  return Math.round((1 - priceCents / compareAtCents) * 100);
+}
+
+/** Advertised sale (struck-through compare-at + paid price). Tees without compare-at return null. */
+export function getApparelSizeOffer(
+  slug: string | null | undefined,
+  size: string | null | undefined,
+): ApparelPriceOffer | null {
+  const item = getApparelItem(slug);
+  if (!item?.sizeCompareAtCents) return null;
+  const key = normalizeApparelSizeKey(size) || "M";
+  const priceCents = Math.max(HOODIE_MIN_SALE_CENTS, apparelPriceCentsForSize(item, key));
+  const compareAtCents = item.sizeCompareAtCents[key] ?? item.sizeCompareAtCents.M;
+  if (typeof compareAtCents !== "number" || compareAtCents <= priceCents) return null;
+  return {
+    priceCents,
+    compareAtCents,
+    percentOff: percentOffFrom(compareAtCents, priceCents),
+  };
+}
+
+export function getApparelListingOffer(slug: string | null | undefined): ApparelPriceOffer | null {
+  return getApparelSizeOffer(slug, "M");
 }
 
 /**
