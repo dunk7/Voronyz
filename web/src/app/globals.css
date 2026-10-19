@@ -139,113 +139,11 @@ video {
 }
 
 /*
-  Homepage hero: charcoal in the middle, black on the left and right.
-  Desktop only — on stacked mobile the left-to-right fade makes the
-  headline look uneven.
-  The flashing Voronoi lattice fills this stage from the Voronyz header
-  down, then fades to black. Shop panels use the hex honeycomb.
+  Homepage hero: solid black behind the GIF so the white headline stays
+  readable. Shop panels use the hex honeycomb.
 */
 .hero-stage {
   background-color: #000;
-}
-
-/*
-  Real Voronyz lattice: rounded foam cells from /hero-bg.jpg.
-  Full hero-stage (not the GIF box). Fade at the bottom into black.
-  Tile small — hole-scale, not cover — so cells match the shoe foam.
-  Color wash tints the grey walls; black holes stay knocked out.
-  Glow is a slow CSS drift so it lights up without a mouse (phones included).
-*/
-.hero-voronoi-lattice {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
-}
-
-.hero-voronoi-lattice-cells {
-  position: absolute;
-  inset: 0;
-  /*
-    Color lives on this layer; /hero-bg.jpg is only a repeating hole mask.
-    Tinting the jpeg itself at 320px painted rainbow columns.
-  */
-  background:
-    radial-gradient(ellipse 72% 78% at 14% 28%, #ff4d6d 0%, transparent 58%),
-    radial-gradient(ellipse 68% 72% at 86% 22%, #4cc9f0 0%, transparent 60%),
-    radial-gradient(ellipse 64% 70% at 52% 84%, #7b2cbf 0%, transparent 62%),
-    radial-gradient(ellipse 58% 56% at 38% 48%, #80ffdb 0%, transparent 54%),
-    radial-gradient(ellipse 52% 50% at 72% 62%, #ffd60a 0%, transparent 52%),
-    #ff9f1c;
-  -webkit-mask-image: url("/hero-bg.jpg");
-  mask-image: url("/hero-bg.jpg");
-  -webkit-mask-size: 320px auto;
-  mask-size: 320px auto;
-  -webkit-mask-repeat: repeat;
-  mask-repeat: repeat;
-  -webkit-mask-position: 0 0;
-  mask-position: 0 0;
-  /* JPEG has no alpha; without luminance the mask is a solid rectangle. */
-  -webkit-mask-source-type: luminance;
-  mask-mode: luminance;
-  animation: hero-lattice-breathe 5.5s ease-in-out infinite;
-}
-
-.hero-voronoi-lattice-light {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.hero-voronoi-lattice-glow {
-  position: absolute;
-  inset: -10%;
-  background:
-    radial-gradient(ellipse 48% 54% at 28% 36%, rgb(255 77 109 / 0.32), transparent 64%),
-    radial-gradient(ellipse 44% 50% at 74% 40%, rgb(76 201 240 / 0.3), transparent 66%),
-    radial-gradient(ellipse 50% 46% at 52% 70%, rgb(128 255 219 / 0.22), transparent 68%);
-  mix-blend-mode: screen;
-  animation: hero-lattice-light 5.5s ease-in-out infinite;
-}
-
-@keyframes hero-lattice-breathe {
-  0%,
-  100% {
-    opacity: 0.55;
-    filter: brightness(0.95);
-  }
-  50% {
-    opacity: 0.9;
-    filter: brightness(1.12);
-  }
-}
-
-@keyframes hero-lattice-light {
-  0%,
-  100% {
-    opacity: 0.35;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-@media (min-width: 1024px) {
-  .hero-stage {
-    background-image:
-      linear-gradient(
-        to right,
-        #000 0%,
-        #1a1a1a 12%,
-        #242424 22%,
-        #242424 78%,
-        #1a1a1a 88%,
-        #000 100%
-      );
-  }
 }
 
 .bg-texture-white {
@@ -372,14 +270,6 @@ html.site-dark .bg-texture-white .bg-texture-white::before {
   .logo-loader-bar-fill {
     width: 55%;
     left: 22.5%;
-  }
-
-  .hero-voronoi-lattice-cells,
-  .hero-voronoi-lattice-glow {
-    animation: none;
-    transform: none;
-    filter: none;
-    opacity: 0.5;
   }
 
   .motion-media-track {
