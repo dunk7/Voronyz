@@ -1,7 +1,7 @@
 export const GATORS_SLUG = "gators";
 export const GATORS_NAME = "The Gators";
 export const GATORS_PRICE_CENTS = 10000; // $100
-export const GATORS_THUMBNAIL_URL = "/products/gators/gators-mint-marble.jpg";
+export const GATORS_THUMBNAIL_URL = "/products/gators/gators-coming-soon.jpg";
 
 export const GATORS_DESCRIPTION_SHORT =
   "Engineered for all-day clog comfort, built to last. Inspired by the alligator — chunky cushion, easy slip-on.";
