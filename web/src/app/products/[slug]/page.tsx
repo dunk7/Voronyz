@@ -1,8 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import AddToCart from "@/components/cart/AddToCart";
 import V3Gallery from "@/components/V3Gallery";
+import {
+  ColorAwareGallery,
+  ProductColorAddToCart,
+  ProductColorProvider,
+} from "@/components/products/ColorAwareGallery";
 import FAQ from "@/components/FAQ";
-import { Suspense } from "react";
 import Link from "next/link";
 import { Metadata } from "next";
 import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
@@ -61,14 +64,15 @@ import {
 import { isAccessorySlug, isApparelSlug, isFootwearSlug, isHealthSlug } from "@/lib/productCategories";
 import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION } from "@/lib/footwear";
 import {
+  apparelCatalogProduct,
   apparelProductShopHref,
   apparelProductShopLabel,
   apparelUnavailableSizes,
   getApparelItem,
   getApparelImages,
+  getApparelImagesForColor,
   isObsoleteApparelSlug,
 } from "@/lib/apparel";
-import LogoLoader from "@/components/ui/LogoLoader";
 import { redirect } from "next/navigation";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
@@ -133,7 +137,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   if (obsoleteRedirect || isObsoleteApparelSlug(slug)) {
     redirect(obsoleteRedirect ?? "/apparel");
   }
-  let product: ProductWithVariants;
+  let product: ProductWithVariants | null = null;
   try {
     await ensureCatalogProducts();
     product = await prisma.product.findUnique({ 
@@ -152,17 +156,25 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     }) as ProductWithVariants;
   } catch (error) {
     console.error(`Failed to load product "${slug}":`, error);
-    return (
-      <div className="bg-texture-white">
-        <div className="container py-12 text-center">
-          <h1 className="text-2xl font-semibold text-neutral-900 mb-4">Something went wrong</h1>
-          <p className="text-neutral-600 mb-6">We couldn&apos;t load this product right now. Please try again later.</p>
-          <Link href="/products" className="inline-flex items-center justify-center rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800">
-            Back to Shop
-          </Link>
+    const catalogFallback = getApparelItem(slug);
+    if (!catalogFallback) {
+      return (
+        <div className="bg-texture-white">
+          <div className="container py-12 text-center">
+            <h1 className="text-2xl font-semibold text-neutral-900 mb-4">Something went wrong</h1>
+            <p className="text-neutral-600 mb-6">We couldn&apos;t load this product right now. Please try again later.</p>
+            <Link href="/products" className="inline-flex items-center justify-center rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800">
+              Back to Shop
+            </Link>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+    product = apparelCatalogProduct(catalogFallback);
+  }
+  if (!product) {
+    const catalogFallback = getApparelItem(slug);
+    if (catalogFallback) product = apparelCatalogProduct(catalogFallback);
   }
   if (!product) return <div className="container py-12 text-neutral-900">Not found.</div>;
 
@@ -251,6 +263,19 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isLatticeInsoles = slug === LATTICE_INSOLES_SLUG;
   const apparelItem = getApparelItem(slug);
   const isApparel = Boolean(apparelItem);
+  const apparelImagesByColor = apparelItem
+    ? Object.fromEntries(
+        apparelItem.colors.map((color) => [color, getApparelImagesForColor(apparelItem, color)]),
+      )
+    : undefined;
+  const apparelCoverByColor = apparelImagesByColor
+    ? Object.fromEntries(
+        Object.entries(apparelImagesByColor).map(([color, colorImages]) => [
+          color,
+          colorImages[0],
+        ]),
+      )
+    : undefined;
   const shopHref = isAccessorySlug(slug)
     ? "/accessories"
     : isHealthSlug(slug)
@@ -391,16 +416,29 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         </div>
 
         {/* Gallery-first retail layout: large photos lead, buy box sits beside */}
+        <ProductColorProvider initialColor={apparelItem?.colors[0] ?? (product.primaryColors as string[])[0]}>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 xl:gap-12 items-start">
           <div className="lg:col-span-8">
             {/* Full-bleed on mobile so product photos dominate the viewport */}
             <div className="lg:rounded-none -mx-0 sm:mx-0">
-              <V3Gallery
-                media={galleryMedia}
-                aspect="square"
-                fit={isFootwearSlug(slug) ? "contain" : "cover"}
-                className="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
-              />
+              {apparelItem || isSlipOns ? (
+                <ColorAwareGallery
+                  imagesByColor={apparelImagesByColor}
+                  fallbackImages={images}
+                  extraMedia={isSlipOns ? galleryMedia.filter((item) => item.type === "video") : []}
+                  leadWhiteSlipOns={isSlipOns}
+                  productName={displayName}
+                  fit={isFootwearSlug(slug) ? "contain" : "cover"}
+                  className="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
+                />
+              ) : (
+                <V3Gallery
+                  media={galleryMedia}
+                  aspect="square"
+                  fit={isFootwearSlug(slug) ? "contain" : "cover"}
+                  className="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
+                />
+              )}
             </div>
           </div>
           <div className="lg:col-span-4 px-4 sm:px-6 lg:px-0">
@@ -422,7 +460,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   <LogoLoader size="sm" showBar={false} className="!gap-0 scale-75" />
                 </div>
               }>
-                <AddToCart
+                <ProductColorAddToCart
                   variants={product.variants}
                   primaryColors={isTrailMix || isViolettePonybead ? trailMixColors : (product.primaryColors as string[])}
                   productPriceCents={product.priceCents}
@@ -470,11 +508,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     hideSizeSelector: apparelItem?.sizes.length === 1,
                     unavailableColors: apparelItem?.outOfStockColors ?? [],
                     unavailableSizes: apparelItem ? apparelUnavailableSizes(apparelItem) : [],
+                    sizePriceCents: apparelItem?.sizePriceCents ?? {},
                   })}
                   sizes={product.sizes as string[]}
                   productName={displayName}
                   coverImage={(images[0] as string) || defaultImages[0]}
+                  coverImagesByColor={apparelCoverByColor}
                   productSlug={slug}
+                  allowOutOfStockColorPreview={isSlipOns}
                 />
               </Suspense>
 
@@ -497,6 +538,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             </div>
           </div>
         </div>
+        </ProductColorProvider>
       </div>
 
       <div className="container pb-12">
@@ -534,9 +576,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               : isViolettePonybead
               ? VIOLETTE_PONYBEAD_HOW_ITS_MADE
               : apparelItem?.slug === "voronyz-oversized-tee"
-              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Shipping now in black and white, Medium and Large — grey and other sizes are out of stock."
+              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Shipping now in black and white, XS through XXL — grey is out of stock. Price steps down for smaller sizes and up for larger ones from Medium."
               : apparelItem?.slug === "voronyz-core-hoodie"
-              ? "Heavyweight fleece with a clean, modern cut. Ready to ship in your size and color."
+              ? "Heavyweight fleece with a clean, modern cut. Grey and white — pick a color to see the matching hoodie, then swipe to the second photo for the back. Pick a size to see the sale price (about 60% off the marked compare-at)."
               : isApparel && apparelItem?.comingSoon
               ? "Pre-order Voronyz Apparel — pay now to join the waitlist, and we ship when the drop arrives."
               : isApparel
@@ -583,13 +625,18 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isApparel && !apparelItem?.comingSoon ? [
               { q: "What sizes are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
-                ? "The Oversized Tee currently ships in Medium and Large. XS, S, XL, and XXL are listed but out of stock."
+                ? "The Oversized Tee ships in XS, S, M, L, XL, and XXL. Smaller sizes cost less than Medium; larger sizes cost more."
                 : "This piece runs XS–XXL." },
               { q: "What colors are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
                 ? "Black and white are in stock. Grey is currently out of stock."
+                : apparelItem?.slug === "voronyz-core-hoodie"
+                  ? "Grey and white. The gallery updates to the selected color, with the back of the same hoodie on the second photo."
                 : apparelItem?.outOfStockColors?.includes("grey")
                   ? "Grey is currently out of stock. Choose another listed color."
                   : "Pick any listed color that is in stock." },
+              ...(apparelItem?.slug === "voronyz-core-hoodie"
+                ? [{ q: "How much does it cost?", a: "Price depends on size. Each hoodie is marked down about 60% from the listed compare-at — sale prices run from $74 (XS) to $99 (XXL), never under $70." }]
+                : []),
               { q: "When will my order ship?", a: "Orders typically ship within a few business days. You'll get updates by email." },
               { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Accessories (shades, jewelry, lace locks, drone parts) live under their own Apparel section." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },

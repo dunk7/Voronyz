@@ -11,6 +11,7 @@ import { resolveActiveDiscountCode } from "@/lib/discountDisabled";
 import { getOrderLevelDiscountCentsForCode } from "@/lib/affiliateDiscounts";
 import { applyOrderLevelDiscountCents } from "@/lib/affiliateApproveLogic";
 import { cartHasPreOrder, resolveIsPreOrder } from "@/lib/preorder";
+import { catalogUnitPriceCents } from "@/lib/apparel";
 import {
   buildShippingInsuranceLineItem,
   getInsurableItemQuantity,
@@ -18,7 +19,6 @@ import {
   isShippingInsuranceRequested,
   SHIPPING_INSURANCE_PRODUCT_NAME,
 } from "@/lib/shippingInsurance";
-
 const NANO_RECEIVE_ADDRESS = process.env.NANO_RECEIVE_ADDRESS;
 const NANO_DISCOUNT_RATE = 0.03;
 
@@ -79,11 +79,16 @@ export async function POST(request: NextRequest) {
 
         const slug = variant?.product?.slug || productSlug;
         const productNameForDiscount = variant?.product?.name || item.productName || "";
-        const baseUnitAmount = variant
+        const fallbackCents = variant
           ? (variant.priceCents || variant.product.priceCents || 0)
           : typeof item.priceCents === "number" && item.priceCents > 0
             ? item.priceCents
             : 7500;
+        const baseUnitAmount = catalogUnitPriceCents({
+          productSlug: slug,
+          size: item.size,
+          fallbackCents,
+        });
         unitAmount = getDiscountedUnitPriceCents(baseUnitAmount, normalizedDiscountCode, {
           productSlug: slug,
           productName: productNameForDiscount,
@@ -101,8 +106,13 @@ export async function POST(request: NextRequest) {
         });
       } catch {
         // Fallback pricing when DB is unavailable
+        const fallbackCatalog = catalogOverrideUnitCents(productSlug, item.size);
         unitAmount = getDiscountedUnitPriceCents(
-          typeof item.priceCents === "number" && item.priceCents > 0 ? item.priceCents : 7500,
+          fallbackCatalog != null
+            ? fallbackCatalog
+            : typeof item.priceCents === "number" && item.priceCents > 0
+              ? item.priceCents
+              : 7500,
           normalizedDiscountCode,
           {
             productSlug,

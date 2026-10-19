@@ -13,6 +13,7 @@ import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
 import TakeTheQuizPromo from "@/components/apparel/TakeTheQuizPromo";
+import PrintedFootwearEducation from "@/components/apparel/PrintedFootwearEducation";
 import FootwearBrowse from "@/components/footwear/FootwearBrowse";
 
 /** Homepage footwear teaser — slides + slip-ons only; full catalog on /products. */
@@ -493,7 +494,10 @@ export default function ProductsContent({
         )}
 
         {isHomeFootwearTeaser && (
-          <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
+          <>
+            <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
+            <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
+          </>
         )}
       </div>
     </div>
