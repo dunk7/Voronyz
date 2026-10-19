@@ -35,7 +35,7 @@ type FlavorOption = {
   description?: string;
 };
 
-type Props = {
+export type AddToCartProps = {
   variants: VariantProps[];
   primaryColors: string[];
   secondaryColors?: string[];
@@ -149,7 +149,7 @@ export default function AddToCart({
   unavailableColors = [],
   unavailableSizes = [],
   sizePriceCents = {},
-}: Props) {
+}: AddToCartProps) {
   const hasSecondaryColors = secondaryColors.length > 0;
   const hasFulfillmentOptions = fulfillmentOptions.length > 0;
   const hasCarryStyles = carryStyles.length > 0;

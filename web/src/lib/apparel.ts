@@ -164,8 +164,8 @@ export type ApparelCatalogItem = {
   /** Full gallery; defaults to `[image]` when omitted. */
   images?: string[];
   /**
-   * Per-color gallery. Missing colors fall back to `images`.
-   * Use this when a colorway needs its own mockup (e.g. white tee + black logo).
+   * Per-color gallery (front, then back, …). Missing colors fall back to
+   * `images`. Used for the white tee mockup and hoodie colorways.
    */
   imagesByColor?: Record<string, string[]>;
   skuPrefix: string;
@@ -272,10 +272,23 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     name: "The Atelier Hoodie",
     description: "Heavyweight fleece hoodie with a clean, modern cut.",
     priceCents: HOODIE_SIZE_PRICES[HOODIE_DEFAULT_SIZE].priceCents,
-    colors: ["black", "grey"],
-    outOfStockColors: ["grey"],
+    colors: ["grey", "white"],
     sizes: [...APPAREL_SIZES],
-    image: "/products/apparel/hoodie.jpg",
+    image: "/products/apparel/hoodie-grey-front.jpg",
+    images: [
+      "/products/apparel/hoodie-grey-front.jpg",
+      "/products/apparel/hoodie-grey-back.jpg",
+    ],
+    imagesByColor: {
+      grey: [
+        "/products/apparel/hoodie-grey-front.jpg",
+        "/products/apparel/hoodie-grey-back.jpg",
+      ],
+      white: [
+        "/products/apparel/hoodie-white-front.jpg",
+        "/products/apparel/hoodie-white-back.jpg",
+      ],
+    },
     skuPrefix: "APP-HOOD",
     comingSoon: false,
   },
@@ -351,6 +364,32 @@ export function isApparelSlug(slug: string | null | undefined): boolean {
 export function getApparelItem(slug: string | null | undefined) {
   const key = (slug || "").trim().toLowerCase();
   return APPAREL_CATALOG.find((item) => item.slug === key) ?? null;
+}
+
+/** In-memory product shape used when the catalog listing is known but the DB is unreachable. */
+export function apparelCatalogProduct(item: ApparelCatalogItem) {
+  const now = new Date(0);
+  return {
+    id: item.slug,
+    slug: item.slug,
+    name: item.name,
+    description: item.description,
+    priceCents: item.priceCents,
+    currency: "usd",
+    images: getApparelImages(item),
+    primaryColors: [...item.colors],
+    secondaryColors: [] as string[],
+    sizes: [...item.sizes],
+    variants: item.colors.map((color) => ({
+      id: `${item.skuPrefix}-${color}`,
+      color,
+      sku: apparelSku(item.skuPrefix, color),
+      stock: apparelVariantStock(item, color),
+      priceCents: item.priceCents,
+    })),
+    createdAt: now,
+    updatedAt: now,
+  };
 }
 
 export function getApparelSubcategory(id: string | null | undefined) {

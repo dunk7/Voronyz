@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   APPAREL_SIZES,
   HOODIE_MIN_SALE_CENTS,
+  apparelCatalogProduct,
   apparelProductShopHref,
   apparelProductShopLabel,
   apparelUnavailableSizes,
@@ -33,6 +34,37 @@ test("The Atelier Hoodie is a live listing, not a pre-order", () => {
 test("hoodie listing back link returns to Apparel", () => {
   assert.equal(apparelProductShopHref("voronyz-core-hoodie"), "/apparel");
   assert.equal(apparelProductShopLabel("voronyz-core-hoodie"), "Back to Apparel");
+});
+
+test("The Atelier Hoodie ships in grey and white with matching front and back shots", () => {
+  const hoodie = getApparelItem("voronyz-core-hoodie");
+  assert.ok(hoodie);
+  assert.deepEqual(hoodie.colors, ["grey", "white"]);
+  assert.equal(hoodie.outOfStockColors, undefined);
+  assert.equal(hoodie.image, "/products/apparel/hoodie-grey-front.jpg");
+  assert.deepEqual(getApparelImages(hoodie), [
+    "/products/apparel/hoodie-grey-front.jpg",
+    "/products/apparel/hoodie-grey-back.jpg",
+  ]);
+  assert.deepEqual(getApparelImagesForColor(hoodie, "grey"), [
+    "/products/apparel/hoodie-grey-front.jpg",
+    "/products/apparel/hoodie-grey-back.jpg",
+  ]);
+  assert.deepEqual(getApparelImagesForColor(hoodie, "white"), [
+    "/products/apparel/hoodie-white-front.jpg",
+    "/products/apparel/hoodie-white-back.jpg",
+  ]);
+  assert.equal(isApparelColorOutOfStock(hoodie, "grey"), false);
+  assert.equal(isApparelColorOutOfStock(hoodie, "white"), false);
+  assert.equal(apparelVariantStock(hoodie, "grey"), 999);
+  assert.equal(apparelVariantStock(hoodie, "white"), 999);
+
+  const listing = apparelCatalogProduct(hoodie);
+  assert.deepEqual(listing.primaryColors, ["grey", "white"]);
+  assert.deepEqual(
+    listing.variants.map((variant) => variant.color),
+    ["grey", "white"],
+  );
 });
 
 test("tee listing back link returns to Apparel", () => {
@@ -84,7 +116,7 @@ test("unknown apparel slugs fall back to Apparel", () => {
   assert.equal(apparelProductShopLabel("not-a-product"), "Back to Apparel");
 });
 
-test("grey is out of stock across apparel; oversized tee sizes XS–XXL are in stock", () => {
+test("grey is out of stock on tees and shades; oversized tee sizes XS–XXL are in stock", () => {
   const tee = getApparelItem("voronyz-oversized-tee");
   const hoodie = getApparelItem("voronyz-core-hoodie");
   const shades = getApparelItem("voronyz-cool-shades");
@@ -101,9 +133,9 @@ test("grey is out of stock across apparel; oversized tee sizes XS–XXL are in s
   }
   assert.deepEqual(apparelUnavailableSizes(tee), []);
 
-  assert.equal(isApparelColorOutOfStock(hoodie, "grey"), true);
-  assert.equal(isApparelColorOutOfStock(hoodie, "black"), false);
-  assert.equal(apparelVariantStock(hoodie, "grey"), 0);
+  assert.equal(isApparelColorOutOfStock(hoodie, "grey"), false);
+  assert.equal(isApparelColorOutOfStock(hoodie, "white"), false);
+  assert.equal(apparelVariantStock(hoodie, "grey"), 999);
   assert.equal(isApparelSizeAvailable(hoodie, "M"), true);
 
   const hoodieOffer = getApparelListingOffer("voronyz-core-hoodie");

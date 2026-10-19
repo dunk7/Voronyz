@@ -6,7 +6,6 @@ import {
   ProductColorProvider,
 } from "@/components/products/ColorAwareGallery";
 import FAQ from "@/components/FAQ";
-import { Suspense } from "react";
 import Link from "next/link";
 import { Metadata } from "next";
 import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
@@ -65,6 +64,7 @@ import {
 import { isAccessorySlug, isApparelSlug, isFootwearSlug, isHealthSlug } from "@/lib/productCategories";
 import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION } from "@/lib/footwear";
 import {
+  apparelCatalogProduct,
   apparelProductShopHref,
   apparelProductShopLabel,
   apparelUnavailableSizes,
@@ -73,7 +73,6 @@ import {
   getApparelImagesForColor,
   isObsoleteApparelSlug,
 } from "@/lib/apparel";
-import LogoLoader from "@/components/ui/LogoLoader";
 import { redirect } from "next/navigation";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
@@ -138,7 +137,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   if (obsoleteRedirect || isObsoleteApparelSlug(slug)) {
     redirect(obsoleteRedirect ?? "/apparel");
   }
-  let product: ProductWithVariants;
+  let product: ProductWithVariants | null = null;
   try {
     await ensureCatalogProducts();
     product = await prisma.product.findUnique({ 
@@ -157,17 +156,25 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     }) as ProductWithVariants;
   } catch (error) {
     console.error(`Failed to load product "${slug}":`, error);
-    return (
-      <div className="bg-texture-white">
-        <div className="container py-12 text-center">
-          <h1 className="text-2xl font-semibold text-neutral-900 mb-4">Something went wrong</h1>
-          <p className="text-neutral-600 mb-6">We couldn&apos;t load this product right now. Please try again later.</p>
-          <Link href="/products" className="inline-flex items-center justify-center rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800">
-            Back to Shop
-          </Link>
+    const catalogFallback = getApparelItem(slug);
+    if (!catalogFallback) {
+      return (
+        <div className="bg-texture-white">
+          <div className="container py-12 text-center">
+            <h1 className="text-2xl font-semibold text-neutral-900 mb-4">Something went wrong</h1>
+            <p className="text-neutral-600 mb-6">We couldn&apos;t load this product right now. Please try again later.</p>
+            <Link href="/products" className="inline-flex items-center justify-center rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800">
+              Back to Shop
+            </Link>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+    product = apparelCatalogProduct(catalogFallback);
+  }
+  if (!product) {
+    const catalogFallback = getApparelItem(slug);
+    if (catalogFallback) product = apparelCatalogProduct(catalogFallback);
   }
   if (!product) return <div className="container py-12 text-neutral-900">Not found.</div>;
 
@@ -414,7 +421,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <div className="lg:col-span-8">
             {/* Full-bleed on mobile so product photos dominate the viewport */}
             <div className="lg:rounded-none -mx-0 sm:mx-0">
-              {apparelItem?.imagesByColor ? (
+              {apparelItem ? (
                 <ColorAwareGallery
                   imagesByColor={apparelImagesByColor}
                   fallbackImages={images}
@@ -568,7 +575,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               : apparelItem?.slug === "voronyz-oversized-tee"
               ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Shipping now in black and white, XS through XXL — grey is out of stock. Price steps down for smaller sizes and up for larger ones from Medium."
               : apparelItem?.slug === "voronyz-core-hoodie"
-              ? "Heavyweight fleece with a clean, modern cut. Ready to ship in your size and color — pick a size to see the sale price (about 60% off the marked compare-at)."
+              ? "Heavyweight fleece with a clean, modern cut. Grey and white — pick a color to see the matching hoodie, then swipe to the second photo for the back. Pick a size to see the sale price (about 60% off the marked compare-at)."
               : isApparel && apparelItem?.comingSoon
               ? "Pre-order Voronyz Apparel — pay now to join the waitlist, and we ship when the drop arrives."
               : isApparel
@@ -619,6 +626,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 : "This piece runs XS–XXL." },
               { q: "What colors are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
                 ? "Black and white are in stock. Grey is currently out of stock."
+                : apparelItem?.slug === "voronyz-core-hoodie"
+                  ? "Grey and white. The gallery updates to the selected color, with the back of the same hoodie on the second photo."
                 : apparelItem?.outOfStockColors?.includes("grey")
                   ? "Grey is currently out of stock. Choose another listed color."
                   : "Pick any listed color that is in stock." },
