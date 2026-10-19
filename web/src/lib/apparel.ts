@@ -101,6 +101,10 @@ export type ApparelCatalogItem = {
    * that color’s shots without changing garment shape or design.
    */
   colorImages?: Record<string, string[]>;
+  /**
+   * Alias for `colorImages` used by some listings (e.g. white tee mockup).
+   */
+  imagesByColor?: Record<string, string[]>;
   skuPrefix: string;
   /**
    * Coming-soon items are pre-orderable: customers pay now and join the
@@ -121,7 +125,7 @@ export function getApparelImagesForColor(
 ): string[] {
   if (color) {
     const key = color.trim().toLowerCase();
-    const shots = item.colorImages?.[key];
+    const shots = item.colorImages?.[key] ?? item.imagesByColor?.[key];
     if (shots && shots.length > 0) return [...shots];
   }
   return getApparelImages(item);
@@ -189,6 +193,12 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
       "/products/apparel/shirt-front.jpg",
       "/products/apparel/shirt-back-blank.jpg",
     ],
+    imagesByColor: {
+      white: [
+        "/products/apparel/shirt-front-white.jpg",
+        "/products/apparel/shirt-back-blank-white.jpg",
+      ],
+    },
     skuPrefix: "APP-TEE",
     comingSoon: false,
   },

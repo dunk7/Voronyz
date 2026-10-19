@@ -65,6 +65,7 @@ import {
   apparelUnavailableSizes,
   getApparelItem,
   getApparelImages,
+  getApparelImagesForColor,
   isObsoleteApparelSlug,
 } from "@/lib/apparel";
 import { redirect } from "next/navigation";
@@ -257,6 +258,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isLatticeInsoles = slug === LATTICE_INSOLES_SLUG;
   const apparelItem = getApparelItem(slug);
   const isApparel = Boolean(apparelItem);
+  const apparelColorImages = apparelItem
+    ? Object.fromEntries(
+        apparelItem.colors.map((color) => [color, getApparelImagesForColor(apparelItem, color)]),
+      )
+    : undefined;
   const shopHref = isAccessorySlug(slug)
     ? "/accessories"
     : isHealthSlug(slug)
@@ -399,7 +405,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         {/* Gallery-first retail layout: large photos lead, buy box sits beside */}
         <PdpGalleryBuyBox
           media={galleryMedia}
-          colorImages={apparelItem?.colorImages}
+          colorImages={apparelColorImages}
           fit={isFootwearSlug(slug) ? "contain" : "cover"}
           galleryClassName="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
           addToCartProps={{
