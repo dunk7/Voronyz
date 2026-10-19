@@ -15,6 +15,7 @@ import {
 } from "@/lib/affiliateApproveLogic";
 import { ensureAffiliateOrderCoupon } from "@/lib/stripeAffiliateCoupon";
 import { cartHasPreOrder, resolveIsPreOrder } from "@/lib/preorder";
+import { catalogUnitPriceCents } from "@/lib/apparel";
 import {
   buildStripeCartItemsMetadata,
   stripeHttpsImages,
@@ -140,11 +141,16 @@ export async function POST(request: NextRequest) {
 
         const productSlug = variant?.product?.slug || item.productSlug || '';
         const productNameForDiscount = variant?.product?.name || item.productName || '';
-        const baseUnitAmount = variant
+        const fallbackCents = variant
           ? (variant.priceCents || variant.product.priceCents || 0)
           : typeof item.priceCents === "number" && item.priceCents > 0
             ? item.priceCents
             : 7500;
+        const baseUnitAmount = catalogUnitPriceCents({
+          productSlug,
+          size: item.size,
+          fallbackCents,
+        });
         const unitAmount = getDiscountedUnitPriceCents(
           baseUnitAmount,
           activeDiscountCode,

@@ -75,6 +75,8 @@ type Props = {
   unavailableColors?: string[];
   /** Sizes that stay listed but cannot be purchased. */
   unavailableSizes?: string[];
+  /** Per-size unit prices (e.g. oversized tee). Missing sizes use productPriceCents. */
+  sizePriceCents?: Record<string, number>;
 };
 
 const MENS_SIZES = ["6", "7", "8", "9", "10", "11", "12", "13"];
@@ -139,6 +141,7 @@ export default function AddToCart({
   preOrder = false,
   unavailableColors = [],
   unavailableSizes = [],
+  sizePriceCents = {},
 }: Props) {
   const hasSecondaryColors = secondaryColors.length > 0;
   const hasFulfillmentOptions = fulfillmentOptions.length > 0;
@@ -208,7 +211,9 @@ export default function AddToCart({
     const sizeParam = searchParams.get("size");
     if (useCatalogSizes) {
       const firstAvailableSize =
-        catalogSizes.find((size) => !unavailableSizes.includes(size)) ?? catalogSizes[0];
+        (catalogSizes.includes("M") && !unavailableSizes.includes("M") ? "M" : undefined) ??
+        catalogSizes.find((size) => !unavailableSizes.includes(size)) ??
+        catalogSizes[0];
       if (sizeParam && catalogSizes.includes(sizeParam) && !unavailableSizes.includes(sizeParam)) {
         return sizeParam;
       }
@@ -279,9 +284,14 @@ export default function AddToCart({
     [fulfillmentOptions, selectedFulfillment]
   );
 
+  const sizeUnitPrice =
+    selectedSize && typeof sizePriceCents[selectedSize] === "number"
+      ? sizePriceCents[selectedSize]
+      : undefined;
   const priceCents = hasFulfillmentOptions
     ? (selectedFulfillmentOption?.priceCents ?? productPriceCents ?? 7500)
-    : (selectedVariant?.priceCents ?? productPriceCents ?? 7500);
+    : (sizeUnitPrice ?? selectedVariant?.priceCents ?? productPriceCents ?? 7500);
+  const hasSizePrices = Object.keys(sizePriceCents).length > 0;
   const totalCents = priceCents * quantity;
   const formattedTotal = formatCentsAsCurrency(totalCents);
 
@@ -780,6 +790,11 @@ export default function AddToCart({
             {displaySizes.map((displaySize) => {
               const isSelected = selectedSize === displaySize;
               const available = isSizeAvailable(displaySize);
+              const sizePrice = sizePriceCents[displaySize];
+              const sizePriceLabel =
+                hasSizePrices && typeof sizePrice === "number"
+                  ? formatCentsAsCurrency(sizePrice)
+                  : null;
               return (
                 <button
                   key={`size-${displaySize}-${useCatalogSizes ? "catalog" : gender}`}
@@ -788,9 +803,23 @@ export default function AddToCart({
                     setSelectedSize(displaySize);
                   }}
                   disabled={!available}
-                  title={available ? displaySize : `${displaySize} — Out of Stock`}
-                  aria-label={available ? displaySize : `${displaySize} out of stock`}
-                  className={`rounded-full h-10 min-w-10 px-2 text-sm ring-1 transition flex items-center justify-center ${
+                  title={
+                    available
+                      ? sizePriceLabel
+                        ? `${displaySize} — ${sizePriceLabel}`
+                        : displaySize
+                      : `${displaySize} — Out of Stock`
+                  }
+                  aria-label={
+                    available
+                      ? sizePriceLabel
+                        ? `${displaySize}, ${sizePriceLabel}`
+                        : displaySize
+                      : `${displaySize} out of stock`
+                  }
+                  className={`rounded-full ${
+                    sizePriceLabel ? "h-12 min-w-12 px-2.5 py-1" : "h-10 min-w-10 px-2"
+                  } text-sm ring-1 transition flex flex-col items-center justify-center leading-tight ${
                     isSelected
                       ? "bg-black text-white ring-black glow"
                       : available
@@ -798,7 +827,12 @@ export default function AddToCart({
                         : "bg-red-50 text-red-600 ring-red-300 cursor-not-allowed opacity-50 line-through"
                   }`}
                 >
-                  {displaySize}
+                  <span>{displaySize}</span>
+                  {sizePriceLabel ? (
+                    <span className={`text-[10px] tabular-nums ${isSelected ? "text-white/80" : "text-neutral-500"}`}>
+                      {sizePriceLabel}
+                    </span>
+                  ) : null}
                 </button>
               );
             })}

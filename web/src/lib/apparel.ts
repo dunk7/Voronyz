@@ -83,6 +83,10 @@ export type ApparelCatalogItem = {
    * listed as out of stock so shoppers can see what is missing.
    */
   availableSizes?: string[];
+  /**
+   * Per-size unit price. Omitted sizes use `priceCents` (typically Medium).
+   */
+  sizePriceCents?: Record<string, number>;
   /** Primary cover / thumbnail image. */
   image: string;
   /** Full gallery; defaults to `[image]` when omitted. */
@@ -149,7 +153,14 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     colors: ["black", "white", "grey"],
     outOfStockColors: ["grey"],
     sizes: [...APPAREL_SIZES],
-    availableSizes: ["M", "L"],
+    sizePriceCents: {
+      XS: 4200,
+      S: 4500,
+      M: 4800,
+      L: 5100,
+      XL: 5400,
+      XXL: 5700,
+    },
     image: "/products/apparel/shirt-front.jpg",
     images: [
       "/products/apparel/shirt-front.jpg",
@@ -367,4 +378,28 @@ export function isApparelSizeAvailable(
 export function apparelUnavailableSizes(item: ApparelCatalogItem): string[] {
   if (!item.availableSizes || item.availableSizes.length === 0) return [];
   return item.sizes.filter((size) => !item.availableSizes!.includes(size));
+}
+
+/** Unit price for a catalog size. Medium / omitted sizes use `priceCents`. */
+export function apparelPriceCentsForSize(
+  item: ApparelCatalogItem,
+  size?: string | null,
+): number {
+  if (!size) return item.priceCents;
+  const keyed = item.sizePriceCents?.[size];
+  return typeof keyed === "number" && keyed > 0 ? keyed : item.priceCents;
+}
+
+/**
+ * Checkout/cart unit price: apparel size map when present, otherwise the
+ * database (or cart) fallback. Non-apparel slugs pass through unchanged.
+ */
+export function catalogUnitPriceCents(args: {
+  productSlug?: string | null;
+  size?: string | null;
+  fallbackCents: number;
+}): number {
+  const item = getApparelItem(args.productSlug);
+  if (!item) return args.fallbackCents;
+  return apparelPriceCentsForSize(item, args.size);
 }

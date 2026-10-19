@@ -27,6 +27,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import LogoLoader from "@/components/ui/LogoLoader";
+import { catalogUnitPriceCents } from "@/lib/apparel";
 import { trailMixFlavorLabel } from "@/lib/trailMix";
 import { violetteAnimalLabel, isViolettePonybeadSlug, VIOLETTE_PONYBEAD_NAME, VIOLETTE_PONYBEAD_SLUG } from "@/lib/violettePonybeadAnimals";
 
@@ -80,7 +81,12 @@ export default function CartClient() {
   };
 
   const getBaseUnitPriceCents = (it: CartItem) => {
-    return typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
+    const stored = typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
+    return catalogUnitPriceCents({
+      productSlug: it.productSlug,
+      size: it.attributes?.size != null ? String(it.attributes.size) : undefined,
+      fallbackCents: stored,
+    });
   };
 
   const unitPriceForItem = (it: CartItem, code: string | null) =>
