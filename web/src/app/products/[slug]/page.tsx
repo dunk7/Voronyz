@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import AddToCart from "@/components/cart/AddToCart";
-import V3Gallery from "@/components/V3Gallery";
+import ProductColorGallery from "@/components/product/ProductColorGallery";
 import FAQ from "@/components/FAQ";
 import { Suspense } from "react";
 import Link from "next/link";
@@ -392,17 +392,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
         {/* Gallery-first retail layout: large photos lead, buy box sits beside */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 xl:gap-12 items-start">
-          <div className="lg:col-span-8">
-            {/* Full-bleed on mobile so product photos dominate the viewport */}
-            <div className="lg:rounded-none -mx-0 sm:mx-0">
-              <V3Gallery
-                media={galleryMedia}
-                aspect="square"
-                fit={isFootwearSlug(slug) ? "contain" : "cover"}
-                className="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
-              />
-            </div>
-          </div>
+          <ProductColorGallery
+            media={galleryMedia}
+            productName={displayName}
+            leadWhiteSlipOns={isSlipOns}
+            aspect="square"
+            fit={isFootwearSlug(slug) ? "contain" : "cover"}
+            className="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
+          >
           <div className="lg:col-span-4 px-4 sm:px-6 lg:px-0">
             <div className="lg:sticky lg:top-20 space-y-5">
               <div className="space-y-3">
@@ -496,6 +493,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               </div>
             </div>
           </div>
+          </ProductColorGallery>
         </div>
       </div>
 

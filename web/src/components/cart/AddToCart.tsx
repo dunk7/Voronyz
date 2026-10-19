@@ -4,6 +4,8 @@ import { formatCentsAsCurrency, SHOP_PRICE_CLASS } from "@/lib/money";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { normalizeStudentName } from "@/lib/magikidShoesThumbnail";
+import { useProductColorGallery } from "@/components/product/ProductColorGallery";
+import { isWhiteColor, SLIP_ONS_WHITE_AD_IMAGE } from "@/lib/footwear";
 
 interface VariantProps {
   id: string;
@@ -73,6 +75,11 @@ type Props = {
    * items (variant stock 0 is not enough — pre-order otherwise allows them).
    */
   unavailableColors?: string[];
+  /**
+   * Let shoppers select a zero-stock color to preview gallery photos
+   * without enabling Add to cart.
+   */
+  allowOutOfStockColorPreview?: boolean;
   /** Sizes that stay listed but cannot be purchased. */
   unavailableSizes?: string[];
 };
@@ -139,6 +146,7 @@ export default function AddToCart({
   preOrder = false,
   unavailableColors = [],
   unavailableSizes = [],
+  allowOutOfStockColorPreview = false,
 }: Props) {
   const hasSecondaryColors = secondaryColors.length > 0;
   const hasFulfillmentOptions = fulfillmentOptions.length > 0;
@@ -222,9 +230,15 @@ export default function AddToCart({
     return initialSizes[0];
   });
 
+  const colorGallery = useProductColorGallery();
+  const previewOutOfStockColors =
+    allowOutOfStockColorPreview || productSlug === "slip-ons";
+
   const activeCarryStyleId = selectedCarryStyleId || selectedSize;
   const resolvedCoverImage =
-    carryStyles.find((style) => style.id === activeCarryStyleId)?.image || coverImage;
+    productSlug === "slip-ons" && isWhiteColor(selectedPrimary)
+      ? SLIP_ONS_WHITE_AD_IMAGE
+      : carryStyles.find((style) => style.id === activeCarryStyleId)?.image || coverImage;
 
   const [studentName, setStudentName] = useState("");
   const normalizedStudentName = requireStudentName ? normalizeStudentName(studentName) : null;
@@ -338,6 +352,10 @@ export default function AddToCart({
   useEffect(() => {
     setAdded(false);
   }, [selectedPrimary, selectedSecondary, selectedSize, gender, selectedFulfillment, studentName]);
+
+  useEffect(() => {
+    colorGallery?.setSelectedColor(selectedPrimary);
+  }, [colorGallery, selectedPrimary]);
 
   function selectCarryStyle(id: string) {
     setSelectedSize(id);
@@ -619,17 +637,21 @@ export default function AddToCart({
             {sortedPrimaryColors.map((color) => {
               const isSelected = selectedPrimary === color;
               const available = isPrimaryAvailable(color);
+              const canPreview =
+                available || (previewOutOfStockColors && !unavailableColors.includes(color));
               return (
                 <button
                   key={`primary-${color}`}
-                  onClick={() => available && setSelectedPrimary(color)}
-                  disabled={!available}
+                  onClick={() => canPreview && setSelectedPrimary(color)}
+                  disabled={!canPreview}
                   className={`flex items-center gap-0 rounded-full px-2 py-2 text-sm transition-all leading-none ${
                     isSelected 
                       ? "bg-black text-white ring-black glow" 
                       : available 
                         ? "ring-black/10 hover:bg-black/5 text-neutral-900" 
-                        : "bg-red-50 text-red-600 ring-red-300 cursor-not-allowed opacity-50"
+                        : canPreview
+                          ? "bg-red-50 text-red-600 ring-red-300 hover:bg-red-100"
+                          : "bg-red-50 text-red-600 ring-red-300 cursor-not-allowed opacity-50"
                   } ring-1`}
                 >
                   <span className={`inline-block h-4 w-4 rounded-full mr-2 border flex-shrink-0 ${
