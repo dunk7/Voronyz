@@ -91,6 +91,11 @@ export type ApparelCatalogItem = {
   image: string;
   /** Full gallery; defaults to `[image]` when omitted. */
   images?: string[];
+  /**
+   * Per-color gallery (front, then back, …). Selecting a swatch swaps to
+   * that color’s shots without changing garment shape or design.
+   */
+  colorImages?: Record<string, string[]>;
   skuPrefix: string;
   /**
    * Coming-soon items are pre-orderable: customers pay now and join the
@@ -102,6 +107,19 @@ export type ApparelCatalogItem = {
 export function getApparelImages(item: ApparelCatalogItem): string[] {
   if (item.images && item.images.length > 0) return [...item.images];
   return [item.image];
+}
+
+/** Gallery for a selected color, falling back to the listing gallery. */
+export function getApparelImagesForColor(
+  item: ApparelCatalogItem,
+  color?: string | null,
+): string[] {
+  if (color) {
+    const key = color.trim().toLowerCase();
+    const shots = item.colorImages?.[key];
+    if (shots && shots.length > 0) return [...shots];
+  }
+  return getApparelImages(item);
 }
 
 /**
@@ -176,10 +194,23 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     name: "The Atelier Hoodie",
     description: "Heavyweight fleece hoodie with a clean, modern cut.",
     priceCents: 7800,
-    colors: ["black", "grey"],
-    outOfStockColors: ["grey"],
+    colors: ["grey", "white"],
     sizes: [...APPAREL_SIZES],
-    image: "/products/apparel/hoodie.jpg",
+    image: "/products/apparel/hoodie-grey-front.jpg",
+    images: [
+      "/products/apparel/hoodie-grey-front.jpg",
+      "/products/apparel/hoodie-grey-back.jpg",
+    ],
+    colorImages: {
+      grey: [
+        "/products/apparel/hoodie-grey-front.jpg",
+        "/products/apparel/hoodie-grey-back.jpg",
+      ],
+      white: [
+        "/products/apparel/hoodie-white-front.jpg",
+        "/products/apparel/hoodie-white-back.jpg",
+      ],
+    },
     skuPrefix: "APP-HOOD",
     comingSoon: false,
   },
