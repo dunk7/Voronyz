@@ -11,6 +11,7 @@ import { resolveActiveDiscountCode } from "@/lib/discountDisabled";
 import { getOrderLevelDiscountCentsForCode } from "@/lib/affiliateDiscounts";
 import { applyOrderLevelDiscountCents } from "@/lib/affiliateApproveLogic";
 import { cartHasPreOrder, resolveIsPreOrder } from "@/lib/preorder";
+import { catalogUnitPriceCents } from "@/lib/apparel";
 import {
   buildShippingInsuranceLineItem,
   getInsurableItemQuantity,
@@ -79,11 +80,16 @@ export async function POST(request: NextRequest) {
 
         const slug = variant?.product?.slug || productSlug;
         const productNameForDiscount = variant?.product?.name || item.productName || "";
-        const baseUnitAmount = variant
+        const fallbackCents = variant
           ? (variant.priceCents || variant.product.priceCents || 0)
           : typeof item.priceCents === "number" && item.priceCents > 0
             ? item.priceCents
             : 7500;
+        const baseUnitAmount = catalogUnitPriceCents({
+          productSlug: slug,
+          size: item.size,
+          fallbackCents,
+        });
         unitAmount = getDiscountedUnitPriceCents(baseUnitAmount, normalizedDiscountCode, {
           productSlug: slug,
           productName: productNameForDiscount,

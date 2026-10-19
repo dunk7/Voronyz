@@ -83,10 +83,19 @@ export type ApparelCatalogItem = {
    * listed as out of stock so shoppers can see what is missing.
    */
   availableSizes?: string[];
+  /**
+   * Per-size unit price. Omitted sizes use `priceCents` (typically Medium).
+   */
+  sizePriceCents?: Record<string, number>;
   /** Primary cover / thumbnail image. */
   image: string;
   /** Full gallery; defaults to `[image]` when omitted. */
   images?: string[];
+  /**
+   * Per-color gallery (front, then back, …). Selecting a swatch swaps to
+   * that color’s shots without changing garment shape or design.
+   */
+  colorImages?: Record<string, string[]>;
   skuPrefix: string;
   /**
    * Coming-soon items are pre-orderable: customers pay now and join the
@@ -98,6 +107,19 @@ export type ApparelCatalogItem = {
 export function getApparelImages(item: ApparelCatalogItem): string[] {
   if (item.images && item.images.length > 0) return [...item.images];
   return [item.image];
+}
+
+/** Gallery for a selected color, falling back to the listing gallery. */
+export function getApparelImagesForColor(
+  item: ApparelCatalogItem,
+  color?: string | null,
+): string[] {
+  if (color) {
+    const key = color.trim().toLowerCase();
+    const shots = item.colorImages?.[key];
+    if (shots && shots.length > 0) return [...shots];
+  }
+  return getApparelImages(item);
 }
 
 /**
@@ -149,7 +171,14 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     colors: ["black", "white", "grey"],
     outOfStockColors: ["grey"],
     sizes: [...APPAREL_SIZES],
-    availableSizes: ["M", "L"],
+    sizePriceCents: {
+      XS: 4200,
+      S: 4500,
+      M: 4800,
+      L: 5100,
+      XL: 5400,
+      XXL: 5700,
+    },
     image: "/products/apparel/shirt-front.jpg",
     images: [
       "/products/apparel/shirt-front.jpg",
@@ -165,10 +194,23 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     name: "The Atelier Hoodie",
     description: "Heavyweight fleece hoodie with a clean, modern cut.",
     priceCents: 7800,
-    colors: ["black", "grey"],
-    outOfStockColors: ["grey"],
+    colors: ["grey", "white"],
     sizes: [...APPAREL_SIZES],
-    image: "/products/apparel/hoodie.jpg",
+    image: "/products/apparel/hoodie-grey-front.jpg",
+    images: [
+      "/products/apparel/hoodie-grey-front.jpg",
+      "/products/apparel/hoodie-grey-back.jpg",
+    ],
+    colorImages: {
+      grey: [
+        "/products/apparel/hoodie-grey-front.jpg",
+        "/products/apparel/hoodie-grey-back.jpg",
+      ],
+      white: [
+        "/products/apparel/hoodie-white-front.jpg",
+        "/products/apparel/hoodie-white-back.jpg",
+      ],
+    },
     skuPrefix: "APP-HOOD",
     comingSoon: false,
   },
@@ -244,6 +286,32 @@ export function isApparelSlug(slug: string | null | undefined): boolean {
 export function getApparelItem(slug: string | null | undefined) {
   const key = (slug || "").trim().toLowerCase();
   return APPAREL_CATALOG.find((item) => item.slug === key) ?? null;
+}
+
+/** In-memory product shape used when the catalog listing is known but the DB is unreachable. */
+export function apparelCatalogProduct(item: ApparelCatalogItem) {
+  const now = new Date(0);
+  return {
+    id: item.slug,
+    slug: item.slug,
+    name: item.name,
+    description: item.description,
+    priceCents: item.priceCents,
+    currency: "usd",
+    images: getApparelImages(item),
+    primaryColors: [...item.colors],
+    secondaryColors: [] as string[],
+    sizes: [...item.sizes],
+    variants: item.colors.map((color) => ({
+      id: `${item.skuPrefix}-${color}`,
+      color,
+      sku: apparelSku(item.skuPrefix, color),
+      stock: apparelVariantStock(item, color),
+      priceCents: item.priceCents,
+    })),
+    createdAt: now,
+    updatedAt: now,
+  };
 }
 
 export function getApparelSubcategory(id: string | null | undefined) {
@@ -367,4 +435,28 @@ export function isApparelSizeAvailable(
 export function apparelUnavailableSizes(item: ApparelCatalogItem): string[] {
   if (!item.availableSizes || item.availableSizes.length === 0) return [];
   return item.sizes.filter((size) => !item.availableSizes!.includes(size));
+}
+
+/** Unit price for a catalog size. Medium / omitted sizes use `priceCents`. */
+export function apparelPriceCentsForSize(
+  item: ApparelCatalogItem,
+  size?: string | null,
+): number {
+  if (!size) return item.priceCents;
+  const keyed = item.sizePriceCents?.[size];
+  return typeof keyed === "number" && keyed > 0 ? keyed : item.priceCents;
+}
+
+/**
+ * Checkout/cart unit price: apparel size map when present, otherwise the
+ * database (or cart) fallback. Non-apparel slugs pass through unchanged.
+ */
+export function catalogUnitPriceCents(args: {
+  productSlug?: string | null;
+  size?: string | null;
+  fallbackCents: number;
+}): number {
+  const item = getApparelItem(args.productSlug);
+  if (!item) return args.fallbackCents;
+  return apparelPriceCentsForSize(item, args.size);
 }
