@@ -57,7 +57,7 @@ import {
   LATTICE_INSOLES_THUMBNAIL_URL,
 } from "@/lib/latticeInsoles";
 import { isAccessorySlug, isApparelSlug, isFootwearSlug, isHealthSlug } from "@/lib/productCategories";
-import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION } from "@/lib/footwear";
+import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION, slipOnsImagesForColor } from "@/lib/footwear";
 import {
   apparelCatalogProduct,
   apparelProductShopHref,
@@ -271,6 +271,24 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         ]),
       )
     : undefined;
+  const slipOnsImagesByColor = isSlipOns
+    ? Object.fromEntries(
+        (product.primaryColors as string[]).map((color) => [
+          color.trim().toLowerCase(),
+          slipOnsImagesForColor(images, color),
+        ]),
+      )
+    : undefined;
+  const galleryImagesByColor = apparelImagesByColor ?? slipOnsImagesByColor;
+  const galleryCoverByColor = apparelCoverByColor
+    ?? (slipOnsImagesByColor
+      ? Object.fromEntries(
+          Object.entries(slipOnsImagesByColor).map(([color, colorImages]) => [
+            color,
+            colorImages[0],
+          ]),
+        )
+      : undefined);
   const shopHref = isAccessorySlug(slug)
     ? "/accessories"
     : isHealthSlug(slug)
@@ -413,7 +431,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         {/* Gallery-first retail layout: large photos lead, buy box sits beside */}
         <PdpGalleryBuyBox
           media={galleryMedia}
-          colorImages={apparelImagesByColor}
+          colorImages={galleryImagesByColor}
           fit={isFootwearSlug(slug) ? "contain" : "cover"}
           galleryClassName="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
           addToCartProps={{
@@ -458,6 +476,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             ...(isLatticeInsoles && {
               useCatalogSizes: true,
             }),
+            ...(isSlipOns && {
+              allowOutOfStockColorPreview: true,
+            }),
             ...(isApparel && {
               useCatalogSizes: true,
               preOrder: Boolean(apparelItem?.comingSoon),
@@ -469,7 +490,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             sizes: product.sizes as string[],
             productName: displayName,
             coverImage: (images[0] as string) || defaultImages[0],
-            coverImagesByColor: apparelCoverByColor,
+            coverImagesByColor: galleryCoverByColor,
             productSlug: slug,
           }}
           footer={
