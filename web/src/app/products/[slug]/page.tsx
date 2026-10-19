@@ -57,7 +57,7 @@ import {
   LATTICE_INSOLES_THUMBNAIL_URL,
 } from "@/lib/latticeInsoles";
 import { isAccessorySlug, isApparelSlug, isFootwearSlug, isHealthSlug } from "@/lib/productCategories";
-import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION } from "@/lib/footwear";
+import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION, SLIP_ONS_WHITE_AD_IMAGE } from "@/lib/footwear";
 import {
   apparelCatalogProduct,
   apparelProductShopHref,
@@ -206,6 +206,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     "/products/slip-ons/InShot_20260405_203930832.jpg",
     "/products/slip-ons/InShot_20260405_204113872.jpg",
     "/products/slip-ons/InShot_20260405_204333303.jpg",
+    SLIP_ONS_WHITE_AD_IMAGE,
   ];
   const magikidShoesImages = [
     MAGIKID_SHOES_THUMBNAIL_URL,
@@ -406,6 +407,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <PdpGalleryBuyBox
           media={galleryMedia}
           colorImages={apparelColorImages}
+          leadWhiteSlipOns={isSlipOns}
           fit={isFootwearSlug(slug) ? "contain" : "cover"}
           galleryClassName="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
           addToCartProps={{
@@ -462,6 +464,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             productName: displayName,
             coverImage: (images[0] as string) || defaultImages[0],
             productSlug: slug,
+            allowOutOfStockColorPreview: isSlipOns,
           }}
           footer={
             <div className="flex items-center gap-4 text-xs text-neutral-500">

@@ -4,6 +4,7 @@ import { Suspense, useMemo, useState, type ReactNode } from "react";
 import AddToCart, { type AddToCartProps } from "@/components/cart/AddToCart";
 import V3Gallery from "@/components/V3Gallery";
 import LogoLoader from "@/components/ui/LogoLoader";
+import { slipOnsImagesForColor } from "@/lib/footwear";
 
 type Media = {
   type: "image" | "video";
@@ -19,6 +20,7 @@ type Media = {
 export default function PdpGalleryBuyBox({
   media,
   colorImages,
+  leadWhiteSlipOns = false,
   fit,
   galleryClassName,
   addToCartProps,
@@ -27,6 +29,8 @@ export default function PdpGalleryBuyBox({
 }: {
   media: Media[];
   colorImages?: Record<string, string[]>;
+  /** When true, selecting White puts the white Slip Ons ad photo first. */
+  leadWhiteSlipOns?: boolean;
   fit: "cover" | "contain";
   galleryClassName?: string;
   addToCartProps: AddToCartProps;
@@ -43,8 +47,23 @@ export default function PdpGalleryBuyBox({
         return shots.map((src) => ({ type: "image" as const, src, alt }));
       }
     }
+    if (leadWhiteSlipOns) {
+      const images = media.filter((item) => item.type === "image");
+      const videos = media.filter((item) => item.type !== "image");
+      const ordered = slipOnsImagesForColor(
+        images.map((item) => item.src),
+        color,
+      );
+      const bySrc = new Map(images.map((item) => [item.src, item]));
+      const imageMedia: Media[] = ordered.map((src) => {
+        const existing = bySrc.get(src);
+        if (existing) return existing;
+        return { type: "image", src, alt: media[0]?.alt };
+      });
+      return [...imageMedia, ...videos];
+    }
     return media;
-  }, [color, colorImages, media]);
+  }, [color, colorImages, leadWhiteSlipOns, media]);
 
   const coverImage =
     galleryMedia.find((item) => item.type === "image")?.src ??

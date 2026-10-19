@@ -379,9 +379,9 @@ export default function V3Gallery({
       {/* Viewport — square by default so product photos dominate like premium retail PDPs */}
       <div
         ref={containerRef}
-        className={`relative w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-neutral-100 ring-1 ring-black/5 group select-none ${
-          aspect === "landscape" ? "aspect-[4/3]" : "aspect-square"
-        }`}
+        className={`relative w-full overflow-hidden rounded-2xl sm:rounded-3xl ring-1 ring-black/5 group select-none ${
+          fit === "contain" ? "bg-white" : "bg-neutral-100"
+        } ${aspect === "landscape" ? "aspect-[4/3]" : "aspect-square"}`}
         style={{ touchAction: "pan-y pinch-zoom" }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
