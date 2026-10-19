@@ -42,7 +42,10 @@ type Props = {
   productPriceCents?: number;
   productName?: string;
   coverImage?: string;
+  /** When set, the cart thumbnail follows the selected primary color. */
+  coverImagesByColor?: Record<string, string>;
   productSlug?: string;
+  onPrimaryColorChange?: (color: string | undefined) => void;
   secondaryLabel?: string;
   promoHint?: { code: string; promoPrice: number };
   fulfillmentOptions?: FulfillmentOption[];
@@ -121,8 +124,10 @@ export default function AddToCart({
   sizes, 
   productPriceCents,
   productName, 
-  coverImage, 
+  coverImage,
+  coverImagesByColor,
   productSlug,
+  onPrimaryColorChange,
   secondaryLabel,
   fulfillmentOptions = [],
   defaultGender = "men",
@@ -224,7 +229,9 @@ export default function AddToCart({
 
   const activeCarryStyleId = selectedCarryStyleId || selectedSize;
   const resolvedCoverImage =
-    carryStyles.find((style) => style.id === activeCarryStyleId)?.image || coverImage;
+    (selectedPrimary && coverImagesByColor?.[selectedPrimary]) ||
+    carryStyles.find((style) => style.id === activeCarryStyleId)?.image ||
+    coverImage;
 
   const [studentName, setStudentName] = useState("");
   const normalizedStudentName = requireStudentName ? normalizeStudentName(studentName) : null;
@@ -338,6 +345,10 @@ export default function AddToCart({
   useEffect(() => {
     setAdded(false);
   }, [selectedPrimary, selectedSecondary, selectedSize, gender, selectedFulfillment, studentName]);
+
+  useEffect(() => {
+    onPrimaryColorChange?.(selectedPrimary);
+  }, [selectedPrimary, onPrimaryColorChange]);
 
   function selectCarryStyle(id: string) {
     setSelectedSize(id);
