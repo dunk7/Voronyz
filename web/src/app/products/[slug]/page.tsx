@@ -1,8 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import AddToCart from "@/components/cart/AddToCart";
-import V3Gallery from "@/components/V3Gallery";
+import PdpGalleryBuyBox from "@/components/products/PdpGalleryBuyBox";
 import FAQ from "@/components/FAQ";
-import { Suspense } from "react";
 import Link from "next/link";
 import { Metadata } from "next";
 import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
@@ -59,16 +57,17 @@ import {
   LATTICE_INSOLES_THUMBNAIL_URL,
 } from "@/lib/latticeInsoles";
 import { isAccessorySlug, isApparelSlug, isFootwearSlug, isHealthSlug } from "@/lib/productCategories";
-import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION } from "@/lib/footwear";
+import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION, SLIP_ONS_WHITE_AD_IMAGE } from "@/lib/footwear";
 import {
+  apparelCatalogProduct,
   apparelProductShopHref,
   apparelProductShopLabel,
   apparelUnavailableSizes,
   getApparelItem,
   getApparelImages,
+  getApparelImagesForColor,
   isObsoleteApparelSlug,
 } from "@/lib/apparel";
-import LogoLoader from "@/components/ui/LogoLoader";
 import { redirect } from "next/navigation";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
@@ -133,7 +132,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   if (obsoleteRedirect || isObsoleteApparelSlug(slug)) {
     redirect(obsoleteRedirect ?? "/apparel");
   }
-  let product: ProductWithVariants;
+  let product: ProductWithVariants | null = null;
   try {
     await ensureCatalogProducts();
     product = await prisma.product.findUnique({ 
@@ -152,17 +151,25 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     }) as ProductWithVariants;
   } catch (error) {
     console.error(`Failed to load product "${slug}":`, error);
-    return (
-      <div className="bg-texture-white">
-        <div className="container py-12 text-center">
-          <h1 className="text-2xl font-semibold text-neutral-900 mb-4">Something went wrong</h1>
-          <p className="text-neutral-600 mb-6">We couldn&apos;t load this product right now. Please try again later.</p>
-          <Link href="/products" className="inline-flex items-center justify-center rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800">
-            Back to Shop
-          </Link>
+    const catalogFallback = getApparelItem(slug);
+    if (!catalogFallback) {
+      return (
+        <div className="bg-texture-white">
+          <div className="container py-12 text-center">
+            <h1 className="text-2xl font-semibold text-neutral-900 mb-4">Something went wrong</h1>
+            <p className="text-neutral-600 mb-6">We couldn&apos;t load this product right now. Please try again later.</p>
+            <Link href="/products" className="inline-flex items-center justify-center rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800">
+              Back to Shop
+            </Link>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+    product = apparelCatalogProduct(catalogFallback);
+  }
+  if (!product) {
+    const catalogFallback = getApparelItem(slug);
+    if (catalogFallback) product = apparelCatalogProduct(catalogFallback);
   }
   if (!product) return <div className="container py-12 text-neutral-900">Not found.</div>;
 
@@ -199,6 +206,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     "/products/slip-ons/InShot_20260405_203930832.jpg",
     "/products/slip-ons/InShot_20260405_204113872.jpg",
     "/products/slip-ons/InShot_20260405_204333303.jpg",
+    SLIP_ONS_WHITE_AD_IMAGE,
   ];
   const magikidShoesImages = [
     MAGIKID_SHOES_THUMBNAIL_URL,
@@ -251,6 +259,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isLatticeInsoles = slug === LATTICE_INSOLES_SLUG;
   const apparelItem = getApparelItem(slug);
   const isApparel = Boolean(apparelItem);
+  const apparelColorImages = apparelItem
+    ? Object.fromEntries(
+        apparelItem.colors.map((color) => [color, getApparelImagesForColor(apparelItem, color)]),
+      )
+    : undefined;
   const shopHref = isAccessorySlug(slug)
     ? "/accessories"
     : isHealthSlug(slug)
@@ -391,112 +404,99 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         </div>
 
         {/* Gallery-first retail layout: large photos lead, buy box sits beside */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 xl:gap-12 items-start">
-          <div className="lg:col-span-8">
-            {/* Full-bleed on mobile so product photos dominate the viewport */}
-            <div className="lg:rounded-none -mx-0 sm:mx-0">
-              <V3Gallery
-                media={galleryMedia}
-                aspect="square"
-                fit={isFootwearSlug(slug) ? "contain" : "cover"}
-                className="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
-              />
+        <PdpGalleryBuyBox
+          media={galleryMedia}
+          colorImages={apparelColorImages}
+          leadWhiteSlipOns={isSlipOns}
+          fit={isFootwearSlug(slug) ? "contain" : "cover"}
+          galleryClassName="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
+          addToCartProps={{
+            variants: product.variants,
+            primaryColors: isTrailMix || isViolettePonybead ? trailMixColors : (product.primaryColors as string[]),
+            productPriceCents: product.priceCents,
+            ...(isDragonfly && {
+              secondaryColors: (product.secondaryColors as string[]).filter(c => c.toLowerCase() !== "#007fff"),
+              secondaryLabel: "Lace Color",
+            }),
+            ...(isMagikidShoes && {
+              defaultGender: "kids" as const,
+              requireStudentName: true,
+              fulfillmentOptions: [
+                {
+                  id: "pickup",
+                  label: "Magikid Lab pickup",
+                  priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
+                  description: "No shipping fee",
+                },
+                {
+                  id: "shipping",
+                  label: "Ship to me",
+                  priceCents: MAGIKID_SHOES_SHIPPED_PRICE_CENTS,
+                  description: "Includes shipping",
+                },
+              ],
+            }),
+            ...(isTrailMix && {
+              hideSizeSelector: true,
+              soldOut: true,
+              flavorOptions: TRAIL_MIX_FLAVORS,
+            }),
+            ...(isViolettePonybead && {
+              hideSizeSelector: true,
+              flavorLabel: "Animal",
+              flavorOptions: VIOLETTE_PONYBEAD_ANIMALS,
+            }),
+            ...(isFilament && {
+              hideSizeSelector: true,
+            }),
+            ...(isLatticeInsoles && {
+              useCatalogSizes: true,
+            }),
+            ...(isApparel && {
+              useCatalogSizes: true,
+              preOrder: Boolean(apparelItem?.comingSoon),
+              hideSizeSelector: apparelItem?.sizes.length === 1,
+              unavailableColors: apparelItem?.outOfStockColors ?? [],
+              unavailableSizes: apparelItem ? apparelUnavailableSizes(apparelItem) : [],
+              sizePriceCents: apparelItem?.sizePriceCents ?? {},
+            }),
+            sizes: product.sizes as string[],
+            productName: displayName,
+            coverImage: (images[0] as string) || defaultImages[0],
+            productSlug: slug,
+            allowOutOfStockColorPreview: isSlipOns,
+          }}
+          footer={
+            <div className="flex items-center gap-4 text-xs text-neutral-500">
+              <Link href={shopHref} className="underline hover:no-underline">← {shopLabel}</Link>
+              {!isTrailMix && !(isApparel && apparelItem?.comingSoon) && (
+                <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
+                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
+                </span>
+              )}
+              {isApparel && apparelItem?.comingSoon && (
+                <span className="inline-flex items-center gap-1 text-neutral-600 font-medium">
+                  Pre-order · ships when ready
+                </span>
+              )}
             </div>
+          }
+        >
+          <div className="space-y-3">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-neutral-900 tracking-tight leading-tight">
+              {displayName}
+            </h1>
+            {productBadges}
+            {displayDescription ? (
+              <p className="footwear-description">
+                {displayDescription}
+              </p>
+            ) : null}
           </div>
-          <div className="lg:col-span-4 px-4 sm:px-6 lg:px-0">
-            <div className="lg:sticky lg:top-20 space-y-5">
-              <div className="space-y-3">
-                <h1 className="text-2xl sm:text-3xl font-semibold text-neutral-900 tracking-tight leading-tight">
-                  {displayName}
-                </h1>
-                {productBadges}
-                {displayDescription ? (
-                  <p className="footwear-description">
-                    {displayDescription}
-                  </p>
-                ) : null}
-              </div>
-
-              <Suspense fallback={
-                <div className="h-[48px] rounded-full bg-neutral-100 flex items-center justify-center">
-                  <LogoLoader size="sm" showBar={false} className="!gap-0 scale-75" />
-                </div>
-              }>
-                <AddToCart
-                  variants={product.variants}
-                  primaryColors={isTrailMix || isViolettePonybead ? trailMixColors : (product.primaryColors as string[])}
-                  productPriceCents={product.priceCents}
-                  {...(isDragonfly && {
-                    secondaryColors: (product.secondaryColors as string[]).filter(c => c.toLowerCase() !== "#007fff"),
-                    secondaryLabel: "Lace Color",
-                  })}
-                  {...(isMagikidShoes && {
-                    defaultGender: "kids" as const,
-                    requireStudentName: true,
-                    fulfillmentOptions: [
-                      {
-                        id: "pickup",
-                        label: "Magikid Lab pickup",
-                        priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
-                        description: "No shipping fee",
-                      },
-                      {
-                        id: "shipping",
-                        label: "Ship to me",
-                        priceCents: MAGIKID_SHOES_SHIPPED_PRICE_CENTS,
-                        description: "Includes shipping",
-                      },
-                    ],
-                  })}
-                  {...(isTrailMix && {
-                    hideSizeSelector: true,
-                    soldOut: true,
-                    flavorOptions: TRAIL_MIX_FLAVORS,
-                  })}
-                  {...(isViolettePonybead && {
-                    hideSizeSelector: true,
-                    flavorLabel: "Animal",
-                    flavorOptions: VIOLETTE_PONYBEAD_ANIMALS,
-                  })}
-                  {...(isFilament && {
-                    hideSizeSelector: true,
-                  })}
-                  {...(isLatticeInsoles && {
-                    useCatalogSizes: true,
-                  })}
-                  {...(isApparel && {
-                    useCatalogSizes: true,
-                    preOrder: Boolean(apparelItem?.comingSoon),
-                    hideSizeSelector: apparelItem?.sizes.length === 1,
-                    unavailableColors: apparelItem?.outOfStockColors ?? [],
-                    unavailableSizes: apparelItem ? apparelUnavailableSizes(apparelItem) : [],
-                  })}
-                  sizes={product.sizes as string[]}
-                  productName={displayName}
-                  coverImage={(images[0] as string) || defaultImages[0]}
-                  productSlug={slug}
-                />
-              </Suspense>
-
-              <div className="flex items-center gap-4 text-xs text-neutral-500">
-                <Link href={shopHref} className="underline hover:no-underline">← {shopLabel}</Link>
-                {!isTrailMix && !(isApparel && apparelItem?.comingSoon) && (
-                  <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
-                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
-                  </span>
-                )}
-                {isApparel && apparelItem?.comingSoon && (
-                  <span className="inline-flex items-center gap-1 text-neutral-600 font-medium">
-                    Pre-order · ships when ready
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        </PdpGalleryBuyBox>
       </div>
 
       <div className="container pb-12">
@@ -534,9 +534,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               : isViolettePonybead
               ? VIOLETTE_PONYBEAD_HOW_ITS_MADE
               : apparelItem?.slug === "voronyz-oversized-tee"
-              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Shipping now in black and white, Medium and Large — grey and other sizes are out of stock."
+              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Shipping now in black and white, XS through XXL — grey is out of stock. Price steps down for smaller sizes and up for larger ones from Medium."
               : apparelItem?.slug === "voronyz-core-hoodie"
-              ? "Heavyweight fleece with a clean, modern cut. Ready to ship in your size and color."
+              ? "Heavyweight fleece with a clean, modern cut. Grey and white — pick a color to see the matching hoodie, then swipe to the second photo for the back. Size changes the sale price (about 60% off the marked compare-at)."
               : isApparel && apparelItem?.comingSoon
               ? "Pre-order Voronyz Apparel — pay now to join the waitlist, and we ship when the drop arrives."
               : isApparel
@@ -583,13 +583,18 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isApparel && !apparelItem?.comingSoon ? [
               { q: "What sizes are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
-                ? "The Oversized Tee currently ships in Medium and Large. XS, S, XL, and XXL are listed but out of stock."
+                ? "The Oversized Tee ships in XS, S, M, L, XL, and XXL. Smaller sizes cost less than Medium; larger sizes cost more."
                 : "This piece runs XS–XXL." },
               { q: "What colors are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
                 ? "Black and white are in stock. Grey is currently out of stock."
+                : apparelItem?.slug === "voronyz-core-hoodie"
+                  ? "Grey and white. The gallery updates to the selected color, with the back of the same hoodie on the second photo."
                 : apparelItem?.outOfStockColors?.includes("grey")
                   ? "Grey is currently out of stock. Choose another listed color."
                   : "Pick any listed color that is in stock." },
+              ...(apparelItem?.slug === "voronyz-core-hoodie"
+                ? [{ q: "How much does it cost?", a: "Price depends on size. Each hoodie is marked down about 60% from the listed compare-at — sale prices run from $74 (XS) to $99 (XXL), never under $70." }]
+                : []),
               { q: "When will my order ship?", a: "Orders typically ship within a few business days. You'll get updates by email." },
               { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Accessories (shades, jewelry, lace locks, drone parts) live under their own Apparel section." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },

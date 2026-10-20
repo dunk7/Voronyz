@@ -4,6 +4,9 @@ import { formatCentsAsCurrency, SHOP_PRICE_CLASS } from "@/lib/money";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { normalizeStudentName } from "@/lib/magikidShoesThumbnail";
+import { getApparelSizeOffer } from "@/lib/apparel";
+import SalePrice from "@/components/ui/SalePrice";
+import { isWhiteColor, SLIP_ONS_WHITE_AD_IMAGE } from "@/lib/footwear";
 
 interface VariantProps {
   id: string;
@@ -33,7 +36,7 @@ type FlavorOption = {
   description?: string;
 };
 
-type Props = {
+export type AddToCartProps = {
   variants: VariantProps[];
   primaryColors: string[];
   secondaryColors?: string[];
@@ -42,7 +45,10 @@ type Props = {
   productPriceCents?: number;
   productName?: string;
   coverImage?: string;
+  /** When set, the cart thumbnail follows the selected primary color. */
+  coverImagesByColor?: Record<string, string>;
   productSlug?: string;
+  onPrimaryColorChange?: (color: string | undefined) => void;
   secondaryLabel?: string;
   promoHint?: { code: string; promoPrice: number };
   fulfillmentOptions?: FulfillmentOption[];
@@ -73,8 +79,15 @@ type Props = {
    * items (variant stock 0 is not enough — pre-order otherwise allows them).
    */
   unavailableColors?: string[];
+  /**
+   * Let shoppers select a zero-stock color to preview gallery photos
+   * without enabling Add to cart.
+   */
+  allowOutOfStockColorPreview?: boolean;
   /** Sizes that stay listed but cannot be purchased. */
   unavailableSizes?: string[];
+  /** Per-size unit prices (e.g. oversized tee). Missing sizes use productPriceCents. */
+  sizePriceCents?: Record<string, number>;
 };
 
 const MENS_SIZES = ["6", "7", "8", "9", "10", "11", "12", "13"];
@@ -121,8 +134,10 @@ export default function AddToCart({
   sizes, 
   productPriceCents,
   productName, 
-  coverImage, 
+  coverImage,
+  coverImagesByColor,
   productSlug,
+  onPrimaryColorChange,
   secondaryLabel,
   fulfillmentOptions = [],
   defaultGender = "men",
@@ -139,7 +154,9 @@ export default function AddToCart({
   preOrder = false,
   unavailableColors = [],
   unavailableSizes = [],
-}: Props) {
+  allowOutOfStockColorPreview = false,
+  sizePriceCents = {},
+}: AddToCartProps) {
   const hasSecondaryColors = secondaryColors.length > 0;
   const hasFulfillmentOptions = fulfillmentOptions.length > 0;
   const hasCarryStyles = carryStyles.length > 0;
@@ -208,7 +225,9 @@ export default function AddToCart({
     const sizeParam = searchParams.get("size");
     if (useCatalogSizes) {
       const firstAvailableSize =
-        catalogSizes.find((size) => !unavailableSizes.includes(size)) ?? catalogSizes[0];
+        (catalogSizes.includes("M") && !unavailableSizes.includes("M") ? "M" : undefined) ??
+        catalogSizes.find((size) => !unavailableSizes.includes(size)) ??
+        catalogSizes[0];
       if (sizeParam && catalogSizes.includes(sizeParam) && !unavailableSizes.includes(sizeParam)) {
         return sizeParam;
       }
@@ -222,9 +241,17 @@ export default function AddToCart({
     return initialSizes[0];
   });
 
+  const previewOutOfStockColors =
+    allowOutOfStockColorPreview || productSlug === "slip-ons";
+
   const activeCarryStyleId = selectedCarryStyleId || selectedSize;
   const resolvedCoverImage =
-    carryStyles.find((style) => style.id === activeCarryStyleId)?.image || coverImage;
+    (selectedPrimary && coverImagesByColor?.[selectedPrimary]) ||
+    (productSlug === "slip-ons" && isWhiteColor(selectedPrimary)
+      ? SLIP_ONS_WHITE_AD_IMAGE
+      : undefined) ||
+    carryStyles.find((style) => style.id === activeCarryStyleId)?.image ||
+    coverImage;
 
   const [studentName, setStudentName] = useState("");
   const normalizedStudentName = requireStudentName ? normalizeStudentName(studentName) : null;
@@ -279,9 +306,17 @@ export default function AddToCart({
     [fulfillmentOptions, selectedFulfillment]
   );
 
-  const priceCents = hasFulfillmentOptions
-    ? (selectedFulfillmentOption?.priceCents ?? productPriceCents ?? 7500)
-    : (selectedVariant?.priceCents ?? productPriceCents ?? 7500);
+  const apparelOffer = getApparelSizeOffer(productSlug, selectedSize);
+  const sizeUnitPrice =
+    selectedSize && typeof sizePriceCents[selectedSize] === "number"
+      ? sizePriceCents[selectedSize]
+      : undefined;
+  const priceCents = apparelOffer
+    ? apparelOffer.priceCents
+    : hasFulfillmentOptions
+      ? (selectedFulfillmentOption?.priceCents ?? productPriceCents ?? 7500)
+      : (sizeUnitPrice ?? selectedVariant?.priceCents ?? productPriceCents ?? 7500);
+  const hasSizePrices = Object.keys(sizePriceCents).length > 0;
   const totalCents = priceCents * quantity;
   const formattedTotal = formatCentsAsCurrency(totalCents);
 
@@ -338,6 +373,10 @@ export default function AddToCart({
   useEffect(() => {
     setAdded(false);
   }, [selectedPrimary, selectedSecondary, selectedSize, gender, selectedFulfillment, studentName]);
+
+  useEffect(() => {
+    onPrimaryColorChange?.(selectedPrimary);
+  }, [selectedPrimary, onPrimaryColorChange]);
 
   function selectCarryStyle(id: string) {
     setSelectedSize(id);
@@ -619,17 +658,21 @@ export default function AddToCart({
             {sortedPrimaryColors.map((color) => {
               const isSelected = selectedPrimary === color;
               const available = isPrimaryAvailable(color);
+              const canPreview =
+                available || (previewOutOfStockColors && !unavailableColors.includes(color));
               return (
                 <button
                   key={`primary-${color}`}
-                  onClick={() => available && setSelectedPrimary(color)}
-                  disabled={!available}
+                  onClick={() => canPreview && setSelectedPrimary(color)}
+                  disabled={!canPreview}
                   className={`flex items-center gap-0 rounded-full px-2 py-2 text-sm transition-all leading-none ${
                     isSelected 
                       ? "bg-black text-white ring-black glow" 
                       : available 
                         ? "ring-black/10 hover:bg-black/5 text-neutral-900" 
-                        : "bg-red-50 text-red-600 ring-red-300 cursor-not-allowed opacity-50"
+                        : canPreview
+                          ? "bg-red-50 text-red-600 ring-red-300 hover:bg-red-100"
+                          : "bg-red-50 text-red-600 ring-red-300 cursor-not-allowed opacity-50"
                   } ring-1`}
                 >
                   <span className={`inline-block h-4 w-4 rounded-full mr-2 border flex-shrink-0 ${
@@ -780,6 +823,11 @@ export default function AddToCart({
             {displaySizes.map((displaySize) => {
               const isSelected = selectedSize === displaySize;
               const available = isSizeAvailable(displaySize);
+              const sizePrice = sizePriceCents[displaySize];
+              const sizePriceLabel =
+                hasSizePrices && typeof sizePrice === "number"
+                  ? formatCentsAsCurrency(sizePrice)
+                  : null;
               return (
                 <button
                   key={`size-${displaySize}-${useCatalogSizes ? "catalog" : gender}`}
@@ -788,9 +836,23 @@ export default function AddToCart({
                     setSelectedSize(displaySize);
                   }}
                   disabled={!available}
-                  title={available ? displaySize : `${displaySize} — Out of Stock`}
-                  aria-label={available ? displaySize : `${displaySize} out of stock`}
-                  className={`rounded-full h-10 min-w-10 px-2 text-sm ring-1 transition flex items-center justify-center ${
+                  title={
+                    available
+                      ? sizePriceLabel
+                        ? `${displaySize} — ${sizePriceLabel}`
+                        : displaySize
+                      : `${displaySize} — Out of Stock`
+                  }
+                  aria-label={
+                    available
+                      ? sizePriceLabel
+                        ? `${displaySize}, ${sizePriceLabel}`
+                        : displaySize
+                      : `${displaySize} out of stock`
+                  }
+                  className={`rounded-full ${
+                    sizePriceLabel ? "h-12 min-w-12 px-2.5 py-1" : "h-10 min-w-10 px-2"
+                  } text-sm ring-1 transition flex flex-col items-center justify-center leading-tight ${
                     isSelected
                       ? "bg-black text-white ring-black glow"
                       : available
@@ -798,7 +860,12 @@ export default function AddToCart({
                         : "bg-red-50 text-red-600 ring-red-300 cursor-not-allowed opacity-50 line-through"
                   }`}
                 >
-                  {displaySize}
+                  <span>{displaySize}</span>
+                  {sizePriceLabel ? (
+                    <span className={`text-[10px] tabular-nums ${isSelected ? "text-white/80" : "text-neutral-500"}`}>
+                      {sizePriceLabel}
+                    </span>
+                  ) : null}
                 </button>
               );
             })}
@@ -827,6 +894,14 @@ export default function AddToCart({
           </div>
         )}
 
+        {apparelOffer ? (
+          <SalePrice
+            priceCents={priceCents}
+            compareAtCents={apparelOffer.compareAtCents}
+            percentOff={apparelOffer.percentOff}
+            quantity={quantity}
+          />
+        ) : null}
         <div className="flex items-center gap-3">
           <input
             type="number"
@@ -835,9 +910,11 @@ export default function AddToCart({
             onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
             className="w-20 h-[48px] rounded-md border border-black/10 px-3 py-2 text-sm text-neutral-900"
           />
-          <div className="flex items-center">
-            <span className={SHOP_PRICE_CLASS}>{formattedTotal}</span>
-          </div>
+          {!apparelOffer ? (
+            <div className="flex items-center">
+              <span className={SHOP_PRICE_CLASS}>{formattedTotal}</span>
+            </div>
+          ) : null}
           <div className="button-container flex-1">
             {added ? (
               <div className="button-split-wrapper">
