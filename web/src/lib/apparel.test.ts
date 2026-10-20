@@ -9,6 +9,7 @@ import {
   apparelUnavailableSizes,
   apparelVariantStock,
   apparelCoverObjectPositionClass,
+  apparelPriceCentsForSelection,
   apparelPriceCentsForSize,
   catalogUnitPriceCents,
   getApparelImages,
@@ -35,15 +36,19 @@ test("hoodie listing back link returns to Apparel", () => {
   assert.equal(apparelProductShopLabel("voronyz-core-hoodie"), "Back to Apparel");
 });
 
-test("The Atelier Hoodie ships in grey and white with matching front and back shots", () => {
+test("The Atelier Hoodie ships in black, grey, and white with matching front and back shots", () => {
   const hoodie = getApparelItem("voronyz-core-hoodie");
   assert.ok(hoodie);
-  assert.deepEqual(hoodie.colors, ["grey", "white"]);
+  assert.deepEqual(hoodie.colors, ["black", "grey", "white"]);
   assert.equal(hoodie.outOfStockColors, undefined);
-  assert.equal(hoodie.image, "/products/apparel/hoodie-grey-front.jpg");
+  assert.equal(hoodie.image, "/products/apparel/hoodie.jpg");
   assert.deepEqual(getApparelImages(hoodie), [
-    "/products/apparel/hoodie-grey-front.jpg",
-    "/products/apparel/hoodie-grey-back.jpg",
+    "/products/apparel/hoodie.jpg",
+    "/products/apparel/hoodie-black-back.jpg",
+  ]);
+  assert.deepEqual(getApparelImagesForColor(hoodie, "black"), [
+    "/products/apparel/hoodie.jpg",
+    "/products/apparel/hoodie-black-back.jpg",
   ]);
   assert.deepEqual(getApparelImagesForColor(hoodie, "grey"), [
     "/products/apparel/hoodie-grey-front.jpg",
@@ -53,16 +58,16 @@ test("The Atelier Hoodie ships in grey and white with matching front and back sh
     "/products/apparel/hoodie-white-front.jpg",
     "/products/apparel/hoodie-white-back.jpg",
   ]);
+  assert.equal(isApparelColorOutOfStock(hoodie, "black"), false);
   assert.equal(isApparelColorOutOfStock(hoodie, "grey"), false);
   assert.equal(isApparelColorOutOfStock(hoodie, "white"), false);
-  assert.equal(apparelVariantStock(hoodie, "grey"), 999);
-  assert.equal(apparelVariantStock(hoodie, "white"), 999);
+  assert.equal(apparelVariantStock(hoodie, "black"), 999);
 
   const listing = apparelCatalogProduct(hoodie);
-  assert.deepEqual(listing.primaryColors, ["grey", "white"]);
+  assert.deepEqual(listing.primaryColors, ["black", "grey", "white"]);
   assert.deepEqual(
     listing.variants.map((variant) => variant.color),
-    ["grey", "white"],
+    ["black", "grey", "white"],
   );
 });
 
@@ -132,6 +137,7 @@ test("grey is out of stock on tees and shades; oversized tee sizes XS–XXL are 
   }
   assert.deepEqual(apparelUnavailableSizes(tee), []);
 
+  assert.equal(isApparelColorOutOfStock(hoodie, "black"), false);
   assert.equal(isApparelColorOutOfStock(hoodie, "grey"), false);
   assert.equal(isApparelColorOutOfStock(hoodie, "white"), false);
   assert.equal(apparelVariantStock(hoodie, "grey"), 999);
@@ -161,8 +167,9 @@ test("oversized tee price goes down for smaller sizes and up for larger sizes", 
   assert.equal(catalogUnitPriceCents({
     productSlug: "voronyz-core-hoodie",
     size: "XS",
-    fallbackCents: 8400,
-  }), 7400);
+    color: "black",
+    fallbackCents: 7800,
+  }), 7200);
   assert.equal(catalogUnitPriceCents({
     productSlug: "v3-slides",
     size: "9",
@@ -171,15 +178,23 @@ test("oversized tee price goes down for smaller sizes and up for larger sizes", 
 });
 
 test("hoodie sale prices change by size, stay $70–$100, and advertise a deep cut off the raised compare-at", () => {
+  const hoodie = getApparelItem("voronyz-core-hoodie");
+  assert.ok(hoodie);
   const xs = getApparelSizeOffer("voronyz-core-hoodie", "xs");
   const m = getApparelSizeOffer("voronyz-core-hoodie", "M");
+  const l = getApparelSizeOffer("voronyz-core-hoodie", "L");
   const xxl = getApparelSizeOffer("voronyz-core-hoodie", "XXL");
-  assert.ok(xs && m && xxl);
+  assert.ok(xs && m && l && xxl);
 
   assert.ok(xs.priceCents < m.priceCents);
   assert.ok(m.priceCents < xxl.priceCents);
+  assert.ok(l.priceCents < m.priceCents);
+  const sizeAverage =
+    APPAREL_SIZES.reduce((sum, size) => sum + apparelPriceCentsForSize(hoodie, size), 0) /
+    APPAREL_SIZES.length;
+  assert.ok(l.priceCents < sizeAverage);
   assert.equal(getApparelListingOffer("voronyz-core-hoodie")?.priceCents, m.priceCents);
-  assert.equal(getApparelItem("voronyz-core-hoodie")?.priceCents, m.priceCents);
+  assert.equal(hoodie.priceCents, m.priceCents);
 
   for (const size of APPAREL_SIZES) {
     const offer = getApparelSizeOffer("voronyz-core-hoodie", size);
@@ -193,7 +208,7 @@ test("hoodie sale prices change by size, stay $70–$100, and advertise a deep c
       catalogUnitPriceCents({
         productSlug: "voronyz-core-hoodie",
         size,
-        fallbackCents: 8400,
+        fallbackCents: 7800,
       }),
       offer.priceCents,
     );
@@ -201,4 +216,38 @@ test("hoodie sale prices change by size, stay $70–$100, and advertise a deep c
 
   assert.equal(getApparelSizeOffer("voronyz-core-hoodie", "M")?.percentOff, 60);
   assert.equal(getApparelSizeOffer("voronyz-oversized-tee", "M"), null);
+});
+
+test("hoodie grey costs a little more than black and white is the most expensive", () => {
+  const hoodie = getApparelItem("voronyz-core-hoodie");
+  assert.ok(hoodie);
+  const blackM = apparelPriceCentsForSelection(hoodie, { size: "M", color: "black" });
+  const greyM = apparelPriceCentsForSelection(hoodie, { size: "M", color: "grey" });
+  const whiteM = apparelPriceCentsForSelection(hoodie, { size: "M", color: "white" });
+  assert.equal(blackM, 7800);
+  assert.equal(greyM, 8400);
+  assert.equal(whiteM, 9200);
+  assert.ok(blackM < greyM);
+  assert.ok(greyM < whiteM);
+  assert.equal(
+    apparelPriceCentsForSelection(hoodie, { size: "L", color: "grey" }),
+    8000,
+  );
+  assert.equal(
+    apparelPriceCentsForSelection(hoodie, { size: "L", color: "white" }),
+    8800,
+  );
+  assert.equal(
+    catalogUnitPriceCents({
+      productSlug: "voronyz-core-hoodie",
+      size: "M",
+      color: "white",
+      fallbackCents: 7800,
+    }),
+    9200,
+  );
+  const whiteOffer = getApparelSizeOffer("voronyz-core-hoodie", "M", "white");
+  assert.ok(whiteOffer);
+  assert.equal(whiteOffer.priceCents, 9200);
+  assert.ok(whiteOffer.percentOff >= 55);
 });

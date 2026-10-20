@@ -149,6 +149,7 @@ export async function POST(request: NextRequest) {
         const baseUnitAmount = catalogUnitPriceCents({
           productSlug,
           size: item.size,
+          color: item.variantName || variant?.color,
           fallbackCents,
         });
         const unitAmount = getDiscountedUnitPriceCents(
