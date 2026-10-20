@@ -41,22 +41,22 @@ test("The Atelier Hoodie ships in black, grey, and white with matching front and
   assert.ok(hoodie);
   assert.deepEqual(hoodie.colors, ["black", "grey", "white"]);
   assert.equal(hoodie.outOfStockColors, undefined);
-  assert.equal(hoodie.image, "/products/apparel/hoodie.jpg");
+  assert.equal(hoodie.image, "/products/apparel/hoodie-atelier-black-front.jpg");
   assert.deepEqual(getApparelImages(hoodie), [
-    "/products/apparel/hoodie.jpg",
-    "/products/apparel/hoodie-black-back.jpg",
+    "/products/apparel/hoodie-atelier-black-front.jpg",
+    "/products/apparel/hoodie-atelier-black-back.jpg",
   ]);
   assert.deepEqual(getApparelImagesForColor(hoodie, "black"), [
-    "/products/apparel/hoodie.jpg",
-    "/products/apparel/hoodie-black-back.jpg",
+    "/products/apparel/hoodie-atelier-black-front.jpg",
+    "/products/apparel/hoodie-atelier-black-back.jpg",
   ]);
   assert.deepEqual(getApparelImagesForColor(hoodie, "grey"), [
-    "/products/apparel/hoodie-grey-front.jpg",
-    "/products/apparel/hoodie-grey-back.jpg",
+    "/products/apparel/hoodie-atelier-grey-front.jpg",
+    "/products/apparel/hoodie-atelier-grey-back.jpg",
   ]);
   assert.deepEqual(getApparelImagesForColor(hoodie, "white"), [
-    "/products/apparel/hoodie-white-front.jpg",
-    "/products/apparel/hoodie-white-back.jpg",
+    "/products/apparel/hoodie-atelier-white-front.jpg",
+    "/products/apparel/hoodie-atelier-white-back.jpg",
   ]);
   assert.equal(isApparelColorOutOfStock(hoodie, "black"), false);
   assert.equal(isApparelColorOutOfStock(hoodie, "grey"), false);
