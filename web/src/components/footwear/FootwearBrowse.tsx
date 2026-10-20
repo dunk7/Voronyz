@@ -81,7 +81,14 @@ function RankCard({
         <div className="relative px-4 pt-3.5 sm:px-5">
           <div className="relative z-10 flex items-start justify-between">
             <div className="flex items-center gap-2">
-              {featured ? (
+              {tab === "trending" && rank === 1 ? (
+                <span
+                  className="inline-flex h-9 min-w-9 items-center justify-center rounded-md bg-[#22c55e] px-2 text-[1.35rem] font-bold leading-none text-white"
+                  aria-label="Rank 1"
+                >
+                  1
+                </span>
+              ) : featured ? (
                 <span className="text-[2.1rem] font-bold leading-none tracking-tight">
                   {rank}
                 </span>
@@ -90,16 +97,6 @@ function RankCard({
                   {rank}
                 </span>
               )}
-              {tab === "trending" && rank === 1 ? (
-                <span
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-[#22c55e] text-white"
-                  aria-label="Trending up"
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-                    <path d="M10 4.5l5.5 6.5H12v5H8v-5H4.5L10 4.5z" />
-                  </svg>
-                </span>
-              ) : null}
             </div>
             {soldOut ? (
               <span
