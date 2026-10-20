@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { formatCentsAsCurrency, SHOP_PRICE_CLASS } from "@/lib/money";
-import { apparelPriceCentsForSize, getApparelItem, getApparelSizeOffer } from "@/lib/apparel";
+import { apparelPriceCentsForSelection, getApparelItem, getApparelSizeOffer } from "@/lib/apparel";
 import SalePrice from "@/components/ui/SalePrice";
 import {
   QUIZ_QUESTIONS,
@@ -328,7 +328,7 @@ export default function QuizClient() {
       selection?.size || defaultSizeForProduct(product.slug, product.sizes);
     const apparelItem = getApparelItem(product.slug);
     const priceCents = apparelItem
-      ? apparelPriceCentsForSize(apparelItem, size)
+      ? apparelPriceCentsForSelection(apparelItem, { size, color })
       : variant.priceCents ?? product.priceCents;
     const gender = product.slug === "magikid-shoes" ? "kids" : "men";
 
@@ -473,7 +473,11 @@ export default function QuizClient() {
                       const size =
                         selection?.size ||
                         defaultSizeForProduct(product.slug, product.sizes);
-                      const offer = getApparelSizeOffer(product.slug, size);
+                      const offer = getApparelSizeOffer(
+                        product.slug,
+                        size,
+                        selection?.color,
+                      );
                       if (offer) {
                         return (
                           <div className="shrink-0">

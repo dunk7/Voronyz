@@ -536,7 +536,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               : apparelItem?.slug === "voronyz-oversized-tee"
               ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Shipping now in black and white, XS through XXL — grey is out of stock. Price steps down for smaller sizes and up for larger ones from Medium."
               : apparelItem?.slug === "voronyz-core-hoodie"
-              ? "Heavyweight fleece with a clean, modern cut. Grey and white — pick a color to see the matching hoodie, then swipe to the second photo for the back. Size changes the sale price (about 60% off the marked compare-at)."
+              ? "Heavyweight fleece with a clean, modern cut. Black, grey, and white — pick a color to see that hoodie, then swipe to the second photo for the back. Grey costs a little more than black; white is the top color. Large is priced under Medium so it reads as the deal size."
               : isApparel && apparelItem?.comingSoon
               ? "Pre-order Voronyz Apparel — pay now to join the waitlist, and we ship when the drop arrives."
               : isApparel
@@ -584,12 +584,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             ] : isApparel && !apparelItem?.comingSoon ? [
               { q: "What sizes are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
                 ? "The Oversized Tee ships in XS, S, M, L, XL, and XXL. Smaller sizes cost less than Medium; larger sizes cost more."
+                : apparelItem?.slug === "voronyz-core-hoodie"
+                  ? "XS–XXL. Large is priced under Medium — the deal size on this hoodie."
                 : "This piece runs XS–XXL." },
               { q: "What colors are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
                 ? "Black and white are in stock. Grey is currently out of stock."
                 : apparelItem?.slug === "voronyz-core-hoodie"
-                  ? "Grey and white. The gallery updates to the selected color, with the back of the same hoodie on the second photo."
-                : apparelItem?.outOfStockColors?.includes("grey")
+                  ? "Black, grey, and white. Black uses the original hoodie photo; grey costs a little more, and white is the most expensive. The gallery updates to the selected color, with the back of the same hoodie on the second photo."
+                  : apparelItem?.outOfStockColors?.includes("grey")
                   ? "Grey is currently out of stock. Choose another listed color."
                   : "Pick any listed color that is in stock." },
               ...(apparelItem?.slug === "voronyz-core-hoodie"

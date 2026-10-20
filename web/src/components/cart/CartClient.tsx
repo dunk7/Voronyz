@@ -85,6 +85,7 @@ export default function CartClient() {
     return catalogUnitPriceCents({
       productSlug: it.productSlug,
       size: it.attributes?.size != null ? String(it.attributes.size) : undefined,
+      color: it.variant?.name,
       fallbackCents: stored,
     });
   };
@@ -585,7 +586,7 @@ export default function CartClient() {
                   }
                   const size =
                     it.attributes?.size != null ? String(it.attributes.size) : undefined;
-                  const offer = getApparelSizeOffer(it.productSlug, size);
+                  const offer = getApparelSizeOffer(it.productSlug, size, it.variant?.name);
                   const compareLine = offer ? offer.compareAtCents * it.quantity : null;
                   const strikeLine =
                     compareLine != null && compareLine > discountedLine && discountedLine === baseLine
