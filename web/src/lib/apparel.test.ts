@@ -122,6 +122,27 @@ test("flat-lay tee photos keep a centered square crop", () => {
 test("accessory listings still return to Accessories", () => {
   assert.equal(apparelProductShopHref("voronyz-cool-shades"), "/apparel/accessories");
   assert.equal(apparelProductShopLabel("voronyz-cool-shades"), "Back to Accessories");
+  assert.equal(apparelProductShopHref("voronyz-stickers"), "/apparel/accessories");
+  assert.equal(apparelProductShopLabel("voronyz-stickers"), "Back to Accessories");
+});
+
+test("logo stickers replace the keychain as a live accessory listing", () => {
+  const stickers = getApparelItem("voronyz-stickers");
+  assert.ok(stickers);
+  assert.equal(stickers.name, "Logo Stickers");
+  assert.equal(stickers.subcategory, "accessories");
+  assert.equal(stickers.comingSoon, false);
+  assert.equal(stickers.priceCents, 800);
+  assert.deepEqual(stickers.colors, ["black"]);
+  assert.deepEqual(stickers.sizes, ["One Size"]);
+  assert.equal(isComingSoonPreOrderProduct("voronyz-stickers"), false);
+  assert.equal(apparelVariantStock(stickers, "black"), 999);
+  assert.deepEqual(getApparelImages(stickers), [
+    "/products/apparel/voronyz-stickers-studio.jpg",
+    "/products/apparel/voronyz-stickers-laptop.jpg",
+    "/products/apparel/voronyz-stickers-bottle.jpg",
+    "/products/apparel/voronyz-stickers-notebook.jpg",
+  ]);
 });
 
 test("unknown apparel slugs fall back to Apparel", () => {

@@ -5,7 +5,7 @@ export const APPAREL_ONE_SIZE = ["One Size"] as const;
  * Apparel sub-sections.
  * - `collection`: multi-product listing pages (shirts, sweaters, …) —
  *   add new designs to APPAREL_CATALOG with the matching subcategory.
- * - `standalone`: Accessories only (shades, jewelry, drone parts, …) — never mixed
+ * - `standalone`: Accessories only (stickers, shades, jewelry, drone parts, …) — never mixed
  *   into clothing collections, and never shown on Engineering `/accessories`.
  */
 export type ApparelSubcategoryId =
@@ -55,7 +55,7 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "accessories",
     label: "Accessories",
-    description: "Shades, jewelry, lace locks, and drone parts",
+    description: "Logo stickers, shades, jewelry, lace locks, and drone parts",
     listing: "standalone",
   },
 ];
@@ -267,6 +267,25 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
   },
   // ── Accessories only (never mixed into clothing collections) ────────────
   // Lattice Insoles live on All Footwear as a live listing (see latticeInsoles.ts).
+  {
+    slug: "voronyz-stickers",
+    subcategory: "accessories",
+    name: "Logo Stickers",
+    description:
+      "Three-pack vinyl VORONYZ mark. Weatherproof. For laptops, bottles, notebooks, and anything else that needs the logo.",
+    priceCents: 800,
+    colors: ["black"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/voronyz-stickers-studio.jpg",
+    images: [
+      "/products/apparel/voronyz-stickers-studio.jpg",
+      "/products/apparel/voronyz-stickers-laptop.jpg",
+      "/products/apparel/voronyz-stickers-bottle.jpg",
+      "/products/apparel/voronyz-stickers-notebook.jpg",
+    ],
+    skuPrefix: "APP-STKR",
+    comingSoon: false,
+  },
   {
     slug: "voronyz-cool-shades",
     subcategory: "accessories",
