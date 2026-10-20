@@ -67,7 +67,7 @@ async function main() {
           slug: "v3-slides",
           name: "V3 Slides",
           description:
-            "Engineered for comfort, built to last. World-class FDM printed slides with TPU lattice lowers and breathable uppers.",
+            "Engineered for comfort, built to last. Lightweight slides with a foamed TPU lattice underfoot and a breathable upper.",
           priceCents: 7500,
           currency: "usd",
           images: [

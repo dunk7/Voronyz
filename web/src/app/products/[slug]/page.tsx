@@ -291,7 +291,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   // Product-specific descriptions (oversized tee skips the top blurb — size picker covers fit)
   const displayDescription = slug === "v3-slides" 
-    ? "Engineered for comfort, built to last. World-class FDM printed slides with TPU 90A lattice lowers and breathable uppers."
+    ? "Engineered for comfort, built to last. Lightweight slides with a foamed TPU lattice underfoot and a breathable upper."
     : slug === "dragonfly"
     ? DRAGONFLY_DESCRIPTION
     : isMagikidShoes
@@ -553,7 +553,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? FILAMENT_HOW_ITS_MADE
               : isLatticeInsoles
               ? LATTICE_INSOLES_HOW_ITS_MADE
-              : "Each pair takes a full day to print using our proprietary TPU blend. Following printing, we perform heat-treated post-processing to ensure exceptional quality, comfort, and durability."}
+              : "Each pair is printed in foamed TPU, then finished so it feels like a shoe — light, cushioned, and ready to wear. Years of work went into getting that process to this point."}
           </div>
         </div>
 
