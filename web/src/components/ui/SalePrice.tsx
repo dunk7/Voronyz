@@ -26,10 +26,11 @@ export default function SalePrice({
         ? Math.round((1 - sale / was) * 100)
         : 0;
 
+  const saleColor = showCompare ? "text-emerald-700" : "text-neutral-900";
   const priceClass =
     size === "card"
-      ? "text-sm font-semibold tabular-nums text-neutral-900"
-      : "text-lg font-semibold tabular-nums text-neutral-900";
+      ? `text-sm font-semibold tabular-nums ${saleColor}`
+      : `text-lg font-semibold tabular-nums ${saleColor}`;
   const wasClass =
     size === "card"
       ? "text-xs tabular-nums text-neutral-400 line-through"
@@ -43,8 +44,8 @@ export default function SalePrice({
         <span
           className={
             size === "card"
-              ? "text-[11px] font-semibold uppercase tracking-wide text-red-600"
-              : "rounded-full bg-red-600 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white"
+              ? "text-[11px] font-semibold uppercase tracking-wide text-emerald-700"
+              : "rounded-full bg-emerald-700 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white"
           }
         >
           {off}% off

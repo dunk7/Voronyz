@@ -5,12 +5,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   apparelCoverObjectPositionClass,
-  getApparelListingOffer,
   type ApparelSubcategoryId,
 } from "@/lib/apparel";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
-import SalePrice from "@/components/ui/SalePrice";
 
 export type ApparelGridProduct = {
   id: string;
@@ -45,7 +43,6 @@ export default function ApparelProductGrid({
     <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
       {products.map((product) => {
         const isNavigating = navigatingSlug === product.slug;
-        const offer = getApparelListingOffer(product.slug);
         return (
           <Link
             key={product.id}
@@ -72,20 +69,11 @@ export default function ApparelProductGrid({
                 </div>
               )}
             </div>
+            {/* Name only — price and sale details live on the product page. */}
             <div className="mt-4 px-0.5">
               <h3 className="text-[15px] font-semibold text-neutral-900 line-clamp-2">
                 {product.name}
               </h3>
-              {offer ? (
-                <div className="mt-1">
-                  <SalePrice
-                    size="card"
-                    priceCents={offer.priceCents}
-                    compareAtCents={offer.compareAtCents}
-                    percentOff={offer.percentOff}
-                  />
-                </div>
-              ) : null}
             </div>
           </Link>
         );
