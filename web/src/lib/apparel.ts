@@ -240,23 +240,23 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
       XL: 20500, // 60% off → $82
       XXL: 21500, // 60% off → $86
     },
-    image: "/products/apparel/hoodie.jpg",
+    image: "/products/apparel/hoodie-atelier-black-front.jpg",
     images: [
-      "/products/apparel/hoodie.jpg",
-      "/products/apparel/hoodie-black-back.jpg",
+      "/products/apparel/hoodie-atelier-black-front.jpg",
+      "/products/apparel/hoodie-atelier-black-back.jpg",
     ],
     colorImages: {
       black: [
-        "/products/apparel/hoodie.jpg",
-        "/products/apparel/hoodie-black-back.jpg",
+        "/products/apparel/hoodie-atelier-black-front.jpg",
+        "/products/apparel/hoodie-atelier-black-back.jpg",
       ],
       grey: [
-        "/products/apparel/hoodie-grey-front.jpg",
-        "/products/apparel/hoodie-grey-back.jpg",
+        "/products/apparel/hoodie-atelier-grey-front.jpg",
+        "/products/apparel/hoodie-atelier-grey-back.jpg",
       ],
       white: [
-        "/products/apparel/hoodie-white-front.jpg",
-        "/products/apparel/hoodie-white-back.jpg",
+        "/products/apparel/hoodie-atelier-white-front.jpg",
+        "/products/apparel/hoodie-atelier-white-back.jpg",
       ],
     },
     skuPrefix: "APP-HOOD",
