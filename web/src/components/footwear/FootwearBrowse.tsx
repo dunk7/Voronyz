@@ -78,11 +78,38 @@ function RankCard({
           navigating ? "pointer-events-none" : ""
         }`}
       >
-        <div className="relative px-3.5 pt-2.5 sm:px-5 sm:pt-3">
-          <div className="relative z-10 flex items-start justify-between">
+        <div className="relative">
+          {/* Listing-only landscape crop. Product pages still use the original squares. */}
+          <div className="relative aspect-[16/9] w-full overflow-hidden">
+            <SoftImage
+              key={coverSrc}
+              src={coverSrc}
+              alt={product.name}
+              fill
+              className={`object-cover object-center transition-opacity duration-500 ${
+                altSrc ? "group-hover:opacity-0" : ""
+              } ${navigating ? "brightness-90" : ""}`}
+              sizes="(max-width: 640px) 94vw, 672px"
+              priority={rank < 3}
+            />
+            {altSrc ? (
+              <SoftImage
+                key={altSrc}
+                src={altSrc}
+                alt={`${product.name} – alternate view`}
+                fill
+                showLogoPlaceholder={false}
+                className="object-cover object-center opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                sizes="(max-width: 640px) 94vw, 672px"
+                loading="lazy"
+              />
+            ) : null}
+          </div>
+
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between px-3.5 pt-2.5 sm:px-5 sm:pt-3">
             <div className="flex items-center gap-2">
               {featured ? (
-                <span className="text-[1.85rem] font-bold leading-none tracking-tight">
+                <span className="text-[1.85rem] font-bold leading-none tracking-tight drop-shadow-sm">
                   {rank}
                 </span>
               ) : (
@@ -104,43 +131,16 @@ function RankCard({
             {soldOut ? (
               <span
                 className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${
-                  featured ? "text-neutral-400" : "text-neutral-500"
+                  featured ? "text-neutral-500" : "text-white/70"
                 }`}
               >
                 Sold out
               </span>
             ) : null}
           </div>
-
-          {/* Square photos sit in a short, full-width band so the card reads landscape. */}
-          <div className="relative -mt-5 h-[7.25rem] w-full sm:-mt-6 sm:h-[8.25rem]">
-            <SoftImage
-              key={coverSrc}
-              src={coverSrc}
-              alt={product.name}
-              fill
-              className={`object-contain object-center transition-opacity duration-500 ${
-                altSrc ? "group-hover:opacity-0" : ""
-              } ${navigating ? "brightness-90" : ""}`}
-              sizes="(max-width: 640px) 94vw, 672px"
-              priority={rank < 3}
-            />
-            {altSrc ? (
-              <SoftImage
-                key={altSrc}
-                src={altSrc}
-                alt={`${product.name} – alternate view`}
-                fill
-                showLogoPlaceholder={false}
-                className="object-contain object-center opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                sizes="(max-width: 640px) 94vw, 672px"
-                loading="lazy"
-              />
-            ) : null}
-          </div>
         </div>
 
-        <div className="flex items-end justify-between gap-3 px-3.5 pb-3 pt-0.5 sm:px-5 sm:pb-3.5">
+        <div className="flex items-end justify-between gap-3 px-3.5 py-3 sm:px-5 sm:py-3.5">
           <div className="flex min-w-0 items-center gap-2.5">
             <div
               className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
