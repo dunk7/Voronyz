@@ -41,13 +41,11 @@ function RankCard({
   cover,
   alt,
   rank,
-  tab,
 }: {
   product: BrowseProduct;
   cover: string;
   alt?: string;
   rank: number;
-  tab: FootwearRankTab;
 }) {
   const router = useRouter();
   const [navigating, setNavigating] = useState(false);
@@ -68,7 +66,7 @@ function RankCard({
   return (
     <article
       className={`footwear-browse-item overflow-hidden rounded-[1.35rem] transition-transform duration-200 active:scale-[0.99] ${
-        featured ? "bg-white text-neutral-950" : "bg-[#1a1a1a] text-white"
+        featured ? "bg-white text-black" : "bg-[#1a1a1a] text-white"
       }`}
     >
       <Link
@@ -81,15 +79,8 @@ function RankCard({
         <div className="relative px-4 pt-3.5 sm:px-5">
           <div className="relative z-10 flex items-start justify-between">
             <div className="flex items-center gap-2">
-              {tab === "trending" && rank === 1 ? (
-                <span
-                  className="inline-flex h-9 min-w-9 items-center justify-center rounded-md bg-[#22c55e] px-2 text-[1.35rem] font-bold leading-none text-white"
-                  aria-label="Rank 1"
-                >
-                  1
-                </span>
-              ) : featured ? (
-                <span className="text-[2.1rem] font-bold leading-none tracking-tight">
+              {featured ? (
+                <span className="text-[2.1rem] font-bold leading-none tracking-tight text-black">
                   {rank}
                 </span>
               ) : (
@@ -259,7 +250,6 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
                   cover={cover}
                   alt={alt}
                   rank={index + 1}
-                  tab={tab}
                 />
               </div>
             );
