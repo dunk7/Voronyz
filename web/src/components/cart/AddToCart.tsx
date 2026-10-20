@@ -306,7 +306,7 @@ export default function AddToCart({
     [fulfillmentOptions, selectedFulfillment]
   );
 
-  const apparelOffer = getApparelSizeOffer(productSlug, selectedSize);
+  const apparelOffer = getApparelSizeOffer(productSlug, selectedSize, selectedPrimary);
   const sizeUnitPrice =
     selectedSize && typeof sizePriceCents[selectedSize] === "number"
       ? sizePriceCents[selectedSize]
@@ -823,7 +823,8 @@ export default function AddToCart({
             {displaySizes.map((displaySize) => {
               const isSelected = selectedSize === displaySize;
               const available = isSizeAvailable(displaySize);
-              const sizePrice = sizePriceCents[displaySize];
+              const sizedOffer = getApparelSizeOffer(productSlug, displaySize, selectedPrimary);
+              const sizePrice = sizedOffer?.priceCents ?? sizePriceCents[displaySize];
               const sizePriceLabel =
                 hasSizePrices && typeof sizePrice === "number"
                   ? formatCentsAsCurrency(sizePrice)

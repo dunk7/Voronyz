@@ -85,8 +85,15 @@ export type ApparelCatalogItem = {
   availableSizes?: string[];
   /**
    * Per-size unit price (the amount charged). Omitted sizes use `priceCents`.
+   * When `colorPriceCents` is set, this ladder is the base (black) color and
+   * other colors keep the same size deltas.
    */
   sizePriceCents?: Record<string, number>;
+  /**
+   * Medium unit price per color. Omitted colors use `priceCents`.
+   * Stacks on `sizePriceCents` so a color upcharge applies at every size.
+   */
+  colorPriceCents?: Record<string, number>;
   /**
    * Inflated “was” price shown struck through when a size is on advertised sale.
    * Checkout still charges `sizePriceCents` / `priceCents`.
@@ -178,7 +185,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     description: "Built big on purpose — soft, roomy, and easy to wear.",
     priceCents: 4800,
     colors: ["black", "white", "grey"],
-    outOfStockColors: ["grey"],
     sizes: [...APPAREL_SIZES],
     sizePriceCents: {
       XS: 4200,
@@ -198,6 +204,10 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
         "/products/apparel/shirt-front-white.jpg",
         "/products/apparel/shirt-back-blank-white.jpg",
       ],
+      grey: [
+        "/products/apparel/shirt-front-grey.jpg",
+        "/products/apparel/shirt-back-blank-grey.jpg",
+      ],
     },
     skuPrefix: "APP-TEE",
     comingSoon: false,
@@ -208,31 +218,41 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     subcategory: "sweaters",
     name: "The Atelier Hoodie",
     description: "Heavyweight fleece hoodie with a clean, modern cut.",
-    priceCents: 8400,
-    colors: ["grey", "white"],
+    priceCents: 7800,
+    colors: ["black", "grey", "white"],
     sizes: [...APPAREL_SIZES],
+    colorPriceCents: {
+      black: 7800,
+      grey: 8400,
+      white: 9200,
+    },
+    // Large is below Medium (and below the size average) so it reads as the deal.
     sizePriceCents: {
-      XS: 7400,
-      S: 7800,
-      M: 8400,
-      L: 9000,
-      XL: 9600,
-      XXL: 9900,
+      XS: 7200,
+      S: 7500,
+      M: 7800,
+      L: 7400,
+      XL: 8200,
+      XXL: 8600,
     },
     sizeCompareAtCents: {
-      XS: 18500, // 60% off → $74
-      S: 19500, // 60% off → $78
-      M: 21000, // 60% off → $84
-      L: 22500, // 60% off → $90
-      XL: 22900, // 58% off → $96
-      XXL: 24900, // 60% off → $99
+      XS: 18000, // 60% off → $72
+      S: 18750, // 60% off → $75
+      M: 19500, // 60% off → $78
+      L: 18500, // 60% off → $74 (deal vs Medium)
+      XL: 20500, // 60% off → $82
+      XXL: 21500, // 60% off → $86
     },
-    image: "/products/apparel/hoodie-grey-front.jpg",
+    image: "/products/apparel/hoodie.jpg",
     images: [
-      "/products/apparel/hoodie-grey-front.jpg",
-      "/products/apparel/hoodie-grey-back.jpg",
+      "/products/apparel/hoodie.jpg",
+      "/products/apparel/hoodie-black-back.jpg",
     ],
     colorImages: {
+      black: [
+        "/products/apparel/hoodie.jpg",
+        "/products/apparel/hoodie-black-back.jpg",
+      ],
       grey: [
         "/products/apparel/hoodie-grey-front.jpg",
         "/products/apparel/hoodie-grey-back.jpg",
@@ -357,7 +377,7 @@ export function apparelCatalogProduct(item: ApparelCatalogItem) {
       color,
       sku: apparelSku(item.skuPrefix, color),
       stock: apparelVariantStock(item, color),
-      priceCents: item.priceCents,
+      priceCents: apparelPriceCentsForSelection(item, { color }),
     })),
     createdAt: now,
     updatedAt: now,
@@ -496,10 +516,31 @@ export function apparelPriceCentsForSize(
   item: ApparelCatalogItem,
   size?: string | null,
 ): number {
-  const key = normalizeApparelSizeKey(size);
-  if (!key) return item.priceCents;
-  const keyed = item.sizePriceCents?.[key];
-  return typeof keyed === "number" && keyed > 0 ? keyed : item.priceCents;
+  return apparelPriceCentsForSelection(item, { size });
+}
+
+/**
+ * Unit price for a color + size. Color upcharges stack on the size ladder
+ * (the size map is the base/black color, relative to Medium).
+ */
+export function apparelPriceCentsForSelection(
+  item: ApparelCatalogItem,
+  args?: { size?: string | null; color?: string | null },
+): number {
+  const colorKey = args?.color ? normalizeApparelColor(args.color) : "";
+  const colorBase =
+    colorKey && typeof item.colorPriceCents?.[colorKey] === "number"
+      ? item.colorPriceCents[colorKey]!
+      : item.priceCents;
+  const sizeKey = normalizeApparelSizeKey(args?.size);
+  if (!sizeKey) return colorBase;
+  const sizePrice = item.sizePriceCents?.[sizeKey];
+  if (typeof sizePrice !== "number" || sizePrice <= 0) return colorBase;
+  if (item.colorPriceCents && Object.keys(item.colorPriceCents).length > 0) {
+    const medium = item.sizePriceCents?.M ?? item.priceCents;
+    return colorBase + (sizePrice - medium);
+  }
+  return sizePrice;
 }
 
 export const HOODIE_MIN_SALE_CENTS = 7000;
@@ -519,13 +560,25 @@ function percentOffFrom(compareAtCents: number, priceCents: number): number {
 export function getApparelSizeOffer(
   slug: string | null | undefined,
   size: string | null | undefined,
+  color?: string | null,
 ): ApparelPriceOffer | null {
   const item = getApparelItem(slug);
   if (!item?.sizeCompareAtCents) return null;
   const key = normalizeApparelSizeKey(size) || "M";
-  const priceCents = Math.max(HOODIE_MIN_SALE_CENTS, apparelPriceCentsForSize(item, key));
-  const compareAtCents = item.sizeCompareAtCents[key] ?? item.sizeCompareAtCents.M;
-  if (typeof compareAtCents !== "number" || compareAtCents <= priceCents) return null;
+  const priceCents = Math.max(
+    HOODIE_MIN_SALE_CENTS,
+    apparelPriceCentsForSelection(item, { size: key, color }),
+  );
+  const sizeCompare = item.sizeCompareAtCents[key] ?? item.sizeCompareAtCents.M;
+  if (typeof sizeCompare !== "number" || sizeCompare <= priceCents) return null;
+  const colorKey = color ? normalizeApparelColor(color) : "";
+  const hasColorUpcharge =
+    Boolean(colorKey) &&
+    typeof item.colorPriceCents?.[colorKey] === "number" &&
+    item.colorPriceCents[colorKey] !== item.priceCents;
+  // Base color uses the size “was” map; upcharged colors keep the same ~60% off.
+  const compareAtCents = hasColorUpcharge ? Math.round(priceCents / 0.4) : sizeCompare;
+  if (compareAtCents <= priceCents) return null;
   return {
     priceCents,
     compareAtCents,
@@ -544,9 +597,10 @@ export function getApparelListingOffer(slug: string | null | undefined): Apparel
 export function catalogUnitPriceCents(args: {
   productSlug?: string | null;
   size?: string | null;
+  color?: string | null;
   fallbackCents: number;
 }): number {
   const item = getApparelItem(args.productSlug);
   if (!item) return args.fallbackCents;
-  return apparelPriceCentsForSize(item, args.size);
+  return apparelPriceCentsForSelection(item, { size: args.size, color: args.color });
 }
