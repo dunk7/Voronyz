@@ -1,7 +1,7 @@
 import {
   MAGIKID_SHOES_BASE_PRICE_CENTS,
   MAGIKID_SHOES_DESCRIPTION_SHORT,
-  MAGIKID_SHOES_THUMBNAIL_URL,
+  MAGIKID_SHOES_IMAGES,
 } from "@/lib/magikidShoesThumbnail";
 import {
   GATORS_DESCRIPTION_SHORT,
@@ -129,17 +129,7 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     name: "Magikid Shoes",
     description: MAGIKID_SHOES_DESCRIPTION_SHORT,
     priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
-    images: [
-      MAGIKID_SHOES_THUMBNAIL_URL,
-      "/products/slip-ons/InShot_20260405_203151152.jpg",
-      "/products/slip-ons/InShot_20260405_203425292.jpg",
-      "/products/slip-ons/InShot_20260405_203601045.jpg",
-      "/products/slip-ons/InShot_20260405_203736918.jpg",
-      "/products/slip-ons/InShot_20260405_203930832.jpg",
-      "/products/slip-ons/InShot_20260405_204113872.jpg",
-      "/products/slip-ons/InShot_20260405_204333303.jpg",
-      "/products/slip-ons/InShot_20260405_202911983.jpg",
-    ],
+    images: [...MAGIKID_SHOES_IMAGES],
   },
   {
     slug: LATTICE_INSOLES_SLUG,

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { MAGIKID_SHOES_THUMBNAIL_URL, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT, MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
+import { MAGIKID_SHOES_IMAGES, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT, MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
 import {
   TRAIL_MIX_DESCRIPTION_SHORT,
   TRAIL_MIX_FLAVOR_IDS,
@@ -203,17 +203,6 @@ export async function ensureFootwearProducts(): Promise<void> {
   }
 }
 
-const MAGIKID_SHOES_IMAGES = [
-  MAGIKID_SHOES_THUMBNAIL_URL,
-  "/products/slip-ons/InShot_20260405_203151152.jpg",
-  "/products/slip-ons/InShot_20260405_203425292.jpg",
-  "/products/slip-ons/InShot_20260405_203601045.jpg",
-  "/products/slip-ons/InShot_20260405_203736918.jpg",
-  "/products/slip-ons/InShot_20260405_203930832.jpg",
-  "/products/slip-ons/InShot_20260405_204113872.jpg",
-  "/products/slip-ons/InShot_20260405_204333303.jpg",
-  "/products/slip-ons/InShot_20260405_202911983.jpg",
-];
 
 const MAGIKID_VARIANTS = [
   { color: "black", sku: "MK-BLK", stock: 999 },
@@ -306,7 +295,7 @@ export async function ensureMagikidShoes(): Promise<void> {
         priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
         currency: "usd",
         category: "footwear",
-        images: MAGIKID_SHOES_IMAGES,
+        images: [...MAGIKID_SHOES_IMAGES],
         primaryColors: [...MAGIKID_PRIMARY_COLORS],
         secondaryColors: [],
         sizes: MAGIKID_SHOES_KIDS_SIZES,
@@ -325,7 +314,7 @@ export async function ensureMagikidShoes(): Promise<void> {
       description: MAGIKID_SHOES_DESCRIPTION_SHORT,
       priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
       category: "footwear",
-      images: MAGIKID_SHOES_IMAGES,
+      images: [...MAGIKID_SHOES_IMAGES],
       primaryColors: [...MAGIKID_PRIMARY_COLORS],
       secondaryColors: [],
       sizes: MAGIKID_SHOES_KIDS_SIZES,

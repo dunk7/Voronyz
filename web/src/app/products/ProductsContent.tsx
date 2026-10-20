@@ -15,6 +15,7 @@ import ApparelProductGrid, {
 import TakeTheQuizPromo from "@/components/apparel/TakeTheQuizPromo";
 import PrintedFootwearEducation from "@/components/apparel/PrintedFootwearEducation";
 import FootwearBrowse from "@/components/footwear/FootwearBrowse";
+import { MAGIKID_SHOES_THUMBNAIL_URL } from "@/lib/magikidShoesThumbnail";
 
 /** Homepage footwear teaser — slides + slip-ons only; full catalog on /products. */
 const HOME_FOOTWEAR_TEASER_SLUGS = ["v3-slides", "slip-ons"] as const;
@@ -46,7 +47,7 @@ const productMeta: Record<string, {
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
   "magikid-shoes": {
-    altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
+    altImage: MAGIKID_SHOES_THUMBNAIL_URL,
   },
   "tpu-90a-filament": {
     altImage: "/products/tpu-90a-filament/pink-tpu-90a-spool-angle.jpg",

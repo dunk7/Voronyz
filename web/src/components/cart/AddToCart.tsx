@@ -890,7 +890,7 @@ export default function AddToCart({
               className="w-full rounded-xl border border-black/10 px-4 py-3 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-black/10"
             />
             <p className="text-xs text-neutral-500">
-              Required so we can match each pair to the right student.
+              Required so we print that student&apos;s Magikid camp design — not a stock pair.
             </p>
           </div>
         )}

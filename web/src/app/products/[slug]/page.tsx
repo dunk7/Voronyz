@@ -5,13 +5,15 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
 import {
-  MAGIKID_SHOES_THUMBNAIL_URL,
+  MAGIKID_SHOES_COVER,
+  MAGIKID_SHOES_IMAGES,
   MAGIKID_SHOES_DESCRIPTION,
   MAGIKID_SHOES_HOW_ITS_MADE,
   MAGIKID_SHOES_META_DESCRIPTION,
   MAGIKID_SHOES_BASE_PRICE_CENTS,
   MAGIKID_SHOES_SHIPPED_PRICE_CENTS,
 } from "@/lib/magikidShoesThumbnail";
+import MagikidShoesStory from "@/components/products/MagikidShoesStory";
 import {
   TRAIL_MIX_DESCRIPTION,
   TRAIL_MIX_FLAVORS,
@@ -208,17 +210,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     "/products/slip-ons/InShot_20260405_204333303.jpg",
     SLIP_ONS_WHITE_AD_IMAGE,
   ];
-  const magikidShoesImages = [
-    MAGIKID_SHOES_THUMBNAIL_URL,
-    "/products/slip-ons/InShot_20260405_203151152.jpg",
-    "/products/slip-ons/InShot_20260405_203425292.jpg",
-    "/products/slip-ons/InShot_20260405_203601045.jpg",
-    "/products/slip-ons/InShot_20260405_203736918.jpg",
-    "/products/slip-ons/InShot_20260405_203930832.jpg",
-    "/products/slip-ons/InShot_20260405_204113872.jpg",
-    "/products/slip-ons/InShot_20260405_204333303.jpg",
-    "/products/slip-ons/InShot_20260405_202911983.jpg",
-  ];
+  const magikidShoesImages = [...MAGIKID_SHOES_IMAGES];
   const images = slug === "v3-slides"
     ? defaultImages
     : slug === "dragonfly"
@@ -506,12 +498,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       </div>
 
       <div className="container pb-12">
+        {isMagikidShoes ? <MagikidShoesStory /> : null}
         <div className="mt-10 overflow-hidden rounded-3xl ring-1 ring-black/5 bg-white">
           <div className="bg-black text-white px-6 py-4 text-sm font-medium">
             {isDragonfly
               ? "Crafted for you"
               : isMagikidShoes
-                ? "Magikid edition"
+                ? "Magikid program"
                 : isSlipOns
                   ? "Print + finish"
                   : isTrailMix
@@ -570,9 +563,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Is shipping really free?", a: "Yes! We offer free shipping on all domestic US orders. No minimum purchase required. We currently only ship within the US." },
               { q: "Can I wash them?", a: "Absolutely. The lattice sole and upper are fully washable — toss them in the washer on a gentle cycle." },
             ] : isMagikidShoes ? [
-              { q: "What colors can I order?", a: "Black, grey, and pink are in stock. White and orange are listed but currently out of stock." },
-              { q: "How does Magikid Lab pickup work?", a: "Choose pickup at checkout — you pay $30 for the shoes with no shipping fee. We'll email you when your pair is ready to collect in person at Magikid Lab." },
-              { q: "How does shipping work?", a: "The shoes are $30. Shipping is an extra $7. Pickup at Magikid Lab is $30 with no shipping fee." },
+              { q: "Is this a public Voronyz shoe?", a: "No. This is a Magikid Robotics Lab program we run with them — footwear design camps for Magikid students. It is not a stock pair we sell to everybody." },
+              { q: "What are the kids actually ordering?", a: "Their own design. In camp they start from our slip-on base and model their own holes, cutouts, and graphics. We print that student file. Put the student's name at checkout so we print the right pair — there isn't a finished off-the-shelf shoe to buy." },
+              { q: "What colors can I order?", a: "Black, grey, and pink are in stock. White and orange are listed but currently out of stock. Color is the print color of the student's designed pair." },
+              { q: "How does Magikid Lab pickup work?", a: "Choose pickup at checkout — you pay $30 for the printed student pair with no shipping fee. We'll email you when it's ready to collect in person at Magikid Lab." },
+              { q: "How does shipping work?", a: "The pair is $30. Shipping is an extra $7. Pickup at Magikid Lab is $30 with no shipping fee." },
               { q: "How long does production take?", a: "Made to order in under 7 days, then we ship or hold for pickup." },
             ] : isSlipOns ? [
               { q: "What colors can I order?", a: "Black, grey, orange, and pink are in stock — white is currently out of stock. Each pair is one solid body color (no two-tone option)." },
@@ -679,7 +674,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug === "magikid-shoes") {
     const title = "Magikid Shoes – Voronyz";
     const description = MAGIKID_SHOES_META_DESCRIPTION;
-    const images = [MAGIKID_SHOES_THUMBNAIL_URL];
+    const images = [MAGIKID_SHOES_COVER];
     return {
       title,
       description,
