@@ -12,6 +12,7 @@ import {
   MAGIKID_SHOES_META_DESCRIPTION,
   MAGIKID_SHOES_BASE_PRICE_CENTS,
   MAGIKID_SHOES_SHIPPED_PRICE_CENTS,
+  magikidCatalogProduct,
 } from "@/lib/magikidShoesThumbnail";
 import MagikidShoesStory from "@/components/products/MagikidShoesStory";
 import {
@@ -154,7 +155,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   } catch (error) {
     console.error(`Failed to load product "${slug}":`, error);
     const catalogFallback = getApparelItem(slug);
-    if (!catalogFallback) {
+    if (catalogFallback) {
+      product = apparelCatalogProduct(catalogFallback);
+    } else if (slug === "magikid-shoes") {
+      product = magikidCatalogProduct();
+    } else {
       return (
         <div className="bg-texture-white">
           <div className="container py-12 text-center">
@@ -167,11 +172,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         </div>
       );
     }
-    product = apparelCatalogProduct(catalogFallback);
   }
   if (!product) {
     const catalogFallback = getApparelItem(slug);
     if (catalogFallback) product = apparelCatalogProduct(catalogFallback);
+    else if (slug === "magikid-shoes") product = magikidCatalogProduct();
   }
   if (!product) return <div className="container py-12 text-neutral-900">Not found.</div>;
 

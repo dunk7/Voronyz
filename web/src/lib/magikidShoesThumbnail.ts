@@ -44,6 +44,42 @@ export const MAGIKID_PROGRAM_PHOTOS = [
 
 export const MAGIKID_SHOES_KIDS_SIZES = ["1", "2", "3", "4", "5", "6", "7"];
 
+export const MAGIKID_PRIMARY_COLORS = ["black", "grey", "white", "orange", "pink"] as const;
+
+export const MAGIKID_VARIANTS = [
+  { color: "black", sku: "MK-BLK", stock: 999 },
+  { color: "grey", sku: "MK-GRY", stock: 999 },
+  { color: "white", sku: "MK-WHT", stock: 0 },
+  { color: "orange", sku: "MK-ORG", stock: 0 },
+  { color: "pink", sku: "MK-PNK", stock: 999 },
+] as const;
+
+/** In-memory listing when the catalog DB is unreachable. */
+export function magikidCatalogProduct() {
+  const now = new Date(0);
+  return {
+    id: "magikid-shoes",
+    slug: "magikid-shoes",
+    name: "Magikid Shoes",
+    description: MAGIKID_SHOES_DESCRIPTION_SHORT,
+    priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
+    currency: "usd",
+    images: [...MAGIKID_SHOES_IMAGES],
+    primaryColors: [...MAGIKID_PRIMARY_COLORS],
+    secondaryColors: [] as string[],
+    sizes: [...MAGIKID_SHOES_KIDS_SIZES],
+    variants: MAGIKID_VARIANTS.map((v) => ({
+      id: v.sku,
+      color: v.color,
+      sku: v.sku,
+      stock: v.stock,
+      priceCents: null as number | null,
+    })),
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
 export const MAGIKID_SHOES_BASE_PRICE_CENTS = 3000;
 export const MAGIKID_SHOES_SHIPPING_FEE_CENTS = 700;
 export const MAGIKID_SHOES_SHIPPED_PRICE_CENTS =

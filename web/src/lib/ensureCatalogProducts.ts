@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { MAGIKID_SHOES_IMAGES, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT, MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
+import { MAGIKID_SHOES_IMAGES, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT, MAGIKID_SHOES_BASE_PRICE_CENTS, MAGIKID_PRIMARY_COLORS, MAGIKID_VARIANTS } from "@/lib/magikidShoesThumbnail";
 import {
   TRAIL_MIX_DESCRIPTION_SHORT,
   TRAIL_MIX_FLAVOR_IDS,
@@ -204,15 +204,6 @@ export async function ensureFootwearProducts(): Promise<void> {
 }
 
 
-const MAGIKID_VARIANTS = [
-  { color: "black", sku: "MK-BLK", stock: 999 },
-  { color: "grey", sku: "MK-GRY", stock: 999 },
-  { color: "white", sku: "MK-WHT", stock: 0 },
-  { color: "orange", sku: "MK-ORG", stock: 0 },
-  { color: "pink", sku: "MK-PNK", stock: 999 },
-] as const;
-
-const MAGIKID_PRIMARY_COLORS = ["black", "grey", "white", "orange", "pink"] as const;
 
 /** Keep footwear white OOS / pink in stock without requiring a manual seed run. */
 type FootwearStockVariant = {
