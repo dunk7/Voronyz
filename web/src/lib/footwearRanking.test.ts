@@ -24,8 +24,8 @@ test("trending keeps catalog order", () => {
     [
       "v3-slides",
       "slip-ons",
-      "gators",
       "dragonfly",
+      "gators",
       "magikid-shoes",
       "voronyz-lattice-insoles",
     ],
