@@ -68,7 +68,7 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     slug: "v3-slides",
     name: "V3 Slides",
     description:
-      "Engineered for comfort, built to last. World-class FDM printed slides with TPU lattice lowers and breathable uppers.",
+      "Engineered for comfort, built to last. Lightweight slides with a foamed TPU lattice underfoot and a breathable upper.",
     priceCents: 7500,
     images: [
       "/products/v3-slides/InShot_20260212_194352014.jpg",

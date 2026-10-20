@@ -22,11 +22,11 @@ export default function AboutPage() {
           </div>
 
           <div className="prose prose-lg text-neutral-700 leading-relaxed space-y-5">
-            <p>We&apos;ve been diving deep into 3D printed footwear for the past two years. It&apos;s been an incredible journey experimenting with materials, designs, and manufacturing techniques to create something truly innovative.</p>
+            <p>We&apos;ve spent years perfecting 3D-printed footwear — the materials, the fit, the way a pair should feel when you actually wear it. Foamed TPU, lattice construction, and finishing that turns a print into a shoe. That work is how we got here.</p>
 
-            <p>We aim to revolutionize the footwear industry through decentralized manufacturing, full recyclability, and shoes that adapt to every individual&apos;s unique foot shape. We&apos;re committed to sustainability and precision, redefining what footwear can be.</p>
+            <p>Voronyz makes footwear meant for everyday life: light, cushioned, and built to last. Recyclable where it counts, designed around the foot, and finished to the standard of a real shoe company.</p>
 
-            <p>Join us on this exciting adventure! Follow our progress on <a href="https://instagram.com/voronyz" target="_blank" rel="noopener noreferrer" className="text-black hover:underline font-medium">Instagram @voronyz</a> to stay updated on new designs, behind-the-scenes insights, and more.</p>
+            <p>Follow along on <a href="https://instagram.com/voronyz" target="_blank" rel="noopener noreferrer" className="text-black hover:underline font-medium">Instagram @voronyz</a> for new designs and what we&apos;re working on next.</p>
           </div>
         </div>
       </div>
