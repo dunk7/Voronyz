@@ -185,7 +185,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     description: "Built big on purpose — soft, roomy, and easy to wear.",
     priceCents: 4800,
     colors: ["black", "white", "grey"],
-    outOfStockColors: ["grey"],
     sizes: [...APPAREL_SIZES],
     sizePriceCents: {
       XS: 4200,
@@ -204,6 +203,10 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
       white: [
         "/products/apparel/shirt-front-white.jpg",
         "/products/apparel/shirt-back-blank-white.jpg",
+      ],
+      grey: [
+        "/products/apparel/shirt-front-grey.jpg",
+        "/products/apparel/shirt-back-blank-grey.jpg",
       ],
     },
     skuPrefix: "APP-TEE",
