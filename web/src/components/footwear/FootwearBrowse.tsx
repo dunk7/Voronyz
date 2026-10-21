@@ -41,13 +41,11 @@ function RankCard({
   cover,
   alt,
   rank,
-  tab,
 }: {
   product: BrowseProduct;
   cover: string;
   alt?: string;
   rank: number;
-  tab: FootwearRankTab;
 }) {
   const router = useRouter();
   const [navigating, setNavigating] = useState(false);
@@ -68,7 +66,7 @@ function RankCard({
   return (
     <article
       className={`footwear-browse-item overflow-hidden rounded-[1.25rem] transition-transform duration-200 active:scale-[0.99] ${
-        featured ? "bg-white text-neutral-950" : "bg-[#1a1a1a] text-white"
+        featured ? "bg-white text-black" : "bg-[#1a1a1a] text-white"
       }`}
     >
       <Link
@@ -109,7 +107,7 @@ function RankCard({
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between px-3.5 pt-2.5 sm:px-5 sm:pt-3">
             <div className="flex items-center gap-2">
               {featured ? (
-                <span className="text-[1.85rem] font-bold leading-none tracking-tight drop-shadow-sm">
+                <span className="text-[1.85rem] font-bold leading-none tracking-tight text-black drop-shadow-sm">
                   {rank}
                 </span>
               ) : (
@@ -117,16 +115,6 @@ function RankCard({
                   {rank}
                 </span>
               )}
-              {tab === "trending" && rank === 1 ? (
-                <span
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-[#22c55e] text-white"
-                  aria-label="Trending up"
-                >
-                  <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-                    <path d="M10 4.5l5.5 6.5H12v5H8v-5H4.5L10 4.5z" />
-                  </svg>
-                </span>
-              ) : null}
             </div>
             {soldOut ? (
               <span
@@ -247,7 +235,7 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
 
         {topCount > 0 ? (
           <div className="mt-5 rounded-2xl bg-white px-5 py-3">
-            <p className="text-xl font-bold tracking-tight text-neutral-950 sm:text-[1.35rem]">
+            <p className="text-xl font-bold tracking-tight text-black sm:text-[1.35rem]">
               Top {topCount}
             </p>
           </div>
@@ -263,7 +251,6 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
                   cover={cover}
                   alt={alt}
                   rank={index + 1}
-                  tab={tab}
                 />
               </div>
             );
