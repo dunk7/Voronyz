@@ -41,13 +41,11 @@ function RankCard({
   cover,
   alt,
   rank,
-  tab,
 }: {
   product: BrowseProduct;
   cover: string;
   alt?: string;
   rank: number;
-  tab: FootwearRankTab;
 }) {
   const router = useRouter();
   const [navigating, setNavigating] = useState(false);
@@ -68,7 +66,7 @@ function RankCard({
   return (
     <article
       className={`footwear-browse-item overflow-hidden rounded-[1.35rem] transition-transform duration-200 active:scale-[0.99] ${
-        featured ? "bg-white text-neutral-950" : "bg-[#1a1a1a] text-white"
+        featured ? "bg-white text-black" : "bg-[#1a1a1a] text-white"
       }`}
     >
       <Link
@@ -82,7 +80,7 @@ function RankCard({
           <div className="relative z-10 flex items-start justify-between">
             <div className="flex items-center gap-2">
               {featured ? (
-                <span className="text-[2.1rem] font-bold leading-none tracking-tight">
+                <span className="text-[2.1rem] font-bold leading-none tracking-tight text-black">
                   {rank}
                 </span>
               ) : (
@@ -90,16 +88,6 @@ function RankCard({
                   {rank}
                 </span>
               )}
-              {tab === "trending" && rank === 1 ? (
-                <span
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-[#22c55e] text-white"
-                  aria-label="Trending up"
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-                    <path d="M10 4.5l5.5 6.5H12v5H8v-5H4.5L10 4.5z" />
-                  </svg>
-                </span>
-              ) : null}
             </div>
             {soldOut ? (
               <span
@@ -262,7 +250,6 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
                   cover={cover}
                   alt={alt}
                   rank={index + 1}
-                  tab={tab}
                 />
               </div>
             );
