@@ -67,7 +67,7 @@ function RankCard({
 
   return (
     <article
-      className={`footwear-browse-item overflow-hidden rounded-[1.35rem] transition-transform duration-200 active:scale-[0.99] ${
+      className={`footwear-browse-item overflow-hidden rounded-[1.25rem] transition-transform duration-200 active:scale-[0.99] ${
         featured ? "bg-white text-neutral-950" : "bg-[#1a1a1a] text-white"
       }`}
     >
@@ -78,50 +78,18 @@ function RankCard({
           navigating ? "pointer-events-none" : ""
         }`}
       >
-        <div className="relative px-4 pt-3.5 sm:px-5">
-          <div className="relative z-10 flex items-start justify-between">
-            <div className="flex items-center gap-2">
-              {featured ? (
-                <span className="text-[2.1rem] font-bold leading-none tracking-tight">
-                  {rank}
-                </span>
-              ) : (
-                <span className="inline-flex min-w-9 items-center justify-center rounded-lg bg-black/55 px-2 py-1 text-lg font-bold leading-none">
-                  {rank}
-                </span>
-              )}
-              {tab === "trending" && rank === 1 ? (
-                <span
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-[#22c55e] text-white"
-                  aria-label="Trending up"
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-                    <path d="M10 4.5l5.5 6.5H12v5H8v-5H4.5L10 4.5z" />
-                  </svg>
-                </span>
-              ) : null}
-            </div>
-            {soldOut ? (
-              <span
-                className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${
-                  featured ? "text-neutral-400" : "text-neutral-500"
-                }`}
-              >
-                Sold out
-              </span>
-            ) : null}
-          </div>
-
-          <div className="relative mx-auto -mt-3 h-[12.25rem] w-full max-w-[22rem] sm:h-[14rem]">
+        <div className="relative">
+          {/* Listing-only landscape crop. Product pages still use the original squares. */}
+          <div className="relative aspect-[16/9] w-full overflow-hidden">
             <SoftImage
               key={coverSrc}
               src={coverSrc}
               alt={product.name}
               fill
-              className={`object-contain object-center transition-opacity duration-500 ${
+              className={`object-cover object-center transition-opacity duration-500 ${
                 altSrc ? "group-hover:opacity-0" : ""
               } ${navigating ? "brightness-90" : ""}`}
-              sizes="(max-width: 640px) 90vw, 360px"
+              sizes="(max-width: 640px) 94vw, 672px"
               priority={rank < 3}
             />
             {altSrc ? (
@@ -131,22 +99,55 @@ function RankCard({
                 alt={`${product.name} – alternate view`}
                 fill
                 showLogoPlaceholder={false}
-                className="object-contain object-center opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                sizes="(max-width: 640px) 90vw, 360px"
+                className="object-cover object-center opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                sizes="(max-width: 640px) 94vw, 672px"
                 loading="lazy"
               />
             ) : null}
           </div>
+
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between px-3.5 pt-2.5 sm:px-5 sm:pt-3">
+            <div className="flex items-center gap-2">
+              {featured ? (
+                <span className="text-[1.85rem] font-bold leading-none tracking-tight drop-shadow-sm">
+                  {rank}
+                </span>
+              ) : (
+                <span className="inline-flex min-w-8 items-center justify-center rounded-md bg-black/55 px-1.5 py-0.5 text-base font-bold leading-none">
+                  {rank}
+                </span>
+              )}
+              {tab === "trending" && rank === 1 ? (
+                <span
+                  className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-[#22c55e] text-white"
+                  aria-label="Trending up"
+                >
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                    <path d="M10 4.5l5.5 6.5H12v5H8v-5H4.5L10 4.5z" />
+                  </svg>
+                </span>
+              ) : null}
+            </div>
+            {soldOut ? (
+              <span
+                className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${
+                  featured ? "text-neutral-500" : "text-white/70"
+                }`}
+              >
+                Sold out
+              </span>
+            ) : null}
+          </div>
         </div>
 
-        <div className="flex items-end justify-between gap-3 px-4 pb-4 pt-1 sm:px-5 sm:pb-5">
-          <div className="flex min-w-0 items-center gap-3">
+        <div className="flex items-end justify-between gap-3 px-3.5 py-3 sm:px-5 sm:py-3.5">
+          <div className="flex min-w-0 items-center gap-2.5">
             <div
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
                 featured ? "bg-black" : "bg-white"
               }`}
             >
-              <LogoMark size={22} tone={featured ? "light" : "dark"} animate={false} />
+              <LogoMark size={18} tone={featured ? "light" : "dark"} animate={false} />
             </div>
             <div className="min-w-0">
               <h2 className="truncate text-[15px] font-bold uppercase leading-tight tracking-tight sm:text-base">
@@ -210,7 +211,7 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
 
   return (
     <section className="bg-black text-white" aria-labelledby="footwear-browse-heading">
-      <div className="mx-auto max-w-lg px-4 pb-12 pt-8 sm:px-6 sm:pt-10">
+      <div className="mx-auto w-full max-w-2xl px-3 pb-12 pt-8 sm:px-5 sm:pt-10">
         <h1
           id="footwear-browse-heading"
           className="text-[2.65rem] font-bold leading-none tracking-tight sm:text-5xl"
@@ -245,14 +246,14 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
         </div>
 
         {topCount > 0 ? (
-          <div className="mt-5 rounded-2xl bg-[#ff5c3a] px-5 py-3.5">
-            <p className="text-xl font-bold tracking-tight text-white sm:text-[1.35rem]">
+          <div className="mt-5 rounded-2xl bg-white px-5 py-3">
+            <p className="text-xl font-bold tracking-tight text-neutral-950 sm:text-[1.35rem]">
               Top {topCount}
             </p>
           </div>
         ) : null}
 
-        <div className="mt-3 flex flex-col gap-2.5" role="list">
+        <div className="mt-2.5 flex flex-col gap-2" role="list">
           {ranked.map((product, index) => {
             const { cover, alt } = getImages(product);
             return (
