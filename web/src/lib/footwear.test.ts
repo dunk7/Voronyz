@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  FOOTWEAR_CATALOG,
+  FOOTWEAR_SLUGS,
   SLIP_ONS_WHITE_AD_IMAGE,
   isWhiteColor,
   slipOnsImagesForColor,
@@ -10,6 +12,18 @@ const studio = [
   "/products/slip-ons/InShot_20260405_202911983.jpg",
   "/products/slip-ons/InShot_20260405_203151152.jpg",
 ];
+
+test("All Footwear lists Dragonfly third, before Gators", () => {
+  assert.deepEqual(FOOTWEAR_SLUGS, [
+    "v3-slides",
+    "slip-ons",
+    "dragonfly",
+    "gators",
+    "magikid-shoes",
+    "voronyz-lattice-insoles",
+  ]);
+  assert.equal(FOOTWEAR_CATALOG[2]?.slug, "dragonfly");
+});
 
 test("white color names match the White swatch", () => {
   assert.equal(isWhiteColor("white"), true);

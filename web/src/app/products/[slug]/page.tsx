@@ -5,13 +5,16 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
 import {
-  MAGIKID_SHOES_THUMBNAIL_URL,
+  MAGIKID_SHOES_COVER,
+  MAGIKID_SHOES_IMAGES,
   MAGIKID_SHOES_DESCRIPTION,
   MAGIKID_SHOES_HOW_ITS_MADE,
   MAGIKID_SHOES_META_DESCRIPTION,
   MAGIKID_SHOES_BASE_PRICE_CENTS,
   MAGIKID_SHOES_SHIPPED_PRICE_CENTS,
+  magikidCatalogProduct,
 } from "@/lib/magikidShoesThumbnail";
+import MagikidShoesStory from "@/components/products/MagikidShoesStory";
 import {
   TRAIL_MIX_DESCRIPTION,
   TRAIL_MIX_FLAVORS,
@@ -80,7 +83,7 @@ const OBSOLETE_APPAREL_PRODUCT_REDIRECTS: Record<string, string> = {
   "voronyz-lounge-sweats": "/apparel",
   "voronyz-lattice-shoe-trees": "/apparel/accessories",
   "voronyz-charm-bracelet": "/apparel/accessories",
-  "voronyz-keychain": "/apparel/accessories",
+  "voronyz-keychain": "/products/voronyz-stickers",
   "voronyz-necklace": "/apparel/accessories",
   "voronyz-rc-car-stickers": "/apparel/accessories",
   "voronyz-nice-shirt": "/products/voronyz-oversized-tee",
@@ -152,7 +155,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   } catch (error) {
     console.error(`Failed to load product "${slug}":`, error);
     const catalogFallback = getApparelItem(slug);
-    if (!catalogFallback) {
+    if (catalogFallback) {
+      product = apparelCatalogProduct(catalogFallback);
+    } else if (slug === "magikid-shoes") {
+      product = magikidCatalogProduct();
+    } else {
       return (
         <div className="bg-texture-white">
           <div className="container py-12 text-center">
@@ -165,11 +172,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         </div>
       );
     }
-    product = apparelCatalogProduct(catalogFallback);
   }
   if (!product) {
     const catalogFallback = getApparelItem(slug);
     if (catalogFallback) product = apparelCatalogProduct(catalogFallback);
+    else if (slug === "magikid-shoes") product = magikidCatalogProduct();
   }
   if (!product) return <div className="container py-12 text-neutral-900">Not found.</div>;
 
@@ -208,17 +215,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     "/products/slip-ons/InShot_20260405_204333303.jpg",
     SLIP_ONS_WHITE_AD_IMAGE,
   ];
-  const magikidShoesImages = [
-    MAGIKID_SHOES_THUMBNAIL_URL,
-    "/products/slip-ons/InShot_20260405_203151152.jpg",
-    "/products/slip-ons/InShot_20260405_203425292.jpg",
-    "/products/slip-ons/InShot_20260405_203601045.jpg",
-    "/products/slip-ons/InShot_20260405_203736918.jpg",
-    "/products/slip-ons/InShot_20260405_203930832.jpg",
-    "/products/slip-ons/InShot_20260405_204113872.jpg",
-    "/products/slip-ons/InShot_20260405_204333303.jpg",
-    "/products/slip-ons/InShot_20260405_202911983.jpg",
-  ];
+  const magikidShoesImages = [...MAGIKID_SHOES_IMAGES];
   const images = slug === "v3-slides"
     ? defaultImages
     : slug === "dragonfly"
@@ -294,7 +291,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   // Product-specific descriptions (oversized tee skips the top blurb — size picker covers fit)
   const displayDescription = slug === "v3-slides" 
-    ? "Engineered for comfort, built to last. World-class FDM printed slides with TPU 90A lattice lowers and breathable uppers."
+    ? "Engineered for comfort, built to last. Lightweight slides with a foamed TPU lattice underfoot and a breathable upper."
     : slug === "dragonfly"
     ? DRAGONFLY_DESCRIPTION
     : isMagikidShoes
@@ -358,6 +355,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <>
           <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU lattice</span>
           <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">S · M · L · XL</span>
+        </>
+      )}
+      {apparelItem?.slug === "voronyz-stickers" && (
+        <>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">3-pack vinyl</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Weatherproof</span>
         </>
       )}
       {!isTrailMix && !isApparel && !isFilament && !isLatticeInsoles && !isViolettePonybead && (
@@ -500,12 +503,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       </div>
 
       <div className="container pb-12">
+        {isMagikidShoes ? <MagikidShoesStory /> : null}
         <div className="mt-10 overflow-hidden rounded-3xl ring-1 ring-black/5 bg-white">
           <div className="bg-black text-white px-6 py-4 text-sm font-medium">
             {isDragonfly
               ? "Crafted for you"
               : isMagikidShoes
-                ? "Magikid edition"
+                ? "Magikid program"
                 : isSlipOns
                   ? "Print + finish"
                   : isTrailMix
@@ -534,9 +538,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               : isViolettePonybead
               ? VIOLETTE_PONYBEAD_HOW_ITS_MADE
               : apparelItem?.slug === "voronyz-oversized-tee"
-              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Shipping now in black and white, XS through XXL — grey is out of stock. Price steps down for smaller sizes and up for larger ones from Medium."
+              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Shipping now in black, white, and grey, XS through XXL. Price steps down for smaller sizes and up for larger ones from Medium."
               : apparelItem?.slug === "voronyz-core-hoodie"
               ? "Heavyweight fleece with a clean, modern cut. Black, grey, and white — pick a color to see that hoodie, then swipe to the second photo for the back. Grey costs a little more than black; white is the top color. Large is priced under Medium so it reads as the deal size."
+              : apparelItem?.slug === "voronyz-stickers"
+              ? "Kiss-cut vinyl sheet with three VORONYZ logo strips. Weatherproof adhesive for laptops, bottles, notebooks, and gear. Ships now."
               : isApparel && apparelItem?.comingSoon
               ? "Pre-order Voronyz Apparel — pay now to join the waitlist, and we ship when the drop arrives."
               : isApparel
@@ -547,7 +553,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? FILAMENT_HOW_ITS_MADE
               : isLatticeInsoles
               ? LATTICE_INSOLES_HOW_ITS_MADE
-              : "Each pair takes a full day to print using our proprietary TPU blend. Following printing, we perform heat-treated post-processing to ensure exceptional quality, comfort, and durability."}
+              : "Each pair is printed in foamed TPU, then finished so it feels like a shoe — light, cushioned, and ready to wear. Years of work went into getting that process to this point."}
           </div>
         </div>
 
@@ -562,9 +568,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Is shipping really free?", a: "Yes! We offer free shipping on all domestic US orders. No minimum purchase required. We currently only ship within the US." },
               { q: "Can I wash them?", a: "Absolutely. The lattice sole and upper are fully washable — toss them in the washer on a gentle cycle." },
             ] : isMagikidShoes ? [
-              { q: "What colors can I order?", a: "Black, grey, and pink are in stock. White and orange are listed but currently out of stock." },
-              { q: "How does Magikid Lab pickup work?", a: "Choose pickup at checkout — you pay $30 for the shoes with no shipping fee. We'll email you when your pair is ready to collect in person at Magikid Lab." },
-              { q: "How does shipping work?", a: "The shoes are $30. Shipping is an extra $7. Pickup at Magikid Lab is $30 with no shipping fee." },
+              { q: "Is this a public Voronyz shoe?", a: "No. This is a Magikid Robotics Lab program we run with them — footwear design camps for Magikid students. It is not a stock pair we sell to everybody." },
+              { q: "What are the kids actually ordering?", a: "Their own design. In camp they start from our slip-on base and model their own holes, cutouts, and graphics. We print that student file. Put the student's name at checkout so we print the right pair — there isn't a finished off-the-shelf shoe to buy." },
+              { q: "What colors can I order?", a: "Black, grey, and pink are in stock. White and orange are listed but currently out of stock. Color is the print color of the student's designed pair." },
+              { q: "How does Magikid Lab pickup work?", a: "Choose pickup at checkout — you pay $30 for the printed student pair with no shipping fee. We'll email you when it's ready to collect in person at Magikid Lab." },
+              { q: "How does shipping work?", a: "The pair is $30. Shipping is an extra $7. Pickup at Magikid Lab is $30 with no shipping fee." },
               { q: "How long does production take?", a: "Made to order in under 7 days, then we ship or hold for pickup." },
             ] : isSlipOns ? [
               { q: "What colors can I order?", a: "Black, grey, orange, and pink are in stock — white is currently out of stock. Each pair is one solid body color (no two-tone option)." },
@@ -581,6 +589,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "How much do they cost?", a: "$10 per animal." },
               { q: "Does it come in sizes?", a: "No sizes — pick the animal style you want." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
+            ] : apparelItem?.slug === "voronyz-stickers" ? [
+              { q: "What is included?", a: "One vinyl sheet with three stacked VORONYZ logo strips — peel and apply each strip, or keep the sheet together." },
+              { q: "Where can I put them?", a: "Laptops, bottles, notebooks, boards, cases — any clean, smooth surface. The vinyl is weatherproof." },
+              { q: "How much do they cost?", a: "$8 per sheet, with free shipping on domestic US orders." },
+              { q: "Does it come in sizes or colors?", a: "One size, one color — charcoal bars with white VORONYZ lettering, matching the physical stickers." },
+              { q: "When will my order ship?", a: "Orders typically ship within a few business days. You'll get updates by email." },
             ] : isApparel && !apparelItem?.comingSoon ? [
               { q: "What sizes are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
                 ? "The Oversized Tee ships in XS, S, M, L, XL, and XXL. Smaller sizes cost less than Medium; larger sizes cost more."
@@ -588,7 +602,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   ? "XS–XXL. Large is priced under Medium — the deal size on this hoodie."
                 : "This piece runs XS–XXL." },
               { q: "What colors are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
-                ? "Black and white are in stock. Grey is currently out of stock."
+                ? "Black, white, and grey are in stock. Pick a color to see the matching front and back shots."
                 : apparelItem?.slug === "voronyz-core-hoodie"
                   ? "Black, grey, and white. Black uses the original hoodie photo; grey costs a little more, and white is the most expensive. The gallery updates to the selected color, with the back of the same hoodie on the second photo."
                   : apparelItem?.outOfStockColors?.includes("grey")
@@ -598,14 +612,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 ? [{ q: "How much does it cost?", a: "Price depends on size. Each hoodie is marked down about 60% from the listed compare-at — sale prices run from $74 (XS) to $99 (XXL), never under $70." }]
                 : []),
               { q: "When will my order ship?", a: "Orders typically ship within a few business days. You'll get updates by email." },
-              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Accessories (shades, jewelry, lace locks, drone parts) live under their own Apparel section." },
+              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Accessories (stickers, shades, jewelry, lace locks, drone parts) live under their own Apparel section." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isApparel ? [
-              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Cool shades, jewelry, lace locks, and drone parts are One Size." },
+              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Stickers, cool shades, jewelry, lace locks, and drone parts are One Size." },
               { q: "What colors are available?", a: "Grey is currently out of stock on apparel. Other listed colors can be pre-ordered." },
               { q: "Can I pre-order coming soon pieces?", a: "Yes. Choose your color and size, then pay now to join the waitlist. We ship your order when that product arrives — timing can be a day or much longer depending on the drop." },
               { q: "When will my pre-order ship?", a: "As soon as we receive the product. You'll get updates by email. Pre-orders are paid reservations, not instant ship." },
-              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Accessories (shades, jewelry, lace locks, drone parts) live under their own Apparel section. Engineering is separate. Lattice Insoles are on All Footwear." },
+              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Accessories (stickers, shades, jewelry, lace locks, drone parts) live under their own Apparel section. Engineering is separate. Lattice Insoles are on All Footwear." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders once your pre-order ships." },
             ] : isGators ? [
               { q: "What is The Gators?", a: "A comfort clog named for the alligator 🐊 — closed toe, open back, thick cushioned platform, and easy slip-on wear for all-day comfort." },
@@ -665,7 +679,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug === "magikid-shoes") {
     const title = "Magikid Shoes – Voronyz";
     const description = MAGIKID_SHOES_META_DESCRIPTION;
-    const images = [MAGIKID_SHOES_THUMBNAIL_URL];
+    const images = [MAGIKID_SHOES_COVER];
     return {
       title,
       description,

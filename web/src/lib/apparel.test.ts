@@ -41,22 +41,22 @@ test("The Atelier Hoodie ships in black, grey, and white with matching front and
   assert.ok(hoodie);
   assert.deepEqual(hoodie.colors, ["black", "grey", "white"]);
   assert.equal(hoodie.outOfStockColors, undefined);
-  assert.equal(hoodie.image, "/products/apparel/hoodie.jpg");
+  assert.equal(hoodie.image, "/products/apparel/hoodie-atelier-black-front.jpg");
   assert.deepEqual(getApparelImages(hoodie), [
-    "/products/apparel/hoodie.jpg",
-    "/products/apparel/hoodie-black-back.jpg",
+    "/products/apparel/hoodie-atelier-black-front.jpg",
+    "/products/apparel/hoodie-atelier-black-back.jpg",
   ]);
   assert.deepEqual(getApparelImagesForColor(hoodie, "black"), [
-    "/products/apparel/hoodie.jpg",
-    "/products/apparel/hoodie-black-back.jpg",
+    "/products/apparel/hoodie-atelier-black-front.jpg",
+    "/products/apparel/hoodie-atelier-black-back.jpg",
   ]);
   assert.deepEqual(getApparelImagesForColor(hoodie, "grey"), [
-    "/products/apparel/hoodie-grey-front.jpg",
-    "/products/apparel/hoodie-grey-back.jpg",
+    "/products/apparel/hoodie-atelier-grey-front.jpg",
+    "/products/apparel/hoodie-atelier-grey-back.jpg",
   ]);
   assert.deepEqual(getApparelImagesForColor(hoodie, "white"), [
-    "/products/apparel/hoodie-white-front.jpg",
-    "/products/apparel/hoodie-white-back.jpg",
+    "/products/apparel/hoodie-atelier-white-front.jpg",
+    "/products/apparel/hoodie-atelier-white-back.jpg",
   ]);
   assert.equal(isApparelColorOutOfStock(hoodie, "black"), false);
   assert.equal(isApparelColorOutOfStock(hoodie, "grey"), false);
@@ -99,6 +99,15 @@ test("white oversized tee uses the black-logo mockup and a plain white back", ()
   ]);
 });
 
+test("grey oversized tee has matching front and back shots with the same chest logo layout", () => {
+  const tee = getApparelItem("voronyz-oversized-tee");
+  assert.ok(tee);
+  assert.deepEqual(getApparelImagesForColor(tee, "grey"), [
+    "/products/apparel/shirt-front-grey.jpg",
+    "/products/apparel/shirt-back-blank-grey.jpg",
+  ]);
+});
+
 test("flat-lay tee photos keep a centered square crop", () => {
   assert.equal(
     apparelCoverObjectPositionClass("/products/apparel/shirt-back-blank.jpg"),
@@ -113,6 +122,27 @@ test("flat-lay tee photos keep a centered square crop", () => {
 test("accessory listings still return to Accessories", () => {
   assert.equal(apparelProductShopHref("voronyz-cool-shades"), "/apparel/accessories");
   assert.equal(apparelProductShopLabel("voronyz-cool-shades"), "Back to Accessories");
+  assert.equal(apparelProductShopHref("voronyz-stickers"), "/apparel/accessories");
+  assert.equal(apparelProductShopLabel("voronyz-stickers"), "Back to Accessories");
+});
+
+test("logo stickers replace the keychain as a live accessory listing", () => {
+  const stickers = getApparelItem("voronyz-stickers");
+  assert.ok(stickers);
+  assert.equal(stickers.name, "Logo Stickers");
+  assert.equal(stickers.subcategory, "accessories");
+  assert.equal(stickers.comingSoon, false);
+  assert.equal(stickers.priceCents, 800);
+  assert.deepEqual(stickers.colors, ["black"]);
+  assert.deepEqual(stickers.sizes, ["One Size"]);
+  assert.equal(isComingSoonPreOrderProduct("voronyz-stickers"), false);
+  assert.equal(apparelVariantStock(stickers, "black"), 999);
+  assert.deepEqual(getApparelImages(stickers), [
+    "/products/apparel/voronyz-stickers-studio.jpg",
+    "/products/apparel/voronyz-stickers-laptop.jpg",
+    "/products/apparel/voronyz-stickers-bottle.jpg",
+    "/products/apparel/voronyz-stickers-notebook.jpg",
+  ]);
 });
 
 test("unknown apparel slugs fall back to Apparel", () => {
@@ -120,18 +150,18 @@ test("unknown apparel slugs fall back to Apparel", () => {
   assert.equal(apparelProductShopLabel("not-a-product"), "Back to Apparel");
 });
 
-test("grey is out of stock on tees and shades; oversized tee sizes XS–XXL are in stock", () => {
+test("grey is in stock on tees and the hoodie, and out of stock on shades; oversized tee sizes XS–XXL are in stock", () => {
   const tee = getApparelItem("voronyz-oversized-tee");
   const hoodie = getApparelItem("voronyz-core-hoodie");
   const shades = getApparelItem("voronyz-cool-shades");
   assert.ok(tee && hoodie && shades);
 
-  assert.equal(isApparelColorOutOfStock(tee, "grey"), true);
+  assert.equal(isApparelColorOutOfStock(tee, "grey"), false);
   assert.equal(isApparelColorOutOfStock(tee, "white"), false);
   assert.equal(isApparelColorOutOfStock(tee, "black"), false);
   assert.equal(apparelVariantStock(tee, "black"), 999);
   assert.equal(apparelVariantStock(tee, "white"), 999);
-  assert.equal(apparelVariantStock(tee, "grey"), 0);
+  assert.equal(apparelVariantStock(tee, "grey"), 999);
   for (const size of tee.sizes) {
     assert.equal(isApparelSizeAvailable(tee, size), true);
   }

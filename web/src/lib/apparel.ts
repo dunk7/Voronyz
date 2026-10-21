@@ -5,7 +5,7 @@ export const APPAREL_ONE_SIZE = ["One Size"] as const;
  * Apparel sub-sections.
  * - `collection`: multi-product listing pages (shirts, sweaters, …) —
  *   add new designs to APPAREL_CATALOG with the matching subcategory.
- * - `standalone`: Accessories only (shades, jewelry, drone parts, …) — never mixed
+ * - `standalone`: Accessories only (stickers, shades, jewelry, drone parts, …) — never mixed
  *   into clothing collections, and never shown on Engineering `/accessories`.
  */
 export type ApparelSubcategoryId =
@@ -55,7 +55,7 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "accessories",
     label: "Accessories",
-    description: "Shades, jewelry, lace locks, and drone parts",
+    description: "Logo stickers, shades, jewelry, lace locks, and drone parts",
     listing: "standalone",
   },
 ];
@@ -185,7 +185,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     description: "Built big on purpose — soft, roomy, and easy to wear.",
     priceCents: 4800,
     colors: ["black", "white", "grey"],
-    outOfStockColors: ["grey"],
     sizes: [...APPAREL_SIZES],
     sizePriceCents: {
       XS: 4200,
@@ -204,6 +203,10 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
       white: [
         "/products/apparel/shirt-front-white.jpg",
         "/products/apparel/shirt-back-blank-white.jpg",
+      ],
+      grey: [
+        "/products/apparel/shirt-front-grey.jpg",
+        "/products/apparel/shirt-back-blank-grey.jpg",
       ],
     },
     skuPrefix: "APP-TEE",
@@ -240,23 +243,23 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
       XL: 20500, // 60% off → $82
       XXL: 21500, // 60% off → $86
     },
-    image: "/products/apparel/hoodie.jpg",
+    image: "/products/apparel/hoodie-atelier-black-front.jpg",
     images: [
-      "/products/apparel/hoodie.jpg",
-      "/products/apparel/hoodie-black-back.jpg",
+      "/products/apparel/hoodie-atelier-black-front.jpg",
+      "/products/apparel/hoodie-atelier-black-back.jpg",
     ],
     colorImages: {
       black: [
-        "/products/apparel/hoodie.jpg",
-        "/products/apparel/hoodie-black-back.jpg",
+        "/products/apparel/hoodie-atelier-black-front.jpg",
+        "/products/apparel/hoodie-atelier-black-back.jpg",
       ],
       grey: [
-        "/products/apparel/hoodie-grey-front.jpg",
-        "/products/apparel/hoodie-grey-back.jpg",
+        "/products/apparel/hoodie-atelier-grey-front.jpg",
+        "/products/apparel/hoodie-atelier-grey-back.jpg",
       ],
       white: [
-        "/products/apparel/hoodie-white-front.jpg",
-        "/products/apparel/hoodie-white-back.jpg",
+        "/products/apparel/hoodie-atelier-white-front.jpg",
+        "/products/apparel/hoodie-atelier-white-back.jpg",
       ],
     },
     skuPrefix: "APP-HOOD",
@@ -264,6 +267,25 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
   },
   // ── Accessories only (never mixed into clothing collections) ────────────
   // Lattice Insoles live on All Footwear as a live listing (see latticeInsoles.ts).
+  {
+    slug: "voronyz-stickers",
+    subcategory: "accessories",
+    name: "Logo Stickers",
+    description:
+      "Three-pack vinyl VORONYZ mark. Weatherproof. For laptops, bottles, notebooks, and anything else that needs the logo.",
+    priceCents: 800,
+    colors: ["black"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/voronyz-stickers-studio.jpg",
+    images: [
+      "/products/apparel/voronyz-stickers-studio.jpg",
+      "/products/apparel/voronyz-stickers-laptop.jpg",
+      "/products/apparel/voronyz-stickers-bottle.jpg",
+      "/products/apparel/voronyz-stickers-notebook.jpg",
+    ],
+    skuPrefix: "APP-STKR",
+    comingSoon: false,
+  },
   {
     slug: "voronyz-cool-shades",
     subcategory: "accessories",
