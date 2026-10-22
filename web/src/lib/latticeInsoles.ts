@@ -1,6 +1,6 @@
 export const LATTICE_INSOLES_SLUG = "voronyz-lattice-insoles";
 export const LATTICE_INSOLES_NAME = "Lattice Insoles";
-export const LATTICE_INSOLES_PRICE_CENTS = 3200; // $32
+export const LATTICE_INSOLES_PRICE_CENTS = 6300; // $63
 
 export const LATTICE_INSOLES_THUMBNAIL_URL =
   "/products/lattice-insoles/lattice-insoles.jpg";
