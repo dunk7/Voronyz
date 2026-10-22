@@ -1,4 +1,6 @@
 import Link from "next/link";
+import ComplementaryRecs from "@/components/products/ComplementaryRecs";
+import { getComplementaryRecommendations } from "@/lib/complementaryRecommendations";
 import { formatCentsAsCurrency } from "@/lib/money";
 
 export interface OrderDetails {
@@ -18,6 +20,8 @@ export interface OrderDetails {
     currency: string;
     lineItems: Array<{
       name: string;
+      productName?: string;
+      productSlug?: string;
       amount: number;
       quantity: number;
       isPreOrder?: boolean;
@@ -64,6 +68,7 @@ export function OrderSuccessContent({
       item.isPreOrder === true ||
       item.name.toLowerCase().startsWith("pre-order")
   );
+  const addOnRecs = getComplementaryRecommendations(details.lineItems);
   const isAch = order.paymentMethod === "ach";
   const achStillClearing =
     isAch &&
@@ -155,6 +160,12 @@ export function OrderSuccessContent({
             </div>
           </div>
         </div>
+
+        <ComplementaryRecs
+          recs={addOnRecs}
+          heading="Goes with what you just ordered"
+          ctaLabel="Shop now"
+        />
 
         {details.shipping && (
           <div className="bg-white rounded-xl ring-1 ring-black/10 p-6 text-left">
