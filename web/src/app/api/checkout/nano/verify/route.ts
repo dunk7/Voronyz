@@ -52,6 +52,8 @@ function pendingPayload(
     expiresAt: metadata?.expiresAt,
     lineItems: metadata?.lineItems,
     customer: metadata?.customer,
+    shippingAddressLabel: metadata?.shippingAddressLabel,
+    shippingName: (metadata?.shipping as { name?: string } | undefined)?.name,
   };
 }
 

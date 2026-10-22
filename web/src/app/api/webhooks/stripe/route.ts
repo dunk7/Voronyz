@@ -9,6 +9,10 @@ import {
   isShippingInsuranceRequested,
   SHIPPING_INSURANCE_PRODUCT_NAME,
 } from "@/lib/shippingInsurance";
+import {
+  INTERNATIONAL_SHIPPING_PRODUCT_NAME,
+  shippingFromStripeMetadata,
+} from "@/lib/shippingAddress";
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -223,6 +227,21 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
       });
     }
 
+    const internationalShippingCents = Number(
+      fullSession.metadata?.internationalShippingCents || 0
+    );
+    if (
+      internationalShippingCents > 0 &&
+      !lineItems.some((item) => item.name === INTERNATIONAL_SHIPPING_PRODUCT_NAME)
+    ) {
+      lineItems.push({
+        name: INTERNATIONAL_SHIPPING_PRODUCT_NAME,
+        quantity: 1,
+        amount: internationalShippingCents,
+        isPreOrder: false,
+      });
+    }
+
     const hasPreOrder =
       fullSession.metadata?.hasPreOrder === "true" ||
       lineItems.some((item) => Boolean((item as { isPreOrder?: boolean }).isPreOrder));
@@ -237,7 +256,7 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
     const shippingDetails = fullSession.collected_information?.shipping_details ?? null;
 
     // Extract shipping information
-    const shipping = shippingDetails ? {
+    const stripeShipping = shippingDetails ? {
       name: shippingDetails.name,
       address: {
         line1: shippingDetails.address.line1,
@@ -248,6 +267,8 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
         country: shippingDetails.address.country,
       },
     } : null;
+    // Verified cart address is stored in metadata (Checkout no longer collects shipping itself).
+    const shipping = stripeShipping ?? shippingFromStripeMetadata(fullSession.metadata);
 
     // Extract billing information (if different from shipping)
     const billing = fullSession.customer_details?.address ? {
