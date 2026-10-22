@@ -609,7 +609,7 @@ export async function ensureFilament(): Promise<void> {
   });
 }
 
-/** Idempotently upsert Lattice Insoles on All Footwear (S–XL, not shoe sizes). */
+/** Idempotently upsert Lattice Insoles on All Footwear (same US shoe sizes as the rest of the lineup). */
 export async function ensureLatticeInsoles(): Promise<void> {
   let existing = await prisma.product.findUnique({ where: { slug: LATTICE_INSOLES_SLUG } });
 
