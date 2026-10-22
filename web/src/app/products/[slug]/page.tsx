@@ -354,7 +354,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       {isLatticeInsoles && (
         <>
           <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU lattice</span>
-          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">S · M · L · XL</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">US shoe sizes</span>
         </>
       )}
       {apparelItem?.slug === "voronyz-stickers" && (
@@ -451,9 +451,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             }),
             ...(isFilament && {
               hideSizeSelector: true,
-            }),
-            ...(isLatticeInsoles && {
-              useCatalogSizes: true,
             }),
             ...(isApparel && {
               useCatalogSizes: true,
@@ -629,9 +626,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "How long does production take?", a: "Printed to order in about 1–2 days, then ships the next business day." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isLatticeInsoles ? [
-              { q: "What sizes are available?", a: "S, M, L, and XL — pick the band that matches your usual shoe size." },
+              { q: "What sizes are available?", a: "The same US Men's, Women's, and Kids' sizes as Voronyz shoes. Pick the size you wear in our footwear." },
               { q: "What colors can I order?", a: "Black and grey." },
-              { q: "Will they fit my shoes?", a: "They're drop-in lattice cushions sized for everyday sneakers and Voronyz footwear. Trim lightly at the toe if you need a closer fit." },
+              { q: "Will they fit my shoes?", a: "They're printed on the same size scale as Voronyz footwear. Order your usual US size for a drop-in fit in Voronyz shoes and everyday sneakers." },
               { q: "How long does production take?", a: "Printed to order in about 1–2 days, then ships the next business day." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : [

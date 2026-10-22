@@ -463,7 +463,7 @@ async function main() {
       console.log("Updated TPU-90A Filament product and variants.");
     }
 
-    // ── Lattice Insoles (All Footwear — S–XL drop-in cushions) ──
+    // ── Lattice Insoles (All Footwear — same US shoe sizes as the rest of the lineup) ──
     const existingInsoles = await prisma.product.findUnique({ where: { slug: LATTICE_INSOLES_SLUG } });
     console.log("Lattice Insoles product check:", existingInsoles ? "Found" : "Not found");
     if (!existingInsoles) {
