@@ -47,6 +47,8 @@ For **production deployment**, set these environment variables in your Netlify d
 - `DIRECT_DATABASE_URL`: Direct (non-pooler) PostgreSQL connection string (recommended). Prisma will use this for migrations/DDL.
 - `STRIPE_SECRET_KEY`: Your Stripe secret key for payments
 - `STRIPE_WEBHOOK_SECRET`: Stripe webhook signing secret (required for reliable order persistence)
+- `GOOGLE_MAPS_API_KEY` (recommended): Server-side Google Places API (New) key used for checkout address suggestions/verification. Without it, checkout falls back to the free Photon/OpenStreetMap geocoder, which has patchier US house-number coverage.
+- `ADDRESS_SIGNING_SECRET` (optional): Secret used to sign verified shipping addresses. Defaults to `STRIPE_SECRET_KEY`.
 - `NEXT_PUBLIC_SITE_URL`: Your site's base URL (use `https://voronyz.com` in production) for metadata and redirects
 - `AUTH_STUB_ENABLED`: Set to "false" to disable demo auth (enabled by default)
 - `ORDERS_ADMIN_PASSWORD`: Password for the private `/orders` admin page (server-only; never use `NEXT_PUBLIC_`). Required to view and manage orders at `https://voronyz.com/orders`.

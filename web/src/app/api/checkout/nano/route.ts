@@ -19,6 +19,12 @@ import {
   isShippingInsuranceRequested,
   SHIPPING_INSURANCE_PRODUCT_NAME,
 } from "@/lib/shippingInsurance";
+import { parseVerifiedShipping } from "@/lib/addressVerification";
+import {
+  formatAddressLine,
+  INTERNATIONAL_SHIPPING_PRODUCT_NAME,
+  internationalShippingCents,
+} from "@/lib/shippingAddress";
 
 const NANO_RECEIVE_ADDRESS = process.env.NANO_RECEIVE_ADDRESS;
 const NANO_DISCOUNT_RATE = 0.03;
@@ -35,7 +41,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { items, discountCode, shippingInsurance } = await request.json();
+    const {
+      items,
+      discountCode,
+      shippingInsurance,
+      shipping: rawShipping,
+    } = await request.json();
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "No items provided" }, { status: 400 });
@@ -45,6 +56,23 @@ export async function POST(request: NextRequest) {
     if (magikidValidationError) {
       return NextResponse.json({ error: magikidValidationError }, { status: 400 });
     }
+
+    const hasPickupOnly = items.every(
+      (item: { fulfillment?: string }) => item.fulfillment === "pickup"
+    );
+    const shippingAddress = hasPickupOnly ? null : parseVerifiedShipping(rawShipping);
+    if (!hasPickupOnly && !shippingAddress) {
+      return NextResponse.json(
+        {
+          error:
+            "Please enter your name and pick a verified shipping address from the suggestions before checking out.",
+        },
+        { status: 400 }
+      );
+    }
+    const intlShippingCents = shippingAddress
+      ? internationalShippingCents(shippingAddress.country)
+      : 0;
 
     // Calculate subtotal in USD cents — same discount code logic as Stripe checkout.
     // A Nano-specific 3% discount is applied afterwards (products only; insurance is excluded).
@@ -166,10 +194,20 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Nano 3% off applies to products only; insurance is a fixed add-on.
+    if (intlShippingCents > 0) {
+      lineItems.push({
+        name: INTERNATIONAL_SHIPPING_PRODUCT_NAME,
+        variant: "",
+        quantity: 1,
+        unitCents: intlShippingCents,
+      });
+    }
+
+    // Nano 3% off applies to products only; insurance and shipping are fixed add-ons.
     const nanoDiscountCents = Math.round(productSubtotalCents * NANO_DISCOUNT_RATE);
-    const subtotalCents = productSubtotalCents + insuranceCents;
-    const totalCents = productSubtotalCents - nanoDiscountCents + insuranceCents;
+    const subtotalCents = productSubtotalCents + insuranceCents + intlShippingCents;
+    const totalCents =
+      productSubtotalCents - nanoDiscountCents + insuranceCents + intlShippingCents;
     const subtotalUsd = subtotalCents / 100;
     const nanoDiscountUsd = nanoDiscountCents / 100;
 
@@ -248,6 +286,22 @@ export async function POST(request: NextRequest) {
           shippingInsurance: wantsInsurance,
           shippingInsuranceCents: insuranceCents,
           shippingInsuranceQuantity: insuranceQty,
+          internationalShippingCents: intlShippingCents,
+          ...(shippingAddress && {
+            shipping: {
+              name: shippingAddress.name,
+              verified: true,
+              address: {
+                line1: shippingAddress.line1,
+                line2: shippingAddress.line2,
+                city: shippingAddress.city,
+                state: shippingAddress.state,
+                postal_code: shippingAddress.postal_code,
+                country: shippingAddress.country,
+              },
+            },
+            shippingAddressLabel: formatAddressLine(shippingAddress),
+          }),
           discountCode: normalizedDiscountCode,
           cartItems: JSON.stringify(
             items.map((item: {

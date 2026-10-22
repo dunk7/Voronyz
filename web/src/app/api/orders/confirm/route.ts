@@ -11,6 +11,10 @@ import {
   isShippingInsuranceRequested,
   SHIPPING_INSURANCE_PRODUCT_NAME,
 } from "@/lib/shippingInsurance";
+import {
+  INTERNATIONAL_SHIPPING_PRODUCT_NAME,
+  shippingFromStripeMetadata,
+} from "@/lib/shippingAddress";
 
 type CheckoutSession = {
   id: string;
@@ -136,7 +140,8 @@ export async function POST(request: NextRequest) {
     const currency = actualSession.currency || 'usd';
     
     // Extract customer information
-    const customerName = actualSession.shipping_details?.name || 
+    const customerName = actualSession.shipping_details?.name ||
+                        shippingFromStripeMetadata(actualSession.metadata)?.name || 
                         actualSession.customer_details?.name || 
                         actualSession.customer_details?.email?.split('@')[0] || 
                         null;
@@ -144,7 +149,7 @@ export async function POST(request: NextRequest) {
     const customerPhone = actualSession.customer_details?.phone || null;
     
     // Extract shipping information
-    const shipping = actualSession.shipping_details ? {
+    const stripeShipping = actualSession.shipping_details ? {
       name: actualSession.shipping_details.name,
       address: {
         line1: actualSession.shipping_details.address.line1,
@@ -155,6 +160,8 @@ export async function POST(request: NextRequest) {
         country: actualSession.shipping_details.address.country,
       },
     } : null;
+    // Verified cart address is stored in metadata (Checkout no longer collects shipping itself).
+    const shipping = stripeShipping ?? shippingFromStripeMetadata(actualSession.metadata);
 
     // Extract billing information (if different from shipping)
     const billing = actualSession.customer_details?.address ? {
@@ -249,6 +256,21 @@ export async function POST(request: NextRequest) {
         name: insuranceLine.name,
         quantity: insuranceLine.quantity,
         amount: insuranceLine.unitCents,
+        isPreOrder: false,
+      });
+    }
+
+    const internationalShippingCents = Number(
+      actualSession.metadata?.internationalShippingCents || 0
+    );
+    if (
+      internationalShippingCents > 0 &&
+      !lineItems.some((item) => item.name === INTERNATIONAL_SHIPPING_PRODUCT_NAME)
+    ) {
+      lineItems.push({
+        name: INTERNATIONAL_SHIPPING_PRODUCT_NAME,
+        quantity: 1,
+        amount: internationalShippingCents,
         isPreOrder: false,
       });
     }
@@ -424,7 +446,7 @@ export async function POST(request: NextRequest) {
                 quantity: item.quantity,
               })) || [];
           
-          const existingShipping = existingMetadata.shipping || (actualSession.shipping_details ? {
+          const existingShipping = existingMetadata.shipping || shippingFromStripeMetadata(actualSession.metadata) || (actualSession.shipping_details ? {
             name: actualSession.shipping_details.name,
             address: {
               line1: actualSession.shipping_details.address.line1,

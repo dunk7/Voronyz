@@ -40,6 +40,8 @@ interface NanoPaymentDetails {
   blockHash?: string;
   lineItems?: LineItem[];
   customer?: CustomerInfo;
+  shippingAddressLabel?: string;
+  shippingName?: string;
   error?: string;
 }
 
@@ -101,6 +103,10 @@ export default function NanoCheckoutClient() {
 
       const data: NanoPaymentDetails = await res.json();
       setDetails(data);
+
+      if (data.shippingName) {
+        setForm((prev) => (prev.name ? prev : { ...prev, name: data.shippingName! }));
+      }
 
       // If customer info was already saved, skip the form
       if (data.customer?.name && data.customer?.email) {
@@ -189,7 +195,7 @@ export default function NanoCheckoutClient() {
       setFormError("Please enter a valid email address.");
       return;
     }
-    if (!form.addressLine1.trim() || !form.city.trim() || !form.state.trim() || !form.postalCode.trim()) {
+    if (!details?.shippingAddressLabel && (!form.addressLine1.trim() || !form.city.trim() || !form.state.trim() || !form.postalCode.trim())) {
       setFormError("Please fill in your full shipping address.");
       return;
     }
@@ -528,6 +534,13 @@ export default function NanoCheckoutClient() {
               />
             </div>
 
+            {details.shippingAddressLabel ? (
+              <div className="rounded-lg bg-white/5 ring-1 ring-white/10 p-3">
+                <div className="text-xs font-medium text-neutral-400 mb-1">Shipping to</div>
+                <div className="text-sm text-white">{details.shippingAddressLabel}</div>
+              </div>
+            ) : (
+              <>
             {/* Address Line 1 */}
             <div>
               <label className="block text-xs font-medium text-neutral-400 mb-1">
@@ -621,6 +634,8 @@ export default function NanoCheckoutClient() {
                 <option value="MX" className="bg-neutral-900">Mexico</option>
               </select>
             </div>
+              </>
+            )}
 
             {formError && (
               <div className="text-sm text-red-400 bg-red-500/10 ring-1 ring-red-500/20 rounded-lg p-3">
