@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { GATORS_SIZES } from "./gators";
+import { LATTICE_INSOLES_SIZES } from "./latticeInsoles";
 import {
   FOOTWEAR_CATALOG,
   FOOTWEAR_SLUGS,
@@ -12,6 +14,10 @@ const studio = [
   "/products/slip-ons/InShot_20260405_202911983.jpg",
   "/products/slip-ons/InShot_20260405_203151152.jpg",
 ];
+
+test("lattice insoles use the same US sizes as the rest of the footwear lineup", () => {
+  assert.deepEqual([...LATTICE_INSOLES_SIZES], [...GATORS_SIZES]);
+});
 
 test("All Footwear lists Dragonfly third, before Gators", () => {
   assert.deepEqual(FOOTWEAR_SLUGS, [
