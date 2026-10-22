@@ -14,7 +14,7 @@ const sample = [
   { slug: "gators", priceCents: 10000 },
   { slug: "dragonfly", priceCents: 16000 },
   { slug: "magikid-shoes", priceCents: 3000 },
-  { slug: "voronyz-lattice-insoles", priceCents: 3200 },
+  { slug: "voronyz-lattice-insoles", priceCents: 6300 },
 ];
 
 test("trending keeps catalog order", () => {
