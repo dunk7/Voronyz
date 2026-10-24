@@ -35,6 +35,8 @@ import Image from "next/image";
 import Link from "next/link";
 import LogoLoader from "@/components/ui/LogoLoader";
 import { catalogUnitPriceCents, getApparelSizeOffer } from "@/lib/apparel";
+import ComplementaryRecs from "@/components/products/ComplementaryRecs";
+import { getComplementaryRecommendations } from "@/lib/complementaryRecommendations";
 import { trailMixFlavorLabel } from "@/lib/trailMix";
 import { violetteAnimalLabel, isViolettePonybeadSlug, VIOLETTE_PONYBEAD_NAME, VIOLETTE_PONYBEAD_SLUG } from "@/lib/violettePonybeadAnimals";
 
@@ -370,6 +372,12 @@ export default function CartClient() {
   const hasPreOrderItems = items.some((it) =>
     resolveIsPreOrder({ isPreOrder: it.isPreOrder, productSlug: it.productSlug })
   );
+  const cartRecs = getComplementaryRecommendations(
+    items.map((it) => ({
+      productSlug: it.productSlug,
+      name: it.productName,
+    }))
+  );
 
   const buildCheckoutItems = () =>
     items.map((item) => ({
@@ -669,6 +677,11 @@ export default function CartClient() {
             </div>
           </div>
         ))}
+        <ComplementaryRecs
+          recs={cartRecs}
+          heading="Goes with your cart"
+          ctaLabel="Add"
+        />
       </div>
       <div className="space-y-4">
         <div className="flex items-center justify-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-2.5">
