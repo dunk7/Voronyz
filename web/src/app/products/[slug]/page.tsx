@@ -525,32 +525,32 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed">
             {isDragonfly
-              ? "Each pair of Dragonfly's is 3D-printed with our proprietary TPU lattice technology, delivering a springy, responsive feel with every step. The breathable upper is precision-engineered for airflow, and every pair ships with your choice of lace color — making each one uniquely yours."
+              ? "3D-printed with our TPU lattice for a springy feel, a breathable upper, and your choice of lace color."
               : isMagikidShoes
               ? MAGIKID_SHOES_HOW_ITS_MADE
               : isSlipOns
-              ? "Slip Ons are printed in one piece per colorway for a seamless look, then finished for flex and daily wear. There is no secondary accent color — the shade you choose is the full shoe."
+              ? "Printed in one piece per colorway, then finished for flex and daily wear."
               : isTrailMix
               ? TRAIL_MIX_HOW_ITS_MADE
               : isViolettePonybead
               ? VIOLETTE_PONYBEAD_HOW_ITS_MADE
               : apparelItem?.slug === "voronyz-oversized-tee"
-              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Shipping now in black, white, and grey, XS through XXL. Price steps down for smaller sizes and up for larger ones from Medium."
+              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves."
               : apparelItem?.slug === "voronyz-core-hoodie"
-              ? "Heavyweight fleece with a clean, modern cut. Black, grey, and white — pick a color to see that hoodie, then swipe to the second photo for the back. Grey costs a little more than black; white is the top color. Large is priced under Medium so it reads as the deal size."
+              ? "Heavyweight fleece with a clean, modern cut. Swipe to the second photo for the back."
               : apparelItem?.slug === "voronyz-stickers"
-              ? "Kiss-cut vinyl sheet with three VORONYZ logo strips. Weatherproof adhesive for laptops, bottles, notebooks, and gear. Ships now."
+              ? "Kiss-cut weatherproof vinyl with three VORONYZ logo strips."
               : isApparel && apparelItem?.comingSoon
-              ? "Pre-order Voronyz Apparel — pay now to join the waitlist, and we ship when the drop arrives."
+              ? "Pay now to join the waitlist. We ship when the drop arrives."
               : isApparel
-              ? "Voronyz Apparel — soft hand-feel, clean fits, and free US shipping on domestic orders."
+              ? "Soft hand-feel and clean fits."
               : isGators
               ? GATORS_HOW_ITS_MADE
               : isFilament
               ? FILAMENT_HOW_ITS_MADE
               : isLatticeInsoles
               ? LATTICE_INSOLES_HOW_ITS_MADE
-              : "Each pair is printed in foamed TPU, then finished so it feels like a shoe — light, cushioned, and ready to wear. Years of work went into getting that process to this point."}
+              : "Printed in foamed TPU, then finished to be light, cushioned, and ready to wear."}
           </div>
         </div>
 

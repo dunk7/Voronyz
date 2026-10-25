@@ -92,7 +92,7 @@ export const MAGIKID_SHOES_DESCRIPTION_SHORT =
   "Magikid Robotics Lab program — students design their own slip-on in camp. Not a public drop.";
 
 export const MAGIKID_SHOES_HOW_ITS_MADE =
-  "Voronyz and Magikid Robotics Lab run this together. Magikid already teaches robotics, coding, and making — this camp adds footwear design so younger students learn the actual 3D process: start from our slip-on base, model their own holes and graphics, then we print their design as a one-piece pair. Families are not buying a finished public listing; they are checking out the pair that student designed in class. Pickup at Magikid Lab, or we ship the printed file.";
+  "Students design their own slip-on in camp, then we print their pair. Pickup at Magikid Lab or shipped.";
 
 export const MAGIKID_SHOES_META_DESCRIPTION =
   "A Magikid Robotics Lab program with Voronyz. Kids design their own slip-on in camp — 3D modeling, custom holes, then we print their pair. $30, Magikid Lab pickup or +$7 shipping.";
