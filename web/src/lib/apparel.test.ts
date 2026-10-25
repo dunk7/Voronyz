@@ -51,12 +51,12 @@ test("The Atelier Hoodie ships in black, grey, and white with matching front and
     "/products/apparel/hoodie-atelier-black-back.jpg",
   ]);
   assert.deepEqual(getApparelImagesForColor(hoodie, "grey"), [
-    "/products/apparel/hoodie-atelier-grey-front-v2.jpg",
-    "/products/apparel/hoodie-atelier-grey-back-v2.jpg",
+    "/products/apparel/hoodie-atelier-grey-front-studio.jpg",
+    "/products/apparel/hoodie-atelier-grey-back-studio.jpg",
   ]);
   assert.deepEqual(getApparelImagesForColor(hoodie, "white"), [
-    "/products/apparel/hoodie-atelier-white-front-v2.jpg",
-    "/products/apparel/hoodie-atelier-white-back-v2.jpg",
+    "/products/apparel/hoodie-atelier-white-front-studio.jpg",
+    "/products/apparel/hoodie-atelier-white-back-studio.jpg",
   ]);
   assert.equal(isApparelColorOutOfStock(hoodie, "black"), false);
   assert.equal(isApparelColorOutOfStock(hoodie, "grey"), false);
@@ -79,10 +79,10 @@ test("tee listing back link returns to Apparel", () => {
 test("oversized tee leads with the chest-logo front shot, then the blank back photo", () => {
   const tee = getApparelItem("voronyz-oversized-tee");
   assert.ok(tee);
-  assert.equal(tee.image, "/products/apparel/shirt-front.jpg");
+  assert.equal(tee.image, "/products/apparel/shirt-front-onwhite.jpg");
   assert.deepEqual(getApparelImages(tee), [
-    "/products/apparel/shirt-front.jpg",
-    "/products/apparel/shirt-back-blank.jpg",
+    "/products/apparel/shirt-front-onwhite.jpg",
+    "/products/apparel/shirt-back-blank-onwhite.jpg",
   ]);
 });
 
@@ -90,12 +90,12 @@ test("white oversized tee uses the black-logo mockup and a plain white back", ()
   const tee = getApparelItem("voronyz-oversized-tee");
   assert.ok(tee);
   assert.deepEqual(getApparelImagesForColor(tee, "white"), [
-    "/products/apparel/shirt-front-white-clean.jpg",
-    "/products/apparel/shirt-back-blank-white-clean.jpg",
+    "/products/apparel/shirt-front-white-studio.jpg",
+    "/products/apparel/shirt-back-blank-white-studio.jpg",
   ]);
   assert.deepEqual(getApparelImagesForColor(tee, "black"), [
-    "/products/apparel/shirt-front.jpg",
-    "/products/apparel/shirt-back-blank.jpg",
+    "/products/apparel/shirt-front-onwhite.jpg",
+    "/products/apparel/shirt-back-blank-onwhite.jpg",
   ]);
 });
 
@@ -103,18 +103,18 @@ test("grey oversized tee has matching front and back shots with the same chest l
   const tee = getApparelItem("voronyz-oversized-tee");
   assert.ok(tee);
   assert.deepEqual(getApparelImagesForColor(tee, "grey"), [
-    "/products/apparel/shirt-front-grey-clean.jpg",
-    "/products/apparel/shirt-back-blank-grey-clean.jpg",
+    "/products/apparel/shirt-front-grey-onwhite.jpg",
+    "/products/apparel/shirt-back-blank-grey-onwhite.jpg",
   ]);
 });
 
 test("flat-lay tee photos keep a centered square crop", () => {
   assert.equal(
-    apparelCoverObjectPositionClass("/products/apparel/shirt-back-blank.jpg"),
+    apparelCoverObjectPositionClass("/products/apparel/shirt-back-blank-onwhite.jpg"),
     "object-center",
   );
   assert.equal(
-    apparelCoverObjectPositionClass("/products/apparel/shirt-front.jpg"),
+    apparelCoverObjectPositionClass("/products/apparel/shirt-front-onwhite.jpg"),
     "object-center",
   );
 });
