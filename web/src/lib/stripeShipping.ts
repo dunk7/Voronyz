@@ -1,5 +1,6 @@
 import type { OrderShipping } from "@/lib/orderTypes";
 import { hasAddressContent } from "@/lib/orderTypes";
+import { shippingFromStripeMetadata } from "@/lib/shippingAddress";
 
 type StripeLikeAddress = {
   line1?: string | null;
@@ -36,6 +37,7 @@ export function shippingFromStripeSession(session: {
     name?: string | null;
     address?: StripeLikeAddress | null;
   } | null;
+  metadata?: Record<string, string | undefined> | null;
 }): OrderShipping | null {
   const shippingDetails =
     session.shipping_details ??
@@ -51,6 +53,9 @@ export function shippingFromStripeSession(session: {
       };
     }
   }
+
+  const verified = shippingFromStripeMetadata(session.metadata);
+  if (verified) return verified;
 
   const customerAddress = session.customer_details?.address;
   if (customerAddress) {

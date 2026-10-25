@@ -24,10 +24,19 @@ import {
   SHIPPING_INSURANCE_CENTS_PER_ITEM,
   SHIPPING_INSURANCE_DESCRIPTION,
 } from "@/lib/shippingInsurance";
+import {
+  INTERNATIONAL_SHIPPING_CENTS,
+  internationalShippingCents,
+  isDomesticCountry,
+  type VerifiedShipping,
+} from "@/lib/shippingAddress";
+import AddressAutocomplete from "@/components/cart/AddressAutocomplete";
 import Image from "next/image";
 import Link from "next/link";
 import LogoLoader from "@/components/ui/LogoLoader";
 import { catalogUnitPriceCents, getApparelSizeOffer } from "@/lib/apparel";
+import ComplementaryRecs from "@/components/products/ComplementaryRecs";
+import { getComplementaryRecommendations } from "@/lib/complementaryRecommendations";
 import { trailMixFlavorLabel } from "@/lib/trailMix";
 import { violetteAnimalLabel, isViolettePonybeadSlug, VIOLETTE_PONYBEAD_NAME, VIOLETTE_PONYBEAD_SLUG } from "@/lib/violettePonybeadAnimals";
 
@@ -54,10 +63,13 @@ interface CartData {
   shippingInsurance?: boolean;
 }
 
+const SHIPPING_STORAGE_KEY = "checkoutShipping";
+
 export default function CartClient() {
   const [items, setItems] = useState<CartItem[]>([]);
   const [discountCode, setDiscountCode] = useState<string | null>(null);
   const [shippingInsurance, setShippingInsurance] = useState(false);
+  const [shipping, setShipping] = useState<VerifiedShipping | null>(null);
   const [inputValue, setInputValue] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -95,6 +107,25 @@ export default function CartClient() {
       productSlug: it.productSlug,
       productName: it.productName,
     });
+
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem(SHIPPING_STORAGE_KEY);
+      if (stored) setShipping(JSON.parse(stored) as VerifiedShipping);
+    } catch {
+      sessionStorage.removeItem(SHIPPING_STORAGE_KEY);
+    }
+  }, []);
+
+  const updateShipping = (next: VerifiedShipping | null) => {
+    setShipping(next);
+    try {
+      if (next) sessionStorage.setItem(SHIPPING_STORAGE_KEY, JSON.stringify(next));
+      else sessionStorage.removeItem(SHIPPING_STORAGE_KEY);
+    } catch {
+      // Storage can be unavailable (private mode); the address just won't persist.
+    }
+  };
 
   useEffect(() => {
     // Load cart from localStorage
@@ -325,9 +356,27 @@ export default function CartClient() {
   const canOfferShippingInsurance = cartHasInsurableItems(items);
   const insuranceEnabled = canOfferShippingInsurance && shippingInsurance;
   const insuranceCents = insuranceEnabled ? getShippingInsuranceCents(items) : 0;
-  const orderTotal = subtotal + insuranceCents;
+  const needsShippingAddress = canOfferShippingInsurance;
+  const shippingReady =
+    !needsShippingAddress || Boolean(shipping && shipping.address.name.trim());
+  const isInternational =
+    needsShippingAddress && shipping
+      ? !isDomesticCountry(shipping.address.country)
+      : false;
+  const internationalCents =
+    needsShippingAddress && shipping
+      ? internationalShippingCents(shipping.address.country)
+      : 0;
+  const orderTotal = subtotal + insuranceCents + internationalCents;
+  const shippingPayload = needsShippingAddress && shipping ? shipping : undefined;
   const hasPreOrderItems = items.some((it) =>
     resolveIsPreOrder({ isPreOrder: it.isPreOrder, productSlug: it.productSlug })
+  );
+  const cartRecs = getComplementaryRecommendations(
+    items.map((it) => ({
+      productSlug: it.productSlug,
+      name: it.productName,
+    }))
   );
 
   const buildCheckoutItems = () =>
@@ -352,6 +401,10 @@ export default function CartClient() {
 
   const startStripeCheckout = async (method: "ach" | "card") => {
     if (stripeBusy || isNanoCheckingOut) return;
+    if (!shippingReady) {
+      setMessage("Select a verified shipping address to continue.");
+      return;
+    }
     const setBusy = method === "ach" ? setIsCheckingOut : setIsCardCheckingOut;
     setBusy(true);
     try {
@@ -368,8 +421,9 @@ export default function CartClient() {
         body: JSON.stringify({
           items: checkoutItems,
           discountCode: discountCode || "",
-          paymentMethod: method,
+          paymentMethod: isInternational ? "card" : method,
           shippingInsurance: insuranceEnabled,
+          shipping: shippingPayload,
           successUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/success`,
           cancelUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/cancel`,
         }),
@@ -623,14 +677,29 @@ export default function CartClient() {
             </div>
           </div>
         ))}
+        <ComplementaryRecs
+          recs={cartRecs}
+          heading="Goes with your cart"
+          ctaLabel="Add"
+        />
       </div>
       <div className="space-y-4">
         <div className="flex items-center justify-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-2.5">
           <svg className="h-4 w-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
           </svg>
-          <span className="text-sm font-medium text-emerald-700">Free US shipping on all orders</span>
+          <span className="text-sm font-medium text-emerald-700">
+            Free US shipping on all orders
+            <span className="font-normal text-emerald-700/80">
+              {" "}· International +{formatCentsAsCurrency(INTERNATIONAL_SHIPPING_CENTS)}
+            </span>
+          </span>
         </div>
+        {needsShippingAddress && (
+          <div className="rounded-xl border border-black/10 bg-white p-4">
+            <AddressAutocomplete value={shipping} onChange={updateShipping} />
+          </div>
+        )}
         {hasPreOrderItems && (
           <div className="rounded-lg border border-black/10 bg-neutral-50 px-4 py-3 text-sm text-neutral-700">
             <span className="font-semibold text-neutral-900">Pre-order waitlist:</span>{" "}
@@ -708,7 +777,15 @@ export default function CartClient() {
             </div>
             <div className="flex items-center justify-between">
               <div className="text-neutral-700">Shipping</div>
-              <div className="font-medium text-emerald-700">Free</div>
+              {internationalCents > 0 ? (
+                <div className="font-medium text-neutral-900">
+                  {formatCentsAsCurrency(internationalCents)}
+                </div>
+              ) : needsShippingAddress && !shipping ? (
+                <div className="text-neutral-500">Enter address</div>
+              ) : (
+                <div className="font-medium text-emerald-700">Free</div>
+              )}
             </div>
             {insuranceEnabled && (
               <div className="flex items-center justify-between">
@@ -778,10 +855,12 @@ export default function CartClient() {
         )}
         <button
           type="button"
-          disabled={stripeBusy || isNanoCheckingOut}
+          disabled={stripeBusy || isNanoCheckingOut || !shippingReady}
           className="w-full rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Continue"
-          onClick={() => startStripeCheckout(orderTotal < 50 ? "card" : "ach")}
+          onClick={() =>
+            startStripeCheckout(orderTotal < 50 || isInternational ? "card" : "ach")
+          }
         >
           {isCheckingOut || isCardCheckingOut
             ? "Processing..."
@@ -790,14 +869,18 @@ export default function CartClient() {
               : "Continue"}
         </button>
         <p className="text-center text-xs text-neutral-500 -mt-1">
-          {orderTotal < 50
-            ? "Card checkout — bank transfer needs at least $0.50"
-            : "Bank transfer · usually lower fees than card"}
+          {!shippingReady
+            ? "Select a verified shipping address to continue"
+            : isInternational
+              ? "International orders are paid by card"
+              : orderTotal < 50
+                ? "Card checkout — bank transfer needs at least $0.50"
+                : "Bank transfer · usually lower fees than card"}
         </p>
-        {orderTotal >= 50 ? (
+        {orderTotal >= 50 && !isInternational ? (
         <button
           type="button"
-          disabled={stripeBusy || isNanoCheckingOut}
+          disabled={stripeBusy || isNanoCheckingOut || !shippingReady}
           className="mx-auto block text-sm text-neutral-500 underline underline-offset-2 hover:text-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Pay with card"
           onClick={() => startStripeCheckout("card")}
@@ -814,11 +897,15 @@ export default function CartClient() {
         </div>
         <button
           type="button"
-          disabled={stripeBusy || isNanoCheckingOut || orderTotal <= 0}
+          disabled={stripeBusy || isNanoCheckingOut || orderTotal <= 0 || !shippingReady}
           className="w-full rounded-full bg-[#209CE9] text-white px-6 py-3 text-sm font-medium hover:bg-[#1a88cc] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           aria-label="Pay with Nano cryptocurrency"
           onClick={async () => {
             if (isNanoCheckingOut) return;
+            if (!shippingReady) {
+              setMessage("Select a verified shipping address to continue.");
+              return;
+            }
             setIsNanoCheckingOut(true);
             try {
               const checkoutItems = buildCheckoutItems();
@@ -836,6 +923,7 @@ export default function CartClient() {
                   items: checkoutItems,
                   discountCode: discountCode || '',
                   shippingInsurance: insuranceEnabled,
+                  shipping: shippingPayload,
                 }),
               });
 
@@ -851,7 +939,11 @@ export default function CartClient() {
             } catch (error) {
               console.error('Nano checkout failed:', error);
               setIsNanoCheckingOut(false);
-              alert('Nano checkout failed. Please try again.');
+              alert(
+                error instanceof Error && error.message
+                  ? error.message
+                  : 'Nano checkout failed. Please try again.'
+              );
             }
           }}
         >

@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
+import { GATORS_SIZES } from "./gators";
+import { LATTICE_INSOLES_SIZES } from "./latticeInsoles";
 import {
   FOOTWEAR_CATALOG,
   FOOTWEAR_SLUGS,
@@ -8,10 +13,29 @@ import {
   slipOnsImagesForColor,
 } from "./footwear";
 
+const productPage = readFileSync(
+  join(dirname(fileURLToPath(import.meta.url)), "../app/products/[slug]/page.tsx"),
+  "utf8",
+);
+
 const studio = [
   "/products/slip-ons/InShot_20260405_202911983.jpg",
   "/products/slip-ons/InShot_20260405_203151152.jpg",
 ];
+
+test("lattice insoles use the same US sizes as the rest of the footwear lineup", () => {
+  assert.deepEqual([...LATTICE_INSOLES_SIZES], [...GATORS_SIZES]);
+});
+
+test("lattice insole PDP uses shoe gender sizing instead of S–XL catalog sizes", () => {
+  assert.doesNotMatch(productPage, /isLatticeInsoles && \{\s*useCatalogSizes:\s*true/s);
+  assert.doesNotMatch(productPage, /S · M · L · XL/);
+  assert.match(productPage, /US shoe sizes/);
+  assert.match(
+    productPage,
+    /The same US Men's, Women's, and Kids' sizes as Voronyz shoes/,
+  );
+});
 
 test("All Footwear lists Dragonfly third, before Gators", () => {
   assert.deepEqual(FOOTWEAR_SLUGS, [
