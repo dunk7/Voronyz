@@ -4,12 +4,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import SoftImage from "@/components/ui/SoftImage";
-import LogoLoader, { LogoMark } from "@/components/ui/LogoLoader";
+import LogoLoader from "@/components/ui/LogoLoader";
 import type { FootwearListProduct } from "@/lib/footwear";
 import {
   FOOTWEAR_TOP_COUNT,
   colorToCss,
-  footwearBrandLabel,
   footwearSwatches,
   formatUsdFromCents,
   sortFootwearForTab,
@@ -128,28 +127,10 @@ function RankCard({
           </div>
         </div>
 
-        <div className="flex items-end justify-between gap-3 px-3.5 py-3 sm:px-5 sm:py-3.5">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <div
-              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-                featured ? "bg-black" : "bg-white"
-              }`}
-            >
-              <LogoMark size={18} tone={featured ? "light" : "dark"} animate={false} />
-            </div>
-            <div className="min-w-0">
-              <h2 className="truncate text-[15px] font-bold uppercase leading-tight tracking-tight sm:text-base">
-                {product.name}
-              </h2>
-              <p
-                className={`mt-0.5 text-[11px] font-medium uppercase tracking-[0.14em] ${
-                  featured ? "text-neutral-500" : "text-neutral-400"
-                }`}
-              >
-                {footwearBrandLabel(slugKey)}
-              </p>
-            </div>
-          </div>
+        <div className="flex items-center justify-between gap-4 px-3.5 py-3.5 sm:px-5">
+          <h2 className="min-w-0 flex-1 text-lg font-bold uppercase leading-tight tracking-tight sm:text-xl">
+            {product.name}
+          </h2>
 
           <div className="flex shrink-0 flex-col items-end gap-1.5">
             {swatches.length > 0 ? (
