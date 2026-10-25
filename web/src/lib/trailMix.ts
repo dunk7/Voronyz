@@ -21,7 +21,7 @@ export const TRAIL_MIX_DESCRIPTION =
   "A premium antioxidant trail mix built for everyday fuel. Three flavor profiles — Wild Berry, Super Protein, and Chocolate — packed with nutrient-dense ingredients. Currently sold out while we restock the next batch.";
 
 export const TRAIL_MIX_HOW_ITS_MADE =
-  "Each bag is blended for clean energy and recovery: antioxidant-rich berries, protein-forward nuts and seeds, and a chocolate option for a richer finish. Bags are sealed for freshness and portioned for daily use. All flavors are sold out right now — check back soon.";
+  "Blended for clean energy and recovery, sealed for freshness. All flavors are sold out right now — check back soon.";
 
 export const TRAIL_MIX_IMAGES = [TRAIL_MIX_THUMBNAIL_URL] as const;
 

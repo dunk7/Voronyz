@@ -18,7 +18,7 @@ export const FILAMENT_DESCRIPTION =
   "TPU-90A Filament — the same flexible TPU we use to make Voronyz footwear. Each 1kg spool is dialed for soft, durable prints: great for making footwear, flexible parts, and anything that needs to bend without breaking. Free US shipping on every spool.";
 
 export const FILAMENT_HOW_ITS_MADE =
-  "This is TPU-90A — a soft, flexible thermoplastic polyurethane at 90 Shore A, the same material family we print Voronyz footwear with. Spools are 1kg of 1.75mm filament, ready for FDM printers. Print temperature 220°C. Bed temperature 0 — no heated bed needed.";
+  "TPU-90A (90 Shore A), the same material family we print footwear with. 1kg of 1.75mm filament. Print at 220°C, no heated bed needed.";
 
 export const FILAMENT_IMAGES = [FILAMENT_THUMBNAIL_URL, FILAMENT_ALT_IMAGE_URL] as const;
 

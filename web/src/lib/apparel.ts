@@ -201,12 +201,12 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     ],
     imagesByColor: {
       white: [
-        "/products/apparel/shirt-front-white.jpg",
-        "/products/apparel/shirt-back-blank-white.jpg",
+        "/products/apparel/shirt-front-white-clean.jpg",
+        "/products/apparel/shirt-back-blank-white-clean.jpg",
       ],
       grey: [
-        "/products/apparel/shirt-front-grey.jpg",
-        "/products/apparel/shirt-back-blank-grey.jpg",
+        "/products/apparel/shirt-front-grey-clean.jpg",
+        "/products/apparel/shirt-back-blank-grey-clean.jpg",
       ],
     },
     skuPrefix: "APP-TEE",
@@ -254,12 +254,12 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
         "/products/apparel/hoodie-atelier-black-back.jpg",
       ],
       grey: [
-        "/products/apparel/hoodie-atelier-grey-front.jpg",
-        "/products/apparel/hoodie-atelier-grey-back.jpg",
+        "/products/apparel/hoodie-atelier-grey-front-v2.jpg",
+        "/products/apparel/hoodie-atelier-grey-back-v2.jpg",
       ],
       white: [
-        "/products/apparel/hoodie-atelier-white-front.jpg",
-        "/products/apparel/hoodie-atelier-white-back.jpg",
+        "/products/apparel/hoodie-atelier-white-front-v2.jpg",
+        "/products/apparel/hoodie-atelier-white-back-v2.jpg",
       ],
     },
     skuPrefix: "APP-HOOD",

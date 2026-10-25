@@ -12,7 +12,7 @@ export const LATTICE_INSOLES_DESCRIPTION =
   "Engineered for everyday cushion and bounce, built to last. Lattice Insoles — drop-in TPU cushion for the shoes you already wear. A springy lattice midsole print gives bounce underfoot without bulk, so long days feel lighter. Pair them with Voronyz footwear or your everyday sneakers. Free US shipping.";
 
 export const LATTICE_INSOLES_HOW_ITS_MADE =
-  "Each pair is FDM-printed in flexible TPU with an open lattice structure tuned for cushion and rebound. We print to order in your color, then finish for a clean drop-in fit. Sizing matches Voronyz footwear — pick your usual US Men's, Women's, or Kids' size.";
+  "Printed to order in flexible TPU with an open lattice tuned for cushion and rebound. Sized to match Voronyz footwear.";
 
 export const LATTICE_INSOLES_IMAGES = [LATTICE_INSOLES_THUMBNAIL_URL] as const;
 
