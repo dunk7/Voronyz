@@ -79,10 +79,10 @@ test("tee listing back link returns to Apparel", () => {
 test("oversized tee leads with the chest-logo front shot, then the blank back photo", () => {
   const tee = getApparelItem("voronyz-oversized-tee");
   assert.ok(tee);
-  assert.equal(tee.image, "/products/apparel/shirt-front.jpg");
+  assert.equal(tee.image, "/products/apparel/shirt-front-v3.jpg");
   assert.deepEqual(getApparelImages(tee), [
-    "/products/apparel/shirt-front.jpg",
-    "/products/apparel/shirt-back-blank.jpg",
+    "/products/apparel/shirt-front-v3.jpg",
+    "/products/apparel/shirt-back-blank-v3.jpg",
   ]);
 });
 
@@ -90,12 +90,12 @@ test("white oversized tee uses the black-logo mockup and a plain white back", ()
   const tee = getApparelItem("voronyz-oversized-tee");
   assert.ok(tee);
   assert.deepEqual(getApparelImagesForColor(tee, "white"), [
-    "/products/apparel/shirt-front-white-clean.jpg",
-    "/products/apparel/shirt-back-blank-white-clean.jpg",
+    "/products/apparel/shirt-front-white-v3.jpg",
+    "/products/apparel/shirt-back-blank-white-v3.jpg",
   ]);
   assert.deepEqual(getApparelImagesForColor(tee, "black"), [
-    "/products/apparel/shirt-front.jpg",
-    "/products/apparel/shirt-back-blank.jpg",
+    "/products/apparel/shirt-front-v3.jpg",
+    "/products/apparel/shirt-back-blank-v3.jpg",
   ]);
 });
 
@@ -103,18 +103,18 @@ test("grey oversized tee has matching front and back shots with the same chest l
   const tee = getApparelItem("voronyz-oversized-tee");
   assert.ok(tee);
   assert.deepEqual(getApparelImagesForColor(tee, "grey"), [
-    "/products/apparel/shirt-front-grey-clean.jpg",
-    "/products/apparel/shirt-back-blank-grey-clean.jpg",
+    "/products/apparel/shirt-front-grey-v3.jpg",
+    "/products/apparel/shirt-back-blank-grey-v3.jpg",
   ]);
 });
 
 test("flat-lay tee photos keep a centered square crop", () => {
   assert.equal(
-    apparelCoverObjectPositionClass("/products/apparel/shirt-back-blank.jpg"),
+    apparelCoverObjectPositionClass("/products/apparel/shirt-back-blank-v3.jpg"),
     "object-center",
   );
   assert.equal(
-    apparelCoverObjectPositionClass("/products/apparel/shirt-front.jpg"),
+    apparelCoverObjectPositionClass("/products/apparel/shirt-front-v3.jpg"),
     "object-center",
   );
 });

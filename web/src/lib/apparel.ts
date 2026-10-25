@@ -194,19 +194,19 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
       XL: 5400,
       XXL: 5700,
     },
-    image: "/products/apparel/shirt-front.jpg",
+    image: "/products/apparel/shirt-front-v3.jpg",
     images: [
-      "/products/apparel/shirt-front.jpg",
-      "/products/apparel/shirt-back-blank.jpg",
+      "/products/apparel/shirt-front-v3.jpg",
+      "/products/apparel/shirt-back-blank-v3.jpg",
     ],
     imagesByColor: {
       white: [
-        "/products/apparel/shirt-front-white-clean.jpg",
-        "/products/apparel/shirt-back-blank-white-clean.jpg",
+        "/products/apparel/shirt-front-white-v3.jpg",
+        "/products/apparel/shirt-back-blank-white-v3.jpg",
       ],
       grey: [
-        "/products/apparel/shirt-front-grey-clean.jpg",
-        "/products/apparel/shirt-back-blank-grey-clean.jpg",
+        "/products/apparel/shirt-front-grey-v3.jpg",
+        "/products/apparel/shirt-back-blank-grey-v3.jpg",
       ],
     },
     skuPrefix: "APP-TEE",
