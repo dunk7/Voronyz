@@ -254,12 +254,12 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
         "/products/apparel/hoodie-atelier-black-back.jpg",
       ],
       grey: [
-        "/products/apparel/hoodie-atelier-grey-front-v2.jpg",
-        "/products/apparel/hoodie-atelier-grey-back-v2.jpg",
+        "/products/apparel/hoodie-atelier-grey-front-studio.jpg",
+        "/products/apparel/hoodie-atelier-grey-back-studio.jpg",
       ],
       white: [
-        "/products/apparel/hoodie-atelier-white-front-v2.jpg",
-        "/products/apparel/hoodie-atelier-white-back-v2.jpg",
+        "/products/apparel/hoodie-atelier-white-front-studio.jpg",
+        "/products/apparel/hoodie-atelier-white-back-studio.jpg",
       ],
     },
     skuPrefix: "APP-HOOD",
