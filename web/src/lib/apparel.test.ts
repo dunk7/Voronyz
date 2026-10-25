@@ -90,8 +90,8 @@ test("white oversized tee uses the black-logo mockup and a plain white back", ()
   const tee = getApparelItem("voronyz-oversized-tee");
   assert.ok(tee);
   assert.deepEqual(getApparelImagesForColor(tee, "white"), [
-    "/products/apparel/shirt-front-white.jpg",
-    "/products/apparel/shirt-back-blank-white.jpg",
+    "/products/apparel/shirt-front-white-clean.jpg",
+    "/products/apparel/shirt-back-blank-white-clean.jpg",
   ]);
   assert.deepEqual(getApparelImagesForColor(tee, "black"), [
     "/products/apparel/shirt-front.jpg",
@@ -103,8 +103,8 @@ test("grey oversized tee has matching front and back shots with the same chest l
   const tee = getApparelItem("voronyz-oversized-tee");
   assert.ok(tee);
   assert.deepEqual(getApparelImagesForColor(tee, "grey"), [
-    "/products/apparel/shirt-front-grey.jpg",
-    "/products/apparel/shirt-back-blank-grey.jpg",
+    "/products/apparel/shirt-front-grey-clean.jpg",
+    "/products/apparel/shirt-back-blank-grey-clean.jpg",
   ]);
 });
 

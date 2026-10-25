@@ -201,12 +201,12 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     ],
     imagesByColor: {
       white: [
-        "/products/apparel/shirt-front-white.jpg",
-        "/products/apparel/shirt-back-blank-white.jpg",
+        "/products/apparel/shirt-front-white-clean.jpg",
+        "/products/apparel/shirt-back-blank-white-clean.jpg",
       ],
       grey: [
-        "/products/apparel/shirt-front-grey.jpg",
-        "/products/apparel/shirt-back-blank-grey.jpg",
+        "/products/apparel/shirt-front-grey-clean.jpg",
+        "/products/apparel/shirt-back-blank-grey-clean.jpg",
       ],
     },
     skuPrefix: "APP-TEE",
