@@ -23,7 +23,7 @@ import { catalogSeedListedAt } from "@/lib/newListing";
 export const SLIP_ONS_PRICE_CENTS = 11000; // $110
 export const DRAGONFLY_PRICE_CENTS = 16000; // $160
 
-/** Lifestyle / ad photo of white Slip Ons — leads the PDP gallery when White is selected. */
+/** White Slip Ons product photo — only shown, and shown first, when White is selected. */
 export const SLIP_ONS_WHITE_AD_IMAGE = "/products/slip-ons/white-ad.jpg";
 
 export function isWhiteColor(color: string | undefined | null): boolean {
@@ -31,15 +31,15 @@ export function isWhiteColor(color: string | undefined | null): boolean {
 }
 
 /**
- * The white Slip Ons ad is always in the live PDP gallery.
- * When White is selected it leads; other colors keep studio shots first.
+ * The white Slip Ons photo is only in the gallery when White is selected,
+ * and then it leads. Other colors stay on the studio shots.
  */
 export function slipOnsImagesForColor(baseImages: string[], color?: string | null): string[] {
   const withoutWhiteAd = baseImages.filter((src) => src !== SLIP_ONS_WHITE_AD_IMAGE);
   if (isWhiteColor(color)) {
     return [SLIP_ONS_WHITE_AD_IMAGE, ...withoutWhiteAd];
   }
-  return [...withoutWhiteAd, SLIP_ONS_WHITE_AD_IMAGE];
+  return withoutWhiteAd;
 }
 
 /** PDP / listing copy — colors live on the swatches, not in this paragraph. */

@@ -277,7 +277,7 @@ async function main() {
             create: [
               { color: "black", sku: "SO-BLK", stock: 999 },
               { color: "grey", sku: "SO-GRY", stock: 999 },
-              { color: "white", sku: "SO-WHT", stock: 0 },
+              { color: "white", sku: "SO-WHT", stock: 999 },
               { color: "orange", sku: "SO-ORG", stock: 999 },
               { color: "pink", sku: "SO-PNK", stock: 999 },
             ],
@@ -303,7 +303,7 @@ async function main() {
       const soVariants = [
         { color: "black", sku: "SO-BLK", stock: 999 },
         { color: "grey", sku: "SO-GRY", stock: 999 },
-        { color: "white", sku: "SO-WHT", stock: 0 },
+        { color: "white", sku: "SO-WHT", stock: 999 },
         { color: "orange", sku: "SO-ORG", stock: 999 },
         { color: "pink", sku: "SO-PNK", stock: 999 },
       ];

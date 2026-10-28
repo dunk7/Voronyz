@@ -60,7 +60,7 @@ import {
   LATTICE_INSOLES_THUMBNAIL_URL,
 } from "@/lib/latticeInsoles";
 import { isAccessorySlug, isApparelSlug, isFootwearSlug, isHealthSlug } from "@/lib/productCategories";
-import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION, SLIP_ONS_PRICE_CENTS, SLIP_ONS_WHITE_AD_IMAGE } from "@/lib/footwear";
+import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION, SLIP_ONS_PRICE_CENTS } from "@/lib/footwear";
 import {
   apparelCatalogProduct,
   apparelProductShopHref,
@@ -213,7 +213,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     "/products/slip-ons/InShot_20260405_203930832.jpg",
     "/products/slip-ons/InShot_20260405_204113872.jpg",
     "/products/slip-ons/InShot_20260405_204333303.jpg",
-    SLIP_ONS_WHITE_AD_IMAGE,
   ];
   const magikidShoesImages = [...MAGIKID_SHOES_IMAGES];
   const images = slug === "v3-slides"
@@ -572,8 +571,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "How does shipping work?", a: "The pair is $30. Shipping is an extra $7. Pickup at Magikid Lab is $30 with no shipping fee." },
               { q: "How long does production take?", a: "Made to order in under 7 days, then we ship or hold for pickup." },
             ] : isSlipOns ? [
-              { q: "What colors can I order?", a: "Black, grey, orange, and pink are in stock — white is currently out of stock. Each pair is one solid body color (no two-tone option)." },
-              { q: "Why is white unavailable?", a: "We're temporarily out of white material runs. Select another color or check back — inventory updates when we restock." },
+              { q: "What colors can I order?", a: "Black, grey, white, orange, and pink. Each pair is one solid body color (no two-tone option)." },
               { q: "Are they true to size?", a: "Use the Men's / Women's / Kids' toggles on the product page to pick your usual US size." },
               { q: "How long does production take?", a: "About 1–2 days to print, then we ship the next business day." },
             ] : isTrailMix ? [

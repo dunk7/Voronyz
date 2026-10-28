@@ -102,7 +102,7 @@ const FOOTWEAR_VARIANTS: Record<
   "slip-ons": [
     { color: "black", sku: "SO-BLK", stock: 999 },
     { color: "grey", sku: "SO-GRY", stock: 999 },
-    { color: "white", sku: "SO-WHT", stock: 0 },
+    { color: "white", sku: "SO-WHT", stock: 999 },
     { color: "orange", sku: "SO-ORG", stock: 999 },
     { color: "pink", sku: "SO-PNK", stock: 999 },
   ],
@@ -205,7 +205,7 @@ export async function ensureFootwearProducts(): Promise<void> {
 
 
 
-/** Keep footwear white OOS / pink in stock without requiring a manual seed run. */
+/** Keep footwear color stock in sync without requiring a manual seed run. */
 type FootwearStockVariant = {
   color: string;
   sku: string;
@@ -242,7 +242,7 @@ const FOOTWEAR_STOCK_SYNC: Array<{
     variants: [
       { color: "black", sku: "SO-BLK", stock: 999 },
       { color: "grey", sku: "SO-GRY", stock: 999 },
-      { color: "white", sku: "SO-WHT", stock: 0 },
+      { color: "white", sku: "SO-WHT", stock: 999 },
       { color: "orange", sku: "SO-ORG", stock: 999 },
       { color: "pink", sku: "SO-PNK", stock: 999 },
     ],

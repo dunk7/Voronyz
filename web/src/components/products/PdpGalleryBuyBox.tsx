@@ -29,7 +29,7 @@ export default function PdpGalleryBuyBox({
 }: {
   media: Media[];
   colorImages?: Record<string, string[]>;
-  /** When true, selecting White puts the white Slip Ons ad photo first. */
+  /** When true, selecting White leads with the white Slip Ons photo and hides it for other colors. */
   leadWhiteSlipOns?: boolean;
   fit: "cover" | "contain";
   galleryClassName?: string;

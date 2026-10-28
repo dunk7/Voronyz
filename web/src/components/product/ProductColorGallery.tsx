@@ -40,7 +40,7 @@ export default function ProductColorGallery({
   children,
 }: {
   media: Media[];
-  /** When true, selecting White puts the white Slip Ons ad photo first. */
+  /** When true, selecting White leads with the white Slip Ons photo and hides it for other colors. */
   leadWhiteSlipOns?: boolean;
   productName: string;
   aspect?: "square" | "landscape";
