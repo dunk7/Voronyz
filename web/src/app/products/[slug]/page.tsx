@@ -537,7 +537,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               : apparelItem?.slug === "voronyz-oversized-tee"
               ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves."
               : apparelItem?.slug === "voronyz-core-hoodie"
-              ? "Heavyweight fleece with a clean, modern cut. Swipe to the second photo for the back."
+              ? "Heavyweight fleece with an athletic taper: broad shoulders, narrower waist. Swipe to the second photo for the back."
               : apparelItem?.slug === "voronyz-stickers"
               ? "Kiss-cut weatherproof vinyl with three VORONYZ logo strips."
               : isApparel && apparelItem?.comingSoon

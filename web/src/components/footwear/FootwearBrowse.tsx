@@ -4,14 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import SoftImage from "@/components/ui/SoftImage";
-import LogoLoader, { LogoMark } from "@/components/ui/LogoLoader";
+import LogoLoader from "@/components/ui/LogoLoader";
 import type { FootwearListProduct } from "@/lib/footwear";
 import {
   FOOTWEAR_TOP_COUNT,
-  colorToCss,
-  footwearBrandLabel,
-  footwearSwatches,
-  formatUsdFromCents,
   sortFootwearForTab,
   type FootwearRankTab,
 } from "@/lib/footwearRanking";
@@ -52,7 +48,6 @@ function RankCard({
   const slugKey = (product.slug || "").trim().toLowerCase();
   const featured = rank === 1;
   const soldOut = slugKey === TRAIL_MIX_SLUG;
-  const swatches = footwearSwatches(slugKey);
   const isSlipOns = slugKey === "slip-ons";
   const coverSrc = isSlipOns ? SLIP_ONS_BROWSE.cover : cover;
   const altSrc = isSlipOns ? SLIP_ONS_BROWSE.alt : alt;
@@ -64,45 +59,39 @@ function RankCard({
   }
 
   return (
-    <article
-      className={`footwear-browse-item overflow-hidden rounded-[1.25rem] transition-transform duration-200 active:scale-[0.99] ${
-        featured ? "bg-white text-black" : "bg-[#1a1a1a] text-white"
-      }`}
-    >
+    <article className="footwear-browse-item transition-transform duration-200 active:scale-[0.99]">
       <Link
         href={`/products/${product.slug}`}
         onClick={handleClick}
-        className={`group relative block outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
+        className={`group block outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
           navigating ? "pointer-events-none" : ""
         }`}
       >
-        <div className="relative">
-          {/* Listing-only landscape crop. Product pages still use the original squares. */}
-          <div className="relative aspect-[16/9] w-full overflow-hidden">
+        {/* Listing-only landscape crop. Product pages still use the original squares. */}
+        <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl">
+          <SoftImage
+            key={coverSrc}
+            src={coverSrc}
+            alt={product.name}
+            fill
+            className={`object-cover object-center transition-opacity duration-500 ${
+              altSrc ? "group-hover:opacity-0" : ""
+            } ${navigating ? "brightness-90" : ""}`}
+            sizes="(max-width: 640px) 94vw, 672px"
+            priority={rank < 3}
+          />
+          {altSrc ? (
             <SoftImage
-              key={coverSrc}
-              src={coverSrc}
-              alt={product.name}
+              key={altSrc}
+              src={altSrc}
+              alt={`${product.name} – alternate view`}
               fill
-              className={`object-cover object-center transition-opacity duration-500 ${
-                altSrc ? "group-hover:opacity-0" : ""
-              } ${navigating ? "brightness-90" : ""}`}
+              showLogoPlaceholder={false}
+              className="object-cover object-center opacity-0 transition-opacity duration-500 group-hover:opacity-100"
               sizes="(max-width: 640px) 94vw, 672px"
-              priority={rank < 3}
+              loading="lazy"
             />
-            {altSrc ? (
-              <SoftImage
-                key={altSrc}
-                src={altSrc}
-                alt={`${product.name} – alternate view`}
-                fill
-                showLogoPlaceholder={false}
-                className="object-cover object-center opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                sizes="(max-width: 640px) 94vw, 672px"
-                loading="lazy"
-              />
-            ) : null}
-          </div>
+          ) : null}
 
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between px-3.5 pt-2.5 sm:px-5 sm:pt-3">
             <div className="flex items-center gap-2">
@@ -126,67 +115,20 @@ function RankCard({
               </span>
             ) : null}
           </div>
+
+          {navigating ? (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/25 backdrop-blur-[2px]">
+              <LogoLoader size="sm" tone="light" showBar={false} className="!gap-0" />
+            </div>
+          ) : null}
         </div>
 
-        <div className="flex items-end justify-between gap-3 px-3.5 py-3 sm:px-5 sm:py-3.5">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <div
-              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-                featured ? "bg-black" : "bg-white"
-              }`}
-            >
-              <LogoMark size={18} tone={featured ? "light" : "dark"} animate={false} />
-            </div>
-            <div className="min-w-0">
-              <h2 className="truncate text-[15px] font-bold uppercase leading-tight tracking-tight sm:text-base">
-                {product.name}
-              </h2>
-              <p
-                className={`mt-0.5 text-[11px] font-medium uppercase tracking-[0.14em] ${
-                  featured ? "text-neutral-500" : "text-neutral-400"
-                }`}
-              >
-                {footwearBrandLabel(slugKey)}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex shrink-0 flex-col items-end gap-1.5">
-            {swatches.length > 0 ? (
-              <div className="flex items-center gap-1" aria-hidden>
-                {swatches.slice(0, 5).map((color) => {
-                  const css = colorToCss(color);
-                  const light = css.toLowerCase() === "#f5f5f5" || css.toLowerCase() === "#ffffff";
-                  return (
-                    <span
-                      key={`${slugKey}-${color}`}
-                      className="h-2.5 w-2.5 rounded-full"
-                      style={{
-                        backgroundColor: css,
-                        boxShadow: light
-                          ? `inset 0 0 0 1px ${featured ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.35)"}`
-                          : undefined,
-                      }}
-                    />
-                  );
-                })}
-              </div>
-            ) : null}
-            <span
-              className={`text-sm font-semibold tabular-nums ${
-                featured ? "text-neutral-500" : "text-neutral-400"
-              }`}
-            >
-              {formatUsdFromCents(product.priceCents)}
-            </span>
-          </div>
+        {/* Name sits under the photo, same as apparel — not in a bar attached to the image. */}
+        <div className="mt-4 px-0.5">
+          <h2 className="text-[15px] font-semibold text-white line-clamp-2">
+            {product.name}
+          </h2>
         </div>
-
-        {navigating ? (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/25 backdrop-blur-[2px]">
-            <LogoLoader size="sm" tone="light" showBar={false} className="!gap-0" />
-          </div>
-        ) : null}
       </Link>
     </article>
   );
@@ -241,7 +183,7 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
           </div>
         ) : null}
 
-        <div className="mt-2.5 flex flex-col gap-2" role="list">
+        <div className="mt-5 flex flex-col gap-6 sm:gap-8" role="list">
           {ranked.map((product, index) => {
             const { cover, alt } = getImages(product);
             return (
