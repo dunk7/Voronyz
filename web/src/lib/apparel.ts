@@ -217,7 +217,7 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     slug: "voronyz-core-hoodie",
     subcategory: "sweaters",
     name: "The Atelier Hoodie",
-    description: "Heavyweight fleece hoodie with an athletic taper — wider at the shoulders than the chest, narrow at the waist.",
+    description: "Heavyweight fleece hoodie with a clean, modern cut.",
     priceCents: 7800,
     colors: ["black", "grey", "white"],
     sizes: [...APPAREL_SIZES],
@@ -243,23 +243,23 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
       XL: 20500, // 60% off → $82
       XXL: 21500, // 60% off → $86
     },
-    image: "/products/apparel/hoodie-atelier-black-front-fit.jpg",
+    image: "/products/apparel/hoodie-atelier-black-front-ref.jpg",
     images: [
-      "/products/apparel/hoodie-atelier-black-front-fit.jpg",
-      "/products/apparel/hoodie-atelier-black-back-fit.jpg",
+      "/products/apparel/hoodie-atelier-black-front-ref.jpg",
+      "/products/apparel/hoodie-atelier-black-back-orig.jpg",
     ],
     colorImages: {
       black: [
-        "/products/apparel/hoodie-atelier-black-front-fit.jpg",
-        "/products/apparel/hoodie-atelier-black-back-fit.jpg",
+        "/products/apparel/hoodie-atelier-black-front-ref.jpg",
+        "/products/apparel/hoodie-atelier-black-back-orig.jpg",
       ],
       grey: [
-        "/products/apparel/hoodie-atelier-grey-front-fit.jpg",
-        "/products/apparel/hoodie-atelier-grey-back-fit.jpg",
+        "/products/apparel/hoodie-atelier-grey-front-ref.jpg",
+        "/products/apparel/hoodie-atelier-grey-back-orig.jpg",
       ],
       white: [
-        "/products/apparel/hoodie-atelier-white-front-fit.jpg",
-        "/products/apparel/hoodie-atelier-white-back-fit.jpg",
+        "/products/apparel/hoodie-atelier-white-front-ref.jpg",
+        "/products/apparel/hoodie-atelier-white-back-orig.jpg",
       ],
     },
     skuPrefix: "APP-HOOD",
