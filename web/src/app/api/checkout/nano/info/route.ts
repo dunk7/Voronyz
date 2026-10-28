@@ -39,6 +39,12 @@ export async function POST(request: NextRequest) {
     }
 
     const metadata = (order.metadata as Record<string, unknown>) ?? {};
+    const verifiedShipping =
+      metadata.shipping &&
+      typeof metadata.shipping === "object" &&
+      (metadata.shipping as { verified?: boolean }).verified === true
+        ? metadata.shipping
+        : null;
 
     await prisma.order.update({
       where: { id: orderId },
@@ -50,7 +56,7 @@ export async function POST(request: NextRequest) {
             email: customer.email.trim(),
             phone: customer.phone?.trim() || null,
           },
-          shipping: {
+          shipping: verifiedShipping ?? {
             name: customer.name.trim(),
             address: {
               line1: customer.addressLine1?.trim() || null,

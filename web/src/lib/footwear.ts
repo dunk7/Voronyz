@@ -1,7 +1,7 @@
 import {
   MAGIKID_SHOES_BASE_PRICE_CENTS,
   MAGIKID_SHOES_DESCRIPTION_SHORT,
-  MAGIKID_SHOES_THUMBNAIL_URL,
+  MAGIKID_SHOES_IMAGES,
 } from "@/lib/magikidShoesThumbnail";
 import {
   GATORS_DESCRIPTION_SHORT,
@@ -20,8 +20,27 @@ import {
 import { getProductThumbnail } from "@/lib/productImages";
 import { catalogSeedListedAt } from "@/lib/newListing";
 
-export const SLIP_ONS_PRICE_CENTS = 6500; // $65
+export const SLIP_ONS_PRICE_CENTS = 11000; // $110
 export const DRAGONFLY_PRICE_CENTS = 16000; // $160
+
+/** White Slip Ons product photo — only shown, and shown first, when White is selected. */
+export const SLIP_ONS_WHITE_AD_IMAGE = "/products/slip-ons/white-ad.jpg";
+
+export function isWhiteColor(color: string | undefined | null): boolean {
+  return color?.trim().toLowerCase() === "white";
+}
+
+/**
+ * The white Slip Ons photo is only in the gallery when White is selected,
+ * and then it leads. Other colors stay on the studio shots.
+ */
+export function slipOnsImagesForColor(baseImages: string[], color?: string | null): string[] {
+  const withoutWhiteAd = baseImages.filter((src) => src !== SLIP_ONS_WHITE_AD_IMAGE);
+  if (isWhiteColor(color)) {
+    return [SLIP_ONS_WHITE_AD_IMAGE, ...withoutWhiteAd];
+  }
+  return withoutWhiteAd;
+}
 
 /** PDP / listing copy — colors live on the swatches, not in this paragraph. */
 export const SLIP_ONS_DESCRIPTION =
@@ -41,7 +60,8 @@ export type FootwearCatalogItem = {
 
 /**
  * Display order for All Footwear:
- * Slides → Slip Ons → Gators → Sneakers (Dragonfly) → Magikid → Lattice Insoles.
+ * Slides → Slip Ons → Sneakers (Dragonfly) → Gators → Magikid → Lattice Insoles.
+ * Dragonfly is 3rd while Gators still use a coming-soon placeholder image.
  * Magikid sits after the other shoe listings. Lattice Insoles last.
  */
 export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
@@ -49,7 +69,7 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     slug: "v3-slides",
     name: "V3 Slides",
     description:
-      "Engineered for comfort, built to last. World-class FDM printed slides with TPU lattice lowers and breathable uppers.",
+      "Engineered for comfort, built to last. Lightweight slides with a foamed TPU lattice underfoot and a breathable upper.",
     priceCents: 7500,
     images: [
       "/products/v3-slides/InShot_20260212_194352014.jpg",
@@ -81,13 +101,6 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     ],
   },
   {
-    slug: GATORS_SLUG,
-    name: GATORS_NAME,
-    description: GATORS_DESCRIPTION_SHORT,
-    priceCents: GATORS_PRICE_CENTS,
-    images: [...GATORS_IMAGES],
-  },
-  {
     slug: "dragonfly",
     name: "The Dragonfly's",
     description: DRAGONFLY_DESCRIPTION,
@@ -105,21 +118,18 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     ],
   },
   {
+    slug: GATORS_SLUG,
+    name: GATORS_NAME,
+    description: GATORS_DESCRIPTION_SHORT,
+    priceCents: GATORS_PRICE_CENTS,
+    images: [...GATORS_IMAGES],
+  },
+  {
     slug: "magikid-shoes",
     name: "Magikid Shoes",
     description: MAGIKID_SHOES_DESCRIPTION_SHORT,
     priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
-    images: [
-      MAGIKID_SHOES_THUMBNAIL_URL,
-      "/products/slip-ons/InShot_20260405_203151152.jpg",
-      "/products/slip-ons/InShot_20260405_203425292.jpg",
-      "/products/slip-ons/InShot_20260405_203601045.jpg",
-      "/products/slip-ons/InShot_20260405_203736918.jpg",
-      "/products/slip-ons/InShot_20260405_203930832.jpg",
-      "/products/slip-ons/InShot_20260405_204113872.jpg",
-      "/products/slip-ons/InShot_20260405_204333303.jpg",
-      "/products/slip-ons/InShot_20260405_202911983.jpg",
-    ],
+    images: [...MAGIKID_SHOES_IMAGES],
   },
   {
     slug: LATTICE_INSOLES_SLUG,

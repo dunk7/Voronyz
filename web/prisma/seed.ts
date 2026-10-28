@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { MAGIKID_SHOES_THUMBNAIL_URL, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT, MAGIKID_SHOES_BASE_PRICE_CENTS } from "../src/lib/magikidShoesThumbnail";
+import { MAGIKID_SHOES_IMAGES, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT, MAGIKID_SHOES_BASE_PRICE_CENTS } from "../src/lib/magikidShoesThumbnail";
 import {
   TRAIL_MIX_DESCRIPTION_SHORT,
   TRAIL_MIX_FLAVOR_IDS,
@@ -41,7 +41,7 @@ import {
   LATTICE_INSOLES_SLUG,
   LATTICE_INSOLES_VARIANTS,
 } from "../src/lib/latticeInsoles";
-import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION } from "../src/lib/footwear";
+import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION, SLIP_ONS_PRICE_CENTS } from "../src/lib/footwear";
 import {
   GATORS_DESCRIPTION_SHORT,
   GATORS_IMAGES,
@@ -67,7 +67,7 @@ async function main() {
           slug: "v3-slides",
           name: "V3 Slides",
           description:
-            "Engineered for comfort, built to last. World-class FDM printed slides with TPU lattice lowers and breathable uppers.",
+            "Engineered for comfort, built to last. Lightweight slides with a foamed TPU lattice underfoot and a breathable upper.",
           priceCents: 7500,
           currency: "usd",
           images: [
@@ -267,7 +267,7 @@ async function main() {
           slug: "slip-ons",
           name: "Slip Ons",
           description: SLIP_ONS_DESCRIPTION,
-          priceCents: 6500,
+          priceCents: SLIP_ONS_PRICE_CENTS,
           currency: "usd",
           images: slipOnImages,
           primaryColors: ["black", "grey", "white", "orange", "pink"],
@@ -277,7 +277,7 @@ async function main() {
             create: [
               { color: "black", sku: "SO-BLK", stock: 999 },
               { color: "grey", sku: "SO-GRY", stock: 999 },
-              { color: "white", sku: "SO-WHT", stock: 0 },
+              { color: "white", sku: "SO-WHT", stock: 999 },
               { color: "orange", sku: "SO-ORG", stock: 999 },
               { color: "pink", sku: "SO-PNK", stock: 999 },
             ],
@@ -293,7 +293,7 @@ async function main() {
         data: {
           name: "Slip Ons",
           description: SLIP_ONS_DESCRIPTION,
-          priceCents: 6500,
+          priceCents: SLIP_ONS_PRICE_CENTS,
           images: slipOnImages,
           primaryColors: ["black", "grey", "white", "orange", "pink"],
           secondaryColors: [],
@@ -303,7 +303,7 @@ async function main() {
       const soVariants = [
         { color: "black", sku: "SO-BLK", stock: 999 },
         { color: "grey", sku: "SO-GRY", stock: 999 },
-        { color: "white", sku: "SO-WHT", stock: 0 },
+        { color: "white", sku: "SO-WHT", stock: 999 },
         { color: "orange", sku: "SO-ORG", stock: 999 },
         { color: "pink", sku: "SO-PNK", stock: 999 },
       ];
@@ -323,17 +323,7 @@ async function main() {
     }
 
     // ── Magikid Shoes ──
-    const magikidShoesImages = [
-      MAGIKID_SHOES_THUMBNAIL_URL,
-      "/products/slip-ons/InShot_20260405_203151152.jpg",
-      "/products/slip-ons/InShot_20260405_203425292.jpg",
-      "/products/slip-ons/InShot_20260405_203601045.jpg",
-      "/products/slip-ons/InShot_20260405_203736918.jpg",
-      "/products/slip-ons/InShot_20260405_203930832.jpg",
-      "/products/slip-ons/InShot_20260405_204113872.jpg",
-      "/products/slip-ons/InShot_20260405_204333303.jpg",
-      "/products/slip-ons/InShot_20260405_202911983.jpg",
-    ];
+    const magikidShoesImages = [...MAGIKID_SHOES_IMAGES];
     const existingMk = await prisma.product.findUnique({ where: { slug: "magikid-shoes" } });
     console.log("Magikid Shoes product check:", existingMk ? "Found" : "Not found");
     if (!existingMk) {
@@ -473,7 +463,7 @@ async function main() {
       console.log("Updated TPU-90A Filament product and variants.");
     }
 
-    // ── Lattice Insoles (All Footwear — S–XL drop-in cushions) ──
+    // ── Lattice Insoles (All Footwear — same US shoe sizes as the rest of the lineup) ──
     const existingInsoles = await prisma.product.findUnique({ where: { slug: LATTICE_INSOLES_SLUG } });
     console.log("Lattice Insoles product check:", existingInsoles ? "Found" : "Not found");
     if (!existingInsoles) {

@@ -3,7 +3,9 @@ import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 import {
+  applyOneFreeItemToStripeLineItems,
   getDiscountedUnitPriceCents,
+  isOneItemFreeDiscountCode,
 } from "@/lib/discountPricing";
 import { resolveActiveDiscountCode } from "@/lib/discountDisabled";
 import { getOrderLevelDiscountCentsForCode } from "@/lib/affiliateDiscounts";
@@ -13,6 +15,7 @@ import {
 } from "@/lib/affiliateApproveLogic";
 import { ensureAffiliateOrderCoupon } from "@/lib/stripeAffiliateCoupon";
 import { cartHasPreOrder, resolveIsPreOrder } from "@/lib/preorder";
+import { catalogUnitPriceCents } from "@/lib/apparel";
 import {
   buildStripeCartItemsMetadata,
   stripeHttpsImages,
@@ -25,6 +28,13 @@ import {
   SHIPPING_INSURANCE_DESCRIPTION,
   SHIPPING_INSURANCE_PRODUCT_NAME,
 } from "@/lib/shippingInsurance";
+import { parseVerifiedShipping } from "@/lib/addressVerification";
+import {
+  addressToStripeMetadata,
+  INTERNATIONAL_SHIPPING_DESCRIPTION,
+  INTERNATIONAL_SHIPPING_PRODUCT_NAME,
+  internationalShippingCents,
+} from "@/lib/shippingAddress";
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -49,6 +59,7 @@ export async function POST(request: NextRequest) {
     items,
     discountCode,
     shippingInsurance,
+    shipping: rawShipping,
     successUrl,
     cancelUrl,
     paymentMethod: rawPaymentMethod,
@@ -104,6 +115,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: magikidValidationError }, { status: 400 });
     }
 
+    const hasPickupOnly = items.every((item: { fulfillment?: string }) => item.fulfillment === 'pickup');
+    const shippingAddress = hasPickupOnly ? null : parseVerifiedShipping(rawShipping);
+    if (!hasPickupOnly && !shippingAddress) {
+      return NextResponse.json(
+        {
+          error:
+            "Please enter your name and pick a verified shipping address from the suggestions before checking out.",
+        },
+        { status: 400 }
+      );
+    }
+    const intlShippingCents = shippingAddress
+      ? internationalShippingCents(shippingAddress.country)
+      : 0;
+    const shipsInternationally = intlShippingCents > 0;
+
     if (debug) {
       console.log(`Processing ${items.length} items for checkout`);
     }
@@ -138,11 +165,17 @@ export async function POST(request: NextRequest) {
 
         const productSlug = variant?.product?.slug || item.productSlug || '';
         const productNameForDiscount = variant?.product?.name || item.productName || '';
-        const baseUnitAmount = variant
+        const fallbackCents = variant
           ? (variant.priceCents || variant.product.priceCents || 0)
           : typeof item.priceCents === "number" && item.priceCents > 0
             ? item.priceCents
             : 7500;
+        const baseUnitAmount = catalogUnitPriceCents({
+          productSlug,
+          size: item.size,
+          color: item.variantName || variant?.color,
+          fallbackCents,
+        });
         const unitAmount = getDiscountedUnitPriceCents(
           baseUnitAmount,
           activeDiscountCode,
@@ -252,8 +285,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (isOneItemFreeDiscountCode(activeDiscountCode)) {
+      applyOneFreeItemToStripeLineItems(lineItems);
+    }
+
     console.log('Creating Stripe session with line items:', lineItems);
-    const hasPickupOnly = items.every((item: { fulfillment?: string }) => item.fulfillment === 'pickup');
     const hasPreOrder = cartHasPreOrder(items);
     const insuranceQty = getInsurableItemQuantity(items);
     const wantsInsurance =
@@ -274,7 +310,6 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const isAch = paymentMethod === "ach";
     const productSubtotalCents = lineItems.reduce((sum, item) => {
       const unit = item.price_data?.unit_amount ?? 0;
       const qty = item.quantity ?? 1;
@@ -300,30 +335,64 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (shipsInternationally) {
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: INTERNATIONAL_SHIPPING_PRODUCT_NAME,
+            description: INTERNATIONAL_SHIPPING_DESCRIPTION,
+          },
+          unit_amount: intlShippingCents,
+        },
+        quantity: 1,
+      });
+    }
+
+    const payableCents =
+      productOnlyCents - orderLevelOff + insuranceLineCents + intlShippingCents;
+    // International orders are card-only; ACH / bank debit cannot collect under
+    // Stripe's $0.50 minimum (including a $0 famzero cart).
+    const effectivePaymentMethod = shipsInternationally ? "card" : paymentMethod;
+    const isAch = effectivePaymentMethod === "ach" && payableCents >= 50;
+
     const session = await stripe.checkout.sessions.create({
       // Explicit method types so cart can lead with ACH and offer card as a secondary path.
-      payment_method_types: isAch ? ["us_bank_account"] : ["card"],
-      ...(isAch && {
-        payment_method_options: {
-          us_bank_account: {
-            financial_connections: {
-              permissions: ["payment_method"],
-            },
-            verification_method: "automatic",
-          },
-        },
-      }),
+      // $0 orders (famzero with a single item) skip method types so Stripe does not collect a charge.
+      ...(payableCents > 0
+        ? {
+            payment_method_types: isAch ? ["us_bank_account"] : ["card"],
+            ...(isAch && {
+              payment_method_options: {
+                us_bank_account: {
+                  financial_connections: {
+                    permissions: ["payment_method"],
+                  },
+                  verification_method: "automatic",
+                },
+              },
+            }),
+          }
+        : {}),
       line_items: lineItems,
       mode: 'payment',
       ...(sessionDiscounts && { discounts: sessionDiscounts }),
-      ...(!hasPickupOnly && {
-        shipping_address_collection: {
-          // ACH Direct Debit is US-only; card checkout keeps broader shipping.
-          allowed_countries: isAch
-            ? (["US"] as const)
-            : (["US", "CA", "GB", "AU", "DE", "FR", "IT", "JP", "MX"] as const),
-        },
-      }),
+      ...(shippingAddress &&
+        payableCents > 0 && {
+          payment_intent_data: {
+            shipping: {
+              name: shippingAddress.name,
+              address: {
+                line1: shippingAddress.line1,
+                ...(shippingAddress.line2 && { line2: shippingAddress.line2 }),
+                city: shippingAddress.city,
+                state: shippingAddress.state,
+                postal_code: shippingAddress.postal_code,
+                country: shippingAddress.country,
+              },
+            },
+          },
+        }),
       phone_number_collection: {
         enabled: true,
       },
@@ -332,7 +401,12 @@ export async function POST(request: NextRequest) {
       cancel_url: cancelUrl,
       metadata: {
         itemCount: items.length.toString(),
-        paymentMethod,
+        paymentMethod: effectivePaymentMethod,
+        ...(shippingAddress && addressToStripeMetadata(shippingAddress)),
+        ...(shipsInternationally && {
+          internationalShipping: 'true',
+          internationalShippingCents: String(intlShippingCents),
+        }),
         ...(activeDiscountCode && { discountCode: activeDiscountCode }),
         ...(hasPickupOnly && { fulfillment: 'pickup' }),
         ...(hasPreOrder && { hasPreOrder: 'true' }),

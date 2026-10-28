@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { getProductThumbnail } from "@/lib/productImages";
+import { apparelCoverObjectPositionClass } from "@/lib/apparel";
 import LogoLoader, { LogoMark } from "@/components/ui/LogoLoader";
 
 type SearchProductResult = {
@@ -381,7 +382,7 @@ export default function Header() {
                                 alt={product.name}
                                 width={48}
                                 height={48}
-                                className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                                className={`w-full h-full object-cover ${apparelCoverObjectPositionClass(cover)} transition-transform duration-200 group-hover:scale-105`}
                                 priority={index < 3}
                               />
                             </div>

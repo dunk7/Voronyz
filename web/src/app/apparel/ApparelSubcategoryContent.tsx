@@ -159,8 +159,6 @@ export default function ApparelSubcategoryContent({
                   : "0 items"}
             </span>
           </div>
-
-          <div className="mt-6 h-px bg-neutral-200" />
         </div>
 
         {enriched.length === 0 ? (

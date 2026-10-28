@@ -5,7 +5,7 @@ export const APPAREL_ONE_SIZE = ["One Size"] as const;
  * Apparel sub-sections.
  * - `collection`: multi-product listing pages (shirts, sweaters, …) —
  *   add new designs to APPAREL_CATALOG with the matching subcategory.
- * - `standalone`: Accessories only (shades, jewelry, drone parts, …) — never mixed
+ * - `standalone`: Accessories only (stickers, shades, jewelry, drone parts, …) — never mixed
  *   into clothing collections, and never shown on Engineering `/accessories`.
  */
 export type ApparelSubcategoryId =
@@ -55,7 +55,7 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "accessories",
     label: "Accessories",
-    description: "Shades, jewelry, lace locks, and drone parts",
+    description: "Logo stickers, shades, jewelry, lace locks, and drone parts",
     listing: "standalone",
   },
 ];
@@ -83,10 +83,35 @@ export type ApparelCatalogItem = {
    * listed as out of stock so shoppers can see what is missing.
    */
   availableSizes?: string[];
+  /**
+   * Per-size unit price (the amount charged). Omitted sizes use `priceCents`.
+   * When `colorPriceCents` is set, this ladder is the base (black) color and
+   * other colors keep the same size deltas.
+   */
+  sizePriceCents?: Record<string, number>;
+  /**
+   * Medium unit price per color. Omitted colors use `priceCents`.
+   * Stacks on `sizePriceCents` so a color upcharge applies at every size.
+   */
+  colorPriceCents?: Record<string, number>;
+  /**
+   * Inflated “was” price shown struck through when a size is on advertised sale.
+   * Checkout still charges `sizePriceCents` / `priceCents`.
+   */
+  sizeCompareAtCents?: Record<string, number>;
   /** Primary cover / thumbnail image. */
   image: string;
   /** Full gallery; defaults to `[image]` when omitted. */
   images?: string[];
+  /**
+   * Per-color gallery (front, then back, …). Selecting a swatch swaps to
+   * that color’s shots without changing garment shape or design.
+   */
+  colorImages?: Record<string, string[]>;
+  /**
+   * Alias for `colorImages` used by some listings (e.g. white tee mockup).
+   */
+  imagesByColor?: Record<string, string[]>;
   skuPrefix: string;
   /**
    * Coming-soon items are pre-orderable: customers pay now and join the
@@ -98,6 +123,30 @@ export type ApparelCatalogItem = {
 export function getApparelImages(item: ApparelCatalogItem): string[] {
   if (item.images && item.images.length > 0) return [...item.images];
   return [item.image];
+}
+
+/** Gallery for a selected color, falling back to the listing gallery. */
+export function getApparelImagesForColor(
+  item: ApparelCatalogItem,
+  color?: string | null,
+): string[] {
+  if (color) {
+    const key = color.trim().toLowerCase();
+    const shots = item.colorImages?.[key] ?? item.imagesByColor?.[key];
+    if (shots && shots.length > 0) return [...shots];
+  }
+  return getApparelImages(item);
+}
+
+/**
+ * Portrait on-model shots that a centered square crop would clip at the head.
+ * Keep the same square frame and pin the photo to the top so the model stays in view.
+ */
+const APPAREL_COVER_OBJECT_TOP = new Set<string>([]);
+
+/** Tailwind object-position class for apparel photos shown with object-cover. */
+export function apparelCoverObjectPositionClass(src: string): string {
+  return APPAREL_COVER_OBJECT_TOP.has(src) ? "object-top" : "object-center";
 }
 
 /** Slugs removed from the live apparel catalog (cleaned up on ensure). */
@@ -136,10 +185,30 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     description: "Built big on purpose — soft, roomy, and easy to wear.",
     priceCents: 4800,
     colors: ["black", "white", "grey"],
-    outOfStockColors: ["white", "grey"],
     sizes: [...APPAREL_SIZES],
-    availableSizes: ["L"],
-    image: "/products/apparel/shirt.jpg",
+    sizePriceCents: {
+      XS: 4200,
+      S: 4500,
+      M: 4800,
+      L: 5100,
+      XL: 5400,
+      XXL: 5700,
+    },
+    image: "/products/apparel/shirt-front-v3.jpg",
+    images: [
+      "/products/apparel/shirt-front-v3.jpg",
+      "/products/apparel/shirt-back-blank-v3.jpg",
+    ],
+    imagesByColor: {
+      white: [
+        "/products/apparel/shirt-front-white-v3.jpg",
+        "/products/apparel/shirt-back-blank-white-v3.jpg",
+      ],
+      grey: [
+        "/products/apparel/shirt-front-grey-v3.jpg",
+        "/products/apparel/shirt-back-blank-grey-v3.jpg",
+      ],
+    },
     skuPrefix: "APP-TEE",
     comingSoon: false,
   },
@@ -150,15 +219,73 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     name: "The Atelier Hoodie",
     description: "Heavyweight fleece hoodie with a clean, modern cut.",
     priceCents: 7800,
-    colors: ["black", "grey"],
-    outOfStockColors: ["grey"],
+    colors: ["black", "grey", "white"],
     sizes: [...APPAREL_SIZES],
-    image: "/products/apparel/hoodie.jpg",
+    colorPriceCents: {
+      black: 7800,
+      grey: 8400,
+      white: 9200,
+    },
+    // Large is below Medium (and below the size average) so it reads as the deal.
+    sizePriceCents: {
+      XS: 7200,
+      S: 7500,
+      M: 7800,
+      L: 7400,
+      XL: 8200,
+      XXL: 8600,
+    },
+    sizeCompareAtCents: {
+      XS: 18000, // 60% off → $72
+      S: 18750, // 60% off → $75
+      M: 19500, // 60% off → $78
+      L: 18500, // 60% off → $74 (deal vs Medium)
+      XL: 20500, // 60% off → $82
+      XXL: 21500, // 60% off → $86
+    },
+    image: "/products/apparel/hoodie-atelier-black-front-zoom.jpg",
+    images: [
+      "/products/apparel/hoodie-atelier-black-front-zoom.jpg",
+      "/products/apparel/hoodie-atelier-black-back-orig.jpg",
+    ],
+    colorImages: {
+      black: [
+        "/products/apparel/hoodie-atelier-black-front-zoom.jpg",
+        "/products/apparel/hoodie-atelier-black-back-orig.jpg",
+      ],
+      grey: [
+        "/products/apparel/hoodie-atelier-grey-front-zoom.jpg",
+        "/products/apparel/hoodie-atelier-grey-back-orig.jpg",
+      ],
+      white: [
+        "/products/apparel/hoodie-atelier-white-front-zoom.jpg",
+        "/products/apparel/hoodie-atelier-white-back-orig.jpg",
+      ],
+    },
     skuPrefix: "APP-HOOD",
     comingSoon: false,
   },
   // ── Accessories only (never mixed into clothing collections) ────────────
   // Lattice Insoles live on All Footwear as a live listing (see latticeInsoles.ts).
+  {
+    slug: "voronyz-stickers",
+    subcategory: "accessories",
+    name: "Logo Stickers",
+    description:
+      "Three-pack vinyl VORONYZ mark. Weatherproof. For laptops, bottles, notebooks, and anything else that needs the logo.",
+    priceCents: 800,
+    colors: ["black"],
+    sizes: [...APPAREL_ONE_SIZE],
+    image: "/products/apparel/voronyz-stickers-studio.jpg",
+    images: [
+      "/products/apparel/voronyz-stickers-studio.jpg",
+      "/products/apparel/voronyz-stickers-laptop.jpg",
+      "/products/apparel/voronyz-stickers-bottle.jpg",
+      "/products/apparel/voronyz-stickers-notebook.jpg",
+    ],
+    skuPrefix: "APP-STKR",
+    comingSoon: false,
+  },
   {
     slug: "voronyz-cool-shades",
     subcategory: "accessories",
@@ -229,6 +356,32 @@ export function isApparelSlug(slug: string | null | undefined): boolean {
 export function getApparelItem(slug: string | null | undefined) {
   const key = (slug || "").trim().toLowerCase();
   return APPAREL_CATALOG.find((item) => item.slug === key) ?? null;
+}
+
+/** In-memory product shape used when the catalog listing is known but the DB is unreachable. */
+export function apparelCatalogProduct(item: ApparelCatalogItem) {
+  const now = new Date(0);
+  return {
+    id: item.slug,
+    slug: item.slug,
+    name: item.name,
+    description: item.description,
+    priceCents: item.priceCents,
+    currency: "usd",
+    images: getApparelImages(item),
+    primaryColors: [...item.colors],
+    secondaryColors: [] as string[],
+    sizes: [...item.sizes],
+    variants: item.colors.map((color) => ({
+      id: `${item.skuPrefix}-${color}`,
+      color,
+      sku: apparelSku(item.skuPrefix, color),
+      stock: apparelVariantStock(item, color),
+      priceCents: apparelPriceCentsForSelection(item, { color }),
+    })),
+    createdAt: now,
+    updatedAt: now,
+  };
 }
 
 export function getApparelSubcategory(id: string | null | undefined) {
@@ -352,4 +505,102 @@ export function isApparelSizeAvailable(
 export function apparelUnavailableSizes(item: ApparelCatalogItem): string[] {
   if (!item.availableSizes || item.availableSizes.length === 0) return [];
   return item.sizes.filter((size) => !item.availableSizes!.includes(size));
+}
+
+function normalizeApparelSizeKey(size: string | null | undefined): string {
+  return (size || "").trim().toUpperCase();
+}
+
+/** Unit price for a catalog size. Medium / omitted sizes use `priceCents`. */
+export function apparelPriceCentsForSize(
+  item: ApparelCatalogItem,
+  size?: string | null,
+): number {
+  return apparelPriceCentsForSelection(item, { size });
+}
+
+/**
+ * Unit price for a color + size. Color upcharges stack on the size ladder
+ * (the size map is the base/black color, relative to Medium).
+ */
+export function apparelPriceCentsForSelection(
+  item: ApparelCatalogItem,
+  args?: { size?: string | null; color?: string | null },
+): number {
+  const colorKey = args?.color ? normalizeApparelColor(args.color) : "";
+  const colorBase =
+    colorKey && typeof item.colorPriceCents?.[colorKey] === "number"
+      ? item.colorPriceCents[colorKey]!
+      : item.priceCents;
+  const sizeKey = normalizeApparelSizeKey(args?.size);
+  if (!sizeKey) return colorBase;
+  const sizePrice = item.sizePriceCents?.[sizeKey];
+  if (typeof sizePrice !== "number" || sizePrice <= 0) return colorBase;
+  if (item.colorPriceCents && Object.keys(item.colorPriceCents).length > 0) {
+    const medium = item.sizePriceCents?.M ?? item.priceCents;
+    return colorBase + (sizePrice - medium);
+  }
+  return sizePrice;
+}
+
+export const HOODIE_MIN_SALE_CENTS = 7000;
+
+export type ApparelPriceOffer = {
+  priceCents: number;
+  compareAtCents: number;
+  percentOff: number;
+};
+
+function percentOffFrom(compareAtCents: number, priceCents: number): number {
+  if (compareAtCents <= 0 || priceCents >= compareAtCents) return 0;
+  return Math.round((1 - priceCents / compareAtCents) * 100);
+}
+
+/** Advertised sale (struck-through compare-at + paid price). Tees without compare-at return null. */
+export function getApparelSizeOffer(
+  slug: string | null | undefined,
+  size: string | null | undefined,
+  color?: string | null,
+): ApparelPriceOffer | null {
+  const item = getApparelItem(slug);
+  if (!item?.sizeCompareAtCents) return null;
+  const key = normalizeApparelSizeKey(size) || "M";
+  const priceCents = Math.max(
+    HOODIE_MIN_SALE_CENTS,
+    apparelPriceCentsForSelection(item, { size: key, color }),
+  );
+  const sizeCompare = item.sizeCompareAtCents[key] ?? item.sizeCompareAtCents.M;
+  if (typeof sizeCompare !== "number" || sizeCompare <= priceCents) return null;
+  const colorKey = color ? normalizeApparelColor(color) : "";
+  const hasColorUpcharge =
+    Boolean(colorKey) &&
+    typeof item.colorPriceCents?.[colorKey] === "number" &&
+    item.colorPriceCents[colorKey] !== item.priceCents;
+  // Base color uses the size “was” map; upcharged colors keep the same ~60% off.
+  const compareAtCents = hasColorUpcharge ? Math.round(priceCents / 0.4) : sizeCompare;
+  if (compareAtCents <= priceCents) return null;
+  return {
+    priceCents,
+    compareAtCents,
+    percentOff: percentOffFrom(compareAtCents, priceCents),
+  };
+}
+
+export function getApparelListingOffer(slug: string | null | undefined): ApparelPriceOffer | null {
+  return getApparelSizeOffer(slug, "M");
+}
+
+/**
+ * Checkout/cart unit price: apparel size map when present, otherwise the
+ * database (or cart) fallback. Non-apparel slugs pass through unchanged.
+ */
+export function catalogUnitPriceCents(args: {
+  productSlug?: string | null;
+  size?: string | null;
+  color?: string | null;
+  fallbackCents: number;
+}): number {
+  const item = getApparelItem(args.productSlug);
+  if (!item) return args.fallbackCents;
+  return apparelPriceCentsForSelection(item, { size: args.size, color: args.color });
 }

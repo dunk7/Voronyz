@@ -46,10 +46,11 @@ export default function MagikidThumbnailPanel() {
         <div>
           <h2 className="text-base font-semibold text-neutral-900 flex items-center gap-2">
             <ImageIcon className="h-4 w-4" />
-            Magikid Shoes thumbnail
+            Magikid custom-design photo
           </h2>
           <p className="text-sm text-neutral-500 mt-1">
-            Shop card and product page hero image for Magikid Shoes.
+            Second product-page photo — the custom-hole example. The shop card
+            now uses the printed slip-on.
           </p>
         </div>
         <label className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 cursor-pointer disabled:opacity-50">
@@ -58,7 +59,7 @@ export default function MagikidThumbnailPanel() {
           ) : (
             <Upload className="h-4 w-4" />
           )}
-          {uploading ? "Uploading…" : "Replace thumbnail"}
+          {uploading ? "Uploading…" : "Replace photo"}
           <input
             ref={inputRef}
             type="file"

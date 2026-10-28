@@ -69,6 +69,12 @@ const nextConfig: NextConfig = {
         destination: "/apparel/accessories",
         permanent: true,
       },
+      // Retired keychain listing is now Logo Stickers.
+      {
+        source: "/products/voronyz-keychain",
+        destination: "/products/voronyz-stickers",
+        permanent: true,
+      },
       // Removed RC Car Stickers — never show again (old URLs → Accessories).
       {
         source: "/products/voronyz-rc-car-stickers",

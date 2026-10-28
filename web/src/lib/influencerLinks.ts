@@ -20,6 +20,7 @@ export const INFLUENCER_DISCOUNT_LINKS = [
   { slug: "chud", code: "chud25", label: "Chud" },
   { slug: "emptyaus", code: "emptyaus", label: "Emptyaus" },
   { slug: "fam", code: "fam45", label: "Fam" },
+  { slug: "famzero", code: "famzero", label: "Fam (free item)" },
   { slug: "superdeal", code: "superdeal35", label: "Superdeal" },
   { slug: "super20", code: "super20", label: "Super20" },
 ] as const;

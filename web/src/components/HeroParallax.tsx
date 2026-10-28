@@ -1,26 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 
-type FrameSource = HTMLCanvasElement | HTMLImageElement;
-
-/** Knock out near-black JPEG pixels so the hero Voronoi lattice shows through. */
-function knockOutBlackBackground(img: HTMLImageElement): HTMLCanvasElement {
-  const c = document.createElement("canvas");
-  c.width = img.naturalWidth || img.width;
-  c.height = img.naturalHeight || img.height;
-  const cctx = c.getContext("2d", { willReadFrequently: true });
-  if (!cctx) return c;
-  cctx.drawImage(img, 0, 0);
-  const imageData = cctx.getImageData(0, 0, c.width, c.height);
-  const px = imageData.data;
-  for (let i = 0; i < px.length; i += 4) {
-    if (px[i]! < 24 && px[i + 1]! < 24 && px[i + 2]! < 24) {
-      px[i + 3] = 0;
-    }
-  }
-  cctx.putImageData(imageData, 0, 0);
-  return c;
-}
+type FrameSource = HTMLImageElement;
 
 export default function HeroParallax({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -133,11 +114,7 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
         img.src = `/hero_frames/frame_${String(index + 1).padStart(3, "0")}.jpg`;
         img.onload = () => {
           if (!isMounted) return resolve();
-          try {
-            framesRef.current[index] = knockOutBlackBackground(img);
-          } catch {
-            framesRef.current[index] = img;
-          }
+          framesRef.current[index] = img;
           if (!revealedRef.current && framesRef.current[0]) {
             revealedRef.current = true;
             setIsLoaded(true);
@@ -217,20 +194,19 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
   return (
     <div
       ref={ref}
-      className="relative overflow-visible bg-transparent min-h-[300px] md:min-h-[60vh] lg:min-h-[80vh] xl:min-h-[100vh] 2xl:min-h-[100vh]"
+      className="relative overflow-visible bg-black min-h-[300px] md:min-h-[60vh] lg:min-h-[80vh] xl:min-h-[100vh] 2xl:min-h-[100vh]"
     >
       <canvas
         ref={canvasRef}
-        className="pointer-events-none absolute inset-0 h-full w-full bg-transparent"
+        className="pointer-events-none absolute inset-0 z-[1] h-full w-full bg-black"
         style={{ opacity: isLoaded ? 1 : 0 }}
       />
 
       <div
-        className="absolute inset-0 bg-transparent transition-opacity duration-300"
+        className="absolute inset-0 bg-black transition-opacity duration-300"
         style={{
           opacity: isLoaded ? 0 : 1,
-          zIndex: 1,
-          mixBlendMode: "screen",
+          zIndex: 2,
           pointerEvents: isLoaded ? "none" : "auto",
         }}
       >

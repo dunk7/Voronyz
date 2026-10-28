@@ -1,19 +1,20 @@
 import { prisma } from "@/lib/prisma";
-import AddToCart from "@/components/cart/AddToCart";
-import V3Gallery from "@/components/V3Gallery";
+import PdpGalleryBuyBox from "@/components/products/PdpGalleryBuyBox";
 import FAQ from "@/components/FAQ";
-import { Suspense } from "react";
 import Link from "next/link";
 import { Metadata } from "next";
 import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
 import {
-  MAGIKID_SHOES_THUMBNAIL_URL,
+  MAGIKID_SHOES_COVER,
+  MAGIKID_SHOES_IMAGES,
   MAGIKID_SHOES_DESCRIPTION,
   MAGIKID_SHOES_HOW_ITS_MADE,
   MAGIKID_SHOES_META_DESCRIPTION,
   MAGIKID_SHOES_BASE_PRICE_CENTS,
   MAGIKID_SHOES_SHIPPED_PRICE_CENTS,
+  magikidCatalogProduct,
 } from "@/lib/magikidShoesThumbnail";
+import MagikidShoesStory from "@/components/products/MagikidShoesStory";
 import {
   TRAIL_MIX_DESCRIPTION,
   TRAIL_MIX_FLAVORS,
@@ -59,16 +60,17 @@ import {
   LATTICE_INSOLES_THUMBNAIL_URL,
 } from "@/lib/latticeInsoles";
 import { isAccessorySlug, isApparelSlug, isFootwearSlug, isHealthSlug } from "@/lib/productCategories";
-import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION } from "@/lib/footwear";
+import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION, SLIP_ONS_PRICE_CENTS } from "@/lib/footwear";
 import {
+  apparelCatalogProduct,
   apparelProductShopHref,
   apparelProductShopLabel,
   apparelUnavailableSizes,
   getApparelItem,
   getApparelImages,
+  getApparelImagesForColor,
   isObsoleteApparelSlug,
 } from "@/lib/apparel";
-import LogoLoader from "@/components/ui/LogoLoader";
 import { redirect } from "next/navigation";
 
 // Avoid build-time database access (SSG) in environments where the DB may not be reachable.
@@ -81,7 +83,7 @@ const OBSOLETE_APPAREL_PRODUCT_REDIRECTS: Record<string, string> = {
   "voronyz-lounge-sweats": "/apparel",
   "voronyz-lattice-shoe-trees": "/apparel/accessories",
   "voronyz-charm-bracelet": "/apparel/accessories",
-  "voronyz-keychain": "/apparel/accessories",
+  "voronyz-keychain": "/products/voronyz-stickers",
   "voronyz-necklace": "/apparel/accessories",
   "voronyz-rc-car-stickers": "/apparel/accessories",
   "voronyz-nice-shirt": "/products/voronyz-oversized-tee",
@@ -133,7 +135,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   if (obsoleteRedirect || isObsoleteApparelSlug(slug)) {
     redirect(obsoleteRedirect ?? "/apparel");
   }
-  let product: ProductWithVariants;
+  let product: ProductWithVariants | null = null;
   try {
     await ensureCatalogProducts();
     product = await prisma.product.findUnique({ 
@@ -152,17 +154,29 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     }) as ProductWithVariants;
   } catch (error) {
     console.error(`Failed to load product "${slug}":`, error);
-    return (
-      <div className="bg-texture-white">
-        <div className="container py-12 text-center">
-          <h1 className="text-2xl font-semibold text-neutral-900 mb-4">Something went wrong</h1>
-          <p className="text-neutral-600 mb-6">We couldn&apos;t load this product right now. Please try again later.</p>
-          <Link href="/products" className="inline-flex items-center justify-center rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800">
-            Back to Shop
-          </Link>
+    const catalogFallback = getApparelItem(slug);
+    if (catalogFallback) {
+      product = apparelCatalogProduct(catalogFallback);
+    } else if (slug === "magikid-shoes") {
+      product = magikidCatalogProduct();
+    } else {
+      return (
+        <div className="bg-texture-white">
+          <div className="container py-12 text-center">
+            <h1 className="text-2xl font-semibold text-neutral-900 mb-4">Something went wrong</h1>
+            <p className="text-neutral-600 mb-6">We couldn&apos;t load this product right now. Please try again later.</p>
+            <Link href="/products" className="inline-flex items-center justify-center rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800">
+              Back to Shop
+            </Link>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+  }
+  if (!product) {
+    const catalogFallback = getApparelItem(slug);
+    if (catalogFallback) product = apparelCatalogProduct(catalogFallback);
+    else if (slug === "magikid-shoes") product = magikidCatalogProduct();
   }
   if (!product) return <div className="container py-12 text-neutral-900">Not found.</div>;
 
@@ -200,17 +214,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     "/products/slip-ons/InShot_20260405_204113872.jpg",
     "/products/slip-ons/InShot_20260405_204333303.jpg",
   ];
-  const magikidShoesImages = [
-    MAGIKID_SHOES_THUMBNAIL_URL,
-    "/products/slip-ons/InShot_20260405_203151152.jpg",
-    "/products/slip-ons/InShot_20260405_203425292.jpg",
-    "/products/slip-ons/InShot_20260405_203601045.jpg",
-    "/products/slip-ons/InShot_20260405_203736918.jpg",
-    "/products/slip-ons/InShot_20260405_203930832.jpg",
-    "/products/slip-ons/InShot_20260405_204113872.jpg",
-    "/products/slip-ons/InShot_20260405_204333303.jpg",
-    "/products/slip-ons/InShot_20260405_202911983.jpg",
-  ];
+  const magikidShoesImages = [...MAGIKID_SHOES_IMAGES];
   const images = slug === "v3-slides"
     ? defaultImages
     : slug === "dragonfly"
@@ -251,6 +255,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isLatticeInsoles = slug === LATTICE_INSOLES_SLUG;
   const apparelItem = getApparelItem(slug);
   const isApparel = Boolean(apparelItem);
+  const apparelColorImages = apparelItem
+    ? Object.fromEntries(
+        apparelItem.colors.map((color) => [color, getApparelImagesForColor(apparelItem, color)]),
+      )
+    : undefined;
   const shopHref = isAccessorySlug(slug)
     ? "/accessories"
     : isHealthSlug(slug)
@@ -281,7 +290,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   // Product-specific descriptions (oversized tee skips the top blurb — size picker covers fit)
   const displayDescription = slug === "v3-slides" 
-    ? "Engineered for comfort, built to last. World-class FDM printed slides with TPU 90A lattice lowers and breathable uppers."
+    ? "Engineered for comfort, built to last. Lightweight slides with a foamed TPU lattice underfoot and a breathable upper."
     : slug === "dragonfly"
     ? DRAGONFLY_DESCRIPTION
     : isMagikidShoes
@@ -344,7 +353,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       {isLatticeInsoles && (
         <>
           <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU lattice</span>
-          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">S · M · L · XL</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">US shoe sizes</span>
+        </>
+      )}
+      {apparelItem?.slug === "voronyz-stickers" && (
+        <>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">3-pack vinyl</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Weatherproof</span>
         </>
       )}
       {!isTrailMix && !isApparel && !isFilament && !isLatticeInsoles && !isViolettePonybead && (
@@ -391,121 +406,106 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         </div>
 
         {/* Gallery-first retail layout: large photos lead, buy box sits beside */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 xl:gap-12 items-start">
-          <div className="lg:col-span-8">
-            {/* Full-bleed on mobile so product photos dominate the viewport */}
-            <div className="lg:rounded-none -mx-0 sm:mx-0">
-              <V3Gallery
-                media={galleryMedia}
-                aspect="square"
-                fit={isFootwearSlug(slug) ? "contain" : "cover"}
-                className="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
-              />
+        <PdpGalleryBuyBox
+          media={galleryMedia}
+          colorImages={apparelColorImages}
+          leadWhiteSlipOns={isSlipOns}
+          fit={isFootwearSlug(slug) ? "contain" : "cover"}
+          galleryClassName="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
+          addToCartProps={{
+            variants: product.variants,
+            primaryColors: isTrailMix || isViolettePonybead ? trailMixColors : (product.primaryColors as string[]),
+            productPriceCents: product.priceCents,
+            ...(isDragonfly && {
+              secondaryColors: (product.secondaryColors as string[]).filter(c => c.toLowerCase() !== "#007fff"),
+              secondaryLabel: "Lace Color",
+            }),
+            ...(isMagikidShoes && {
+              defaultGender: "kids" as const,
+              requireStudentName: true,
+              fulfillmentOptions: [
+                {
+                  id: "pickup",
+                  label: "Magikid Lab pickup",
+                  priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
+                  description: "No shipping fee",
+                },
+                {
+                  id: "shipping",
+                  label: "Ship to me",
+                  priceCents: MAGIKID_SHOES_SHIPPED_PRICE_CENTS,
+                  description: "Includes shipping",
+                },
+              ],
+            }),
+            ...(isTrailMix && {
+              hideSizeSelector: true,
+              soldOut: true,
+              flavorOptions: TRAIL_MIX_FLAVORS,
+            }),
+            ...(isViolettePonybead && {
+              hideSizeSelector: true,
+              flavorLabel: "Animal",
+              flavorOptions: VIOLETTE_PONYBEAD_ANIMALS,
+            }),
+            ...(isFilament && {
+              hideSizeSelector: true,
+            }),
+            ...(isApparel && {
+              useCatalogSizes: true,
+              preOrder: Boolean(apparelItem?.comingSoon),
+              hideSizeSelector: apparelItem?.sizes.length === 1,
+              unavailableColors: apparelItem?.outOfStockColors ?? [],
+              unavailableSizes: apparelItem ? apparelUnavailableSizes(apparelItem) : [],
+              sizePriceCents: apparelItem?.sizePriceCents ?? {},
+            }),
+            sizes: product.sizes as string[],
+            productName: displayName,
+            coverImage: (images[0] as string) || defaultImages[0],
+            productSlug: slug,
+            allowOutOfStockColorPreview: isSlipOns,
+          }}
+          footer={
+            <div className="flex items-center gap-4 text-xs text-neutral-500">
+              <Link href={shopHref} className="underline hover:no-underline">← {shopLabel}</Link>
+              {!isTrailMix && !(isApparel && apparelItem?.comingSoon) && (
+                <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
+                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
+                </span>
+              )}
+              {isApparel && apparelItem?.comingSoon && (
+                <span className="inline-flex items-center gap-1 text-neutral-600 font-medium">
+                  Pre-order · ships when ready
+                </span>
+              )}
             </div>
+          }
+        >
+          <div className="space-y-3">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-neutral-900 tracking-tight leading-tight">
+              {displayName}
+            </h1>
+            {productBadges}
+            {displayDescription ? (
+              <p className="footwear-description">
+                {displayDescription}
+              </p>
+            ) : null}
           </div>
-          <div className="lg:col-span-4 px-4 sm:px-6 lg:px-0">
-            <div className="lg:sticky lg:top-20 space-y-5">
-              <div className="space-y-3">
-                <h1 className="text-2xl sm:text-3xl font-semibold text-neutral-900 tracking-tight leading-tight">
-                  {displayName}
-                </h1>
-                {productBadges}
-                {displayDescription ? (
-                  <p className="footwear-description">
-                    {displayDescription}
-                  </p>
-                ) : null}
-              </div>
-
-              <Suspense fallback={
-                <div className="h-[48px] rounded-full bg-neutral-100 flex items-center justify-center">
-                  <LogoLoader size="sm" showBar={false} className="!gap-0 scale-75" />
-                </div>
-              }>
-                <AddToCart
-                  variants={product.variants}
-                  primaryColors={isTrailMix || isViolettePonybead ? trailMixColors : (product.primaryColors as string[])}
-                  productPriceCents={product.priceCents}
-                  {...(isDragonfly && {
-                    secondaryColors: (product.secondaryColors as string[]).filter(c => c.toLowerCase() !== "#007fff"),
-                    secondaryLabel: "Lace Color",
-                  })}
-                  {...(isMagikidShoes && {
-                    defaultGender: "kids" as const,
-                    requireStudentName: true,
-                    fulfillmentOptions: [
-                      {
-                        id: "pickup",
-                        label: "Magikid Lab pickup",
-                        priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
-                        description: "No shipping fee",
-                      },
-                      {
-                        id: "shipping",
-                        label: "Ship to me",
-                        priceCents: MAGIKID_SHOES_SHIPPED_PRICE_CENTS,
-                        description: "Includes shipping",
-                      },
-                    ],
-                  })}
-                  {...(isTrailMix && {
-                    hideSizeSelector: true,
-                    soldOut: true,
-                    flavorOptions: TRAIL_MIX_FLAVORS,
-                  })}
-                  {...(isViolettePonybead && {
-                    hideSizeSelector: true,
-                    flavorLabel: "Animal",
-                    flavorOptions: VIOLETTE_PONYBEAD_ANIMALS,
-                  })}
-                  {...(isFilament && {
-                    hideSizeSelector: true,
-                  })}
-                  {...(isLatticeInsoles && {
-                    useCatalogSizes: true,
-                  })}
-                  {...(isApparel && {
-                    useCatalogSizes: true,
-                    preOrder: Boolean(apparelItem?.comingSoon),
-                    hideSizeSelector: apparelItem?.sizes.length === 1,
-                    unavailableColors: apparelItem?.outOfStockColors ?? [],
-                    unavailableSizes: apparelItem ? apparelUnavailableSizes(apparelItem) : [],
-                  })}
-                  sizes={product.sizes as string[]}
-                  productName={displayName}
-                  coverImage={(images[0] as string) || defaultImages[0]}
-                  productSlug={slug}
-                />
-              </Suspense>
-
-              <div className="flex items-center gap-4 text-xs text-neutral-500">
-                <Link href={shopHref} className="underline hover:no-underline">← {shopLabel}</Link>
-                {!isTrailMix && !(isApparel && apparelItem?.comingSoon) && (
-                  <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
-                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
-                  </span>
-                )}
-                {isApparel && apparelItem?.comingSoon && (
-                  <span className="inline-flex items-center gap-1 text-neutral-600 font-medium">
-                    Pre-order · ships when ready
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        </PdpGalleryBuyBox>
       </div>
 
       <div className="container pb-12">
+        {isMagikidShoes ? <MagikidShoesStory /> : null}
         <div className="mt-10 overflow-hidden rounded-3xl ring-1 ring-black/5 bg-white">
           <div className="bg-black text-white px-6 py-4 text-sm font-medium">
             {isDragonfly
               ? "Crafted for you"
               : isMagikidShoes
-                ? "Magikid edition"
+                ? "Magikid program"
                 : isSlipOns
                   ? "Print + finish"
                   : isTrailMix
@@ -524,30 +524,32 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed">
             {isDragonfly
-              ? "Each pair of Dragonfly's is 3D-printed with our proprietary TPU lattice technology, delivering a springy, responsive feel with every step. The breathable upper is precision-engineered for airflow, and every pair ships with your choice of lace color — making each one uniquely yours."
+              ? "3D-printed with our TPU lattice for a springy feel, a breathable upper, and your choice of lace color."
               : isMagikidShoes
               ? MAGIKID_SHOES_HOW_ITS_MADE
               : isSlipOns
-              ? "Slip Ons are printed in one piece per colorway for a seamless look, then finished for flex and daily wear. There is no secondary accent color — the shade you choose is the full shoe."
+              ? "Printed in one piece per colorway, then finished for flex and daily wear."
               : isTrailMix
               ? TRAIL_MIX_HOW_ITS_MADE
               : isViolettePonybead
               ? VIOLETTE_PONYBEAD_HOW_ITS_MADE
               : apparelItem?.slug === "voronyz-oversized-tee"
-              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves. Shipping now in black, Large — white, grey, and other sizes are out of stock."
+              ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves."
               : apparelItem?.slug === "voronyz-core-hoodie"
-              ? "Heavyweight fleece with a clean, modern cut. Ready to ship in your size and color."
+              ? "Heavyweight fleece with a clean, modern cut. Swipe to the second photo for the back."
+              : apparelItem?.slug === "voronyz-stickers"
+              ? "Kiss-cut weatherproof vinyl with three VORONYZ logo strips."
               : isApparel && apparelItem?.comingSoon
-              ? "Pre-order Voronyz Apparel — pay now to join the waitlist, and we ship when the drop arrives."
+              ? "Pay now to join the waitlist. We ship when the drop arrives."
               : isApparel
-              ? "Voronyz Apparel — soft hand-feel, clean fits, and free US shipping on domestic orders."
+              ? "Soft hand-feel and clean fits."
               : isGators
               ? GATORS_HOW_ITS_MADE
               : isFilament
               ? FILAMENT_HOW_ITS_MADE
               : isLatticeInsoles
               ? LATTICE_INSOLES_HOW_ITS_MADE
-              : "Each pair takes a full day to print using our proprietary TPU blend. Following printing, we perform heat-treated post-processing to ensure exceptional quality, comfort, and durability."}
+              : "Printed in foamed TPU, then finished to be light, cushioned, and ready to wear."}
           </div>
         </div>
 
@@ -562,13 +564,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Is shipping really free?", a: "Yes! We offer free shipping on all domestic US orders. No minimum purchase required. We currently only ship within the US." },
               { q: "Can I wash them?", a: "Absolutely. The lattice sole and upper are fully washable — toss them in the washer on a gentle cycle." },
             ] : isMagikidShoes ? [
-              { q: "What colors can I order?", a: "Black, grey, and pink are in stock. White and orange are listed but currently out of stock." },
-              { q: "How does Magikid Lab pickup work?", a: "Choose pickup at checkout — you pay $30 for the shoes with no shipping fee. We'll email you when your pair is ready to collect in person at Magikid Lab." },
-              { q: "How does shipping work?", a: "The shoes are $30. Shipping is an extra $7. Pickup at Magikid Lab is $30 with no shipping fee." },
+              { q: "Is this a public Voronyz shoe?", a: "No. This is a Magikid Robotics Lab program we run with them — footwear design camps for Magikid students. It is not a stock pair we sell to everybody." },
+              { q: "What are the kids actually ordering?", a: "Their own design. In camp they start from our slip-on base and model their own holes, cutouts, and graphics. We print that student file. Put the student's name at checkout so we print the right pair — there isn't a finished off-the-shelf shoe to buy." },
+              { q: "What colors can I order?", a: "Black, grey, and pink are in stock. White and orange are listed but currently out of stock. Color is the print color of the student's designed pair." },
+              { q: "How does Magikid Lab pickup work?", a: "Choose pickup at checkout — you pay $30 for the printed student pair with no shipping fee. We'll email you when it's ready to collect in person at Magikid Lab." },
+              { q: "How does shipping work?", a: "The pair is $30. Shipping is an extra $7. Pickup at Magikid Lab is $30 with no shipping fee." },
               { q: "How long does production take?", a: "Made to order in under 7 days, then we ship or hold for pickup." },
             ] : isSlipOns ? [
-              { q: "What colors can I order?", a: "Black, grey, orange, and pink are in stock — white is currently out of stock. Each pair is one solid body color (no two-tone option)." },
-              { q: "Why is white unavailable?", a: "We're temporarily out of white material runs. Select another color or check back — inventory updates when we restock." },
+              { q: "What colors can I order?", a: "Black, grey, white, orange, and pink. Each pair is one solid body color (no two-tone option)." },
               { q: "Are they true to size?", a: "Use the Men's / Women's / Kids' toggles on the product page to pick your usual US size." },
               { q: "How long does production take?", a: "About 1–2 days to print, then we ship the next business day." },
             ] : isTrailMix ? [
@@ -581,24 +584,37 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "How much do they cost?", a: "$10 per animal." },
               { q: "Does it come in sizes?", a: "No sizes — pick the animal style you want." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
+            ] : apparelItem?.slug === "voronyz-stickers" ? [
+              { q: "What is included?", a: "One vinyl sheet with three stacked VORONYZ logo strips — peel and apply each strip, or keep the sheet together." },
+              { q: "Where can I put them?", a: "Laptops, bottles, notebooks, boards, cases — any clean, smooth surface. The vinyl is weatherproof." },
+              { q: "How much do they cost?", a: "$8 per sheet, with free shipping on domestic US orders." },
+              { q: "Does it come in sizes or colors?", a: "One size, one color — charcoal bars with white VORONYZ lettering, matching the physical stickers." },
+              { q: "When will my order ship?", a: "Orders typically ship within a few business days. You'll get updates by email." },
             ] : isApparel && !apparelItem?.comingSoon ? [
               { q: "What sizes are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
-                ? "The Oversized Tee currently ships in Large only. XS, S, M, XL, and XXL are listed but out of stock."
+                ? "The Oversized Tee ships in XS, S, M, L, XL, and XXL. Smaller sizes cost less than Medium; larger sizes cost more."
+                : apparelItem?.slug === "voronyz-core-hoodie"
+                  ? "XS–XXL. Large is priced under Medium — the deal size on this hoodie."
                 : "This piece runs XS–XXL." },
               { q: "What colors are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
-                ? "Black is in stock. White and grey are currently out of stock."
-                : apparelItem?.outOfStockColors?.includes("grey")
+                ? "Black, white, and grey are in stock. Pick a color to see the matching front and back shots."
+                : apparelItem?.slug === "voronyz-core-hoodie"
+                  ? "Black, grey, and white. Black uses the original hoodie photo; grey costs a little more, and white is the most expensive. The gallery updates to the selected color, with the back of the same hoodie on the second photo."
+                  : apparelItem?.outOfStockColors?.includes("grey")
                   ? "Grey is currently out of stock. Choose another listed color."
                   : "Pick any listed color that is in stock." },
+              ...(apparelItem?.slug === "voronyz-core-hoodie"
+                ? [{ q: "How much does it cost?", a: "Price depends on size. Each hoodie is marked down about 60% from the listed compare-at — sale prices run from $74 (XS) to $99 (XXL), never under $70." }]
+                : []),
               { q: "When will my order ship?", a: "Orders typically ship within a few business days. You'll get updates by email." },
-              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Accessories (shades, jewelry, lace locks, drone parts) live under their own Apparel section." },
+              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Accessories (stickers, shades, jewelry, lace locks, drone parts) live under their own Apparel section." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isApparel ? [
-              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Cool shades, jewelry, lace locks, and drone parts are One Size." },
+              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Stickers, cool shades, jewelry, lace locks, and drone parts are One Size." },
               { q: "What colors are available?", a: "Grey is currently out of stock on apparel. Other listed colors can be pre-ordered." },
               { q: "Can I pre-order coming soon pieces?", a: "Yes. Choose your color and size, then pay now to join the waitlist. We ship your order when that product arrives — timing can be a day or much longer depending on the drop." },
               { q: "When will my pre-order ship?", a: "As soon as we receive the product. You'll get updates by email. Pre-orders are paid reservations, not instant ship." },
-              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Accessories (shades, jewelry, lace locks, drone parts) live under their own Apparel section. Engineering is separate. Lattice Insoles are on All Footwear." },
+              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Accessories (stickers, shades, jewelry, lace locks, drone parts) live under their own Apparel section. Engineering is separate. Lattice Insoles are on All Footwear." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders once your pre-order ships." },
             ] : isGators ? [
               { q: "What is The Gators?", a: "A comfort clog named for the alligator 🐊 — closed toe, open back, thick cushioned platform, and easy slip-on wear for all-day comfort." },
@@ -608,9 +624,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "How long does production take?", a: "Printed to order in about 1–2 days, then ships the next business day." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isLatticeInsoles ? [
-              { q: "What sizes are available?", a: "S, M, L, and XL — pick the band that matches your usual shoe size." },
+              { q: "What sizes are available?", a: "The same US Men's, Women's, and Kids' sizes as Voronyz shoes. Pick the size you wear in our footwear." },
               { q: "What colors can I order?", a: "Black and grey." },
-              { q: "Will they fit my shoes?", a: "They're drop-in lattice cushions sized for everyday sneakers and Voronyz footwear. Trim lightly at the toe if you need a closer fit." },
+              { q: "Will they fit my shoes?", a: "They're printed on the same size scale as Voronyz footwear. Order your usual US size for a drop-in fit in Voronyz shoes and everyday sneakers." },
               { q: "How long does production take?", a: "Printed to order in about 1–2 days, then ships the next business day." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : [
@@ -645,7 +661,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug === "slip-ons") {
     const title = "Slip Ons – Voronyz";
     const description =
-      "Minimal 3D-printed slip-ons with a flexible lattice sole. $65.";
+      `Minimal 3D-printed slip-ons with a flexible lattice sole. $${SLIP_ONS_PRICE_CENTS / 100}.`;
     const images = ["/products/slip-ons/InShot_20260405_203151152.jpg"];
     return {
       title,
@@ -658,7 +674,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug === "magikid-shoes") {
     const title = "Magikid Shoes – Voronyz";
     const description = MAGIKID_SHOES_META_DESCRIPTION;
-    const images = [MAGIKID_SHOES_THUMBNAIL_URL];
+    const images = [MAGIKID_SHOES_COVER];
     return {
       title,
       description,

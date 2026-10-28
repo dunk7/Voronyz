@@ -139,43 +139,25 @@ video {
 }
 
 /*
-  Homepage hero: charcoal in the middle, black on the left and right.
-  Desktop only — on stacked mobile the left-to-right fade makes the
-  headline look uneven.
+  Homepage hero: solid black behind the GIF so the white headline stays
+  readable. Shop panels use the hex honeycomb.
 */
 .hero-stage {
   background-color: #000;
 }
 
-@media (min-width: 1024px) {
-  .hero-stage {
-    background-image:
-      linear-gradient(
-        to right,
-        #000 0%,
-        #1a1a1a 12%,
-        #242424 22%,
-        #242424 78%,
-        #1a1a1a 88%,
-        #000 100%
-      );
-  }
-}
-
 .bg-texture-white {
   background-color: #ffffff !important;
   position: relative;
-  overflow-x: clip;
+  overflow: clip;
+  isolation: isolate;
 }
 
-/* Original 50×43 overlapping hex tile. Static — no leftward drift. */
+/* Original 50×43 overlapping hex tile. Static — not pointer-driven. */
 .bg-texture-white::before {
   content: '';
   position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 100%;
+  inset: 0;
   /*
     Odd-row hexes extend 8 units past the tile. CSS clips that overflow,
     so draw the missing bottom tips as open paths at the top of the tile
@@ -205,7 +187,7 @@ video {
 .bg-texture-white .bg-texture-white,
 html.site-dark .bg-texture-white .bg-texture-white {
   background-color: transparent !important;
-  overflow-x: visible;
+  overflow: visible;
 }
 
 .bg-texture-white .bg-texture-white::before,
@@ -587,4 +569,64 @@ html.site-dark main select {
 html.site-dark ::selection {
   background: #fff;
   color: #000;
+}
+
+/*
+  Footwear → Apparel interlude.
+  The line drawing is a screen overlay on the x-ray, so the black in that
+  file never covers the bones. It only breathes between a faint trace and
+  a light drawing. The x-ray stays in place the whole time.
+*/
+.foot-glow-frame {
+  isolation: isolate;
+}
+
+.foot-glow-layer {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.foot-glow-hatch {
+  mix-blend-mode: screen;
+  animation: foot-glow-overlay 8s ease-in-out infinite;
+}
+
+@keyframes foot-glow-overlay {
+  0%,
+  100% {
+    opacity: 0.18;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* Homepage poster: same artwork, pulled back, left level. */
+.foot-glow-poster-card {
+  filter: drop-shadow(0 22px 28px rgb(0 0 0 / 0.28));
+}
+
+.foot-glow-poster-frame {
+  box-shadow:
+    0 0 0 10px #111,
+    0 0 0 11px rgb(255 255 255 / 0.14);
+}
+
+.foot-glow-poster .foot-glow-layer {
+  inset: 11%;
+  width: auto;
+  height: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .foot-glow-hatch {
+    animation: none;
+    opacity: 0.32;
+  }
 }

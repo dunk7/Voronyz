@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 import NewListingBadge from "@/components/NewListingBadge";
 import { isNewListing } from "@/lib/newListing";
 import type { FootwearListProduct } from "@/lib/footwear";
+import { sortFootwearForTab } from "@/lib/footwearRanking";
 import { TRAIL_MIX_SLUG } from "@/lib/trailMix";
 
 type BrowseProduct = FootwearListProduct;
@@ -139,6 +140,8 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
+    let acc = 0;
+    let lockedUntil = 0;
     const onWheel = (event: WheelEvent) => {
       if (event.ctrlKey) return;
       if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
@@ -146,31 +149,47 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
       const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
       if ((event.deltaY < 0 && atStart) || (event.deltaY > 0 && atEnd)) return;
       event.preventDefault();
-      el.scrollLeft += event.deltaY;
+      const now = performance.now();
+      if (now < lockedUntil) return;
+      acc += event.deltaY;
+      if (Math.abs(acc) < 30) return;
+      el.scrollBy({ left: Math.sign(acc) * el.clientWidth, behavior: "smooth" });
+      acc = 0;
+      lockedUntil = now + 450;
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
   }, []);
 
+  const ordered = useMemo(() => sortFootwearForTab(products, "trending"), [products]);
+
   return (
-    <div
-      ref={scrollerRef}
-      className="footwear-browse no-scrollbar flex h-[calc(100dvh-5rem)] min-h-[28rem] snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x"
-      tabIndex={0}
-      aria-label="Footwear catalog. Scroll sideways to see each pair."
-    >
-      {products.map((product, index) => {
-        const { cover, alt } = getImages(product);
-        return (
-          <BrowseItem
-            key={product.id}
-            product={product}
-            cover={cover}
-            alt={alt}
-            index={index}
-          />
-        );
-      })}
-    </div>
+    <section className="relative" aria-labelledby="footwear-browse-heading">
+      <h1
+        id="footwear-browse-heading"
+        className="pointer-events-none absolute inset-x-0 top-4 z-10 px-4 text-center text-3xl font-semibold tracking-tight text-neutral-900"
+      >
+        Step into the future
+      </h1>
+      <div
+        ref={scrollerRef}
+        className="footwear-browse no-scrollbar flex h-[calc(100dvh-5rem)] min-h-[28rem] snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x"
+        tabIndex={0}
+        aria-label="Footwear catalog. Scroll sideways to see each pair."
+      >
+        {ordered.map((product, index) => {
+          const { cover, alt } = getImages(product);
+          return (
+            <BrowseItem
+              key={product.id}
+              product={product}
+              cover={cover}
+              alt={alt}
+              index={index}
+            />
+          );
+        })}
+      </div>
+    </section>
   );
 }

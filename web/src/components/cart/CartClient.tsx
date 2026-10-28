@@ -4,6 +4,9 @@ import { formatCentsAsCurrency } from "@/lib/money";
 import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 import {
   getDiscountedUnitPriceCents,
+  getOneFreeItemLineIndex,
+  getOneFreeItemOffCents,
+  isOneItemFreeDiscountCode,
   isValidDiscountCode,
   KNOWN_DISCOUNTED_UNIT_PRICES,
   normalizeDiscountCode,
@@ -21,9 +24,19 @@ import {
   SHIPPING_INSURANCE_CENTS_PER_ITEM,
   SHIPPING_INSURANCE_DESCRIPTION,
 } from "@/lib/shippingInsurance";
+import {
+  INTERNATIONAL_SHIPPING_CENTS,
+  internationalShippingCents,
+  isDomesticCountry,
+  type VerifiedShipping,
+} from "@/lib/shippingAddress";
+import AddressAutocomplete from "@/components/cart/AddressAutocomplete";
 import Image from "next/image";
 import Link from "next/link";
 import LogoLoader from "@/components/ui/LogoLoader";
+import { catalogUnitPriceCents, getApparelSizeOffer } from "@/lib/apparel";
+import ComplementaryRecs from "@/components/products/ComplementaryRecs";
+import { getComplementaryRecommendations } from "@/lib/complementaryRecommendations";
 import { trailMixFlavorLabel } from "@/lib/trailMix";
 import { violetteAnimalLabel, isViolettePonybeadSlug, VIOLETTE_PONYBEAD_NAME, VIOLETTE_PONYBEAD_SLUG } from "@/lib/violettePonybeadAnimals";
 
@@ -50,10 +63,13 @@ interface CartData {
   shippingInsurance?: boolean;
 }
 
+const SHIPPING_STORAGE_KEY = "checkoutShipping";
+
 export default function CartClient() {
   const [items, setItems] = useState<CartItem[]>([]);
   const [discountCode, setDiscountCode] = useState<string | null>(null);
   const [shippingInsurance, setShippingInsurance] = useState(false);
+  const [shipping, setShipping] = useState<VerifiedShipping | null>(null);
   const [inputValue, setInputValue] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -77,7 +93,13 @@ export default function CartClient() {
   };
 
   const getBaseUnitPriceCents = (it: CartItem) => {
-    return typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
+    const stored = typeof it.basePriceCents === "number" ? it.basePriceCents : it.priceCents;
+    return catalogUnitPriceCents({
+      productSlug: it.productSlug,
+      size: it.attributes?.size != null ? String(it.attributes.size) : undefined,
+      color: it.variant?.name,
+      fallbackCents: stored,
+    });
   };
 
   const unitPriceForItem = (it: CartItem, code: string | null) =>
@@ -85,6 +107,25 @@ export default function CartClient() {
       productSlug: it.productSlug,
       productName: it.productName,
     });
+
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem(SHIPPING_STORAGE_KEY);
+      if (stored) setShipping(JSON.parse(stored) as VerifiedShipping);
+    } catch {
+      sessionStorage.removeItem(SHIPPING_STORAGE_KEY);
+    }
+  }, []);
+
+  const updateShipping = (next: VerifiedShipping | null) => {
+    setShipping(next);
+    try {
+      if (next) sessionStorage.setItem(SHIPPING_STORAGE_KEY, JSON.stringify(next));
+      else sessionStorage.removeItem(SHIPPING_STORAGE_KEY);
+    } catch {
+      // Storage can be unavailable (private mode); the address just won't persist.
+    }
+  };
 
   useEffect(() => {
     // Load cart from localStorage
@@ -240,10 +281,15 @@ export default function CartClient() {
         (sum, it) => sum + unitPriceForItem(it, normalized) * it.quantity,
         0
       );
+      const oneItemFreeOff = isOneItemFreeDiscountCode(normalized)
+        ? getOneFreeItemOffCents(
+            migratedItems.map((it) => unitPriceForItem(it, normalized))
+          )
+        : 0;
       const orderOff = affiliateDiscountCodes.has(normalized || "")
         ? applyOrderLevelDiscountCents(itemSubtotal, AFFILIATE_ORDER_DISCOUNT_CENTS)
         : 0;
-      const savings = itemSavings + orderOff;
+      const savings = itemSavings + oneItemFreeOff + orderOff;
       saveCart({ items: migratedItems, discountCode: normalized, shippingInsurance });
       setInputValue("");
       setMessage(
@@ -292,6 +338,12 @@ export default function CartClient() {
   const itemDiscountedSubtotal = items.reduce((sum, it) => {
     return sum + unitPriceForItem(it, discountCode) * it.quantity;
   }, 0);
+  const oneItemFreeOff = isOneItemFreeDiscountCode(discountCode)
+    ? getOneFreeItemOffCents(items.map((it) => unitPriceForItem(it, discountCode)))
+    : 0;
+  const freeItemLineIndex = isOneItemFreeDiscountCode(discountCode)
+    ? getOneFreeItemLineIndex(items.map((it) => unitPriceForItem(it, discountCode)))
+    : -1;
   const orderLevelOff =
     discountCode && affiliateDiscountCodes.has(discountCode)
       ? applyOrderLevelDiscountCents(
@@ -299,14 +351,32 @@ export default function CartClient() {
           AFFILIATE_ORDER_DISCOUNT_CENTS
         )
       : 0;
-  const subtotal = itemDiscountedSubtotal - orderLevelOff;
+  const subtotal = itemDiscountedSubtotal - oneItemFreeOff - orderLevelOff;
   const discountSavings = Math.max(0, subtotalBeforeDiscount - subtotal);
   const canOfferShippingInsurance = cartHasInsurableItems(items);
   const insuranceEnabled = canOfferShippingInsurance && shippingInsurance;
   const insuranceCents = insuranceEnabled ? getShippingInsuranceCents(items) : 0;
-  const orderTotal = subtotal + insuranceCents;
+  const needsShippingAddress = canOfferShippingInsurance;
+  const shippingReady =
+    !needsShippingAddress || Boolean(shipping && shipping.address.name.trim());
+  const isInternational =
+    needsShippingAddress && shipping
+      ? !isDomesticCountry(shipping.address.country)
+      : false;
+  const internationalCents =
+    needsShippingAddress && shipping
+      ? internationalShippingCents(shipping.address.country)
+      : 0;
+  const orderTotal = subtotal + insuranceCents + internationalCents;
+  const shippingPayload = needsShippingAddress && shipping ? shipping : undefined;
   const hasPreOrderItems = items.some((it) =>
     resolveIsPreOrder({ isPreOrder: it.isPreOrder, productSlug: it.productSlug })
+  );
+  const cartRecs = getComplementaryRecommendations(
+    items.map((it) => ({
+      productSlug: it.productSlug,
+      name: it.productName,
+    }))
   );
 
   const buildCheckoutItems = () =>
@@ -331,6 +401,10 @@ export default function CartClient() {
 
   const startStripeCheckout = async (method: "ach" | "card") => {
     if (stripeBusy || isNanoCheckingOut) return;
+    if (!shippingReady) {
+      setMessage("Select a verified shipping address to continue.");
+      return;
+    }
     const setBusy = method === "ach" ? setIsCheckingOut : setIsCardCheckingOut;
     setBusy(true);
     try {
@@ -347,8 +421,9 @@ export default function CartClient() {
         body: JSON.stringify({
           items: checkoutItems,
           discountCode: discountCode || "",
-          paymentMethod: method,
+          paymentMethod: isInternational ? "card" : method,
           shippingInsurance: insuranceEnabled,
+          shipping: shippingPayload,
           successUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/success`,
           cancelUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/cancel`,
         }),
@@ -422,7 +497,7 @@ export default function CartClient() {
   return (
     <div className="grid grid-cols-1 gap-4 lg:gap-8 lg:grid-cols-3">
       <div className="lg:col-span-2 space-y-4">
-        {items.map((it) => (
+        {items.map((it, idx) => (
           <div 
             key={it.id} 
             className="flex flex-col lg:flex-row lg:items-center lg:justify-between rounded-xl ring-1 ring-black/10 p-3 lg:p-4 gap-3 lg:gap-0 bg-white"
@@ -558,18 +633,39 @@ export default function CartClient() {
               <div className="flex items-center gap-2 lg:gap-4 flex-1 lg:flex-none justify-end min-w-0 lg:min-w-[5rem]">
                 {(() => {
                   const baseLine = getBaseUnitPriceCents(it) * it.quantity;
-                  const discountedLine = unitPriceForItem(it, discountCode) * it.quantity;
-                  const hasLineDiscount = discountedLine < baseLine;
+                  const unit = unitPriceForItem(it, discountCode);
+                  let discountedLine = unit * it.quantity;
+                  if (idx === freeItemLineIndex && oneItemFreeOff > 0) {
+                    discountedLine = Math.max(0, discountedLine - unit);
+                  }
+                  const size =
+                    it.attributes?.size != null ? String(it.attributes.size) : undefined;
+                  const offer = getApparelSizeOffer(it.productSlug, size, it.variant?.name);
+                  const compareLine = offer ? offer.compareAtCents * it.quantity : null;
+                  const strikeLine =
+                    compareLine != null && compareLine > discountedLine && discountedLine === baseLine
+                      ? compareLine
+                      : discountedLine < baseLine
+                        ? baseLine
+                        : null;
+                  const hasLineDiscount = strikeLine != null;
                   return (
                     <div className="text-right flex-1 lg:flex-none">
                       {hasLineDiscount && (
                         <div className="text-xs text-neutral-500 line-through">
-                          {formatCentsAsCurrency(baseLine)}
+                          {formatCentsAsCurrency(strikeLine)}
                         </div>
                       )}
+                      {offer && discountedLine === baseLine && offer.percentOff > 0 ? (
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-red-600">
+                          {offer.percentOff}% off
+                        </div>
+                      ) : null}
                       <div
                         className={`text-base font-semibold ${
-                          hasLineDiscount ? "text-emerald-700" : "text-neutral-900"
+                          hasLineDiscount && discountedLine < baseLine
+                            ? "text-emerald-700"
+                            : "text-neutral-900"
                         }`}
                       >
                         {formatCentsAsCurrency(discountedLine)}
@@ -581,20 +677,128 @@ export default function CartClient() {
             </div>
           </div>
         ))}
+        <ComplementaryRecs
+          recs={cartRecs}
+          heading="Goes with your cart"
+          ctaLabel="Add"
+        />
       </div>
       <div className="space-y-4">
         <div className="flex items-center justify-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-2.5">
           <svg className="h-4 w-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
           </svg>
-          <span className="text-sm font-medium text-emerald-700">Free US shipping on all orders</span>
+          <span className="text-sm font-medium text-emerald-700">
+            Free US shipping on all orders
+            <span className="font-normal text-emerald-700/80">
+              {" "}· International +{formatCentsAsCurrency(INTERNATIONAL_SHIPPING_CENTS)}
+            </span>
+          </span>
         </div>
+        {needsShippingAddress && (
+          <div className="rounded-xl border border-black/10 bg-white p-4">
+            <AddressAutocomplete value={shipping} onChange={updateShipping} />
+          </div>
+        )}
         {hasPreOrderItems && (
           <div className="rounded-lg border border-black/10 bg-neutral-50 px-4 py-3 text-sm text-neutral-700">
             <span className="font-semibold text-neutral-900">Pre-order waitlist:</span>{" "}
             you pay now to reserve your spot. Pre-order items ship when we receive them — timing can range from a day to much longer.
           </div>
         )}
+        {/* Combined Discount and Subtotal Section */}
+        <div className="rounded-xl border border-black/10 p-4 space-y-4 bg-white">
+          {/* Discount Input */}
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">Discount Code</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => {
+                  setInputValue(e.target.value);
+                  clearMessage();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    applyDiscount();
+                  }
+                }}
+                placeholder="Enter code"
+                className="flex-1 rounded-md border border-black/10 px-3 py-2 text-sm text-neutral-900 bg-white"
+              />
+              <button
+                onClick={applyDiscount}
+                className="px-4 py-2 bg-black text-white rounded-md text-sm hover:bg-neutral-800"
+              >
+                Apply
+              </button>
+            </div>
+            {message && (
+              <div className={`mt-2 text-sm p-2 rounded-md bg-white ${message.includes('applied') || message.includes('removed') ? 'text-green-700 border border-green-200' : 'text-red-700 border border-red-200'}`}>
+                {message}
+              </div>
+            )}
+            {discountCode && (
+              <div className="mt-2 text-sm text-green-700 flex justify-between items-center gap-3 bg-emerald-50 p-2 rounded-md border border-green-200">
+                <span>
+                  Discount &quot;{discountCode}&quot; applied
+                  {isOneItemFreeDiscountCode(discountCode)
+                    ? " — one item free"
+                    : orderLevelOff > 0
+                      ? " — $5 off the whole order"
+                      : ""}
+                  {discountSavings > 0 ? ` — you save ${formatCentsAsCurrency(discountSavings)}` : ""}
+                </span>
+                <button onClick={clearDiscount} className="text-sm underline shrink-0">Remove</button>
+              </div>
+            )}
+          </div>
+          {/* Totals */}
+          <div className="space-y-2 pt-2 border-t border-black/10 text-sm">
+            {discountSavings > 0 && (
+              <>
+                <div className="flex items-center justify-between">
+                  <div className="text-neutral-700">Before discount</div>
+                  <div className="font-medium text-neutral-500 line-through">
+                    {formatCentsAsCurrency(subtotalBeforeDiscount)}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-emerald-700">
+                  <div>Discount savings</div>
+                  <div className="font-medium">-{formatCentsAsCurrency(discountSavings)}</div>
+                </div>
+              </>
+            )}
+            <div className="flex items-center justify-between">
+              <div className="text-neutral-700">Subtotal</div>
+              <div className="font-medium text-neutral-900">{formatCentsAsCurrency(subtotal)}</div>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="text-neutral-700">Shipping</div>
+              {internationalCents > 0 ? (
+                <div className="font-medium text-neutral-900">
+                  {formatCentsAsCurrency(internationalCents)}
+                </div>
+              ) : needsShippingAddress && !shipping ? (
+                <div className="text-neutral-500">Enter address</div>
+              ) : (
+                <div className="font-medium text-emerald-700">Free</div>
+              )}
+            </div>
+            {insuranceEnabled && (
+              <div className="flex items-center justify-between">
+                <div className="text-neutral-700">Shipping insurance</div>
+                <div className="font-medium text-neutral-900">{formatCentsAsCurrency(insuranceCents)}</div>
+              </div>
+            )}
+            <div className="flex items-center justify-between pt-2 border-t border-black/10">
+              <div className="font-semibold text-neutral-900">Total</div>
+              <div className="font-bold text-neutral-900">{formatCentsAsCurrency(orderTotal)}</div>
+            </div>
+          </div>
+        </div>
         {canOfferShippingInsurance && (
           <button
             type="button"
@@ -649,108 +853,41 @@ export default function CartClient() {
             </span>
           </button>
         )}
-        {/* Combined Discount and Subtotal Section */}
-        <div className="rounded-xl border border-black/10 p-4 space-y-4 bg-white">
-          {/* Discount Input */}
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-2">Discount Code</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={inputValue}
-                onChange={(e) => {
-                  setInputValue(e.target.value);
-                  clearMessage();
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    applyDiscount();
-                  }
-                }}
-                placeholder="Enter code"
-                className="flex-1 rounded-md border border-black/10 px-3 py-2 text-sm text-neutral-900 bg-white"
-              />
-              <button
-                onClick={applyDiscount}
-                className="px-4 py-2 bg-black text-white rounded-md text-sm hover:bg-neutral-800"
-              >
-                Apply
-              </button>
-            </div>
-            {message && (
-              <div className={`mt-2 text-sm p-2 rounded-md bg-white ${message.includes('applied') || message.includes('removed') ? 'text-green-700 border border-green-200' : 'text-red-700 border border-red-200'}`}>
-                {message}
-              </div>
-            )}
-            {discountCode && (
-              <div className="mt-2 text-sm text-green-700 flex justify-between items-center gap-3 bg-emerald-50 p-2 rounded-md border border-green-200">
-                <span>
-                  Discount &quot;{discountCode}&quot; applied
-                  {orderLevelOff > 0 ? " — $5 off the whole order" : ""}
-                  {discountSavings > 0 ? ` — you save ${formatCentsAsCurrency(discountSavings)}` : ""}
-                </span>
-                <button onClick={clearDiscount} className="text-sm underline shrink-0">Remove</button>
-              </div>
-            )}
-          </div>
-          {/* Totals */}
-          <div className="space-y-2 pt-2 border-t border-black/10 text-sm">
-            {discountSavings > 0 && (
-              <>
-                <div className="flex items-center justify-between">
-                  <div className="text-neutral-700">Before discount</div>
-                  <div className="font-medium text-neutral-500 line-through">
-                    {formatCentsAsCurrency(subtotalBeforeDiscount)}
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-emerald-700">
-                  <div>Discount savings</div>
-                  <div className="font-medium">-{formatCentsAsCurrency(discountSavings)}</div>
-                </div>
-              </>
-            )}
-            <div className="flex items-center justify-between">
-              <div className="text-neutral-700">Subtotal</div>
-              <div className="font-medium text-neutral-900">{formatCentsAsCurrency(subtotal)}</div>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="text-neutral-700">Shipping</div>
-              <div className="font-medium text-emerald-700">Free</div>
-            </div>
-            {insuranceEnabled && (
-              <div className="flex items-center justify-between">
-                <div className="text-neutral-700">Shipping insurance</div>
-                <div className="font-medium text-neutral-900">{formatCentsAsCurrency(insuranceCents)}</div>
-              </div>
-            )}
-            <div className="flex items-center justify-between pt-2 border-t border-black/10">
-              <div className="font-semibold text-neutral-900">Total</div>
-              <div className="font-bold text-neutral-900">{formatCentsAsCurrency(orderTotal)}</div>
-            </div>
-          </div>
-        </div>
         <button
           type="button"
-          disabled={stripeBusy || isNanoCheckingOut}
+          disabled={stripeBusy || isNanoCheckingOut || !shippingReady}
           className="w-full rounded-full bg-black text-white px-6 py-3 text-sm font-medium hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Continue"
-          onClick={() => startStripeCheckout("ach")}
+          onClick={() =>
+            startStripeCheckout(orderTotal < 50 || isInternational ? "card" : "ach")
+          }
         >
-          {isCheckingOut ? "Processing..." : "Continue"}
+          {isCheckingOut || isCardCheckingOut
+            ? "Processing..."
+            : orderTotal === 0
+              ? "Complete free order"
+              : "Continue"}
         </button>
         <p className="text-center text-xs text-neutral-500 -mt-1">
-          Bank transfer · usually lower fees than card
+          {!shippingReady
+            ? "Select a verified shipping address to continue"
+            : isInternational
+              ? "International orders are paid by card"
+              : orderTotal < 50
+                ? "Card checkout — bank transfer needs at least $0.50"
+                : "Bank transfer · usually lower fees than card"}
         </p>
+        {orderTotal >= 50 && !isInternational ? (
         <button
           type="button"
-          disabled={stripeBusy || isNanoCheckingOut}
+          disabled={stripeBusy || isNanoCheckingOut || !shippingReady}
           className="mx-auto block text-sm text-neutral-500 underline underline-offset-2 hover:text-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Pay with card"
           onClick={() => startStripeCheckout("card")}
         >
           {isCardCheckingOut ? "Processing…" : "Pay with card"}
         </button>
+        ) : null}
 
         {/* Nano (XNO) payment option */}
         <div className="relative flex items-center gap-2">
@@ -760,11 +897,15 @@ export default function CartClient() {
         </div>
         <button
           type="button"
-          disabled={stripeBusy || isNanoCheckingOut}
+          disabled={stripeBusy || isNanoCheckingOut || orderTotal <= 0 || !shippingReady}
           className="w-full rounded-full bg-[#209CE9] text-white px-6 py-3 text-sm font-medium hover:bg-[#1a88cc] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           aria-label="Pay with Nano cryptocurrency"
           onClick={async () => {
             if (isNanoCheckingOut) return;
+            if (!shippingReady) {
+              setMessage("Select a verified shipping address to continue.");
+              return;
+            }
             setIsNanoCheckingOut(true);
             try {
               const checkoutItems = buildCheckoutItems();
@@ -782,6 +923,7 @@ export default function CartClient() {
                   items: checkoutItems,
                   discountCode: discountCode || '',
                   shippingInsurance: insuranceEnabled,
+                  shipping: shippingPayload,
                 }),
               });
 
@@ -797,7 +939,11 @@ export default function CartClient() {
             } catch (error) {
               console.error('Nano checkout failed:', error);
               setIsNanoCheckingOut(false);
-              alert('Nano checkout failed. Please try again.');
+              alert(
+                error instanceof Error && error.message
+                  ? error.message
+                  : 'Nano checkout failed. Please try again.'
+              );
             }
           }}
         >
@@ -806,7 +952,11 @@ export default function CartClient() {
             <path d="M792.9,881h-52.5L541.1,570.6L338.8,881h-52.1l226.8-351.7L306.9,206.2h53.5L542,490.4l185.4-284.2h50.2L568.8,528.4L792.9,881z" fill="white"/>
             <path d="M336.5,508.7h408.3v38.4H336.5V508.7zM336.5,623.9h408.3v38.4H336.5V623.9z" fill="white"/>
           </svg>
-          {isNanoCheckingOut ? "Processing…" : "Pay with Nano (3% off)"}
+          {isNanoCheckingOut
+            ? "Processing…"
+            : orderTotal <= 0
+              ? "Nano unavailable on free orders"
+              : "Pay with Nano (3% off)"}
         </button>
       </div>
     </div>

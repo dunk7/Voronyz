@@ -37,10 +37,20 @@ import {
   type AdminOrder,
   type OrderLineItem,
 } from "@/lib/orderTypes";
+import {
+  canMarkOrderComplete,
+  filterAndSortAdminOrders,
+  isExpiredOrder,
+  isUncompletedOrder,
+  lineItemSummary,
+  type OrdersSortDir,
+  type OrdersSortKey,
+  type OrdersView,
+} from "@/lib/ordersAdminList";
 import { dispatchSiteTheme } from "@/components/SiteTheme";
 
-type SortKey = "date" | "price" | "name" | "status";
-type SortDir = "asc" | "desc";
+type SortKey = OrdersSortKey;
+type SortDir = OrdersSortDir;
 type AdminTab =
   | "orders"
   | "stats"
@@ -49,7 +59,20 @@ type AdminTab =
   | "gallery"
   | "quiz"
   | "affiliates";
-type OrdersView = "open" | "completed" | "all";
+
+const ADMIN_SECTIONS = [
+  { id: "orders" as const, label: "Orders", icon: Package },
+  { id: "stats" as const, label: "Stats", icon: TrendingUp },
+  { id: "discounts" as const, label: "Discount codes", icon: Tag },
+  { id: "uploads" as const, label: "Uploads", icon: Upload },
+  { id: "gallery" as const, label: "Gallery", icon: ImageIcon },
+  { id: "quiz" as const, label: "Quiz results", icon: BarChart3 },
+  { id: "affiliates" as const, label: "Affiliates", icon: Users },
+] satisfies {
+  id: AdminTab;
+  label: string;
+  icon: typeof Package;
+}[];
 
 const MAX_ADMIN_NOTES_LENGTH = 4000;
 
@@ -258,9 +281,9 @@ export default function OrdersAdminClient() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
   const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null);
-  /** Orders list starts collapsed; click the Orders header (or Orders button) to expand. */
   const [tab, setTab] = useState<AdminTab>("orders");
-  const [ordersOpen, setOrdersOpen] = useState(false);
+  const [ordersOpen, setOrdersOpen] = useState(true);
+  const [sectionsOpen, setSectionsOpen] = useState(false);
   const [uploadsRefresh, setUploadsRefresh] = useState(0);
   const [galleryRefresh, setGalleryRefresh] = useState(0);
   const [quizRefresh, setQuizRefresh] = useState(0);
@@ -387,16 +410,14 @@ export default function OrdersAdminClient() {
     setExpandedId(null);
     setTab("orders");
     setOrdersOpen(false);
+    setSectionsOpen(false);
   }
 
   function selectTab(next: AdminTab) {
+    setSectionsOpen(false);
     if (next === "orders") {
-      if (tab === "orders") {
-        setOrdersOpen((open) => !open);
-        return;
-      }
       setTab("orders");
-      setOrdersOpen(false);
+      setOrdersOpen(true);
       return;
     }
     setTab(next);
@@ -521,92 +542,56 @@ export default function OrdersAdminClient() {
   }
 
   const openOrdersCount = useMemo(
-    () => orders.filter((o) => o.status !== "completed").length,
+    () => orders.filter(isUncompletedOrder).length,
     [orders]
   );
   const completedOrdersCount = useMemo(
     () => orders.filter((o) => o.status === "completed").length,
     [orders]
   );
+  const expiredOrdersCount = useMemo(
+    () => orders.filter(isExpiredOrder).length,
+    [orders]
+  );
+  const activeOrdersCount = useMemo(
+    () => orders.filter((o) => !isExpiredOrder(o)).length,
+    [orders]
+  );
   const discountOrdersCount = useMemo(
     () => orders.filter((o) => Boolean(o.discountCode?.trim())).length,
     [orders]
   );
+  const currentSection =
+    ADMIN_SECTIONS.find((section) => section.id === tab) ?? ADMIN_SECTIONS[0];
+  const CurrentSectionIcon = currentSection.icon;
+  const currentSectionBadge =
+    tab === "orders" && orders.length > 0
+      ? openOrdersCount
+      : tab === "discounts" && discountOrdersCount > 0
+        ? discountOrdersCount
+        : undefined;
 
-  const filteredOrders = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    let list = orders;
-
-    if (ordersView === "open") {
-      list = list.filter((o) => o.status !== "completed");
-    } else if (ordersView === "completed") {
-      list = list.filter((o) => o.status === "completed");
-    }
-
-    if (statusFilter !== "all") {
-      list = list.filter((o) => o.status === statusFilter);
-    }
-
-    if (q) {
-      list = list.filter((o) => {
-        const haystack = [
-          o.orderNumber,
-          o.id,
-          o.customer?.name,
-          o.customer?.email,
-          o.customer?.phone,
-          o.shipping?.name,
-          o.shipping?.address?.line1,
-          o.shipping?.address?.city,
-          o.adminNotes,
-          ...o.lineItems.map((i) => i.name),
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-        return haystack.includes(q);
-      });
-    }
-
-    const sorted = [...list].sort((a, b) => {
-      // Open: oldest first. Completed: newest first. All: user sort controls.
-      if (ordersView === "open" || ordersView === "completed") {
-        const cmp =
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-        return ordersView === "open" ? cmp : -cmp;
-      }
-
-      let cmp = 0;
-      switch (sortKey) {
-        case "price":
-          cmp = a.totalCents - b.totalCents;
-          break;
-        case "name": {
-          const an = (a.shipping?.name || a.customer?.name || "").toLowerCase();
-          const bn = (b.shipping?.name || b.customer?.name || "").toLowerCase();
-          cmp = an.localeCompare(bn);
-          break;
-        }
-        case "status":
-          cmp = a.status.localeCompare(b.status);
-          break;
-        case "date":
-        default:
-          cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      }
-      return sortDir === "asc" ? cmp : -cmp;
-    });
-
-    return sorted;
-  }, [orders, ordersView, search, statusFilter, sortKey, sortDir]);
+  const filteredOrders = useMemo(
+    () =>
+      filterAndSortAdminOrders(orders, {
+        ordersView,
+        statusFilter,
+        search,
+        sortKey,
+        sortDir,
+      }),
+    [orders, ordersView, search, statusFilter, sortKey, sortDir]
+  );
 
   const statusOptions = useMemo(() => {
     const scoped =
       ordersView === "open"
-        ? orders.filter((o) => o.status !== "completed")
+        ? orders.filter(isUncompletedOrder)
         : ordersView === "completed"
           ? orders.filter((o) => o.status === "completed")
-          : orders;
+          : ordersView === "expired"
+            ? orders.filter(isExpiredOrder)
+            : orders.filter((o) => !isExpiredOrder(o));
     const set = new Set(scoped.map((o) => o.status));
     return ["all", ...Array.from(set).sort()];
   }, [orders, ordersView]);
@@ -676,8 +661,8 @@ export default function OrdersAdminClient() {
             <p className="text-sm text-neutral-500">
               {tab === "orders"
                 ? ordersOpen
-                  ? `${filteredOrders.length} shown · ${openOrdersCount} open · ${completedOrdersCount} completed`
-                  : `${openOrdersCount} open · ${completedOrdersCount} completed — click to expand`
+                  ? `${filteredOrders.length} shown · ${openOrdersCount} uncompleted · ${completedOrdersCount} completed · ${expiredOrdersCount} expired`
+                  : `${openOrdersCount} uncompleted · ${completedOrdersCount} completed · ${expiredOrdersCount} expired — click to expand`
                 : tab === "stats"
                   ? "Revenue and order performance"
                   : tab === "discounts"
@@ -777,79 +762,69 @@ export default function OrdersAdminClient() {
           </div>
         </div>
         <nav
-          className="min-w-0 border-t border-black/5 bg-neutral-50"
+          className="min-w-0 border-t border-black/5 bg-neutral-50 print:hidden"
           aria-label="Admin sections"
         >
-          <div className="container grid min-w-0 grid-cols-2 gap-2 py-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7">
-            {(
-              [
-                {
-                  id: "orders" as const,
-                  label: "Orders",
-                  icon: Package,
-                  badge: orders.length > 0 ? openOrdersCount : undefined,
-                },
-                { id: "stats" as const, label: "Stats", icon: TrendingUp },
-                {
-                  id: "discounts" as const,
-                  label: "Discount codes",
-                  icon: Tag,
-                  badge:
-                    discountOrdersCount > 0 ? discountOrdersCount : undefined,
-                },
-                { id: "uploads" as const, label: "Uploads", icon: Upload },
-                { id: "gallery" as const, label: "Gallery", icon: ImageIcon },
-                { id: "quiz" as const, label: "Quiz results", icon: BarChart3 },
-                {
-                  id: "affiliates" as const,
-                  label: "Affiliates",
-                  icon: Users,
-                },
-              ] satisfies {
-                id: AdminTab;
-                label: string;
-                icon: typeof Package;
-                badge?: number;
-              }[]
-            ).map(({ id, label, icon: Icon, badge }) => {
-              const active = tab === id;
-              const ordersExpanded = id === "orders" && ordersOpen;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => selectTab(id)}
-                  aria-pressed={id === "orders" ? ordersOpen : active}
-                  aria-expanded={id === "orders" ? ordersOpen : undefined}
-                  className={`inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                    active
-                      ? "bg-black text-white"
-                      : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
-                  }`}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{label}</span>
-                  {badge != null ? (
-                    <span
-                      className={`shrink-0 rounded-md px-1.5 py-0.5 text-xs font-medium ${
+          <div className="container py-2 space-y-2">
+            <button
+              type="button"
+              onClick={() => setSectionsOpen((open) => !open)}
+              aria-expanded={sectionsOpen}
+              className="inline-flex max-w-full items-center gap-2 rounded-xl bg-black px-3 py-2 text-sm font-semibold text-white"
+            >
+              <CurrentSectionIcon className="h-4 w-4 shrink-0" />
+              <span className="truncate">{currentSection.label}</span>
+              {currentSectionBadge != null ? (
+                <span className="shrink-0 rounded-md bg-white/20 px-1.5 py-0.5 text-xs font-medium">
+                  {currentSectionBadge}
+                </span>
+              ) : null}
+              {sectionsOpen ? (
+                <ChevronUp className="h-3.5 w-3.5 shrink-0 opacity-80" />
+              ) : (
+                <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-80" />
+              )}
+            </button>
+            {sectionsOpen ? (
+              <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7">
+                {ADMIN_SECTIONS.map(({ id, label, icon: Icon }) => {
+                  const active = tab === id;
+                  const badge =
+                    id === "orders" && orders.length > 0
+                      ? openOrdersCount
+                      : id === "discounts" && discountOrdersCount > 0
+                        ? discountOrdersCount
+                        : undefined;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => selectTab(id)}
+                      aria-pressed={active}
+                      className={`inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                         active
-                          ? "bg-white/20 text-white"
-                          : "bg-neutral-100 text-neutral-600"
+                          ? "bg-black text-white"
+                          : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
                       }`}
                     >
-                      {badge}
-                    </span>
-                  ) : null}
-                  {id === "orders" ? (
-                    ordersExpanded ? (
-                      <ChevronUp className="h-3.5 w-3.5 shrink-0 opacity-80" />
-                    ) : (
-                      <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-80" />
-                    )
-                  ) : null}
-                </button>
-              );
-            })}
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span className="truncate">{label}</span>
+                      {badge != null ? (
+                        <span
+                          className={`shrink-0 rounded-md px-1.5 py-0.5 text-xs font-medium ${
+                            active
+                              ? "bg-white/20 text-white"
+                              : "bg-neutral-100 text-neutral-600"
+                          }`}
+                        >
+                          {badge}
+                        </span>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
           </div>
         </nav>
       </header>
@@ -923,13 +898,13 @@ export default function OrdersAdminClient() {
                 Orders
               </div>
               <h2 className="mt-1 text-base font-semibold text-neutral-900">
-                Open and completed orders
+                Uncompleted, completed, and expired orders
               </h2>
               <p className="mt-1 text-sm text-neutral-500 max-w-2xl">
-                {openOrdersCount} open · {completedOrdersCount} completed.{" "}
+                {openOrdersCount} uncompleted · {completedOrdersCount} completed · {expiredOrdersCount} expired.{" "}
                 {ordersOpen
-                  ? "Scroll the list below to fulfill or review an order."
-                  : "Click to open the full order list when you need it."}
+                  ? "Rows stay collapsed so you can scan the full list; click one to expand details."
+                  : "Click to open the compact order list."}
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0 text-neutral-500 pt-1">
@@ -946,49 +921,64 @@ export default function OrdersAdminClient() {
 
           {ordersOpen ? (
             <div className="border-t border-black/5 px-4 sm:px-5 pb-4 sm:pb-5 pt-4 space-y-4 print:border-0">
-        <div
-          className="flex flex-wrap gap-2 print:hidden"
-          role="tablist"
-          aria-label="Order lists"
-        >
-          {(
-            [
-              { id: "open" as const, label: "Open", count: openOrdersCount },
-              {
-                id: "completed" as const,
-                label: "Completed",
-                count: completedOrdersCount,
-              },
-              { id: "all" as const, label: "All", count: orders.length },
-            ] as const
-          ).map((view) => (
-            <button
-              key={view.id}
-              type="button"
-              role="tab"
-              aria-selected={ordersView === view.id}
-              onClick={() => {
-                setOrdersView(view.id);
-                setStatusFilter("all");
-              }}
-              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-                ordersView === view.id
-                  ? "bg-black text-white"
-                  : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
-              }`}
-            >
-              {view.label}
-              <span
-                className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${
+        <div className="space-y-2 print:hidden">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+            Filter
+          </p>
+          <div
+            className="flex flex-wrap gap-2"
+            role="tablist"
+            aria-label="Order filters"
+          >
+            {(
+              [
+                {
+                  id: "open" as const,
+                  label: "Uncompleted",
+                  count: openOrdersCount,
+                },
+                {
+                  id: "completed" as const,
+                  label: "Completed",
+                  count: completedOrdersCount,
+                },
+                {
+                  id: "expired" as const,
+                  label: "Expired",
+                  count: expiredOrdersCount,
+                },
+                { id: "all" as const, label: "All", count: activeOrdersCount },
+              ] as const
+            ).map((view) => (
+              <button
+                key={view.id}
+                type="button"
+                role="tab"
+                aria-selected={ordersView === view.id}
+                onClick={() => {
+                  setOrdersView(view.id);
+                  setStatusFilter("all");
+                  setExpandedId(null);
+                }}
+                className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
                   ordersView === view.id
-                    ? "bg-white/20 text-white"
-                    : "bg-neutral-100 text-neutral-600"
+                    ? "bg-black text-white"
+                    : "bg-white text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-100"
                 }`}
               >
-                {view.count}
-              </span>
-            </button>
-          ))}
+                {view.label}
+                <span
+                  className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${
+                    ordersView === view.id
+                      ? "bg-white/20 text-white"
+                      : "bg-neutral-100 text-neutral-600"
+                  }`}
+                >
+                  {view.count}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 print:hidden">
@@ -1002,7 +992,7 @@ export default function OrdersAdminClient() {
               className="w-full rounded-xl border border-black/10 bg-white pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
             />
           </div>
-          {ordersView !== "completed" ? (
+          {ordersView !== "completed" && ordersView !== "expired" ? (
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -1016,7 +1006,7 @@ export default function OrdersAdminClient() {
             </select>
           ) : null}
           {ordersView === "all" ? (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <SortButton
                 label="Date"
                 active={sortKey === "date"}
@@ -1041,12 +1031,15 @@ export default function OrdersAdminClient() {
                 direction={sortDir}
                 onClick={() => toggleSort("status")}
               />
+              <p className="text-xs text-neutral-500">Uncompleted first</p>
             </div>
           ) : (
             <p className="text-xs text-neutral-500">
               {ordersView === "open"
-                ? "Oldest first"
-                : "Newest first"}
+                ? "Uncompleted · oldest first"
+                : ordersView === "expired"
+                  ? "Expired unpaid · newest first"
+                  : "Newest first"}
             </p>
           )}
         </div>
@@ -1070,68 +1063,94 @@ export default function OrdersAdminClient() {
         ) : filteredOrders.length === 0 ? (
           <div className="rounded-2xl bg-white p-12 text-center text-neutral-500 ring-1 ring-black/5">
             {ordersView === "open"
-              ? "No open orders."
+              ? "No uncompleted orders."
               : ordersView === "completed"
                 ? "No completed orders yet."
-                : "No orders match your filters."}
+                : ordersView === "expired"
+                  ? "No expired unpaid checkouts."
+                  : "No orders match your filters."}
           </div>
         ) : (
-          <div className="space-y-4">
-            {filteredOrders.map((order) => {
+          <div className="space-y-1.5">
+            {filteredOrders.map((order, index) => {
               const expanded = expandedId === order.id;
               const shipName = order.shipping?.name || order.customer?.name || "—";
               const addressText = formatShippingAddress(order.shipping);
+              const showUncompletedSection =
+                ordersView === "all" &&
+                index === 0 &&
+                isUncompletedOrder(order);
+              const showCompletedSection =
+                ordersView === "all" &&
+                order.status === "completed" &&
+                (index === 0 || isUncompletedOrder(filteredOrders[index - 1]));
 
               return (
+                <div key={order.id} className="space-y-1.5">
+                  {showUncompletedSection ? (
+                    <p className="pt-1 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                      Uncompleted
+                    </p>
+                  ) : null}
+                  {showCompletedSection ? (
+                    <p className="pt-2 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                      Completed
+                    </p>
+                  ) : null}
                 <article
-                  key={order.id}
-                  className="rounded-2xl bg-white ring-1 ring-black/5 overflow-hidden print:break-inside-avoid print:ring-black/20"
+                  className="rounded-xl bg-white ring-1 ring-black/5 overflow-hidden print:break-inside-avoid print:ring-black/20"
                 >
                   <button
                     type="button"
                     onClick={() => setExpandedId(expanded ? null : order.id)}
-                    className="w-full text-left px-5 py-4 flex flex-wrap items-start justify-between gap-4 hover:bg-neutral-50/80 print:hover:bg-transparent"
+                    aria-expanded={expanded}
+                    className="w-full text-left px-3 sm:px-4 py-2.5 flex items-center gap-3 hover:bg-neutral-50/80 print:hover:bg-transparent"
                   >
-                    <div className="space-y-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold">
+                    {expanded ? (
+                      <ChevronUp className="h-4 w-4 shrink-0 text-neutral-400" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 shrink-0 text-neutral-400" />
+                    )}
+                    <div className="min-w-0 flex-1 grid gap-x-4 gap-y-0.5 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1.4fr)_auto] sm:items-center">
+                      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                        <span className="font-semibold text-sm truncate">
                           {order.orderNumber || order.id.slice(-8).toUpperCase()}
                         </span>
                         <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium capitalize ${statusClass(order.status)}`}
+                          className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium capitalize ${statusClass(order.status)}`}
                         >
                           {order.status.replace(/_/g, " ")}
                         </span>
                         {order.adminNotes ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-900">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-900">
                             <StickyNote className="h-3 w-3" />
                             Note
                           </span>
                         ) : null}
                       </div>
-                      <p className="text-sm text-neutral-800 font-medium">{shipName}</p>
-                      <p className="text-sm text-neutral-500">{formatDate(order.createdAt)}</p>
-                      {order.customer?.email && (
-                        <p className="text-sm text-neutral-500 truncate">{order.customer.email}</p>
-                      )}
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-lg font-semibold">
-                        {formatCentsAsCurrency(order.totalCents, order.currency)}
-                      </p>
-                      <p className="text-xs text-neutral-500">
-                        {order.lineItems.length} item{order.lineItems.length === 1 ? "" : "s"}
-                      </p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-neutral-800 truncate">{shipName}</p>
+                        <p className="text-xs text-neutral-500 truncate">
+                          {lineItemSummary(order.lineItems)}
+                        </p>
+                      </div>
+                      <div className="flex items-baseline justify-between gap-4 sm:justify-end sm:text-right">
+                        <p className="text-xs text-neutral-500 whitespace-nowrap">
+                          {formatDate(order.createdAt)}
+                        </p>
+                        <p className="text-sm font-semibold tabular-nums">
+                          {formatCentsAsCurrency(order.totalCents, order.currency)}
+                        </p>
+                      </div>
                     </div>
                   </button>
 
                   {expanded && (
                     <div className="border-t border-black/5 px-5 py-5 space-y-5">
-                      {(order.status === "paid" ||
-                        order.status === "preorder" ||
+                      {(canMarkOrderComplete(order) ||
                         order.status === "completed") && (
                         <div className="flex flex-wrap items-center gap-2 print:hidden">
-                          {order.status === "paid" || order.status === "preorder" ? (
+                          {canMarkOrderComplete(order) ? (
                             <button
                               type="button"
                               onClick={() => updateOrderStatus(order.id, "completed")}
@@ -1262,6 +1281,7 @@ export default function OrdersAdminClient() {
                     </div>
                   )}
                 </article>
+                </div>
               );
             })}
           </div>

@@ -3,12 +3,15 @@ import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 import {
+  applyOneFreeItemToQuantityPricedLines,
   getDiscountedUnitPriceCents,
+  isOneItemFreeDiscountCode,
 } from "@/lib/discountPricing";
 import { resolveActiveDiscountCode } from "@/lib/discountDisabled";
 import { getOrderLevelDiscountCentsForCode } from "@/lib/affiliateDiscounts";
 import { applyOrderLevelDiscountCents } from "@/lib/affiliateApproveLogic";
 import { cartHasPreOrder, resolveIsPreOrder } from "@/lib/preorder";
+import { catalogUnitPriceCents } from "@/lib/apparel";
 import {
   buildShippingInsuranceLineItem,
   getInsurableItemQuantity,
@@ -16,6 +19,12 @@ import {
   isShippingInsuranceRequested,
   SHIPPING_INSURANCE_PRODUCT_NAME,
 } from "@/lib/shippingInsurance";
+import { parseVerifiedShipping } from "@/lib/addressVerification";
+import {
+  formatAddressLine,
+  INTERNATIONAL_SHIPPING_PRODUCT_NAME,
+  internationalShippingCents,
+} from "@/lib/shippingAddress";
 
 const NANO_RECEIVE_ADDRESS = process.env.NANO_RECEIVE_ADDRESS;
 const NANO_DISCOUNT_RATE = 0.03;
@@ -32,7 +41,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { items, discountCode, shippingInsurance } = await request.json();
+    const {
+      items,
+      discountCode,
+      shippingInsurance,
+      shipping: rawShipping,
+    } = await request.json();
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "No items provided" }, { status: 400 });
@@ -42,6 +56,23 @@ export async function POST(request: NextRequest) {
     if (magikidValidationError) {
       return NextResponse.json({ error: magikidValidationError }, { status: 400 });
     }
+
+    const hasPickupOnly = items.every(
+      (item: { fulfillment?: string }) => item.fulfillment === "pickup"
+    );
+    const shippingAddress = hasPickupOnly ? null : parseVerifiedShipping(rawShipping);
+    if (!hasPickupOnly && !shippingAddress) {
+      return NextResponse.json(
+        {
+          error:
+            "Please enter your name and pick a verified shipping address from the suggestions before checking out.",
+        },
+        { status: 400 }
+      );
+    }
+    const intlShippingCents = shippingAddress
+      ? internationalShippingCents(shippingAddress.country)
+      : 0;
 
     // Calculate subtotal in USD cents — same discount code logic as Stripe checkout.
     // A Nano-specific 3% discount is applied afterwards (products only; insurance is excluded).
@@ -77,11 +108,17 @@ export async function POST(request: NextRequest) {
 
         const slug = variant?.product?.slug || productSlug;
         const productNameForDiscount = variant?.product?.name || item.productName || "";
-        const baseUnitAmount = variant
+        const fallbackCents = variant
           ? (variant.priceCents || variant.product.priceCents || 0)
           : typeof item.priceCents === "number" && item.priceCents > 0
             ? item.priceCents
             : 7500;
+        const baseUnitAmount = catalogUnitPriceCents({
+          productSlug: slug,
+          size: item.size,
+          color: item.variantName || variant?.color,
+          fallbackCents,
+        });
         unitAmount = getDiscountedUnitPriceCents(baseUnitAmount, normalizedDiscountCode, {
           productSlug: slug,
           productName: productNameForDiscount,
@@ -123,7 +160,15 @@ export async function POST(request: NextRequest) {
       productSubtotalCents += unitAmount * item.quantity;
     }
 
-    if (productSubtotalCents <= 0) {
+    if (isOneItemFreeDiscountCode(normalizedDiscountCode)) {
+      applyOneFreeItemToQuantityPricedLines(lineItems);
+      productSubtotalCents = lineItems.reduce(
+        (sum, line) => sum + line.unitCents * line.quantity,
+        0
+      );
+    }
+
+    if (productSubtotalCents < 0) {
       return NextResponse.json({ error: "Invalid order total" }, { status: 400 });
     }
 
@@ -149,12 +194,32 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Nano 3% off applies to products only; insurance is a fixed add-on.
+    if (intlShippingCents > 0) {
+      lineItems.push({
+        name: INTERNATIONAL_SHIPPING_PRODUCT_NAME,
+        variant: "",
+        quantity: 1,
+        unitCents: intlShippingCents,
+      });
+    }
+
+    // Nano 3% off applies to products only; insurance and shipping are fixed add-ons.
     const nanoDiscountCents = Math.round(productSubtotalCents * NANO_DISCOUNT_RATE);
-    const subtotalCents = productSubtotalCents + insuranceCents;
-    const totalCents = productSubtotalCents - nanoDiscountCents + insuranceCents;
+    const subtotalCents = productSubtotalCents + insuranceCents + intlShippingCents;
+    const totalCents =
+      productSubtotalCents - nanoDiscountCents + insuranceCents + intlShippingCents;
     const subtotalUsd = subtotalCents / 100;
     const nanoDiscountUsd = nanoDiscountCents / 100;
+
+    if (totalCents <= 0) {
+      return NextResponse.json(
+        {
+          error:
+            "This order is free. Complete checkout with card instead of Nano.",
+        },
+        { status: 400 }
+      );
+    }
 
     // Fetch current XNO/USD price from CoinGecko
     const priceRes = await fetch(
@@ -221,6 +286,22 @@ export async function POST(request: NextRequest) {
           shippingInsurance: wantsInsurance,
           shippingInsuranceCents: insuranceCents,
           shippingInsuranceQuantity: insuranceQty,
+          internationalShippingCents: intlShippingCents,
+          ...(shippingAddress && {
+            shipping: {
+              name: shippingAddress.name,
+              verified: true,
+              address: {
+                line1: shippingAddress.line1,
+                line2: shippingAddress.line2,
+                city: shippingAddress.city,
+                state: shippingAddress.state,
+                postal_code: shippingAddress.postal_code,
+                country: shippingAddress.country,
+              },
+            },
+            shippingAddressLabel: formatAddressLine(shippingAddress),
+          }),
           discountCode: normalizedDiscountCode,
           cartItems: JSON.stringify(
             items.map((item: {

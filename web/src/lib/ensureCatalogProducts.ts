@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { MAGIKID_SHOES_THUMBNAIL_URL, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT, MAGIKID_SHOES_BASE_PRICE_CENTS } from "@/lib/magikidShoesThumbnail";
+import { MAGIKID_SHOES_IMAGES, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT, MAGIKID_SHOES_BASE_PRICE_CENTS, MAGIKID_PRIMARY_COLORS, MAGIKID_VARIANTS } from "@/lib/magikidShoesThumbnail";
 import {
   TRAIL_MIX_DESCRIPTION_SHORT,
   TRAIL_MIX_FLAVOR_IDS,
@@ -102,7 +102,7 @@ const FOOTWEAR_VARIANTS: Record<
   "slip-ons": [
     { color: "black", sku: "SO-BLK", stock: 999 },
     { color: "grey", sku: "SO-GRY", stock: 999 },
-    { color: "white", sku: "SO-WHT", stock: 0 },
+    { color: "white", sku: "SO-WHT", stock: 999 },
     { color: "orange", sku: "SO-ORG", stock: 999 },
     { color: "pink", sku: "SO-PNK", stock: 999 },
   ],
@@ -203,29 +203,9 @@ export async function ensureFootwearProducts(): Promise<void> {
   }
 }
 
-const MAGIKID_SHOES_IMAGES = [
-  MAGIKID_SHOES_THUMBNAIL_URL,
-  "/products/slip-ons/InShot_20260405_203151152.jpg",
-  "/products/slip-ons/InShot_20260405_203425292.jpg",
-  "/products/slip-ons/InShot_20260405_203601045.jpg",
-  "/products/slip-ons/InShot_20260405_203736918.jpg",
-  "/products/slip-ons/InShot_20260405_203930832.jpg",
-  "/products/slip-ons/InShot_20260405_204113872.jpg",
-  "/products/slip-ons/InShot_20260405_204333303.jpg",
-  "/products/slip-ons/InShot_20260405_202911983.jpg",
-];
 
-const MAGIKID_VARIANTS = [
-  { color: "black", sku: "MK-BLK", stock: 999 },
-  { color: "grey", sku: "MK-GRY", stock: 999 },
-  { color: "white", sku: "MK-WHT", stock: 0 },
-  { color: "orange", sku: "MK-ORG", stock: 0 },
-  { color: "pink", sku: "MK-PNK", stock: 999 },
-] as const;
 
-const MAGIKID_PRIMARY_COLORS = ["black", "grey", "white", "orange", "pink"] as const;
-
-/** Keep footwear white OOS / pink in stock without requiring a manual seed run. */
+/** Keep footwear color stock in sync without requiring a manual seed run. */
 type FootwearStockVariant = {
   color: string;
   sku: string;
@@ -262,7 +242,7 @@ const FOOTWEAR_STOCK_SYNC: Array<{
     variants: [
       { color: "black", sku: "SO-BLK", stock: 999 },
       { color: "grey", sku: "SO-GRY", stock: 999 },
-      { color: "white", sku: "SO-WHT", stock: 0 },
+      { color: "white", sku: "SO-WHT", stock: 999 },
       { color: "orange", sku: "SO-ORG", stock: 999 },
       { color: "pink", sku: "SO-PNK", stock: 999 },
     ],
@@ -306,7 +286,7 @@ export async function ensureMagikidShoes(): Promise<void> {
         priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
         currency: "usd",
         category: "footwear",
-        images: MAGIKID_SHOES_IMAGES,
+        images: [...MAGIKID_SHOES_IMAGES],
         primaryColors: [...MAGIKID_PRIMARY_COLORS],
         secondaryColors: [],
         sizes: MAGIKID_SHOES_KIDS_SIZES,
@@ -325,7 +305,7 @@ export async function ensureMagikidShoes(): Promise<void> {
       description: MAGIKID_SHOES_DESCRIPTION_SHORT,
       priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
       category: "footwear",
-      images: MAGIKID_SHOES_IMAGES,
+      images: [...MAGIKID_SHOES_IMAGES],
       primaryColors: [...MAGIKID_PRIMARY_COLORS],
       secondaryColors: [],
       sizes: MAGIKID_SHOES_KIDS_SIZES,
@@ -629,7 +609,7 @@ export async function ensureFilament(): Promise<void> {
   });
 }
 
-/** Idempotently upsert Lattice Insoles on All Footwear (S–XL, not shoe sizes). */
+/** Idempotently upsert Lattice Insoles on All Footwear (same US shoe sizes as the rest of the lineup). */
 export async function ensureLatticeInsoles(): Promise<void> {
   let existing = await prisma.product.findUnique({ where: { slug: LATTICE_INSOLES_SLUG } });
 

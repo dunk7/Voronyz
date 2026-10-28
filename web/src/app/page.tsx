@@ -1,6 +1,6 @@
 import Image from "next/image";
 import HeroParallax from "@/components/HeroParallax";
-import MotionMediaCarousel from "@/components/MotionMediaCarousel";
+import FootGlowSection from "@/components/FootGlowSection";
 import { Suspense } from "react";
 import ProductsContent from "@/app/products/ProductsContent";
 import LogoLoader from "@/components/ui/LogoLoader";
@@ -26,14 +26,14 @@ export default function Home() {
             {/* Image / Parallax Column */}
             <div className="lg:col-span-8 order-1 lg:order-2 hero-stagger-image">
               <HeroParallax>
-                <div className="relative w-full overflow-visible aspect-[4/3] sm:aspect-[4/3] lg:h-full xl:h-full 2xl:h-full bg-transparent">
+                <div className="relative w-full overflow-visible aspect-[4/3] sm:aspect-[4/3] lg:h-full xl:h-full 2xl:h-full bg-black">
                   <Image
                     src="/products/v3-slides/side-render-of-both.jpg"
                     alt="Voronyz V3 Slides"
                     fill
                     priority
                     sizes="(max-width: 1024px) 100vw, 66vw"
-                    className="object-contain object-[60%_50%] bg-transparent"
+                    className="object-contain object-[60%_50%] bg-black"
                   />
                 </div>
               </HeroParallax>
@@ -44,11 +44,7 @@ export default function Home() {
 
       {/* One hex layer from the slip-ons video through All Footwear. */}
       <div className="bg-texture-white">
-        <section className="border-t border-neutral-200">
-          <div className="container py-16">
-            <MotionMediaCarousel href="/products" linkLabel="Shop all footwear" />
-          </div>
-        </section>
+        <FootGlowSection poster />
 
         {/* All Footwear — seamless continuation (heading + scroll arrow live in ProductsContent) */}
         <Suspense

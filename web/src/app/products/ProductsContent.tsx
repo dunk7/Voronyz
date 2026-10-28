@@ -8,12 +8,16 @@ import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 import { FILAMENT_SLUG, getAccessoryCatalogSeed } from "@/lib/filament";
-import { APPAREL_CATALOG } from "@/lib/apparel";
+import { APPAREL_CATALOG, apparelCoverObjectPositionClass } from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
 import TakeTheQuizPromo from "@/components/apparel/TakeTheQuizPromo";
+import PrintedFootwearEducation from "@/components/apparel/PrintedFootwearEducation";
 import FootwearBrowse from "@/components/footwear/FootwearBrowse";
+import FootGlowSection from "@/components/FootGlowSection";
+import MotionMediaCarousel from "@/components/MotionMediaCarousel";
+import { MAGIKID_SHOES_THUMBNAIL_URL } from "@/lib/magikidShoesThumbnail";
 
 /** Homepage footwear teaser — slides + slip-ons only; full catalog on /products. */
 const HOME_FOOTWEAR_TEASER_SLUGS = ["v3-slides", "slip-ons"] as const;
@@ -24,9 +28,9 @@ const HOME_APPAREL_TEASER_SLUGS = [
   "voronyz-core-hoodie",
 ] as const;
 
-/** Shop-all CTA under the home Footwear and Apparel teasers. */
+/** Shop-all CTA under the home Footwear and Apparel teasers — shared width so both match. */
 const SHOP_ALL_CTA_CLASS =
-  "inline-flex min-h-11 items-center justify-center rounded-md bg-neutral-900 px-7 py-3 text-sm font-medium text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] transition-colors hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2";
+  "inline-flex h-11 w-60 items-center justify-center whitespace-nowrap rounded-md bg-neutral-900 px-7 text-sm font-medium text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] transition-colors hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2";
 
 type Product = FootwearListProduct;
 
@@ -45,7 +49,7 @@ const productMeta: Record<string, {
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
   "magikid-shoes": {
-    altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
+    altImage: MAGIKID_SHOES_THUMBNAIL_URL,
   },
   "tpu-90a-filament": {
     altImage: "/products/tpu-90a-filament/pink-tpu-90a-spool-angle.jpg",
@@ -193,7 +197,7 @@ export default function ProductsContent({
       : category === "health"
       ? "Collaborative"
       : isHomeFootwearTeaser
-      ? "Footwear"
+      ? "All Footwear"
       : "Step into the future";
   /** Footwear stays heading-only (like Apparel on home) — no supporting paragraph. */
   const subheading =
@@ -244,6 +248,18 @@ export default function ProductsContent({
     "text-3xl font-semibold tracking-tight text-neutral-900 text-center";
   const titleClass = isHomeFootwearTeaser ? homeSectionTitleClass : sectionHeadingClass;
   const TitleTag = isHomeFootwearTeaser ? "h2" : "h1";
+  /** Homepage heading stays plain type; click still opens All Footwear (/products). */
+  const headingHref = isHomeFootwearTeaser ? "/products" : undefined;
+  const headingNode = headingHref ? (
+    <Link
+      href={headingHref}
+      className="rounded-sm text-inherit no-underline transition-colors hover:text-neutral-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2"
+    >
+      {heading}
+    </Link>
+  ) : (
+    heading
+  );
   const scrollCue = showScrollCue && !searchQuery && (
     <svg
       className="mx-auto mt-2 h-4 w-4 animate-bounce text-neutral-400"
@@ -268,7 +284,7 @@ export default function ProductsContent({
         <div className="container py-16">
           <div className="mb-12 text-center">
             <TitleTag className={titleClass}>
-              {heading}
+              {headingNode}
             </TitleTag>
             {scrollCue}
             {!searchQuery && subheading && (
@@ -304,10 +320,10 @@ export default function ProductsContent({
     return { cover, alt };
   }
 
-  const headingBlock = (
-    <div className={`text-center ${useFootwearBrowse ? "mb-0" : "mb-12"}`}>
+  const catalogHeading = (
+    <div className="mb-12 text-center">
       <TitleTag className={titleClass}>
-        {heading}
+        {headingNode}
       </TitleTag>
       {scrollCue}
       {!searchQuery && subheading && (
@@ -319,90 +335,94 @@ export default function ProductsContent({
     </div>
   );
 
-  const emptyState = displayProducts.length === 0 && searchQuery ? (
-    <div className="text-center py-20">
-      <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
-        <svg className="h-7 w-7 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-        </svg>
-      </div>
-      <p className="text-neutral-600 mb-2 text-lg font-medium">No results found</p>
-      <p className="text-neutral-400 text-sm mb-6">
-        We couldn&apos;t find anything matching &quot;{searchQuery}&quot;
-      </p>
-      <Link
-        href={emptyHref}
-        className="inline-flex items-center gap-2 rounded-full bg-black text-white px-6 py-2.5 text-sm font-medium hover:bg-neutral-800 transition-colors"
+  const apparelSection =
+    showApparelContinuation && apparelTeaserProducts.length > 0 ? (
+      <section
+        id="apparel"
+        aria-labelledby="footwear-apparel-heading"
+        className={useFootwearBrowse ? "container py-16 sm:py-24" : ""}
       >
-        {emptyLabel}
-      </Link>
-    </div>
+        <div className="mb-8 sm:mb-10 text-center">
+          <h2
+            id="footwear-apparel-heading"
+            className={homeSectionTitleClass}
+          >
+            Apparel
+          </h2>
+          {scrollCue}
+        </div>
+
+        <ApparelProductGrid products={apparelTeaserProducts} />
+
+        <div className="mt-10 sm:mt-12 flex justify-center">
+          <Link
+            href="/apparel"
+            className={SHOP_ALL_CTA_CLASS}
+          >
+            Shop all apparel
+          </Link>
+        </div>
+      </section>
+      ) : null;
+
+  const footGlow = showApparelContinuation && !isHomeFootwearTeaser ? (
+    <FootGlowSection />
   ) : null;
 
-  const apparelAndQuiz = (
-    <>
-        {/* ── Apparel teaser after footwear (full catalog lives on /apparel) ── */}
-        {showApparelContinuation && apparelTeaserProducts.length > 0 && (
-          <section
-            id="apparel"
-            aria-labelledby="footwear-apparel-heading"
-            className="mt-16 sm:mt-24 lg:mt-28"
+  const advancedFootwear =
+    isHomeFootwearTeaser ? (
+      <section
+        aria-labelledby="advanced-footwear-heading"
+        className="mt-16 sm:mt-24 lg:mt-28 mb-16 sm:mb-24 lg:mb-28"
+      >
+        <div className="mx-auto mb-8 max-w-2xl text-center sm:mb-10">
+          <h2
+            id="advanced-footwear-heading"
+            className={homeSectionTitleClass}
           >
-            <div className="mb-8 sm:mb-10 text-center">
-              <h2
-                id="footwear-apparel-heading"
-                className={homeSectionTitleClass}
-              >
-                Apparel
-              </h2>
-              {scrollCue}
-            </div>
-
-            <ApparelProductGrid products={apparelTeaserProducts} />
-
-            <div className="mt-10 sm:mt-12 flex justify-center">
-              <Link
-                href="/apparel"
-                className={SHOP_ALL_CTA_CLASS}
-              >
-                Shop all apparel
-              </Link>
-            </div>
-          </section>
-        )}
-
-        {isHomeFootwearTeaser && (
-          <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
-        )}
-    </>
-  );
-
-  if (useFootwearBrowse) {
-    return (
-      <div className={shellClass}>
-        <div className="relative">
-          <div className="pointer-events-none absolute inset-x-0 top-4 z-10">
-            <div className="container">{headingBlock}</div>
-          </div>
-          {emptyState ? (
-            <div className="container pt-20">{emptyState}</div>
-          ) : (
-            <FootwearBrowse products={products} getImages={getImages} />
-          )}
+            Advanced Footwear
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-neutral-600 sm:text-lg">
+            Voronyz prints the shoe around the foot — lattice cushion, a real outsole,
+            and a finish you&apos;d wear out tonight. Once it&apos;s on, nothing else feels this engineered.
+          </p>
         </div>
-        <div className="container pb-16">
-          {apparelAndQuiz}
-        </div>
-      </div>
-    );
-  }
+        <MotionMediaCarousel href="/products" linkLabel="Shop all footwear" />
+      </section>
+    ) : null;
 
   return (
     <div className={shellClass}>
+      {useFootwearBrowse ? (
+        <>
+          <FootwearBrowse products={products} getImages={getImages} />
+          {footGlow}
+          {apparelSection}
+        </>
+      ) : (
       <div className="container py-16">
-        {headingBlock}
-        {emptyState}
-        {!emptyState && (
+        {catalogHeading}
+
+        {/* ── Empty state ── */}
+        {displayProducts.length === 0 && searchQuery ? (
+          <div className="text-center py-20">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
+              <svg className="h-7 w-7 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
+            </div>
+            <p className="text-neutral-600 mb-2 text-lg font-medium">No results found</p>
+            <p className="text-neutral-400 text-sm mb-6">
+              We couldn&apos;t find anything matching &quot;{searchQuery}&quot;
+            </p>
+            <Link
+              href={emptyHref}
+              className="inline-flex items-center gap-2 rounded-full bg-black text-white px-6 py-2.5 text-sm font-medium hover:bg-neutral-800 transition-colors"
+            >
+              {emptyLabel}
+            </Link>
+          </div>
+        ) : (
           /* ── Product grid (home teaser / Engineering / Collaborative / search) ── */
           <>
           <div className={`grid gap-4 sm:gap-6 ${
@@ -437,7 +457,7 @@ export default function ProductsContent({
                       src={cover}
                       alt={p.name}
                       fill
-                      className={`object-cover transition-all duration-500 ${
+                      className={`object-cover ${apparelCoverObjectPositionClass(cover)} transition-all duration-500 ${
                         alt ? "group-hover:opacity-0" : "group-hover:scale-105"
                       } ${isNavigating ? "scale-105 brightness-90" : ""}`}
                       sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
@@ -451,7 +471,7 @@ export default function ProductsContent({
                         alt={`${p.name} – alternate view`}
                         fill
                         showLogoPlaceholder={false}
-                        className="object-cover opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
+                        className={`object-cover ${apparelCoverObjectPositionClass(alt)} opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105`}
                         sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
                         loading="lazy"
                       />
@@ -509,8 +529,18 @@ export default function ProductsContent({
           </>
         )}
 
-        {apparelAndQuiz}
+        {advancedFootwear}
+        {footGlow}
+        {apparelSection}
+
+        {isHomeFootwearTeaser && (
+          <>
+            <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
+            <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
+          </>
+        )}
       </div>
+      )}
     </div>
   );
 }
