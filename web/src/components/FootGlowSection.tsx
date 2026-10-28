@@ -1,6 +1,6 @@
 type FootGlowSectionProps = {
   className?: string;
-  /** Smaller, slightly rotated print — homepage placement above the catalog. */
+  /** Smaller print — homepage placement above the catalog. */
   poster?: boolean;
 };
 
