@@ -41,7 +41,7 @@ import {
   LATTICE_INSOLES_SLUG,
   LATTICE_INSOLES_VARIANTS,
 } from "../src/lib/latticeInsoles";
-import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION } from "../src/lib/footwear";
+import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION, SLIP_ONS_PRICE_CENTS } from "../src/lib/footwear";
 import {
   GATORS_DESCRIPTION_SHORT,
   GATORS_IMAGES,
@@ -267,7 +267,7 @@ async function main() {
           slug: "slip-ons",
           name: "Slip Ons",
           description: SLIP_ONS_DESCRIPTION,
-          priceCents: 6500,
+          priceCents: SLIP_ONS_PRICE_CENTS,
           currency: "usd",
           images: slipOnImages,
           primaryColors: ["black", "grey", "white", "orange", "pink"],
@@ -293,7 +293,7 @@ async function main() {
         data: {
           name: "Slip Ons",
           description: SLIP_ONS_DESCRIPTION,
-          priceCents: 6500,
+          priceCents: SLIP_ONS_PRICE_CENTS,
           images: slipOnImages,
           primaryColors: ["black", "grey", "white", "orange", "pink"],
           secondaryColors: [],

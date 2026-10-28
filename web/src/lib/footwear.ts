@@ -20,7 +20,7 @@ import {
 import { getProductThumbnail } from "@/lib/productImages";
 import { catalogSeedListedAt } from "@/lib/newListing";
 
-export const SLIP_ONS_PRICE_CENTS = 6500; // $65
+export const SLIP_ONS_PRICE_CENTS = 11000; // $110
 export const DRAGONFLY_PRICE_CENTS = 16000; // $160
 
 /** Lifestyle / ad photo of white Slip Ons — leads the PDP gallery when White is selected. */
