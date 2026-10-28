@@ -46,7 +46,6 @@ function RankCard({
   const router = useRouter();
   const [navigating, setNavigating] = useState(false);
   const slugKey = (product.slug || "").trim().toLowerCase();
-  const featured = rank === 1;
   const soldOut = slugKey === TRAIL_MIX_SLUG;
   const isSlipOns = slugKey === "slip-ons";
   const coverSrc = isSlipOns ? SLIP_ONS_BROWSE.cover : cover;
@@ -93,28 +92,13 @@ function RankCard({
             />
           ) : null}
 
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between px-3.5 pt-2.5 sm:px-5 sm:pt-3">
-            <div className="flex items-center gap-2">
-              {featured ? (
-                <span className="text-[1.85rem] font-bold leading-none tracking-tight text-black drop-shadow-sm">
-                  {rank}
-                </span>
-              ) : (
-                <span className="inline-flex min-w-8 items-center justify-center rounded-md bg-black/55 px-1.5 py-0.5 text-base font-bold leading-none">
-                  {rank}
-                </span>
-              )}
-            </div>
-            {soldOut ? (
-              <span
-                className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${
-                  featured ? "text-neutral-500" : "text-white/70"
-                }`}
-              >
+          {soldOut ? (
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-end px-3.5 pt-2.5 sm:px-5 sm:pt-3">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
                 Sold out
               </span>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
 
           {navigating ? (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/25 backdrop-blur-[2px]">
