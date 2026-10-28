@@ -573,9 +573,14 @@ html.site-dark ::selection {
 
 /*
   Footwear → Apparel interlude.
-  The line drawing fades all the way in over the x-ray, then all the way
-  back out. One full swap each half second. No blur or partial bloom.
+  The line drawing is a screen overlay on the x-ray, so the black in that
+  file never covers the bones. It only breathes between a faint trace and
+  a light drawing. The x-ray stays in place the whole time.
 */
+.foot-glow-frame {
+  isolation: isolate;
+}
+
 .foot-glow-layer {
   position: absolute;
   inset: 0;
@@ -588,23 +593,23 @@ html.site-dark ::selection {
 }
 
 .foot-glow-hatch {
-  animation: foot-glow-swap 1s ease-in-out infinite;
+  mix-blend-mode: screen;
+  animation: foot-glow-overlay 8s ease-in-out infinite;
 }
 
-/* 1s loop: fully one image, then fully the other, every half second. */
-@keyframes foot-glow-swap {
+@keyframes foot-glow-overlay {
   0%,
   100% {
-    opacity: 0;
+    opacity: 0.18;
   }
   50% {
-    opacity: 1;
+    opacity: 0.55;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .foot-glow-hatch {
     animation: none;
-    opacity: 0;
+    opacity: 0.32;
   }
 }

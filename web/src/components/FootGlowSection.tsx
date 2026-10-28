@@ -8,7 +8,7 @@ const HATCH_SRC = "/graphics/foot-hatch.png";
 
 /**
  * Full-bleed pause between Footwear and Apparel.
- * The line drawing dissolves fully over the x-ray, then fully back, every half second.
+ * The line drawing sits over the x-ray as a soft screen overlay and slowly breathes.
  */
 export default function FootGlowSection({ className = "" }: FootGlowSectionProps) {
   return (
