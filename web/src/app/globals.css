@@ -602,6 +602,24 @@ html.site-dark ::selection {
   }
 }
 
+/* Homepage poster: same artwork, pulled back so it reads as a print on the wall. */
+.foot-glow-poster-card {
+  transform: rotate(-6deg);
+  filter: drop-shadow(0 22px 28px rgb(0 0 0 / 0.28));
+}
+
+.foot-glow-poster-frame {
+  box-shadow:
+    0 0 0 10px #111,
+    0 0 0 11px rgb(255 255 255 / 0.14);
+}
+
+.foot-glow-poster .foot-glow-layer {
+  inset: 11%;
+  width: auto;
+  height: auto;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .foot-glow-hatch {
     animation: none;

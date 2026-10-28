@@ -16,6 +16,7 @@ import TakeTheQuizPromo from "@/components/apparel/TakeTheQuizPromo";
 import PrintedFootwearEducation from "@/components/apparel/PrintedFootwearEducation";
 import FootwearBrowse from "@/components/footwear/FootwearBrowse";
 import FootGlowSection from "@/components/FootGlowSection";
+import MotionMediaCarousel from "@/components/MotionMediaCarousel";
 import { MAGIKID_SHOES_THUMBNAIL_URL } from "@/lib/magikidShoesThumbnail";
 
 /** Homepage footwear teaser — slides + slip-ons only; full catalog on /products. */
@@ -364,13 +365,30 @@ export default function ProductsContent({
       </section>
       ) : null;
 
-  const footGlow =
-    showApparelContinuation ? (
-      <FootGlowSection
-        className={
-          useFootwearBrowse ? "" : "mt-16 sm:mt-24 lg:mt-28 mb-16 sm:mb-24 lg:mb-28"
-        }
-      />
+  const footGlow = showApparelContinuation && !isHomeFootwearTeaser ? (
+    <FootGlowSection />
+  ) : null;
+
+  const advancedFootwear =
+    isHomeFootwearTeaser ? (
+      <section
+        aria-labelledby="advanced-footwear-heading"
+        className="mt-16 sm:mt-24 lg:mt-28 mb-16 sm:mb-24 lg:mb-28"
+      >
+        <div className="mx-auto mb-8 max-w-2xl text-center sm:mb-10">
+          <h2
+            id="advanced-footwear-heading"
+            className={homeSectionTitleClass}
+          >
+            Advanced Footwear
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-neutral-600 sm:text-lg">
+            Voronyz prints the shoe around the foot — lattice cushion, a real outsole,
+            and a finish you&apos;d wear out tonight. Once it&apos;s on, nothing else feels this engineered.
+          </p>
+        </div>
+        <MotionMediaCarousel href="/products" linkLabel="Shop all footwear" />
+      </section>
     ) : null;
 
   return (
@@ -511,6 +529,7 @@ export default function ProductsContent({
           </>
         )}
 
+        {advancedFootwear}
         {footGlow}
         {apparelSection}
 
