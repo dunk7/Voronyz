@@ -15,6 +15,7 @@ import ApparelProductGrid, {
 import TakeTheQuizPromo from "@/components/apparel/TakeTheQuizPromo";
 import PrintedFootwearEducation from "@/components/apparel/PrintedFootwearEducation";
 import FootwearBrowse from "@/components/footwear/FootwearBrowse";
+import FootGlowSection from "@/components/FootGlowSection";
 import { MAGIKID_SHOES_THUMBNAIL_URL } from "@/lib/magikidShoesThumbnail";
 
 /** Homepage footwear teaser — slides + slip-ons only; full catalog on /products. */
@@ -338,7 +339,7 @@ export default function ProductsContent({
       <section
         id="apparel"
         aria-labelledby="footwear-apparel-heading"
-        className={useFootwearBrowse ? "container py-16 sm:py-24" : "mt-16 sm:mt-24 lg:mt-28"}
+        className={useFootwearBrowse ? "container py-16 sm:py-24" : ""}
       >
         <div className="mb-8 sm:mb-10 text-center">
           <h2
@@ -361,6 +362,15 @@ export default function ProductsContent({
           </Link>
         </div>
       </section>
+      ) : null;
+
+  const footGlow =
+    showApparelContinuation ? (
+      <FootGlowSection
+        className={
+          useFootwearBrowse ? "" : "mt-16 sm:mt-24 lg:mt-28 mb-16 sm:mb-24 lg:mb-28"
+        }
+      />
     ) : null;
 
   return (
@@ -368,6 +378,7 @@ export default function ProductsContent({
       {useFootwearBrowse ? (
         <>
           <FootwearBrowse products={products} getImages={getImages} />
+          {footGlow}
           {apparelSection}
         </>
       ) : (
@@ -500,6 +511,7 @@ export default function ProductsContent({
           </>
         )}
 
+        {footGlow}
         {apparelSection}
 
         {isHomeFootwearTeaser && (
