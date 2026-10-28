@@ -1,6 +1,6 @@
 import Image from "next/image";
 import HeroParallax from "@/components/HeroParallax";
-import MotionMediaCarousel from "@/components/MotionMediaCarousel";
+import FootGlowSection from "@/components/FootGlowSection";
 import { Suspense } from "react";
 import ProductsContent from "@/app/products/ProductsContent";
 import LogoLoader from "@/components/ui/LogoLoader";
@@ -44,11 +44,7 @@ export default function Home() {
 
       {/* One hex layer from the slip-ons video through All Footwear. */}
       <div className="bg-texture-white">
-        <section>
-          <div className="container py-16">
-            <MotionMediaCarousel href="/products" linkLabel="Shop all footwear" />
-          </div>
-        </section>
+        <FootGlowSection poster />
 
         {/* All Footwear — seamless continuation (heading + scroll arrow live in ProductsContent) */}
         <Suspense
