@@ -8,7 +8,7 @@ const HATCH_SRC = "/graphics/foot-hatch.png";
 
 /**
  * Full-bleed pause between Footwear and Apparel.
- * The two studies crossfade: each glows in, holds as the original file, then glows out.
+ * The line drawing dissolves fully over the x-ray, then fully back, every half second.
  */
 export default function FootGlowSection({ className = "" }: FootGlowSectionProps) {
   return (
@@ -25,17 +25,7 @@ export default function FootGlowSection({ className = "" }: FootGlowSectionProps
             width={1500}
             height={1049}
             draggable={false}
-            className="foot-glow-sharp foot-glow-xray"
-          />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={XRAY_SRC}
-            alt=""
-            aria-hidden
-            width={1500}
-            height={1049}
-            draggable={false}
-            className="foot-glow-bloom foot-glow-xray-bloom"
+            className="foot-glow-layer"
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -45,17 +35,7 @@ export default function FootGlowSection({ className = "" }: FootGlowSectionProps
             width={2000}
             height={1399}
             draggable={false}
-            className="foot-glow-sharp foot-glow-hatch"
-          />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={HATCH_SRC}
-            alt=""
-            aria-hidden
-            width={2000}
-            height={1399}
-            draggable={false}
-            className="foot-glow-bloom foot-glow-hatch-bloom"
+            className="foot-glow-layer foot-glow-hatch"
           />
         </div>
       </div>

@@ -573,15 +573,10 @@ html.site-dark ::selection {
 
 /*
   Footwear → Apparel interlude.
-  Each study holds with no filter (the file, unchanged), then a blurred
-  screen-blend copy blooms as it leaves and as the next one arrives.
+  The line drawing fades all the way in over the x-ray, then all the way
+  back out. One full swap each half second. No blur or partial bloom.
 */
-.foot-glow-frame {
-  isolation: isolate;
-}
-
-.foot-glow-sharp,
-.foot-glow-bloom {
+.foot-glow-layer {
   position: absolute;
   inset: 0;
   height: 100%;
@@ -592,103 +587,24 @@ html.site-dark ::selection {
   user-select: none;
 }
 
-.foot-glow-xray {
-  z-index: 1;
-}
-
-.foot-glow-xray-bloom {
-  z-index: 2;
-}
-
 .foot-glow-hatch {
-  z-index: 3;
-  animation: foot-glow-hatch 9s ease-in-out infinite;
+  animation: foot-glow-swap 1s ease-in-out infinite;
 }
 
-.foot-glow-hatch-bloom {
-  z-index: 4;
-}
-
-.foot-glow-bloom {
-  mix-blend-mode: screen;
-  filter: blur(22px) brightness(1.65);
-  opacity: 0;
-}
-
-.foot-glow-xray-bloom {
-  animation: foot-glow-xray-bloom 9s ease-in-out infinite;
-}
-
-.foot-glow-hatch-bloom {
-  animation: foot-glow-hatch-bloom 9s ease-in-out infinite;
-}
-
-@keyframes foot-glow-hatch {
+/* 1s loop: fully one image, then fully the other, every half second. */
+@keyframes foot-glow-swap {
   0%,
-  22% {
+  100% {
     opacity: 0;
   }
-  40%,
-  62% {
+  50% {
     opacity: 1;
-  }
-  80%,
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes foot-glow-xray-bloom {
-  0%,
-  10% {
-    opacity: 0;
-  }
-  18% {
-    opacity: 0.85;
-  }
-  30% {
-    opacity: 0.15;
-  }
-  38%,
-  68% {
-    opacity: 0;
-  }
-  80% {
-    opacity: 0.9;
-  }
-  92%,
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes foot-glow-hatch-bloom {
-  0%,
-  24% {
-    opacity: 0;
-  }
-  34% {
-    opacity: 0.95;
-  }
-  44%,
-  58% {
-    opacity: 0;
-  }
-  70% {
-    opacity: 0.95;
-  }
-  82%,
-  100% {
-    opacity: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .foot-glow-hatch,
-  .foot-glow-xray-bloom,
-  .foot-glow-hatch-bloom {
+  .foot-glow-hatch {
     animation: none;
     opacity: 0;
-    filter: none;
   }
 }
