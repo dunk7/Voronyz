@@ -607,9 +607,8 @@ html.site-dark ::selection {
   }
 }
 
-/* Homepage poster: same artwork, pulled back so it reads as a print on the wall. */
+/* Homepage poster: same artwork, pulled back, left level. */
 .foot-glow-poster-card {
-  transform: rotate(-6deg);
   filter: drop-shadow(0 22px 28px rgb(0 0 0 / 0.28));
 }
 
