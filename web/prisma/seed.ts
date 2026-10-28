@@ -172,8 +172,8 @@ async function main() {
           priceCents: 16000,
           currency: "usd",
           images: [
-            "/products/dragonfly/InShot_20260212_153516456.jpg",
             "/products/dragonfly/InShot_20260212_153903491.jpg",
+            "/products/dragonfly/InShot_20260212_153516456.jpg",
             "/products/dragonfly/InShot_20260212_154319265.jpg",
             "/products/dragonfly/InShot_20260212_154545771.jpg",
             "/products/dragonfly/InShot_20260212_154719489.jpg",
@@ -207,8 +207,8 @@ async function main() {
           description: DRAGONFLY_DESCRIPTION,
           priceCents: 16000,
           images: [
-            "/products/dragonfly/InShot_20260212_153516456.jpg",
             "/products/dragonfly/InShot_20260212_153903491.jpg",
+            "/products/dragonfly/InShot_20260212_153516456.jpg",
             "/products/dragonfly/InShot_20260212_154319265.jpg",
             "/products/dragonfly/InShot_20260212_154545771.jpg",
             "/products/dragonfly/InShot_20260212_154719489.jpg",

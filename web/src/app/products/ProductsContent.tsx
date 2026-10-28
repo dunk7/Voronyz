@@ -43,7 +43,7 @@ const productMeta: Record<string, {
     altImage: "/products/v3-slides/InShot_20260212_193956953.jpg",
   },
   dragonfly: {
-    altImage: "/products/dragonfly/InShot_20260212_153903491.jpg",
+    altImage: "/products/dragonfly/InShot_20260212_153516456.jpg",
   },
   "slip-ons": {
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",

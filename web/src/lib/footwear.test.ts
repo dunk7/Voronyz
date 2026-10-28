@@ -12,6 +12,7 @@ import {
   isWhiteColor,
   slipOnsImagesForColor,
 } from "./footwear";
+import { getProductThumbnail } from "./productImages";
 
 const productPage = readFileSync(
   join(dirname(fileURLToPath(import.meta.url)), "../app/products/[slug]/page.tsx"),
@@ -34,6 +35,19 @@ test("lattice insole PDP uses shoe gender sizing instead of S–XL catalog sizes
   assert.match(
     productPage,
     /The same US Men's, Women's, and Kids' sizes as Voronyz shoes/,
+  );
+});
+
+test("Dragonfly thumbnail is the side-profile photo", () => {
+  const dragonfly = FOOTWEAR_CATALOG.find((item) => item.slug === "dragonfly");
+  const sideProfile = "/products/dragonfly/InShot_20260212_153903491.jpg";
+  const threeQuarter = "/products/dragonfly/InShot_20260212_153516456.jpg";
+  assert.equal(dragonfly?.images[0], sideProfile);
+  assert.equal(dragonfly?.images[1], threeQuarter);
+  assert.equal(getProductThumbnail({ slug: "dragonfly", images: dragonfly?.images }), sideProfile);
+  assert.match(
+    productPage,
+    /const dragonflyImages = \[\s*"\/products\/dragonfly\/InShot_20260212_153903491\.jpg",/,
   );
 });
 

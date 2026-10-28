@@ -194,8 +194,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     "/products/v3-slides/InShot_20260212_195649672.jpg",
   ];
   const dragonflyImages = [
-    "/products/dragonfly/InShot_20260212_153516456.jpg",
     "/products/dragonfly/InShot_20260212_153903491.jpg",
+    "/products/dragonfly/InShot_20260212_153516456.jpg",
     "/products/dragonfly/InShot_20260212_154319265.jpg",
     "/products/dragonfly/InShot_20260212_154545771.jpg",
     "/products/dragonfly/InShot_20260212_154719489.jpg",
@@ -651,7 +651,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug === "dragonfly") {
     const title = "The Dragonfly's – Voronyz";
     const description = "Lightweight 3D-printed sneakers with custom lattice sole and interchangeable laces. $160.";
-    const images = ["/products/dragonfly/InShot_20260212_153516456.jpg"];
+    const images = ["/products/dragonfly/InShot_20260212_153903491.jpg"];
     return {
       title,
       description,
