@@ -858,15 +858,15 @@ export default function CartClient() {
             onClick={() => toggleShippingInsurance(!shippingInsurance)}
             aria-pressed={shippingInsurance}
             aria-describedby="shipping-insurance-help"
-            className={`w-full rounded-2xl border-2 px-5 py-5 text-left transition-all active:scale-[0.99] ${
+            className={`box-border w-full rounded-2xl border-2 px-5 py-5 text-left transition-colors ${
               shippingInsurance
-                ? "border-neutral-900 bg-neutral-900 text-white shadow-md"
+                ? "border-neutral-900 bg-neutral-900 text-white"
                 : "border-neutral-900/15 bg-white text-neutral-900 hover:border-neutral-900/40 hover:bg-neutral-50"
             }`}
           >
             <span className="flex items-center justify-between gap-4">
               <span className="min-w-0">
-                <span className="block text-lg font-semibold tracking-tight sm:text-xl">
+                <span className="block truncate text-lg font-semibold tracking-tight sm:text-xl">
                   {shippingInsurance ? "Shipping insurance added" : "Add shipping insurance"}
                 </span>
                 <span
@@ -894,7 +894,7 @@ export default function CartClient() {
               </span>
             </span>
             <span
-              className={`mt-4 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-semibold ${
+              className={`mt-4 inline-flex h-8 items-center gap-2 rounded-full px-3.5 text-sm font-semibold ${
                 shippingInsurance
                   ? "bg-white text-neutral-900"
                   : "bg-neutral-900 text-white"
