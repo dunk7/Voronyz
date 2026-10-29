@@ -46,9 +46,10 @@ import {
 import {
   FILAMENT_COMPARE_AT_CENTS,
   FILAMENT_DESCRIPTION,
-  FILAMENT_HOW_ITS_MADE,
   FILAMENT_IMAGES,
+  FILAMENT_MATERIALS,
   FILAMENT_NAME,
+  FILAMENT_PRIMARY_COLORS,
   FILAMENT_SLUG,
   FILAMENT_THUMBNAIL_URL,
 } from "@/lib/filament";
@@ -134,6 +135,44 @@ type ProductWithVariants = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+function FilamentPrintNotes() {
+  return (
+    <div className="space-y-8 text-sm sm:text-base">
+      <section>
+        <h3 className="text-base font-semibold text-neutral-900">TPU 90A</h3>
+        <p className="mt-2">
+          Regular flexible TPU. Hardness stays at 90 Shore A. 1.75mm, 1kg. Pink and black.
+        </p>
+        <ul className="mt-3 list-disc space-y-1 pl-5">
+          <li>Nozzle 220–240°C. Start around 225°C.</li>
+          <li>Bed 40–60°C. A cool bed works if you use a glue stick.</li>
+          <li>Speed 20–40 mm/s. Direct drive is the easier setup.</li>
+          <li>Keep retraction short, or turn it off if the filament buckles.</li>
+          <li>Dry the spool before a long print. Wet TPU strings and pops.</li>
+        </ul>
+      </section>
+      <section>
+        <h3 className="text-base font-semibold text-neutral-900">TPU Air</h3>
+        <p className="mt-2">
+          Foaming TPU, black only. Heat is the softness control. A cooler nozzle stays denser and firmer, up around the low 90s A. A hotter nozzle foams the plastic, so the part gets lighter and softer, down through the 70s A. One kilogram prints a lot more volume once it is foaming.
+        </p>
+        <ul className="mt-3 list-disc space-y-1 pl-5">
+          <li>Nozzle 210–270°C. 260°C is a solid place to start.</li>
+          <li>Bed 40–60°C. Glue stick or PEI helps it stay down.</li>
+          <li>Speed at or under 50 mm/s.</li>
+          <li>Drop the flow as the temperature goes up. The filament expands, so a normal 100% flow over-extrudes.</li>
+          <li>230–240°C: denser, firmer, flow about 85–90%.</li>
+          <li>250°C: lighter, flow about 65–70%.</li>
+          <li>260°C: a balanced foam, flow about 55–60%.</li>
+          <li>270°C: softest and lightest, flow about 50–55%.</li>
+          <li>Run a small cube first. Your printer, nozzle, and speed move these numbers.</li>
+          <li>Dry it, and keep it in a sealed bag with desiccant.</li>
+        </ul>
+      </section>
+    </div>
+  );
+}
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -357,8 +396,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       )}
       {isFilament && (
         <>
-          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">1kg spool</span>
-          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU-90A</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">1kg · 1.75mm</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU 90A or TPU Air</span>
         </>
       )}
       {isStlFiles && (
@@ -436,7 +475,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           galleryClassName="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
           addToCartProps={{
             variants: product.variants,
-            primaryColors: isTrailMix || isViolettePonybead ? trailMixColors : (product.primaryColors as string[]),
+            primaryColors: isFilament
+              ? [...FILAMENT_PRIMARY_COLORS]
+              : isTrailMix || isViolettePonybead
+                ? trailMixColors
+                : (product.primaryColors as string[]),
             productPriceCents: product.priceCents,
             ...(isDragonfly && {
               secondaryColors: (product.secondaryColors as string[]).filter(c => c.toLowerCase() !== "#007fff"),
@@ -473,6 +516,16 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             ...(isFilament && {
               hideSizeSelector: true,
               compareAtCents: FILAMENT_COMPARE_AT_CENTS,
+              filamentMaterials: FILAMENT_MATERIALS.map((material) => ({
+                id: material.id,
+                label: material.label,
+                colors: material.colors.map((color) => ({
+                  id: color.id,
+                  label: color.label,
+                  swatch: color.swatch,
+                  ...("note" in color ? { note: color.note } : {}),
+                })),
+              })),
             }),
             ...(isStlFiles && {
               hideSizeSelector: true,
@@ -544,7 +597,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                         : isGators
                           ? "Comfort clog"
                           : isFilament
-                            ? "TPU-90A filament"
+                            ? "Print settings"
                             : isStlFiles
                               ? "STL file"
                             : isLatticeInsoles
@@ -552,7 +605,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                             : "How it's made"}
           </div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed">
-            {isDragonfly
+            {isFilament ? <FilamentPrintNotes /> : null}
+            {!isFilament && (isDragonfly
               ? "3D-printed with our TPU lattice for a springy feel, a breathable upper, and your choice of lace color."
               : isMagikidShoes
               ? MAGIKID_SHOES_HOW_ITS_MADE
@@ -574,13 +628,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? "Soft hand-feel and clean fits."
               : isGators
               ? GATORS_HOW_ITS_MADE
-              : isFilament
-              ? FILAMENT_HOW_ITS_MADE
               : isStlFiles
               ? STL_FILES_HOW_ITS_MADE
               : isLatticeInsoles
               ? LATTICE_INSOLES_HOW_ITS_MADE
-              : "Printed in foamed TPU, then finished to be light, cushioned, and ready to wear."}
+              : "Printed in foamed TPU, then finished to be light, cushioned, and ready to wear.")}
           </div>
         </div>
 

@@ -52,9 +52,7 @@ const productMeta: Record<string, {
   "magikid-shoes": {
     altImage: MAGIKID_SHOES_THUMBNAIL_URL,
   },
-  "tpu-90a-filament": {
-    altImage: "/products/tpu-90a-filament/pink-tpu-90a-spool-angle.jpg",
-  },
+  "tpu-90a-filament": {},
   "super-high-tech-stl": {},
 };
 
@@ -205,7 +203,7 @@ export default function ProductsContent({
   /** Footwear stays heading-only (like Apparel on home) — no supporting paragraph. */
   const subheading =
     category === "accessories"
-      ? "TPU-90A filament and super high-tech STL files."
+      ? "TPU 90A and foaming TPU Air, plus super high-tech STL files."
       : category === "health"
       ? "Helping the small businesses we support and stand for grow and be seen on the Voronyz marketplace."
       : null;
