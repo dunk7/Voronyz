@@ -17,8 +17,8 @@ type FootGlowSectionProps = {
 /** Original artwork, served as uploaded. The glow is opacity only. */
 const XRAY_SRC = "/graphics/foot-xray.png";
 const HATCH_SRC = "/graphics/foot-hatch.png";
-/** All Footwear only. Separate file from the homepage x-ray. */
-const PRINT_SRC = "/graphics/dragonfly-outline.png";
+/** All Footwear only. Separate file from the homepage x-ray. Versioned so CDN clients drop the old immutable PNG. */
+const PRINT_SRC = "/graphics/dragonfly-outline-v2.png";
 
 /**
  * Full-bleed pause between Footwear and Apparel.
