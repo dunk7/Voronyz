@@ -19,11 +19,13 @@ import { clearDiscountUrgencySession } from "@/lib/discountUrgencySession";
 import { resolveIsPreOrder } from "@/lib/preorder";
 import {
   cartHasInsurableItems,
+  cartNeedsShippingAddress,
   getShippingInsuranceCents,
   isShippingInsuranceRequested,
   SHIPPING_INSURANCE_CENTS_PER_ITEM,
   SHIPPING_INSURANCE_DESCRIPTION,
 } from "@/lib/shippingInsurance";
+import { STL_FILES_SLUG, isDigitalProductSlug } from "@/lib/stlFiles";
 import {
   INTERNATIONAL_SHIPPING_CENTS,
   internationalShippingCents,
@@ -356,7 +358,9 @@ export default function CartClient() {
   const canOfferShippingInsurance = cartHasInsurableItems(items);
   const insuranceEnabled = canOfferShippingInsurance && shippingInsurance;
   const insuranceCents = insuranceEnabled ? getShippingInsuranceCents(items) : 0;
-  const needsShippingAddress = canOfferShippingInsurance;
+  const needsShippingAddress = cartNeedsShippingAddress(items);
+  const digitalOnlyCart =
+    items.length > 0 && items.every((it) => isDigitalProductSlug(it.productSlug));
   const shippingReady =
     !needsShippingAddress || Boolean(shipping && shipping.address.name.trim());
   const isInternational =
@@ -528,7 +532,7 @@ export default function CartClient() {
                       Pre-order
                     </span>
                   )}
-                  {it.variant?.name && it.productSlug !== "super-high-tech-stl" && (
+                  {it.variant?.name && it.productSlug !== STL_FILES_SLUG && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-black/5 px-2 py-0.5 capitalize">
                       {it.productSlug !== "antioxidant-trail-mix" &&
                         !isViolettePonybeadSlug(it.productSlug) && (
@@ -550,7 +554,7 @@ export default function CartClient() {
                     <span className="rounded-full bg-black/5 px-2 py-0.5">
                       {it.productSlug === "tpu-90a-filament"
                         ? "1kg spool"
-                        : it.productSlug === "super-high-tech-stl"
+                        : it.productSlug === STL_FILES_SLUG
                         ? "Digital file"
                         : (
                           <>
@@ -691,10 +695,14 @@ export default function CartClient() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
           </svg>
           <span className="text-sm font-medium text-emerald-700">
-            Free US shipping on all orders
-            <span className="font-normal text-emerald-700/80">
-              {" "}· International +{formatCentsAsCurrency(INTERNATIONAL_SHIPPING_CENTS)}
-            </span>
+            {digitalOnlyCart
+              ? "Digital download — no shipping"
+              : "Free US shipping on all orders"}
+            {!digitalOnlyCart && (
+              <span className="font-normal text-emerald-700/80">
+                {" "}· International +{formatCentsAsCurrency(INTERNATIONAL_SHIPPING_CENTS)}
+              </span>
+            )}
           </span>
         </div>
         {needsShippingAddress && (
@@ -777,6 +785,7 @@ export default function CartClient() {
               <div className="text-neutral-700">Subtotal</div>
               <div className="font-medium text-neutral-900">{formatCentsAsCurrency(subtotal)}</div>
             </div>
+            {!digitalOnlyCart && (
             <div className="flex items-center justify-between">
               <div className="text-neutral-700">Shipping</div>
               {internationalCents > 0 ? (
@@ -789,6 +798,7 @@ export default function CartClient() {
                 <div className="font-medium text-emerald-700">Free</div>
               )}
             </div>
+            )}
             {insuranceEnabled && (
               <div className="flex items-center justify-between">
                 <div className="text-neutral-700">Shipping insurance</div>

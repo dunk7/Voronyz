@@ -1,3 +1,5 @@
+import { isDigitalProductSlug } from "@/lib/stlFiles";
+
 /** Optional shipping insurance: $20 per shipped item. */
 
 export const SHIPPING_INSURANCE_CENTS_PER_ITEM = 2000;
@@ -11,15 +13,27 @@ type InsurableCartItem = {
   quantity?: number;
   fulfillment?: string | null;
   attributes?: { fulfillment?: string | null } | null;
+  productSlug?: string | null;
 };
 
 function itemFulfillment(item: InsurableCartItem): string | null | undefined {
   return item.fulfillment ?? item.attributes?.fulfillment;
 }
 
-/** Items fulfilled via Magikid Lab pickup are not shipped and are not insurable. */
+/** Physical items that actually ship (not pickup, not a digital STL). */
+export function itemNeedsShipping(item: InsurableCartItem): boolean {
+  if (itemFulfillment(item) === "pickup") return false;
+  if (isDigitalProductSlug(item.productSlug)) return false;
+  return true;
+}
+
+export function cartNeedsShippingAddress(items: InsurableCartItem[]): boolean {
+  return items.some(itemNeedsShipping);
+}
+
+/** Items fulfilled via Magikid Lab pickup or digital download are not insurable. */
 export function isInsurableCartItem(item: InsurableCartItem): boolean {
-  return itemFulfillment(item) !== "pickup";
+  return itemNeedsShipping(item);
 }
 
 /** Total quantity of items that can be covered by shipping insurance. */

@@ -55,7 +55,9 @@ const productMeta: Record<string, {
   "tpu-90a-filament": {
     altImage: "/products/tpu-90a-filament/pink-tpu-90a-spool-angle.jpg",
   },
-  "super-high-tech-stl": {},
+  [STL_FILES_SLUG]: {
+    altImage: "/products/stl-files/alt.jpg",
+  },
 };
 
 function cardMetaForSlug(slug: string) {
@@ -207,7 +209,7 @@ export default function ProductsContent({
   /** Footwear stays heading-only (like Apparel on home) — no supporting paragraph. */
   const subheading =
     category === "accessories"
-      ? "TPU-90A filament and super high-tech STL files."
+      ? "TPU-90A filament and printable shoe STLs."
       : category === "health"
       ? "Helping the small businesses we support and stand for grow and be seen on the Voronyz marketplace."
       : null;
@@ -595,7 +597,7 @@ export default function ProductsContent({
                     </div>
                     <div className="mt-4 px-0.5">
                       <h3 className="text-[15px] font-semibold text-neutral-900 transition-colors group-hover:text-black line-clamp-2">
-                        {slugKey === STL_FILES_SLUG ? "STL Super High-Tech" : p.name}
+                        {p.name}
                       </h3>
                     </div>
                   </Link>

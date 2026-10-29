@@ -2,6 +2,7 @@ import Link from "next/link";
 import ComplementaryRecs from "@/components/products/ComplementaryRecs";
 import { getComplementaryRecommendations } from "@/lib/complementaryRecommendations";
 import { formatCentsAsCurrency } from "@/lib/money";
+import { STL_FILES_NAME, orderIncludesStlDownload } from "@/lib/stlFiles";
 
 export interface OrderDetails {
   success: boolean;
@@ -69,6 +70,10 @@ export function OrderSuccessContent({
       item.name.toLowerCase().startsWith("pre-order")
   );
   const addOnRecs = getComplementaryRecommendations(details.lineItems);
+  const hasStlDownload = orderIncludesStlDownload(details.lineItems);
+  const stlDownloadHref = details.stripeId
+    ? `/api/stl/download?session_id=${encodeURIComponent(details.stripeId)}`
+    : null;
   const isAch = order.paymentMethod === "ach";
   const achStillClearing =
     isAch &&
@@ -161,6 +166,21 @@ export function OrderSuccessContent({
           </div>
         </div>
 
+        {hasStlDownload && stlDownloadHref && !isPending && (
+          <div className="bg-white rounded-xl ring-1 ring-black/10 p-6 space-y-3 text-left">
+            <h2 className="text-xl font-semibold">Your print file</h2>
+            <p className="text-sm text-neutral-700">
+              {STL_FILES_NAME} is ready. Download the zip, slice it, and print in TPU-90A.
+            </p>
+            <a
+              href={stlDownloadHref}
+              className="inline-flex items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-medium text-white hover:bg-neutral-800"
+            >
+              Download STL
+            </a>
+          </div>
+        )}
+
         <ComplementaryRecs
           recs={addOnRecs}
           heading="Goes with what you just ordered"
@@ -187,6 +207,8 @@ export function OrderSuccessContent({
           <p>
             {hasPreOrder
               ? "Pre-order items are paid waitlist reservations. We manufacture or source them when available, then ship to the address on file."
+              : hasStlDownload && !details.shipping
+                ? "Your STL is a digital download — nothing ships."
               : "We're getting your order ready. For custom orders, allow up to 7 business days before shipping."}
           </p>
           <p>

@@ -59,6 +59,7 @@ import {
   STL_FILES_NAME,
   STL_FILES_SLUG,
   STL_FILES_THUMBNAIL_URL,
+  stlFilesCatalogProduct,
 } from "@/lib/stlFiles";
 import {
   LATTICE_INSOLES_DESCRIPTION,
@@ -168,6 +169,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       product = apparelCatalogProduct(catalogFallback);
     } else if (slug === "magikid-shoes") {
       product = magikidCatalogProduct();
+    } else if (slug === STL_FILES_SLUG) {
+      product = stlFilesCatalogProduct();
     } else {
       return (
         <div className="bg-texture-white">
@@ -186,6 +189,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     const catalogFallback = getApparelItem(slug);
     if (catalogFallback) product = apparelCatalogProduct(catalogFallback);
     else if (slug === "magikid-shoes") product = magikidCatalogProduct();
+    else if (slug === STL_FILES_SLUG) product = stlFilesCatalogProduct();
   }
   if (!product) return <div className="container py-12 text-neutral-900">Not found.</div>;
 
@@ -364,7 +368,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       {isStlFiles && (
         <>
           <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">STL file</span>
-          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Super high-tech</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Print yourself</span>
         </>
       )}
       {isGators && (
@@ -584,11 +588,16 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
 
-        {!isFilament && !isStlFiles && (
+        {!isFilament && (
         <div className="mt-12">
           <h2 className="text-lg font-semibold text-neutral-900 mb-4">FAQs</h2>
           <FAQ
-            items={isDragonfly ? [
+            items={isStlFiles ? [
+              { q: "What do I get?", a: "The printable Voronyz Slip On STL — left, right, and the two-piece top/bottom files." },
+              { q: "How do I download it?", a: "After checkout, the confirmation page has a download button for the zip." },
+              { q: "What filament should I use?", a: "TPU-90A, the same material we print footwear with. We sell it on Engineering." },
+              { q: "How much is it?", a: "$1 for the file. No shipping — it's a digital download." },
+            ] : isDragonfly ? [
               { q: "What colors are available?", a: "The Dragonfly's come in Black, White, Red, Azure Blue, and Pink — white is currently out of stock. Laces can be any color you want!" },
               { q: "Are they true to size?", a: "Yes — we offer Men's, Women's, and Kids' sizing. They're designed for a comfortable, snug fit right out of the box." },
               { q: "How long does production take?", a: "Each pair is 3D-printed to order. Production takes about 1-2 days, then ships out next business day." },

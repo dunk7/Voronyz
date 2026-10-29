@@ -1,8 +1,20 @@
 import { getApparelItem } from "@/lib/apparel";
+import {
+  FILAMENT_NAME,
+  FILAMENT_PRICE_CENTS,
+  FILAMENT_SLUG,
+  FILAMENT_THUMBNAIL_URL,
+} from "@/lib/filament";
 import { FOOTWEAR_CATALOG, FOOTWEAR_SLUGS } from "@/lib/footwear";
 import { LATTICE_INSOLES_SLUG } from "@/lib/latticeInsoles";
 import { getProductThumbnail } from "@/lib/productImages";
 import { SHIPPING_INSURANCE_PRODUCT_NAME } from "@/lib/shippingInsurance";
+import {
+  STL_FILES_NAME,
+  STL_FILES_PRICE_CENTS,
+  STL_FILES_SLUG,
+  STL_FILES_THUMBNAIL_URL,
+} from "@/lib/stlFiles";
 
 export const OVERSIZED_TEE_SLUG = "voronyz-oversized-tee";
 export const ATELIER_HOODIE_SLUG = "voronyz-core-hoodie";
@@ -25,6 +37,8 @@ export type ComplementaryRecommendation = {
 
 const NAME_SLUG_HINTS: Array<[RegExp, string]> = [
   [/lattice insole/i, LATTICE_INSOLES_SLUG],
+  [/slip[\s-]?on\s*stl|\bstl\b.*slip[\s-]?on/i, STL_FILES_SLUG],
+  [/tpu-?90a|\bfilament\b/i, FILAMENT_SLUG],
   [/slip[\s-]?on/i, SLIP_ONS_SLUG],
   [/v3 slide/i, "v3-slides"],
   [/dragonfly/i, "dragonfly"],
@@ -93,15 +107,40 @@ function catalogCard(
   }
 
   const apparel = getApparelItem(slug);
-  if (!apparel || apparel.comingSoon) return null;
-  return {
-    slug: apparel.slug,
-    name: apparel.name,
-    priceCents: apparel.priceCents,
-    image: getProductThumbnail({ slug: apparel.slug }),
-    reason,
-    href: `/products/${apparel.slug}`,
-  };
+  if (apparel && !apparel.comingSoon) {
+    return {
+      slug: apparel.slug,
+      name: apparel.name,
+      priceCents: apparel.priceCents,
+      image: getProductThumbnail({ slug: apparel.slug }),
+      reason,
+      href: `/products/${apparel.slug}`,
+    };
+  }
+
+  if (slug === FILAMENT_SLUG) {
+    return {
+      slug: FILAMENT_SLUG,
+      name: FILAMENT_NAME,
+      priceCents: FILAMENT_PRICE_CENTS,
+      image: FILAMENT_THUMBNAIL_URL,
+      reason,
+      href: `/products/${FILAMENT_SLUG}`,
+    };
+  }
+
+  if (slug === STL_FILES_SLUG) {
+    return {
+      slug: STL_FILES_SLUG,
+      name: STL_FILES_NAME,
+      priceCents: STL_FILES_PRICE_CENTS,
+      image: STL_FILES_THUMBNAIL_URL,
+      reason,
+      href: `/products/${STL_FILES_SLUG}`,
+    };
+  }
+
+  return null;
 }
 
 /**
@@ -120,8 +159,24 @@ export function getComplementaryRecommendations(
   const hasTee = owned.has(OVERSIZED_TEE_SLUG);
   const hasHoodie = owned.has(ATELIER_HOODIE_SLUG);
   const hasFootwear = hasShoe || hasInsoles;
+  const hasFilament = owned.has(FILAMENT_SLUG);
+  const hasStl = owned.has(STL_FILES_SLUG);
 
   const ranked: Array<{ slug: string; reason: string }> = [];
+
+  if (hasStl && !hasFilament) {
+    ranked.push({
+      slug: FILAMENT_SLUG,
+      reason: "TPU-90A filament to print the file you just got.",
+    });
+  }
+
+  if (hasFilament && !hasStl) {
+    ranked.push({
+      slug: STL_FILES_SLUG,
+      reason: "The Voronyz Slip On STL to print with that filament.",
+    });
+  }
 
   if (hasShoe && !hasInsoles) {
     ranked.push({
