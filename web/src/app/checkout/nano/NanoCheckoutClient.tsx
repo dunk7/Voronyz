@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -87,6 +87,12 @@ export default function NanoCheckoutClient() {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formError, setFormError] = useState("");
   const [formSaving, setFormSaving] = useState(false);
+  const [showLine2, setShowLine2] = useState(false);
+  const line2Ref = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (showLine2) line2Ref.current?.focus();
+  }, [showLine2]);
 
   /* ---------------------------------------------------------------- */
   /*  Poll the verify endpoint                                        */
@@ -556,19 +562,30 @@ export default function NanoCheckoutClient() {
               />
             </div>
 
-            {/* Address Line 2 */}
-            <div>
-              <label className="block text-xs font-medium text-neutral-400 mb-1">
-                Address Line 2
-              </label>
-              <input
-                type="text"
-                value={form.addressLine2}
-                onChange={(e) => updateField("addressLine2", e.target.value)}
-                placeholder="Apt 4B"
-                className="w-full rounded-lg bg-white/10 ring-1 ring-white/10 px-3 py-2.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#209CE9]"
-              />
-            </div>
+            {showLine2 || form.addressLine2.trim() ? (
+              <div>
+                <label className="block text-xs font-medium text-neutral-400 mb-1">
+                  Apt, suite, unit
+                </label>
+                <input
+                  ref={line2Ref}
+                  type="text"
+                  value={form.addressLine2}
+                  onChange={(e) => updateField("addressLine2", e.target.value)}
+                  placeholder="Apt 4B"
+                  autoComplete="address-line2"
+                  className="w-full rounded-lg bg-white/10 ring-1 ring-white/10 px-3 py-2.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#209CE9]"
+                />
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowLine2(true)}
+                className="text-[10px] leading-none text-neutral-500 underline underline-offset-2 hover:text-neutral-300"
+              >
+                Add apt, suite, or unit
+              </button>
+            )}
 
             {/* City / State / Zip row */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
