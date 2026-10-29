@@ -600,12 +600,13 @@ export async function ensureFilament(): Promise<void> {
   for (const v of FILAMENT_VARIANTS) {
     await prisma.variant.upsert({
       where: { sku: v.sku },
-      update: { stock: v.stock, color: v.color },
+      update: { stock: v.stock, color: v.color, priceCents: v.priceCents },
       create: {
         product: { connect: { id: existing.id } },
         color: v.color,
         sku: v.sku,
         stock: v.stock,
+        priceCents: v.priceCents,
       },
     });
   }

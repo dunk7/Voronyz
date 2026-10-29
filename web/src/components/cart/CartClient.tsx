@@ -535,6 +535,7 @@ export default function CartClient() {
                   {it.variant?.name && it.productSlug !== STL_FILES_SLUG && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-black/5 px-2 py-0.5 capitalize">
                       {it.productSlug !== "antioxidant-trail-mix" &&
+                        it.productSlug !== "tpu-90a-filament" &&
                         !isViolettePonybeadSlug(it.productSlug) && (
                         <span
                           className="inline-block h-3 w-3 rounded-full ring-1 ring-black/10"
