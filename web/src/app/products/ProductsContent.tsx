@@ -19,6 +19,7 @@ import FootwearBrowse from "@/components/footwear/FootwearBrowse";
 import FootGlowSection from "@/components/FootGlowSection";
 import MotionMediaCarousel from "@/components/MotionMediaCarousel";
 import { MAGIKID_SHOES_THUMBNAIL_URL } from "@/lib/magikidShoesThumbnail";
+import { GATORS_SLUG, GATORS_THUMBNAIL_URL } from "@/lib/gators";
 
 /** Homepage footwear teaser — slides + slip-ons only; full catalog on /products. */
 const HOME_FOOTWEAR_TEASER_SLUGS = ["v3-slides", "slip-ons"] as const;
@@ -311,7 +312,9 @@ export default function ProductsContent({
     const images = (p.images as string[] | null) ?? [];
     const isV3 = slugKey === "v3-slides";
 
-    const cover = isV3
+    const cover = slugKey === GATORS_SLUG
+      ? GATORS_THUMBNAIL_URL
+      : isV3
       ? "/products/v3-slides/InShot_20260212_194352014.jpg"
       : (p.thumbnail || images[0]);
 
