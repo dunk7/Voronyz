@@ -54,8 +54,8 @@ const productMeta: Record<string, {
     altImage: MAGIKID_SHOES_THUMBNAIL_URL,
   },
   "tpu-90a-filament": {},
-  [STL_FILES_SLUG]: {
-    altImage: "/products/stl-files/alt.jpg",
+    [STL_FILES_SLUG]: {
+    altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
 };
 
@@ -569,7 +569,7 @@ export default function ProductsContent({
                         src={cover}
                         alt={p.name}
                         fill
-                        className={`object-cover transition-all duration-500 ${
+                        className={`object-contain transition-all duration-500 ${
                           alt ? "group-hover:opacity-0" : "group-hover:scale-105"
                         } ${isNavigating ? "scale-105 brightness-90" : ""}`}
                         sizes="(max-width: 768px) 50vw, 33vw"
@@ -581,7 +581,7 @@ export default function ProductsContent({
                           alt={`${p.name} – alternate view`}
                           fill
                           showLogoPlaceholder={false}
-                          className="object-cover opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
+                          className="object-contain opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
                           sizes="(max-width: 768px) 50vw, 33vw"
                           loading="lazy"
                         />

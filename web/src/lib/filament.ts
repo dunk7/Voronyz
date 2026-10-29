@@ -12,7 +12,7 @@ export const FILAMENT_COMPARE_AT_CENTS = 20000;
 export const FILAMENT_YOUNG_PRICE_CENTS = 2000;
 
 export const FILAMENT_THUMBNAIL_URL =
-  "/products/tpu-90a-filament/tpu-voronyz-side.jpg";
+  "/products/tpu-90a-filament/filament-clear-spool.jpg";
 
 export const FILAMENT_DESCRIPTION_SHORT =
   "1kg spools. Pick TPU 90A or foaming TPU Air, then a color. Free US shipping.";

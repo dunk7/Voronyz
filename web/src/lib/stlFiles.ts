@@ -5,8 +5,8 @@ export const STL_FILES_SLUG = "super-high-tech-stl";
 export const STL_FILES_NAME = "Voronyz Slip On STL";
 export const STL_FILES_PRICE_CENTS = 100; // $1 digital file
 
-export const STL_FILES_THUMBNAIL_URL = "/products/stl-files/cover.jpg";
-export const STL_FILES_ALT_IMAGE_URL = "/products/stl-files/alt.jpg";
+export const STL_FILES_THUMBNAIL_URL = "/products/slip-ons/InShot_20260405_203151152.jpg";
+export const STL_FILES_ALT_IMAGE_URL = "/products/slip-ons/InShot_20260405_203425292.jpg";
 export const STL_FILES_IMAGES = [STL_FILES_THUMBNAIL_URL, STL_FILES_ALT_IMAGE_URL] as const;
 
 export const STL_FILES_DESCRIPTION_SHORT =
