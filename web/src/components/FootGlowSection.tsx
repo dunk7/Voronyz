@@ -91,7 +91,7 @@ export default function FootGlowSection({
         aria-hidden
         className={`pointer-events-none bg-black ${className}`}
       >
-        <div className="mx-auto w-full max-w-6xl">{artwork}</div>
+        <div className="mx-auto w-full max-w-[64rem]">{artwork}</div>
       </div>
     );
   }

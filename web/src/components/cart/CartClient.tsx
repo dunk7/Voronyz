@@ -16,14 +16,22 @@ import {
   applyOrderLevelDiscountCents,
 } from "@/lib/affiliateApproveLogic";
 import { clearDiscountUrgencySession } from "@/lib/discountUrgencySession";
+import {
+  getHalloweenPairTarget,
+  HALLOWEEN_PAIR_EVENT,
+  isHalloweenPairSeason,
+  readHalloweenPairOptIn,
+} from "@/lib/halloweenPair";
 import { resolveIsPreOrder } from "@/lib/preorder";
 import {
   cartHasInsurableItems,
+  cartNeedsShippingAddress,
   getShippingInsuranceCents,
   isShippingInsuranceRequested,
   SHIPPING_INSURANCE_CENTS_PER_ITEM,
   SHIPPING_INSURANCE_DESCRIPTION,
 } from "@/lib/shippingInsurance";
+import { STL_FILES_SLUG, isDigitalProductSlug } from "@/lib/stlFiles";
 import {
   INTERNATIONAL_SHIPPING_CENTS,
   internationalShippingCents,
@@ -68,6 +76,7 @@ const SHIPPING_STORAGE_KEY = "checkoutShipping";
 export default function CartClient() {
   const [items, setItems] = useState<CartItem[]>([]);
   const [discountCode, setDiscountCode] = useState<string | null>(null);
+  const [halloweenPair, setHalloweenPair] = useState(false);
   const [shippingInsurance, setShippingInsurance] = useState(false);
   const [shipping, setShipping] = useState<VerifiedShipping | null>(null);
   const [inputValue, setInputValue] = useState("");
@@ -247,6 +256,17 @@ export default function CartClient() {
     }
   }, [isLoading, discountCode]);
 
+  useEffect(() => {
+    const sync = () => setHalloweenPair(readHalloweenPairOptIn() && isHalloweenPairSeason());
+    sync();
+    window.addEventListener(HALLOWEEN_PAIR_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(HALLOWEEN_PAIR_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
   const clearMessage = () => setMessage("");
   const saveCart = (cartData: CartData) => {
     setItems(cartData.items);
@@ -344,19 +364,32 @@ export default function CartClient() {
   const freeItemLineIndex = isOneItemFreeDiscountCode(discountCode)
     ? getOneFreeItemLineIndex(items.map((it) => unitPriceForItem(it, discountCode)))
     : -1;
+  const orderLevelBase = itemDiscountedSubtotal - oneItemFreeOff;
+  const halloweenTarget = halloweenPair
+    ? getHalloweenPairTarget(
+        items.map((it) => ({
+          quantity: it.quantity,
+          unitCents: unitPriceForItem(it, discountCode),
+        })),
+        freeItemLineIndex
+      )
+    : null;
+  const halloweenOff = halloweenTarget?.savingsCents ?? 0;
   const orderLevelOff =
     discountCode && affiliateDiscountCodes.has(discountCode)
       ? applyOrderLevelDiscountCents(
-          itemDiscountedSubtotal,
+          orderLevelBase - halloweenOff,
           AFFILIATE_ORDER_DISCOUNT_CENTS
         )
       : 0;
-  const subtotal = itemDiscountedSubtotal - oneItemFreeOff - orderLevelOff;
+  const subtotal = orderLevelBase - halloweenOff - orderLevelOff;
   const discountSavings = Math.max(0, subtotalBeforeDiscount - subtotal);
   const canOfferShippingInsurance = cartHasInsurableItems(items);
   const insuranceEnabled = canOfferShippingInsurance && shippingInsurance;
   const insuranceCents = insuranceEnabled ? getShippingInsuranceCents(items) : 0;
-  const needsShippingAddress = canOfferShippingInsurance;
+  const needsShippingAddress = cartNeedsShippingAddress(items);
+  const digitalOnlyCart =
+    items.length > 0 && items.every((it) => isDigitalProductSlug(it.productSlug));
   const shippingReady =
     !needsShippingAddress || Boolean(shipping && shipping.address.name.trim());
   const isInternational =
@@ -424,6 +457,7 @@ export default function CartClient() {
           paymentMethod: isInternational ? "card" : method,
           shippingInsurance: insuranceEnabled,
           shipping: shippingPayload,
+          halloweenPair,
           successUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/success`,
           cancelUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/cancel`,
         }),
@@ -528,9 +562,10 @@ export default function CartClient() {
                       Pre-order
                     </span>
                   )}
-                  {it.variant?.name && it.productSlug !== "super-high-tech-stl" && (
+                  {it.variant?.name && it.productSlug !== STL_FILES_SLUG && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-black/5 px-2 py-0.5 capitalize">
                       {it.productSlug !== "antioxidant-trail-mix" &&
+                        it.productSlug !== "tpu-90a-filament" &&
                         !isViolettePonybeadSlug(it.productSlug) && (
                         <span
                           className="inline-block h-3 w-3 rounded-full ring-1 ring-black/10"
@@ -550,7 +585,7 @@ export default function CartClient() {
                     <span className="rounded-full bg-black/5 px-2 py-0.5">
                       {it.productSlug === "tpu-90a-filament"
                         ? "1kg spool"
-                        : it.productSlug === "super-high-tech-stl"
+                        : it.productSlug === STL_FILES_SLUG
                         ? "Digital file"
                         : (
                           <>
@@ -640,6 +675,9 @@ export default function CartClient() {
                   if (idx === freeItemLineIndex && oneItemFreeOff > 0) {
                     discountedLine = Math.max(0, discountedLine - unit);
                   }
+                  if (halloweenTarget && idx === halloweenTarget.index) {
+                    discountedLine = Math.max(0, discountedLine - halloweenTarget.savingsCents);
+                  }
                   const size =
                     it.attributes?.size != null ? String(it.attributes.size) : undefined;
                   const offer = getApparelSizeOffer(it.productSlug, size, it.variant?.name);
@@ -691,10 +729,14 @@ export default function CartClient() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
           </svg>
           <span className="text-sm font-medium text-emerald-700">
-            Free US shipping on all orders
-            <span className="font-normal text-emerald-700/80">
-              {" "}· International +{formatCentsAsCurrency(INTERNATIONAL_SHIPPING_CENTS)}
-            </span>
+            {digitalOnlyCart
+              ? "Digital download — no shipping"
+              : "Free US shipping on all orders"}
+            {!digitalOnlyCart && (
+              <span className="font-normal text-emerald-700/80">
+                {" "}· International +{formatCentsAsCurrency(INTERNATIONAL_SHIPPING_CENTS)}
+              </span>
+            )}
           </span>
         </div>
         {needsShippingAddress && (
@@ -742,6 +784,13 @@ export default function CartClient() {
                 {message}
               </div>
             )}
+            {halloweenPair && (
+              <div className="mt-2 text-sm text-neutral-800 bg-neutral-50 p-2 rounded-md border border-black/10">
+                {halloweenOff > 0
+                  ? `Halloween pair — one item is half off this order. You save ${formatCentsAsCurrency(halloweenOff)}. Another order can use it again.`
+                  : "Halloween pair is on. Add one more item and that extra one is half off."}
+              </div>
+            )}
             {discountCode && (
               <div className="mt-2 text-sm text-green-700 flex justify-between items-center gap-3 bg-emerald-50 p-2 rounded-md border border-green-200">
                 <span>
@@ -777,6 +826,7 @@ export default function CartClient() {
               <div className="text-neutral-700">Subtotal</div>
               <div className="font-medium text-neutral-900">{formatCentsAsCurrency(subtotal)}</div>
             </div>
+            {!digitalOnlyCart && (
             <div className="flex items-center justify-between">
               <div className="text-neutral-700">Shipping</div>
               {internationalCents > 0 ? (
@@ -789,6 +839,7 @@ export default function CartClient() {
                 <div className="font-medium text-emerald-700">Free</div>
               )}
             </div>
+            )}
             {insuranceEnabled && (
               <div className="flex items-center justify-between">
                 <div className="text-neutral-700">Shipping insurance</div>
@@ -926,6 +977,7 @@ export default function CartClient() {
                   discountCode: discountCode || '',
                   shippingInsurance: insuranceEnabled,
                   shipping: shippingPayload,
+                  halloweenPair,
                 }),
               });
 

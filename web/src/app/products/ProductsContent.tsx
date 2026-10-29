@@ -53,10 +53,10 @@ const productMeta: Record<string, {
   "magikid-shoes": {
     altImage: MAGIKID_SHOES_THUMBNAIL_URL,
   },
-  "tpu-90a-filament": {
-    altImage: "/products/tpu-90a-filament/pink-tpu-90a-spool-angle.jpg",
+  "tpu-90a-filament": {},
+  [STL_FILES_SLUG]: {
+    altImage: "/products/stl-files/alt.jpg",
   },
-  "super-high-tech-stl": {},
 };
 
 function cardMetaForSlug(slug: string) {
@@ -202,13 +202,11 @@ export default function ProductsContent({
       ? "Engineering"
       : category === "health"
       ? "Collaborative"
-      : isHomeFootwearTeaser
-      ? "All Footwear"
       : "Step into the future";
   /** Footwear stays heading-only (like Apparel on home) — no supporting paragraph. */
   const subheading =
     category === "accessories"
-      ? "TPU-90A filament and super high-tech STL files."
+      ? "TPU 90A and foaming TPU Air, plus printable shoe STLs."
       : category === "health"
       ? "Helping the small businesses we support and stand for grow and be seen on the Voronyz marketplace."
       : null;
@@ -292,7 +290,6 @@ export default function ProductsContent({
             <TitleTag className={titleClass}>
               {headingNode}
             </TitleTag>
-            {scrollCue}
             {!searchQuery && subheading && (
               <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
                 {subheading}
@@ -333,7 +330,6 @@ export default function ProductsContent({
       <TitleTag className={titleClass}>
         {headingNode}
       </TitleTag>
-      {scrollCue}
       {!searchQuery && subheading && (
         <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
           {subheading}
@@ -598,7 +594,7 @@ export default function ProductsContent({
                     </div>
                     <div className="mt-4 px-0.5">
                       <h3 className="text-[15px] font-semibold text-neutral-900 transition-colors group-hover:text-black line-clamp-2">
-                        {slugKey === STL_FILES_SLUG ? "STL Super High-Tech" : p.name}
+                        {p.name}
                       </h3>
                     </div>
                   </Link>

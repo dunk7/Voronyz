@@ -5,6 +5,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DiscountUrgencyBanner from "@/components/discount/DiscountUrgencyBanner";
+import HalloweenPairPopup from "@/components/season/HalloweenPairPopup";
 import InitialSplash from "@/components/ui/InitialSplash";
 import SiteTheme from "@/components/SiteTheme";
 import { getSiteDarkMode } from "@/lib/siteTheme";
@@ -175,6 +176,7 @@ export default async function RootLayout({
         <SiteTheme dark={darkMode} />
         <InitialSplash />
         <DiscountUrgencyBanner />
+        <HalloweenPairPopup />
         <Suspense fallback={null}>
           <Header />
         </Suspense>

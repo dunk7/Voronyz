@@ -7,6 +7,10 @@ import {
   getDiscountedUnitPriceCents,
   isOneItemFreeDiscountCode,
 } from "@/lib/discountPricing";
+import {
+  applyHalloweenPairToQuantityPricedLines,
+  isHalloweenPairSeason,
+} from "@/lib/halloweenPair";
 import { resolveActiveDiscountCode } from "@/lib/discountDisabled";
 import { getOrderLevelDiscountCentsForCode } from "@/lib/affiliateDiscounts";
 import { applyOrderLevelDiscountCents } from "@/lib/affiliateApproveLogic";
@@ -14,6 +18,7 @@ import { cartHasPreOrder, resolveIsPreOrder } from "@/lib/preorder";
 import { catalogUnitPriceCents } from "@/lib/apparel";
 import {
   buildShippingInsuranceLineItem,
+  cartNeedsShippingAddress,
   getInsurableItemQuantity,
   getShippingInsuranceCents,
   isShippingInsuranceRequested,
@@ -46,6 +51,7 @@ export async function POST(request: NextRequest) {
       discountCode,
       shippingInsurance,
       shipping: rawShipping,
+      halloweenPair,
     } = await request.json();
 
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -60,8 +66,9 @@ export async function POST(request: NextRequest) {
     const hasPickupOnly = items.every(
       (item: { fulfillment?: string }) => item.fulfillment === "pickup"
     );
-    const shippingAddress = hasPickupOnly ? null : parseVerifiedShipping(rawShipping);
-    if (!hasPickupOnly && !shippingAddress) {
+    const needsShipping = cartNeedsShippingAddress(items);
+    const shippingAddress = needsShipping ? parseVerifiedShipping(rawShipping) : null;
+    if (needsShipping && !shippingAddress) {
       return NextResponse.json(
         {
           error:
@@ -162,6 +169,14 @@ export async function POST(request: NextRequest) {
 
     if (isOneItemFreeDiscountCode(normalizedDiscountCode)) {
       applyOneFreeItemToQuantityPricedLines(lineItems);
+      productSubtotalCents = lineItems.reduce(
+        (sum, line) => sum + line.unitCents * line.quantity,
+        0
+      );
+    }
+
+    if (halloweenPair === true && isHalloweenPairSeason()) {
+      applyHalloweenPairToQuantityPricedLines(lineItems);
       productSubtotalCents = lineItems.reduce(
         (sum, line) => sum + line.unitCents * line.quantity,
         0

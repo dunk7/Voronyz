@@ -7,6 +7,10 @@ import {
   getDiscountedUnitPriceCents,
   isOneItemFreeDiscountCode,
 } from "@/lib/discountPricing";
+import {
+  applyHalloweenPairToStripeLineItems,
+  isHalloweenPairSeason,
+} from "@/lib/halloweenPair";
 import { resolveActiveDiscountCode } from "@/lib/discountDisabled";
 import { getOrderLevelDiscountCentsForCode } from "@/lib/affiliateDiscounts";
 import {
@@ -22,6 +26,7 @@ import {
 } from "@/lib/checkoutCartMetadata";
 import {
   buildShippingInsuranceLineItem,
+  cartNeedsShippingAddress,
   getInsurableItemQuantity,
   getShippingInsuranceCents,
   isShippingInsuranceRequested,
@@ -63,6 +68,7 @@ export async function POST(request: NextRequest) {
     successUrl,
     cancelUrl,
     paymentMethod: rawPaymentMethod,
+    halloweenPair,
   } = requestBody;
   // ACH is the default / expected method; card is an opt-in alternate.
   const paymentMethod =
@@ -116,8 +122,9 @@ export async function POST(request: NextRequest) {
     }
 
     const hasPickupOnly = items.every((item: { fulfillment?: string }) => item.fulfillment === 'pickup');
-    const shippingAddress = hasPickupOnly ? null : parseVerifiedShipping(rawShipping);
-    if (!hasPickupOnly && !shippingAddress) {
+    const needsShipping = cartNeedsShippingAddress(items);
+    const shippingAddress = needsShipping ? parseVerifiedShipping(rawShipping) : null;
+    if (needsShipping && !shippingAddress) {
       return NextResponse.json(
         {
           error:
@@ -287,6 +294,10 @@ export async function POST(request: NextRequest) {
 
     if (isOneItemFreeDiscountCode(activeDiscountCode)) {
       applyOneFreeItemToStripeLineItems(lineItems);
+    }
+
+    if (halloweenPair === true && isHalloweenPairSeason()) {
+      applyHalloweenPairToStripeLineItems(lineItems);
     }
 
     console.log('Creating Stripe session with line items:', lineItems);

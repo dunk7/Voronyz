@@ -4,7 +4,14 @@ import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { GATORS_SIZES } from "./gators";
-import { LATTICE_INSOLES_SIZES } from "./latticeInsoles";
+import {
+  LATTICE_INSOLES_PRODUCT_IMAGE_URL,
+  LATTICE_INSOLES_SIDE_IMAGE_URL,
+  LATTICE_INSOLES_SIZES,
+  LATTICE_INSOLES_SLUG,
+  LATTICE_INSOLES_THUMBNAIL_URL,
+  latticeInsolesCatalogProduct,
+} from "./latticeInsoles";
 import {
   FOOTWEAR_CATALOG,
   FOOTWEAR_SLUGS,
@@ -26,6 +33,20 @@ const studio = [
 
 test("lattice insoles use the same US sizes as the rest of the footwear lineup", () => {
   assert.deepEqual([...LATTICE_INSOLES_SIZES], [...GATORS_SIZES]);
+});
+
+test("Lattice Insoles listing uses a zoomed-out side view; PDP keeps original then side", () => {
+  const lattice = FOOTWEAR_CATALOG.find((item) => item.slug === LATTICE_INSOLES_SLUG);
+  assert.equal(lattice?.images[0], LATTICE_INSOLES_PRODUCT_IMAGE_URL);
+  assert.equal(lattice?.images[1], LATTICE_INSOLES_SIDE_IMAGE_URL);
+  assert.equal(
+    getProductThumbnail({ slug: LATTICE_INSOLES_SLUG, images: lattice?.images }),
+    LATTICE_INSOLES_THUMBNAIL_URL,
+  );
+  assert.deepEqual(latticeInsolesCatalogProduct().images, [
+    LATTICE_INSOLES_PRODUCT_IMAGE_URL,
+    LATTICE_INSOLES_SIDE_IMAGE_URL,
+  ]);
 });
 
 test("lattice insole PDP uses shoe gender sizing instead of S–XL catalog sizes", () => {
