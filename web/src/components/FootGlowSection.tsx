@@ -37,8 +37,8 @@ export default function FootGlowSection({
           <img
             src={PRINT_RUN_SRC}
             alt="A pair of Voronyz Dragonfly shoes running, side view, with no one in them"
-            width={900}
-            height={380}
+            width={800}
+            height={356}
             draggable={false}
             className="h-auto w-full"
           />
