@@ -17,8 +17,7 @@ type FootGlowSectionProps = {
 /** Original artwork, served as uploaded. The glow is opacity only. */
 const XRAY_SRC = "/graphics/foot-xray.png";
 const HATCH_SRC = "/graphics/foot-hatch.png";
-/** All Footwear only. The still outline, and the same drawing animated as a running pair. */
-const PRINT_SRC = "/graphics/dragonfly-outline.png";
+/** All Footwear only. The Dragonfly outline, animated as a running pair. */
 const PRINT_RUN_SRC = "/graphics/dragonfly-run.gif";
 
 /**
