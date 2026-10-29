@@ -48,8 +48,31 @@ export default function HalloweenPairPopup() {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") dismiss();
     };
+    const scrollY = window.scrollY;
+    const body = document.body;
+    const html = document.documentElement;
+    const prev = {
+      bodyOverflow: body.style.overflow,
+      bodyPosition: body.style.position,
+      bodyTop: body.style.top,
+      bodyWidth: body.style.width,
+      htmlOverflow: html.style.overflow,
+    };
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.width = "100%";
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      html.style.overflow = prev.htmlOverflow;
+      body.style.overflow = prev.bodyOverflow;
+      body.style.position = prev.bodyPosition;
+      body.style.top = prev.bodyTop;
+      body.style.width = prev.bodyWidth;
+      window.scrollTo(0, scrollY);
+    };
   }, [open]);
 
   function dismiss() {
@@ -70,7 +93,7 @@ export default function HalloweenPairPopup() {
 
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-end justify-center bg-black/70 p-4 sm:items-center"
+      className="fixed inset-0 z-[80] flex items-center justify-center overflow-hidden overscroll-none bg-black/70 p-5"
       role="presentation"
       onClick={dismiss}
     >
@@ -100,12 +123,8 @@ export default function HalloweenPairPopup() {
           >
             Halloween
           </h2>
-          <p className="mx-auto mt-3 max-w-[18rem] text-[15px] font-medium leading-snug text-white">
-            Buy one. The next one is half off.
-          </p>
-          <p className="mx-auto mt-2 max-w-[20rem] text-[13px] leading-relaxed text-white/65">
-            One extra item per order, the less expensive one. A full cart still
-            gets a single half-off item. Place another order and it works again.
+          <p className="mx-auto mt-3 max-w-[16rem] text-[15px] font-medium leading-snug text-white">
+            Half off a second purchase.
           </p>
           <button
             type="button"
@@ -129,61 +148,52 @@ export default function HalloweenPairPopup() {
 
 function GhostScene() {
   return (
-    <div className="relative flex h-44 items-end justify-center" aria-hidden>
-      <Pumpkin className="absolute bottom-6 left-8 h-12 w-12 -rotate-6" />
-      <Pumpkin className="absolute bottom-8 right-7 h-14 w-14 rotate-6" />
-      <svg
-        viewBox="0 0 160 150"
-        className="relative h-36 w-36 motion-safe:animate-[halloween-float_3.6s_ease-in-out_infinite]"
-        style={{ filter: "drop-shadow(0 0 18px rgba(255,255,255,0.85))" }}
-      >
-        <path
-          fill="#f7f7f7"
-          d="M80 18c-28 0-46 22-46 50v48c0 4 4 6 8 4 4-2 6 2 10 2s6-4 10-2 6 4 10 2 6-4 10-2 6 4 10 2 6-4 10-2 6 4 10 2c4 2 8 0 8-4V68c0-28-18-50-50-50z"
-        />
-        <ellipse cx="64" cy="72" rx="6" ry="8" fill="#111" />
-        <ellipse cx="96" cy="72" rx="6" ry="8" fill="#111" />
-        <path
-          d="M70 92c4 6 16 6 20 0"
-          fill="none"
-          stroke="#111"
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-        <path
-          fill="#efefef"
-          d="M46 118c8 6 16 2 22 8 4-10 14-8 22-2 6 8 16 4 24-2 2 10-6 16-16 16H58c-8 0-14-8-12-20z"
-        />
-        <path
-          fill="#f4f4f4"
-          stroke="#111"
-          strokeWidth="1.2"
-          d="M48 124h22c2 6 8 8 12 4 6 6 16 2 18-4h16c2 0 3 3 1 5-8 8-18 6-24 2-4 6-14 6-20 0-6 6-16 4-22-2-4 2-8 1-11-3-1-2 2-6 8-2z"
-        />
-        <path
-          fill="#111"
-          d="M62 128h10c1 3 4 4 6 2 3 3 8 1 9-2h8c1 4-2 7-6 7h-22c-4 0-6-3-5-7z"
-          opacity="0.18"
-        />
+    <div className="relative h-48" aria-hidden>
+      <div
+        className="pointer-events-none absolute left-1/2 top-6 h-28 w-28 -translate-x-1/2"
+        style={{ background: "radial-gradient(circle, rgba(255,255,255,0.45), transparent 68%)" }}
+      />
+      <svg viewBox="0 0 320 190" className="relative h-full w-full">
+        <polygon points="118,78 160,42 202,78" fill="#1c1c1c" />
+        <rect x="126" y="78" width="68" height="46" fill="#141414" />
+        <rect x="136" y="88" width="14" height="18" fill="#ff7a18" />
+        <rect x="170" y="88" width="14" height="18" fill="#ffb020" />
+        <rect x="152" y="96" width="16" height="28" fill="#0c0c0c" />
+        <rect x="132" y="124" width="56" height="8" fill="#2c2c2c" />
+        <rect x="112" y="132" width="96" height="8" fill="#383838" />
+        <rect x="90" y="140" width="140" height="10" fill="#454545" />
+        <PumpkinGlyph x={94} y={114} />
+        <PumpkinGlyph x={178} y={106} />
+        <g style={{ filter: "drop-shadow(0 0 12px rgba(255,255,255,0.85))" }}>
+          <path
+            fill="#f4f4f4"
+            d="M160 50c-24 0-38 18-38 40v24c6-8 14-8 18 0s12 8 18 0 12-8 18 0 12 8 18 0c4-8 12-8 18 0V90c0-22-14-40-34-40z"
+          />
+          <ellipse cx="148" cy="86" rx="4" ry="5.5" fill="#111" />
+          <ellipse cx="172" cy="86" rx="4" ry="5.5" fill="#111" />
+          <path
+            d="M151 100c3 4 13 4 16 0"
+            fill="none"
+            stroke="#111"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <ellipse cx="147" cy="120" rx="12" ry="4" fill="#f7f7f7" stroke="#111" strokeWidth="1.1" />
+          <ellipse cx="173" cy="120" rx="12" ry="4" fill="#f7f7f7" stroke="#111" strokeWidth="1.1" />
+          <path d="M138 120h18M164 120h18" stroke="#111" strokeWidth="1.5" strokeLinecap="round" />
+        </g>
       </svg>
-      <style>{`
-        @keyframes halloween-float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-7px); }
-        }
-      `}</style>
     </div>
   );
 }
 
-function Pumpkin({ className }: { className?: string }) {
+function PumpkinGlyph({ x, y }: { x: number; y: number }) {
   return (
-    <svg viewBox="0 0 64 64" className={className}>
-      <path d="M32 14c2-6 8-8 10-6" fill="none" stroke="#3d9a3a" strokeWidth="3" strokeLinecap="round" />
-      <ellipse cx="32" cy="38" rx="12" ry="16" fill="#ff7a18" />
-      <ellipse cx="22" cy="38" rx="9" ry="14" fill="#ff9a2e" />
-      <ellipse cx="42" cy="38" rx="9" ry="14" fill="#ff5a00" />
-      <path d="M32 24v28" stroke="#e85d04" strokeWidth="1.5" opacity="0.7" />
-    </svg>
+    <g transform={`translate(${x} ${y})`}>
+      <path d="M14 4c1-4 6-5 7-3" fill="none" stroke="#3d9a3a" strokeWidth="1.6" strokeLinecap="round" />
+      <ellipse cx="14" cy="16" rx="8" ry="10" fill="#ff7a18" />
+      <ellipse cx="8" cy="16" rx="5.5" ry="9" fill="#ff9a2e" />
+      <ellipse cx="20" cy="16" rx="5.5" ry="9" fill="#ff5a00" />
+    </g>
   );
 }

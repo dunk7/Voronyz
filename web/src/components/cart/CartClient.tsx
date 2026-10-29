@@ -697,15 +697,13 @@ export default function CartClient() {
                         </div>
                       )}
                       {offer && discountedLine === baseLine && offer.percentOff > 0 ? (
-                        <div className="text-[11px] font-semibold uppercase tracking-wide text-red-600">
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
                           {offer.percentOff}% off
                         </div>
                       ) : null}
                       <div
                         className={`text-base font-semibold ${
-                          hasLineDiscount && discountedLine < baseLine
-                            ? "text-emerald-700"
-                            : "text-neutral-900"
+                          hasLineDiscount ? "text-emerald-700" : "text-neutral-900"
                         }`}
                       >
                         {formatCentsAsCurrency(discountedLine)}
@@ -787,8 +785,8 @@ export default function CartClient() {
             {halloweenPair && (
               <div className="mt-2 text-sm text-neutral-800 bg-neutral-50 p-2 rounded-md border border-black/10">
                 {halloweenOff > 0
-                  ? `Halloween pair — one item is half off this order. You save ${formatCentsAsCurrency(halloweenOff)}. Another order can use it again.`
-                  : "Halloween pair is on. Add one more item and that extra one is half off."}
+                  ? `Second item is half off. You save ${formatCentsAsCurrency(halloweenOff)}.`
+                  : "Add a second item and it’s half off."}
               </div>
             )}
             {discountCode && (
@@ -824,7 +822,13 @@ export default function CartClient() {
             )}
             <div className="flex items-center justify-between">
               <div className="text-neutral-700">Subtotal</div>
-              <div className="font-medium text-neutral-900">{formatCentsAsCurrency(subtotal)}</div>
+              <div
+                className={`font-medium ${
+                  discountSavings > 0 ? "text-emerald-700" : "text-neutral-900"
+                }`}
+              >
+                {formatCentsAsCurrency(subtotal)}
+              </div>
             </div>
             {!digitalOnlyCart && (
             <div className="flex items-center justify-between">
@@ -858,15 +862,15 @@ export default function CartClient() {
             onClick={() => toggleShippingInsurance(!shippingInsurance)}
             aria-pressed={shippingInsurance}
             aria-describedby="shipping-insurance-help"
-            className={`w-full rounded-2xl border-2 px-5 py-5 text-left transition-all active:scale-[0.99] ${
+            className={`box-border w-full rounded-2xl border-2 px-5 py-5 text-left transition-colors ${
               shippingInsurance
-                ? "border-neutral-900 bg-neutral-900 text-white shadow-md"
+                ? "border-neutral-900 bg-neutral-900 text-white"
                 : "border-neutral-900/15 bg-white text-neutral-900 hover:border-neutral-900/40 hover:bg-neutral-50"
             }`}
           >
             <span className="flex items-center justify-between gap-4">
               <span className="min-w-0">
-                <span className="block text-lg font-semibold tracking-tight sm:text-xl">
+                <span className="block truncate text-lg font-semibold tracking-tight sm:text-xl">
                   {shippingInsurance ? "Shipping insurance added" : "Add shipping insurance"}
                 </span>
                 <span
@@ -894,7 +898,7 @@ export default function CartClient() {
               </span>
             </span>
             <span
-              className={`mt-4 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-semibold ${
+              className={`mt-4 inline-flex h-8 items-center gap-2 rounded-full px-3.5 text-sm font-semibold ${
                 shippingInsurance
                   ? "bg-white text-neutral-900"
                   : "bg-neutral-900 text-white"

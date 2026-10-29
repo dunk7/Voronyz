@@ -614,13 +614,7 @@ html.site-dark ::selection {
 }
 
 .site-header {
-  transition:
-    transform 300ms ease,
-    margin-bottom 300ms ease;
-}
-
-html.nav-away .site-header {
-  margin-bottom: -5rem;
+  transition: transform 300ms ease;
 }
 
 .foot-glow-hero-frame {
