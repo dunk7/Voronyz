@@ -7,8 +7,8 @@ import {
 } from "@/lib/apparel";
 import { FOOTWEAR_SLUGS } from "@/lib/footwear";
 
-/** Product slugs in Engineering (`/accessories`) — never apparel catalog items. */
-export const ACCESSORY_SLUGS = ["tpu-90a-filament"] as const;
+/** Product slugs in Engineering (`/accessories`) — filament left, files right. */
+export const ACCESSORY_SLUGS = ["tpu-90a-filament", "super-high-tech-stl"] as const;
 
 /** Product slugs in Collaborative (not footwear). */
 export const HEALTH_SLUGS = ["keychain", "violette-ponybead-animals", "antioxidant-trail-mix"] as const;
@@ -56,7 +56,14 @@ export function filterFootwearProducts<T extends { slug: string }>(products: T[]
 
 /** Engineering grid only — never includes apparel clothing or apparel Accessories. */
 export function filterAccessoryProducts<T extends { slug: string }>(products: T[]): T[] {
-  return products.filter((p) => isAccessorySlug(p.slug) && !isApparelSlug(p.slug));
+  const order = new Map<string, number>(ACCESSORY_SLUGS.map((slug, index) => [slug, index]));
+  return products
+    .filter((p) => isAccessorySlug(p.slug) && !isApparelSlug(p.slug))
+    .sort((a, b) => {
+      const aKey = a.slug.trim().toLowerCase();
+      const bKey = b.slug.trim().toLowerCase();
+      return (order.get(aKey) ?? Number.MAX_SAFE_INTEGER) - (order.get(bKey) ?? Number.MAX_SAFE_INTEGER);
+    });
 }
 
 export function filterHealthProducts<T extends { slug: string }>(products: T[]): T[] {

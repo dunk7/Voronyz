@@ -44,6 +44,7 @@ import {
   GATORS_THUMBNAIL_URL,
 } from "@/lib/gators";
 import {
+  FILAMENT_COMPARE_AT_CENTS,
   FILAMENT_DESCRIPTION,
   FILAMENT_HOW_ITS_MADE,
   FILAMENT_IMAGES,
@@ -51,6 +52,14 @@ import {
   FILAMENT_SLUG,
   FILAMENT_THUMBNAIL_URL,
 } from "@/lib/filament";
+import {
+  STL_FILES_DESCRIPTION,
+  STL_FILES_HOW_ITS_MADE,
+  STL_FILES_IMAGES,
+  STL_FILES_NAME,
+  STL_FILES_SLUG,
+  STL_FILES_THUMBNAIL_URL,
+} from "@/lib/stlFiles";
 import {
   LATTICE_INSOLES_DESCRIPTION,
   LATTICE_INSOLES_HOW_ITS_MADE,
@@ -231,6 +240,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? [...GATORS_IMAGES]
     : slug === FILAMENT_SLUG
     ? [...FILAMENT_IMAGES]
+    : slug === STL_FILES_SLUG
+    ? [...STL_FILES_IMAGES]
     : slug === LATTICE_INSOLES_SLUG
     ? [...LATTICE_INSOLES_IMAGES]
     : getApparelItem(slug)
@@ -252,6 +263,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isViolettePonybead = isViolettePonybeadSlug(slug);
   const isGators = slug === GATORS_SLUG;
   const isFilament = slug === FILAMENT_SLUG;
+  const isStlFiles = slug === STL_FILES_SLUG;
   const isLatticeInsoles = slug === LATTICE_INSOLES_SLUG;
   const apparelItem = getApparelItem(slug);
   const isApparel = Boolean(apparelItem);
@@ -282,6 +294,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         ? GATORS_NAME
         : isFilament
           ? FILAMENT_NAME
+          : isStlFiles
+            ? STL_FILES_NAME
           : isLatticeInsoles
             ? LATTICE_INSOLES_NAME
           : apparelItem
@@ -305,6 +319,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? GATORS_DESCRIPTION
     : isFilament
     ? FILAMENT_DESCRIPTION
+    : isStlFiles
+    ? STL_FILES_DESCRIPTION
     : isLatticeInsoles
     ? LATTICE_INSOLES_DESCRIPTION
     : apparelItem?.slug === "voronyz-oversized-tee"
@@ -332,7 +348,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
           </svg>
-          {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
+          {isMagikidShoes ? "+$7 shipping" : isStlFiles ? "Digital file" : "Free US shipping"}
         </span>
       )}
 
@@ -343,6 +359,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <>
           <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">1kg spool</span>
           <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU-90A</span>
+        </>
+      )}
+      {isStlFiles && (
+        <>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">STL file</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Super high-tech</span>
         </>
       )}
       {isGators && (
@@ -362,12 +384,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Weatherproof</span>
         </>
       )}
-      {!isTrailMix && !isApparel && !isFilament && !isLatticeInsoles && !isViolettePonybead && (
+      {!isTrailMix && !isApparel && !isFilament && !isStlFiles && !isLatticeInsoles && !isViolettePonybead && (
         <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
           {isMagikidShoes ? "Made to order in <7 days" : "Made to order in <2 days"}
         </span>
       )}
-      {!isMagikidShoes && !isTrailMix && !isApparel && !isFilament && !isLatticeInsoles && !isViolettePonybead && (
+      {!isMagikidShoes && !isTrailMix && !isApparel && !isFilament && !isStlFiles && !isLatticeInsoles && !isViolettePonybead && (
         <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
       )}
       {isTrailMix && (
@@ -450,6 +472,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             }),
             ...(isFilament && {
               hideSizeSelector: true,
+              compareAtCents: FILAMENT_COMPARE_AT_CENTS,
+            }),
+            ...(isStlFiles && {
+              hideSizeSelector: true,
+              hideColorSelector: true,
             }),
             ...(isApparel && {
               useCatalogSizes: true,
@@ -473,7 +500,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
+                  {isMagikidShoes ? "+$7 shipping" : isStlFiles ? "Digital file" : "Free US shipping"}
                 </span>
               )}
               {isApparel && apparelItem?.comingSoon && (
@@ -518,6 +545,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                           ? "Comfort clog"
                           : isFilament
                             ? "TPU-90A filament"
+                            : isStlFiles
+                              ? "STL file"
                             : isLatticeInsoles
                               ? "TPU lattice"
                             : "How it's made"}
@@ -547,13 +576,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? GATORS_HOW_ITS_MADE
               : isFilament
               ? FILAMENT_HOW_ITS_MADE
+              : isStlFiles
+              ? STL_FILES_HOW_ITS_MADE
               : isLatticeInsoles
               ? LATTICE_INSOLES_HOW_ITS_MADE
               : "Printed in foamed TPU, then finished to be light, cushioned, and ready to wear."}
           </div>
         </div>
 
-        {!isFilament && (
+        {!isFilament && !isStlFiles && (
         <div className="mt-12">
           <h2 className="text-lg font-semibold text-neutral-900 mb-4">FAQs</h2>
           <FAQ
@@ -723,6 +754,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const title = `${FILAMENT_NAME} – Voronyz`;
     const description = FILAMENT_DESCRIPTION;
     const images = [FILAMENT_THUMBNAIL_URL, ...FILAMENT_IMAGES];
+    return {
+      title,
+      description,
+      openGraph: { title, description, images },
+      twitter: { card: "summary_large_image", title, description, images },
+    };
+  }
+
+  if (slug === STL_FILES_SLUG) {
+    const title = `${STL_FILES_NAME} – Voronyz`;
+    const description = STL_FILES_DESCRIPTION;
+    const images = [STL_FILES_THUMBNAIL_URL, ...STL_FILES_IMAGES];
     return {
       title,
       description,

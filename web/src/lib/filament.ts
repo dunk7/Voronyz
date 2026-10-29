@@ -1,8 +1,11 @@
 import { catalogSeedListedAt } from "@/lib/newListing";
+import { getStlFilesCatalogProduct } from "@/lib/stlFiles";
 
 export const FILAMENT_SLUG = "tpu-90a-filament";
 export const FILAMENT_NAME = "TPU-90A Filament";
 export const FILAMENT_PRICE_CENTS = 3000; // $30 per 1kg spool
+/** Shown only on the filament product page — crossed out next to $30. */
+export const FILAMENT_COMPARE_AT_CENTS = 20000;
 /** Checkout-only via code Young — do not show on PDP/marketing. */
 export const FILAMENT_YOUNG_PRICE_CENTS = 2000;
 /** Cache-busted filenames so CDN/Next Image drop AI stand-in photos. */
@@ -47,7 +50,7 @@ export type AccessoryListProduct = {
   updatedAt: string | Date;
 };
 
-/** Instant Engineering seed so filament appears while the API loads. */
+/** Instant Engineering seed — filament on the left, STL files on the right. */
 export function getAccessoryCatalogSeed(): AccessoryListProduct[] {
   const listedAt = catalogSeedListedAt(FILAMENT_SLUG);
   return [
@@ -63,5 +66,6 @@ export function getAccessoryCatalogSeed(): AccessoryListProduct[] {
       createdAt: listedAt,
       updatedAt: listedAt,
     },
+    getStlFilesCatalogProduct(),
   ];
 }
