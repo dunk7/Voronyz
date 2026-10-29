@@ -67,7 +67,7 @@ import {
   LATTICE_INSOLES_IMAGES,
   LATTICE_INSOLES_NAME,
   LATTICE_INSOLES_SLUG,
-  LATTICE_INSOLES_THUMBNAIL_URL,
+  latticeInsolesCatalogProduct,
 } from "@/lib/latticeInsoles";
 import { isAccessorySlug, isApparelSlug, isFootwearSlug, isHealthSlug } from "@/lib/productCategories";
 import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION, SLIP_ONS_PRICE_CENTS } from "@/lib/footwear";
@@ -171,6 +171,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       product = magikidCatalogProduct();
     } else if (slug === STL_FILES_SLUG) {
       product = stlFilesCatalogProduct();
+    } else if (slug === LATTICE_INSOLES_SLUG) {
+      product = latticeInsolesCatalogProduct();
     } else {
       return (
         <div className="bg-texture-white">
@@ -190,6 +192,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     if (catalogFallback) product = apparelCatalogProduct(catalogFallback);
     else if (slug === "magikid-shoes") product = magikidCatalogProduct();
     else if (slug === STL_FILES_SLUG) product = stlFilesCatalogProduct();
+    else if (slug === LATTICE_INSOLES_SLUG) product = latticeInsolesCatalogProduct();
   }
   if (!product) return <div className="container py-12 text-neutral-900">Not found.</div>;
 
@@ -786,7 +789,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug === LATTICE_INSOLES_SLUG) {
     const title = `${LATTICE_INSOLES_NAME} – Voronyz`;
     const description = LATTICE_INSOLES_DESCRIPTION;
-    const images = [LATTICE_INSOLES_THUMBNAIL_URL, ...LATTICE_INSOLES_IMAGES];
+    const images = [...LATTICE_INSOLES_IMAGES];
     return {
       title,
       description,
