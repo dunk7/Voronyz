@@ -4,6 +4,10 @@ type FootGlowSectionProps = {
   className?: string;
   /** Smaller print — homepage placement above the catalog. */
   poster?: boolean;
+  /**
+   * Homepage keeps the foot x-ray. All Footwear uses a separate lattice-shoe outline.
+   */
+  variant?: "xray" | "print";
   /** Homepage hero. The x-ray sits flush to the top at its own aspect ratio. */
   hero?: boolean;
   /** Sits under the poster, left-aligned, so it never covers the artwork. */
@@ -13,6 +17,8 @@ type FootGlowSectionProps = {
 /** Original artwork, served as uploaded. The glow is opacity only. */
 const XRAY_SRC = "/graphics/foot-xray.png";
 const HATCH_SRC = "/graphics/foot-hatch.png";
+/** All Footwear only. Separate file from the homepage x-ray. */
+const PRINT_SRC = "/graphics/dragonfly-outline.png";
 
 /**
  * Full-bleed pause between Footwear and Apparel.
@@ -23,8 +29,35 @@ export default function FootGlowSection({
   poster = false,
   hero = false,
   caption,
+  variant = "xray",
 }: FootGlowSectionProps) {
-  const artwork = (
+  const artwork = variant === "print" ? (
+        <div
+          className={`foot-glow-frame foot-glow-print-frame relative w-full bg-black ${
+            poster ? "foot-glow-poster-frame" : ""
+          }`}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element -- keep the artwork bytes, no optimizer */}
+          <img
+            src={PRINT_SRC}
+            alt="Outline of a 3D-printed lattice shoe"
+            width={1280}
+            height={720}
+            draggable={false}
+            className="foot-glow-layer"
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={PRINT_SRC}
+            alt=""
+            aria-hidden
+            width={1280}
+            height={720}
+            draggable={false}
+            className="foot-glow-layer foot-glow-hatch"
+          />
+        </div>
+  ) : (
         <div
           className={`foot-glow-frame relative w-full bg-black ${
             hero ? "foot-glow-hero-frame aspect-[2000/1399]" : "aspect-[2000/1399]"
@@ -81,7 +114,7 @@ export default function FootGlowSection({
 
   return (
     <section
-      aria-label="Foot inside a shoe"
+      aria-label={variant === "print" ? "3D-printed lattice shoe" : "Foot inside a shoe"}
       className={`foot-glow-section relative ml-[calc(50%-50vw)] w-screen max-w-[100vw] bg-black py-6 sm:py-10 ${className}`}
     >
       <div className="mx-auto w-full max-w-6xl">{artwork}</div>

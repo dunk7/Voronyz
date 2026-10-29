@@ -617,6 +617,10 @@ html.site-dark ::selection {
   object-position: center top;
 }
 
+.foot-glow-print-frame {
+  aspect-ratio: 16 / 9;
+}
+
 .foot-glow-poster-frame {
   box-shadow:
     0 0 0 10px #111,

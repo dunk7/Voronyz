@@ -369,7 +369,7 @@ export default function ProductsContent({
       ) : null;
 
   const footGlow = showApparelContinuation && !isHomeFootwearTeaser ? (
-    <FootGlowSection />
+    <FootGlowSection variant="print" />
   ) : null;
 
   const advancedFootwear =
