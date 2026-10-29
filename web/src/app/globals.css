@@ -627,9 +627,13 @@ html.site-dark ::selection {
   inset: auto;
   left: 0;
   right: 0;
-  top: -10%;
+  /*
+    Slightly smaller than the 120% / -10% crop. The negative offset still
+    hides the empty canvas above the glow, so the top gap stays put.
+  */
+  top: -9.15%;
   width: 100%;
-  height: 120%;
+  height: 110%;
 }
 
 .foot-glow-print-frame {
