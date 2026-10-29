@@ -8,7 +8,9 @@ import {
   inferProductSlug,
   purchasedSlugs,
 } from "./complementaryRecommendations";
+import { FILAMENT_SLUG } from "./filament";
 import { LATTICE_INSOLES_SLUG } from "./latticeInsoles";
+import { STL_FILES_SLUG } from "./stlFiles";
 
 test("infers catalog slugs from Stripe line names when metadata is missing", () => {
   assert.equal(inferProductSlug({ name: "Slip Ons × 1" }), SLIP_ONS_SLUG);
@@ -65,4 +67,21 @@ test("name-only footwear lines still trigger insole recs", () => {
 
 test("empty cart has no recommendations", () => {
   assert.deepEqual(getComplementaryRecommendations([]), []);
+});
+
+test("STL purchase recommends filament", () => {
+  const recs = getComplementaryRecommendations([{ productSlug: STL_FILES_SLUG }]);
+  assert.equal(recs[0]?.slug, FILAMENT_SLUG);
+});
+
+test("filament purchase recommends the Slip On STL", () => {
+  const recs = getComplementaryRecommendations([{ productSlug: FILAMENT_SLUG }]);
+  assert.equal(recs[0]?.slug, STL_FILES_SLUG);
+});
+
+test("Slip On STL name does not infer the physical slip-ons", () => {
+  assert.equal(
+    inferProductSlug({ name: "Voronyz Slip On STL" }),
+    STL_FILES_SLUG
+  );
 });

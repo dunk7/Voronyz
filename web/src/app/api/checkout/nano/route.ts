@@ -14,6 +14,7 @@ import { cartHasPreOrder, resolveIsPreOrder } from "@/lib/preorder";
 import { catalogUnitPriceCents } from "@/lib/apparel";
 import {
   buildShippingInsuranceLineItem,
+  cartNeedsShippingAddress,
   getInsurableItemQuantity,
   getShippingInsuranceCents,
   isShippingInsuranceRequested,
@@ -60,8 +61,9 @@ export async function POST(request: NextRequest) {
     const hasPickupOnly = items.every(
       (item: { fulfillment?: string }) => item.fulfillment === "pickup"
     );
-    const shippingAddress = hasPickupOnly ? null : parseVerifiedShipping(rawShipping);
-    if (!hasPickupOnly && !shippingAddress) {
+    const needsShipping = cartNeedsShippingAddress(items);
+    const shippingAddress = needsShipping ? parseVerifiedShipping(rawShipping) : null;
+    if (needsShipping && !shippingAddress) {
       return NextResponse.json(
         {
           error:
