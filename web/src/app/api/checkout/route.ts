@@ -7,6 +7,10 @@ import {
   getDiscountedUnitPriceCents,
   isOneItemFreeDiscountCode,
 } from "@/lib/discountPricing";
+import {
+  applyHalloweenPairToStripeLineItems,
+  isHalloweenPairSeason,
+} from "@/lib/halloweenPair";
 import { resolveActiveDiscountCode } from "@/lib/discountDisabled";
 import { getOrderLevelDiscountCentsForCode } from "@/lib/affiliateDiscounts";
 import {
@@ -64,6 +68,7 @@ export async function POST(request: NextRequest) {
     successUrl,
     cancelUrl,
     paymentMethod: rawPaymentMethod,
+    halloweenPair,
   } = requestBody;
   // ACH is the default / expected method; card is an opt-in alternate.
   const paymentMethod =
@@ -289,6 +294,10 @@ export async function POST(request: NextRequest) {
 
     if (isOneItemFreeDiscountCode(activeDiscountCode)) {
       applyOneFreeItemToStripeLineItems(lineItems);
+    }
+
+    if (halloweenPair === true && isHalloweenPairSeason()) {
+      applyHalloweenPairToStripeLineItems(lineItems);
     }
 
     console.log('Creating Stripe session with line items:', lineItems);
