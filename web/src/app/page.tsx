@@ -5,36 +5,23 @@ import { Suspense } from "react";
 import ProductsContent from "@/app/products/ProductsContent";
 import LogoLoader from "@/components/ui/LogoLoader";
 
-function HomeScrollHero() {
+function HomeSlide() {
   return (
-    <section className="hero-stage relative left-1/2 my-16 w-screen max-w-[100vw] -translate-x-1/2 overflow-hidden sm:my-24">
-      {/* Scroll clip — between Footwear and Apparel. */}
-      <div className="relative z-[1] mx-auto max-w-7xl px-4 sm:px-6 py-20 sm:py-24 md:py-28 lg:py-12 xl:py-14 2xl:py-16 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-10 sm:gap-12 lg:gap-16">
-          <div className="lg:col-span-4 space-y-5 sm:space-y-6 order-2 lg:order-1">
-            <p className="hero-stagger-1 uppercase tracking-[0.18em] text-[11px] sm:text-xs font-medium text-neutral-300">
-              Voronyz Engineering
-            </p>
-
-            <h1 className="hero-stagger-2 text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-semibold leading-[1.08] sm:leading-[1.1] tracking-tight text-white">
-              3D Printed<br className="hidden sm:block" /> Footwear
-            </h1>
-          </div>
-
-          <div className="lg:col-span-8 order-1 lg:order-2 hero-stagger-image">
-            <HeroParallax>
-              <div className="relative w-full overflow-visible aspect-[4/3] sm:aspect-[4/3] lg:h-full xl:h-full 2xl:h-full bg-black">
-                <Image
-                  src="/products/v3-slides/side-render-of-both.jpg"
-                  alt="Voronyz V3 Slides"
-                  fill
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 66vw"
-                  className="object-contain object-[60%_50%] bg-black"
-                />
-              </div>
-            </HeroParallax>
-          </div>
+    <section className="hero-stage relative left-1/2 my-16 w-screen max-w-[100vw] -translate-x-1/2 overflow-hidden bg-black sm:my-24">
+      <div className="relative z-[1] mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+        <div className="lg:ml-auto lg:w-2/3">
+          <HeroParallax>
+            <div className="relative aspect-[4/3] w-full overflow-visible bg-black">
+              <Image
+                src="/products/v3-slides/side-render-of-both.jpg"
+                alt="Voronyz V3 Slides"
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 66vw"
+                className="object-contain object-[60%_50%] bg-black"
+              />
+            </div>
+          </HeroParallax>
         </div>
       </div>
     </section>
@@ -44,9 +31,23 @@ function HomeScrollHero() {
 export default function Home() {
   return (
     <div className="relative">
-      <div className="bg-texture-white">
-        <FootGlowSection poster />
+      <section className="hero-stage relative min-h-[100svh] overflow-hidden bg-black">
+        <FootGlowSection hero />
 
+        <div className="relative z-[1] mx-auto flex min-h-[100svh] max-w-7xl items-center px-4 sm:px-6 lg:px-8">
+          <div className="w-full max-w-xl space-y-5 sm:space-y-6 lg:max-w-[34%]">
+            <p className="hero-stagger-1 uppercase tracking-[0.18em] text-[11px] sm:text-xs font-medium text-neutral-300">
+              Voronyz Engineering
+            </p>
+
+            <h1 className="hero-stagger-2 text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-semibold leading-[1.08] sm:leading-[1.1] tracking-tight text-white">
+              3D Printed<br className="hidden sm:block" /> Footwear
+            </h1>
+          </div>
+        </div>
+      </section>
+
+      <div className="bg-texture-white">
         <Suspense
           fallback={
             <div className="container flex min-h-[40vh] items-center justify-center py-16">
@@ -57,7 +58,7 @@ export default function Home() {
           <ProductsContent
             showScrollCue
             embedded
-            betweenFootwearAndApparel={<HomeScrollHero />}
+            betweenFootwearAndApparel={<HomeSlide />}
           />
         </Suspense>
       </div>

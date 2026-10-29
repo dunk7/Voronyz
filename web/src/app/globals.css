@@ -579,6 +579,7 @@ html.site-dark ::selection {
 */
 .foot-glow-frame {
   isolation: isolate;
+  background-color: #000;
 }
 
 .foot-glow-layer {

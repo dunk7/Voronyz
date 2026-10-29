@@ -2,6 +2,11 @@ type FootGlowSectionProps = {
   className?: string;
   /** Smaller print — homepage placement above the catalog. */
   poster?: boolean;
+  /**
+   * Fills the homepage hero. Black runs to the viewport edges and to the
+   * top of the stage (under the header), the way the slide animation did.
+   */
+  hero?: boolean;
 };
 
 /** Original artwork, served as uploaded. The glow is opacity only. */
@@ -12,7 +17,11 @@ const HATCH_SRC = "/graphics/foot-hatch.png";
  * Full-bleed pause between Footwear and Apparel.
  * The line drawing sits over the x-ray as a soft screen overlay and slowly breathes.
  */
-export default function FootGlowSection({ className = "", poster = false }: FootGlowSectionProps) {
+export default function FootGlowSection({
+  className = "",
+  poster = false,
+  hero = false,
+}: FootGlowSectionProps) {
   const artwork = (
         <div
           className={`foot-glow-frame relative aspect-[2000/1399] w-full bg-black ${
@@ -40,6 +49,21 @@ export default function FootGlowSection({ className = "", poster = false }: Foot
           />
         </div>
   );
+
+  if (hero) {
+    return (
+      <div
+        aria-hidden
+        className={`pointer-events-none absolute inset-0 bg-black ${className}`}
+      >
+        <div className="absolute inset-0 bg-black" />
+        <div className="absolute inset-y-0 right-0 flex w-full items-center lg:w-[68%]">
+          <div className="w-full">{artwork}</div>
+        </div>
+        <div className="absolute inset-y-0 left-0 w-[58%] bg-gradient-to-r from-black from-40% to-transparent lg:w-[46%]" />
+      </div>
+    );
+  }
 
   if (poster) {
     return (
