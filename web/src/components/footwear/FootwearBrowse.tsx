@@ -121,14 +121,11 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
           Footwear
         </h1>
 
-        <div className="mt-6 flex flex-col" role="list">
+        <div className="mt-6 flex flex-col gap-5 sm:gap-6" role="list">
           {ranked.map((product, index) => {
             const { cover, alt } = getImages(product);
             return (
               <div key={product.id} role="listitem">
-                {index > 0 ? (
-                  <div className="mx-1 my-5 h-px bg-white/20 sm:my-6" aria-hidden />
-                ) : null}
                 <RankCard
                   product={product}
                   cover={cover}
