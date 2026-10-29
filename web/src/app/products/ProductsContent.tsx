@@ -201,8 +201,6 @@ export default function ProductsContent({
       ? "Engineering"
       : category === "health"
       ? "Collaborative"
-      : isHomeFootwearTeaser
-      ? "All Footwear"
       : "Step into the future";
   /** Footwear stays heading-only (like Apparel on home) — no supporting paragraph. */
   const subheading =
@@ -291,7 +289,6 @@ export default function ProductsContent({
             <TitleTag className={titleClass}>
               {headingNode}
             </TitleTag>
-            {scrollCue}
             {!searchQuery && subheading && (
               <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
                 {subheading}
@@ -330,7 +327,6 @@ export default function ProductsContent({
       <TitleTag className={titleClass}>
         {headingNode}
       </TitleTag>
-      {scrollCue}
       {!searchQuery && subheading && (
         <p className="mt-2 text-sm text-neutral-500 max-w-md mx-auto">
           {subheading}
