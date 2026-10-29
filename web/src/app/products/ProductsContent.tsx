@@ -3,7 +3,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { filterAccessoryProducts, filterFootwearProducts, filterHealthProducts } from "@/lib/productCategories";
 import { getFootwearCatalogSeed, type FootwearListProduct } from "@/lib/footwear";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, type ReactNode } from "react";
 import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
@@ -43,7 +43,7 @@ const productMeta: Record<string, {
     altImage: "/products/v3-slides/InShot_20260212_193956953.jpg",
   },
   dragonfly: {
-    altImage: "/products/dragonfly/InShot_20260212_153903491.jpg",
+    altImage: "/products/dragonfly/InShot_20260212_153516456.jpg",
   },
   "slip-ons": {
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
@@ -82,6 +82,8 @@ type ProductsContentProps = {
   showScrollCue?: boolean;
   /** Skip the hex wrapper when the parent already provides one (homepage). */
   embedded?: boolean;
+  /** Homepage scroll clip, placed between the footwear grid and apparel. */
+  betweenFootwearAndApparel?: ReactNode;
 };
 
 function categorySeed(category: ProductsContentProps["category"]): Product[] {
@@ -95,6 +97,7 @@ export default function ProductsContent({
   category = "footwear",
   showScrollCue = false,
   embedded = false,
+  betweenFootwearAndApparel = null,
 }: ProductsContentProps) {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q");
@@ -529,12 +532,13 @@ export default function ProductsContent({
           </>
         )}
 
-        {advancedFootwear}
+        {isHomeFootwearTeaser ? betweenFootwearAndApparel : null}
         {footGlow}
         {apparelSection}
 
         {isHomeFootwearTeaser && (
           <>
+            {advancedFootwear}
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
             <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
           </>

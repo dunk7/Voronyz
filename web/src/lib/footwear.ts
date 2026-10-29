@@ -106,8 +106,9 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     description: DRAGONFLY_DESCRIPTION,
     priceCents: DRAGONFLY_PRICE_CENTS,
     images: [
-      "/products/dragonfly/InShot_20260212_153516456.jpg",
+      // Side profile leads so the shop thumbnail matches the product-page hero.
       "/products/dragonfly/InShot_20260212_153903491.jpg",
+      "/products/dragonfly/InShot_20260212_153516456.jpg",
       "/products/dragonfly/InShot_20260212_154319265.jpg",
       "/products/dragonfly/InShot_20260212_154545771.jpg",
       "/products/dragonfly/InShot_20260212_154719489.jpg",
