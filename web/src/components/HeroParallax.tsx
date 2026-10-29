@@ -23,10 +23,14 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
-        const y = window.scrollY;
-        const elementTop = el.offsetTop;
-        const elementHeight = el.offsetHeight || 1;
-        const rawProgress = Math.max(0, Math.min(1, (y - elementTop) / elementHeight));
+        const rect = el.getBoundingClientRect();
+        const elementHeight = rect.height || el.offsetHeight || 1;
+        // Scrub from the moment the slide enters the viewport. Measuring
+        // against offsetTop made a section below the hero look finished
+        // as soon as the page moved.
+        const travel = Math.max(elementHeight * 0.9, window.innerHeight * 0.55);
+        const entered = window.innerHeight - rect.top;
+        const rawProgress = Math.max(0, Math.min(1, entered / travel));
         smoothedRef.current = rawProgress;
         setSmoothedProgress(rawProgress);
         ticking = false;
@@ -34,8 +38,12 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
     onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, []);
 
   useEffect(() => {
@@ -194,7 +202,7 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
   return (
     <div
       ref={ref}
-      className="relative overflow-visible bg-black min-h-[300px] md:min-h-[60vh] lg:min-h-[80vh] xl:min-h-[100vh] 2xl:min-h-[100vh]"
+      className="relative overflow-visible bg-black min-h-[300px] md:min-h-[50vh] lg:min-h-[62vh]"
     >
       <canvas
         ref={canvasRef}
