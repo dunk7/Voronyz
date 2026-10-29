@@ -17,8 +17,9 @@ type FootGlowSectionProps = {
 /** Original artwork, served as uploaded. The glow is opacity only. */
 const XRAY_SRC = "/graphics/foot-xray.png";
 const HATCH_SRC = "/graphics/foot-hatch.png";
-/** All Footwear only. Separate file from the homepage x-ray. */
+/** All Footwear only. The still outline, and the same drawing animated as a running pair. */
 const PRINT_SRC = "/graphics/dragonfly-outline.png";
+const PRINT_RUN_SRC = "/graphics/dragonfly-run.gif";
 
 /**
  * Full-bleed pause between Footwear and Apparel.
@@ -32,29 +33,15 @@ export default function FootGlowSection({
   variant = "xray",
 }: FootGlowSectionProps) {
   const artwork = variant === "print" ? (
-        <div
-          className={`foot-glow-frame foot-glow-print-frame relative w-full bg-black ${
-            poster ? "foot-glow-poster-frame" : ""
-          }`}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element -- keep the artwork bytes, no optimizer */}
+        <div className="mx-auto w-full max-w-3xl bg-black">
+          {/* eslint-disable-next-line @next/next/no-img-element -- animated GIF, not a Next image */}
           <img
-            src={PRINT_SRC}
-            alt="Outline of a 3D-printed lattice shoe"
-            width={1280}
-            height={720}
+            src={PRINT_RUN_SRC}
+            alt="A pair of Voronyz Dragonfly shoes running, side view, with no one in them"
+            width={900}
+            height={380}
             draggable={false}
-            className="foot-glow-layer"
-          />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={PRINT_SRC}
-            alt=""
-            aria-hidden
-            width={1280}
-            height={720}
-            draggable={false}
-            className="foot-glow-layer foot-glow-hatch"
+            className="h-auto w-full"
           />
         </div>
   ) : (
@@ -114,7 +101,7 @@ export default function FootGlowSection({
 
   return (
     <section
-      aria-label={variant === "print" ? "3D-printed lattice shoe" : "Foot inside a shoe"}
+      aria-label={variant === "print" ? "Dragonfly shoes running" : "Foot inside a shoe"}
       className={`foot-glow-section relative ml-[calc(50%-50vw)] w-screen max-w-[100vw] bg-black py-6 sm:py-10 ${className}`}
     >
       <div className="mx-auto w-full max-w-6xl">{artwork}</div>
