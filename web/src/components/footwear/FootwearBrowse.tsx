@@ -6,11 +6,7 @@ import { useMemo, useState } from "react";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 import type { FootwearListProduct } from "@/lib/footwear";
-import {
-  FOOTWEAR_TOP_COUNT,
-  sortFootwearForTab,
-  type FootwearRankTab,
-} from "@/lib/footwearRanking";
+import { sortFootwearForTab } from "@/lib/footwearRanking";
 import { TRAIL_MIX_SLUG } from "@/lib/trailMix";
 
 type BrowseProduct = FootwearListProduct;
@@ -25,12 +21,6 @@ const SLIP_ONS_BROWSE = {
   cover: "/products/slip-ons/listing-cover.jpg",
   alt: "/products/slip-ons/listing-alt.jpg",
 } as const;
-
-const TABS: { id: FootwearRankTab; label: string }[] = [
-  { id: "trending", label: "Trending" },
-  { id: "all-time", label: "All time" },
-  { id: "new-in", label: "New in" },
-];
 
 function RankCard({
   product,
@@ -119,9 +109,7 @@ function RankCard({
 }
 
 export default function FootwearBrowse({ products, getImages }: FootwearBrowseProps) {
-  const [tab, setTab] = useState<FootwearRankTab>("trending");
-  const ranked = useMemo(() => sortFootwearForTab(products, tab), [products, tab]);
-  const topCount = Math.min(FOOTWEAR_TOP_COUNT, ranked.length);
+  const ranked = useMemo(() => sortFootwearForTab(products, "trending"), [products]);
 
   return (
     <section className="bg-black text-white" aria-labelledby="footwear-browse-heading">
@@ -133,41 +121,7 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
           Footwear
         </h1>
 
-        <div
-          role="tablist"
-          aria-label="Footwear ranking"
-          className="mt-6 flex gap-2 overflow-x-auto no-scrollbar"
-        >
-          {TABS.map((item) => {
-            const selected = tab === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                role="tab"
-                aria-selected={selected}
-                onClick={() => setTab(item.id)}
-                className={`shrink-0 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] transition-colors ${
-                  selected
-                    ? "bg-white text-black"
-                    : "bg-[#1f1f1f] text-white hover:bg-[#2a2a2a]"
-                }`}
-              >
-                {item.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {topCount > 0 ? (
-          <div className="mt-5 rounded-2xl bg-white px-5 py-3">
-            <p className="text-xl font-bold tracking-tight text-black sm:text-[1.35rem]">
-              Top {topCount}
-            </p>
-          </div>
-        ) : null}
-
-        <div className="mt-5 flex flex-col gap-6 sm:gap-8" role="list">
+        <div className="mt-6 flex flex-col gap-6 sm:gap-8" role="list">
           {ranked.map((product, index) => {
             const { cover, alt } = getImages(product);
             return (
