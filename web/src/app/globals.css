@@ -632,22 +632,6 @@ html.nav-away .site-header {
   top: -8%;
   height: 108%;
   object-position: center center;
-  /* Pull the baked halo in so it stays close to the shoe, evenly on both sides. */
-  filter: contrast(1.16);
-  -webkit-mask-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    #000 4.5%,
-    #000 95.5%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    #000 4.5%,
-    #000 95.5%,
-    transparent 100%
-  );
 }
 
 .foot-glow-print-frame {
