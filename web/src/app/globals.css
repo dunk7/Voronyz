@@ -613,16 +613,14 @@ html.site-dark ::selection {
   filter: drop-shadow(0 22px 28px rgb(0 0 0 / 0.28));
 }
 
+.foot-glow-hero-frame .foot-glow-layer {
+  object-position: center top;
+}
+
 .foot-glow-poster-frame {
   box-shadow:
     0 0 0 10px #111,
     0 0 0 11px rgb(255 255 255 / 0.14);
-}
-
-.foot-glow-poster .foot-glow-layer {
-  inset: 11%;
-  width: auto;
-  height: auto;
 }
 
 @media (prefers-reduced-motion: reduce) {
