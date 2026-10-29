@@ -697,15 +697,13 @@ export default function CartClient() {
                         </div>
                       )}
                       {offer && discountedLine === baseLine && offer.percentOff > 0 ? (
-                        <div className="text-[11px] font-semibold uppercase tracking-wide text-red-600">
+                        <div className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
                           {offer.percentOff}% off
                         </div>
                       ) : null}
                       <div
                         className={`text-base font-semibold ${
-                          hasLineDiscount && discountedLine < baseLine
-                            ? "text-emerald-700"
-                            : "text-neutral-900"
+                          hasLineDiscount ? "text-emerald-700" : "text-neutral-900"
                         }`}
                       >
                         {formatCentsAsCurrency(discountedLine)}
@@ -824,7 +822,13 @@ export default function CartClient() {
             )}
             <div className="flex items-center justify-between">
               <div className="text-neutral-700">Subtotal</div>
-              <div className="font-medium text-neutral-900">{formatCentsAsCurrency(subtotal)}</div>
+              <div
+                className={`font-medium ${
+                  discountSavings > 0 ? "text-emerald-700" : "text-neutral-900"
+                }`}
+              >
+                {formatCentsAsCurrency(subtotal)}
+              </div>
             </div>
             {!digitalOnlyCart && (
             <div className="flex items-center justify-between">
