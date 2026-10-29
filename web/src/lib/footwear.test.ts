@@ -35,7 +35,7 @@ test("lattice insoles use the same US sizes as the rest of the footwear lineup",
   assert.deepEqual([...LATTICE_INSOLES_SIZES], [...GATORS_SIZES]);
 });
 
-test("Lattice Insoles listing uses a zoomed-out side view; PDP keeps original then side", () => {
+test("Lattice Insoles listing uses a single side-view insole; PDP keeps pair then side", () => {
   const lattice = FOOTWEAR_CATALOG.find((item) => item.slug === LATTICE_INSOLES_SLUG);
   assert.equal(lattice?.images[0], LATTICE_INSOLES_PRODUCT_IMAGE_URL);
   assert.equal(lattice?.images[1], LATTICE_INSOLES_SIDE_IMAGE_URL);
