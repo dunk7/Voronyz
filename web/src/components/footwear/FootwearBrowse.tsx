@@ -7,6 +7,10 @@ import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 import type { FootwearListProduct } from "@/lib/footwear";
 import { sortFootwearForTab } from "@/lib/footwearRanking";
+import {
+  LATTICE_INSOLES_SLUG,
+  LATTICE_INSOLES_THUMBNAIL_URL,
+} from "@/lib/latticeInsoles";
 import { TRAIL_MIX_SLUG } from "@/lib/trailMix";
 
 type BrowseProduct = FootwearListProduct;
@@ -20,6 +24,10 @@ type FootwearBrowseProps = {
 const SLIP_ONS_BROWSE = {
   cover: "/products/slip-ons/listing-cover.jpg",
   alt: "/products/slip-ons/listing-alt.jpg",
+} as const;
+
+const LATTICE_INSOLES_BROWSE = {
+  cover: LATTICE_INSOLES_THUMBNAIL_URL,
 } as const;
 
 function RankCard({
@@ -38,8 +46,17 @@ function RankCard({
   const slugKey = (product.slug || "").trim().toLowerCase();
   const soldOut = slugKey === TRAIL_MIX_SLUG;
   const isSlipOns = slugKey === "slip-ons";
-  const coverSrc = isSlipOns ? SLIP_ONS_BROWSE.cover : cover;
-  const altSrc = isSlipOns ? SLIP_ONS_BROWSE.alt : alt;
+  const isLatticeInsoles = slugKey === LATTICE_INSOLES_SLUG;
+  const coverSrc = isSlipOns
+    ? SLIP_ONS_BROWSE.cover
+    : isLatticeInsoles
+      ? LATTICE_INSOLES_BROWSE.cover
+      : cover;
+  const altSrc = isSlipOns
+    ? SLIP_ONS_BROWSE.alt
+    : isLatticeInsoles
+      ? undefined
+      : alt;
 
   function handleClick(e: React.MouseEvent) {
     e.preventDefault();
