@@ -18,7 +18,7 @@ type FootGlowSectionProps = {
 const XRAY_SRC = "/graphics/foot-xray.png";
 const HATCH_SRC = "/graphics/foot-hatch.png";
 /** All Footwear only. The Dragonfly outline, animated as a running pair. */
-const PRINT_RUN_SRC = "/graphics/dragonfly-run.gif";
+const PRINT_RUN_SRC = "/graphics/dragonfly-run-v2.gif";
 
 /**
  * Full-bleed pause between Footwear and Apparel.
