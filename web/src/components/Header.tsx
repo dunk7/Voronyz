@@ -104,27 +104,32 @@ export default function Header() {
 
   useEffect(() => {
     let lastY = window.scrollY;
+    let frame = 0;
     const onScroll = () => {
-      const y = window.scrollY;
-      // Keep the bar visible while the hamburger menu is open.
-      if (open) {
-        setHide(false);
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        const y = window.scrollY;
+        // Keep the bar visible while the hamburger menu is open.
+        if (open || y < 48) {
+          setHide(false);
+          lastY = y;
+          return;
+        }
+        const delta = y - lastY;
+        // Trackpads emit tiny up/down jitter. Ignore it so the bar does
+        // not translate in and out on a small scroll.
+        if (Math.abs(delta) < 12) return;
+        setHide(delta > 0 && y > 80);
         lastY = y;
-        return;
-      }
-      setHide(y > lastY && y > 24);
-      lastY = y;
+      });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
   }, [open]);
-
-  // The bar only translates away, so its layout slot would leave a black
-  // band above the homepage skeleton. Pull the page up with it.
-  useEffect(() => {
-    document.documentElement.classList.toggle("nav-away", hide);
-    return () => document.documentElement.classList.remove("nav-away");
-  }, [hide]);
 
   // Allow body scroll even when mobile menu is open (no scroll lock)
   useEffect(() => {
@@ -271,7 +276,7 @@ export default function Header() {
 
   return (
     <>
-      <header className={`site-header sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/70 bg-neutral-950/80 border-b border-white/10 ${hide ? "-translate-y-full" : "translate-y-0"}`}>
+      <header className={`site-header fixed inset-x-0 top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/70 bg-neutral-950/80 border-b border-white/10 will-change-transform [backface-visibility:hidden] ${hide ? "-translate-y-full" : "translate-y-0"}`}>
         <div className="container flex h-20 items-center gap-4">
           {/* Left cluster: brand + nav */}
           <div className="flex items-center gap-6">
@@ -469,6 +474,8 @@ export default function Header() {
           </div>
         </div>
       </header>
+      {/* Fixed bar no longer occupies flow. This spacer keeps page content below it. */}
+      <div className="h-20" aria-hidden />
 
       {/* Slide-down menu (Accessories and full site nav) */}
       <div
