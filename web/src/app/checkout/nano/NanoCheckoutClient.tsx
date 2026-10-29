@@ -40,6 +40,7 @@ interface NanoPaymentDetails {
   blockHash?: string;
   lineItems?: LineItem[];
   customer?: CustomerInfo;
+  customerInfoSaved?: boolean;
   shippingAddressLabel?: string;
   shippingName?: string;
   error?: string;
@@ -108,8 +109,11 @@ export default function NanoCheckoutClient() {
         setForm((prev) => (prev.name ? prev : { ...prev, name: data.shippingName! }));
       }
 
-      // If customer info was already saved, skip the form
-      if (data.customer?.name && data.customer?.email) {
+      // Contact is optional; skip the form once they have continued past it.
+      if (
+        data.customerInfoSaved ||
+        (data.customer?.name && data.customer?.email)
+      ) {
         setFormSubmitted(true);
       }
 
@@ -187,11 +191,10 @@ export default function NanoCheckoutClient() {
     e.preventDefault();
     setFormError("");
 
-    if (!form.name.trim() || !form.email.trim()) {
-      setFormError("Name and email are required.");
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+    if (
+      form.email.trim() &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())
+    ) {
       setFormError("Please enter a valid email address.");
       return;
     }
@@ -488,33 +491,34 @@ export default function NanoCheckoutClient() {
             onSubmit={handleFormSubmit}
             className="bg-white/5 backdrop-blur rounded-xl ring-1 ring-white/10 p-5 space-y-5"
           >
-            <h3 className="text-sm font-semibold text-white">Shipping &amp; Contact Info</h3>
+            <h3 className="text-sm font-semibold text-white">Contact details</h3>
+            <p className="text-xs text-neutral-400 -mt-3">
+              Recommended so we can send a receipt and reach you about the order — not required.
+            </p>
 
             {/* Name + Email row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-medium text-neutral-400 mb-1">
-                  Full Name <span className="text-red-400">*</span>
+                  Full Name <span className="text-neutral-500">(recommended)</span>
                 </label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={(e) => updateField("name", e.target.value)}
                   placeholder="John Doe"
-                  required
                   className="w-full rounded-lg bg-white/10 ring-1 ring-white/10 px-3 py-2.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#209CE9]"
                 />
               </div>
               <div>
                 <label className="block text-xs font-medium text-neutral-400 mb-1">
-                  Email <span className="text-red-400">*</span>
+                  Email <span className="text-neutral-500">(recommended)</span>
                 </label>
                 <input
                   type="email"
                   value={form.email}
                   onChange={(e) => updateField("email", e.target.value)}
                   placeholder="john@example.com"
-                  required
                   className="w-full rounded-lg bg-white/10 ring-1 ring-white/10 px-3 py-2.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#209CE9]"
                 />
               </div>
@@ -523,7 +527,7 @@ export default function NanoCheckoutClient() {
             {/* Phone */}
             <div>
               <label className="block text-xs font-medium text-neutral-400 mb-1">
-                Phone (optional)
+                Phone <span className="text-neutral-500">(recommended)</span>
               </label>
               <input
                 type="tel"
@@ -541,6 +545,7 @@ export default function NanoCheckoutClient() {
               </div>
             ) : (
               <>
+            <h3 className="text-sm font-semibold text-white pt-1">Shipping address</h3>
             {/* Address Line 1 */}
             <div>
               <label className="block text-xs font-medium text-neutral-400 mb-1">
