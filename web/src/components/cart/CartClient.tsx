@@ -787,8 +787,8 @@ export default function CartClient() {
             {halloweenPair && (
               <div className="mt-2 text-sm text-neutral-800 bg-neutral-50 p-2 rounded-md border border-black/10">
                 {halloweenOff > 0
-                  ? `Halloween pair — one item is half off this order. You save ${formatCentsAsCurrency(halloweenOff)}. Another order can use it again.`
-                  : "Halloween pair is on. Add one more item and that extra one is half off."}
+                  ? `Second item is half off. You save ${formatCentsAsCurrency(halloweenOff)}.`
+                  : "Add a second item and it’s half off."}
               </div>
             )}
             {discountCode && (
