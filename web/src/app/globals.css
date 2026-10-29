@@ -595,16 +595,17 @@ html.site-dark ::selection {
 
 .foot-glow-hatch {
   mix-blend-mode: screen;
-  animation: foot-glow-overlay 8s ease-in-out infinite;
+  animation: foot-glow-overlay 14s ease-in-out infinite;
 }
 
+/* Always partly there. The line drawing only breathes in and out. */
 @keyframes foot-glow-overlay {
   0%,
   100% {
-    opacity: 0.18;
+    opacity: 0.38;
   }
   50% {
-    opacity: 0.55;
+    opacity: 0.72;
   }
 }
 
@@ -613,8 +614,40 @@ html.site-dark ::selection {
   filter: drop-shadow(0 22px 28px rgb(0 0 0 / 0.28));
 }
 
+.site-header {
+  transition:
+    transform 300ms ease,
+    margin-bottom 300ms ease;
+}
+
+html.nav-away .site-header {
+  margin-bottom: -5rem;
+}
+
+.foot-glow-hero-frame {
+  overflow: hidden;
+}
+
 .foot-glow-hero-frame .foot-glow-layer {
-  object-position: center top;
+  top: -8%;
+  height: 108%;
+  object-position: center center;
+  /* Pull the baked halo in so it stays close to the shoe, evenly on both sides. */
+  filter: contrast(1.16);
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 4.5%,
+    #000 95.5%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 4.5%,
+    #000 95.5%,
+    transparent 100%
+  );
 }
 
 .foot-glow-print-frame {

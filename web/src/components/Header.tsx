@@ -119,6 +119,13 @@ export default function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, [open]);
 
+  // The bar only translates away, so its layout slot would leave a black
+  // band above the homepage skeleton. Pull the page up with it.
+  useEffect(() => {
+    document.documentElement.classList.toggle("nav-away", hide);
+    return () => document.documentElement.classList.remove("nav-away");
+  }, [hide]);
+
   // Allow body scroll even when mobile menu is open (no scroll lock)
   useEffect(() => {
     return () => {
@@ -264,7 +271,7 @@ export default function Header() {
 
   return (
     <>
-      <header className={`sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/70 bg-neutral-950/80 border-b border-white/10 transition-transform duration-300 ${hide ? "-translate-y-full" : "translate-y-0"}`}>
+      <header className={`site-header sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/70 bg-neutral-950/80 border-b border-white/10 ${hide ? "-translate-y-full" : "translate-y-0"}`}>
         <div className="container flex h-20 items-center gap-4">
           {/* Left cluster: brand + nav */}
           <div className="flex items-center gap-6">
