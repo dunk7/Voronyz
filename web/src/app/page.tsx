@@ -18,10 +18,18 @@ function HomeSlide() {
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 66vw"
-                className="object-contain object-[60%_50%] bg-black"
+                className="object-contain object-center bg-black"
               />
             </div>
           </HeroParallax>
+        </div>
+        <div className="mt-4 max-w-xl text-left">
+          <p className="text-sm font-medium uppercase tracking-[0.18em] text-neutral-400">
+            V3 Slides
+          </p>
+          <p className="mt-2 text-base leading-relaxed text-neutral-200 sm:text-lg">
+            Lattice underfoot, open the whole way down. Printed as one piece.
+          </p>
         </div>
       </div>
     </section>
@@ -34,13 +42,13 @@ export default function Home() {
       <section className="hero-stage relative min-h-[100svh] overflow-hidden bg-black">
         <FootGlowSection hero />
 
-        <div className="relative z-[1] mx-auto flex min-h-[100svh] max-w-7xl items-center px-4 sm:px-6 lg:px-8">
-          <div className="w-full max-w-xl space-y-5 sm:space-y-6 lg:max-w-[34%]">
-            <p className="hero-stagger-1 uppercase tracking-[0.18em] text-[11px] sm:text-xs font-medium text-neutral-300">
+        <div className="relative z-[1] mx-auto flex min-h-[100svh] max-w-7xl items-end px-4 pb-10 sm:px-6 sm:pb-14 lg:px-8">
+          <div className="w-full max-w-xl space-y-3 sm:space-y-4">
+            <p className="uppercase tracking-[0.18em] text-[11px] sm:text-xs font-medium text-neutral-300">
               Voronyz Engineering
             </p>
 
-            <h1 className="hero-stagger-2 text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-semibold leading-[1.08] sm:leading-[1.1] tracking-tight text-white">
+            <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-semibold leading-[1.08] sm:leading-[1.1] tracking-tight text-white">
               3D Printed<br className="hidden sm:block" /> Footwear
             </h1>
           </div>
