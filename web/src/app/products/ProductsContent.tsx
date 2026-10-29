@@ -8,6 +8,7 @@ import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 import { FILAMENT_SLUG, getAccessoryCatalogSeed } from "@/lib/filament";
+import { STL_FILES_SLUG } from "@/lib/stlFiles";
 import { APPAREL_CATALOG, apparelCoverObjectPositionClass } from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
@@ -54,6 +55,7 @@ const productMeta: Record<string, {
   "tpu-90a-filament": {
     altImage: "/products/tpu-90a-filament/pink-tpu-90a-spool-angle.jpg",
   },
+  "super-high-tech-stl": {},
 };
 
 function cardMetaForSlug(slug: string) {
@@ -205,7 +207,7 @@ export default function ProductsContent({
   /** Footwear stays heading-only (like Apparel on home) — no supporting paragraph. */
   const subheading =
     category === "accessories"
-      ? "Engineered materials — TPU-90A filament, made for makers."
+      ? "TPU-90A filament and super high-tech STL files."
       : category === "health"
       ? "Helping the small businesses we support and stand for grow and be seen on the Voronyz marketplace."
       : null;
@@ -533,6 +535,80 @@ export default function ProductsContent({
         )}
 
         {isHomeFootwearTeaser ? betweenFootwearAndApparel : null}
+        {isHomeFootwearTeaser ? (
+          <section
+            id="engineering"
+            aria-labelledby="home-engineering-heading"
+            className="mt-16 sm:mt-24"
+          >
+            <div className="mb-8 sm:mb-10 text-center">
+              <h2 id="home-engineering-heading" className={homeSectionTitleClass}>
+                Engineering
+              </h2>
+            </div>
+            <div className="grid grid-cols-2 gap-4 sm:gap-6">
+              {getAccessoryCatalogSeed().map((p) => {
+                const slugKey = (p.slug || "").trim().toLowerCase();
+                const { cover, alt } = getImages(p);
+                const isNavigating = navigatingSlug === p.slug;
+                return (
+                  <Link
+                    key={p.id}
+                    href={`/products/${p.slug}`}
+                    onClick={(e) => handleCardClick(e, p.slug)}
+                    className={`group block outline-none cursor-pointer transition-all duration-200 active:scale-[0.98] ${
+                      isNavigating ? "pointer-events-none" : ""
+                    }`}
+                  >
+                    <div
+                      className={`relative aspect-square w-full overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:shadow-xl group-hover:ring-black/10 ${
+                        isNavigating ? "ring-black/10 shadow-xl" : ""
+                      }`}
+                    >
+                      <SoftImage
+                        key={cover}
+                        src={cover}
+                        alt={p.name}
+                        fill
+                        className={`object-cover transition-all duration-500 ${
+                          alt ? "group-hover:opacity-0" : "group-hover:scale-105"
+                        } ${isNavigating ? "scale-105 brightness-90" : ""}`}
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                      />
+                      {alt && (
+                        <SoftImage
+                          key={alt}
+                          src={alt}
+                          alt={`${p.name} – alternate view`}
+                          fill
+                          showLogoPlaceholder={false}
+                          className="object-cover opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
+                          sizes="(max-width: 768px) 50vw, 33vw"
+                          loading="lazy"
+                        />
+                      )}
+                      {isNavigating && (
+                        <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/20 backdrop-blur-[2px]">
+                          <LogoLoader size="sm" tone="light" showBar={false} className="!gap-0" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-4 px-0.5">
+                      <h3 className="text-[15px] font-semibold text-neutral-900 transition-colors group-hover:text-black line-clamp-2">
+                        {slugKey === STL_FILES_SLUG ? "STL Super High-Tech" : p.name}
+                      </h3>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+            <div className="mt-10 sm:mt-12 flex justify-center">
+              <Link href="/accessories" className={SHOP_ALL_CTA_CLASS}>
+                Shop all engineering
+              </Link>
+            </div>
+          </section>
+        ) : null}
         {footGlow}
         {apparelSection}
 

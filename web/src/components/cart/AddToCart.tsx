@@ -56,6 +56,10 @@ export type AddToCartProps = {
   requireStudentName?: boolean;
   /** Skip footwear size/gender UI (e.g. accessories with One Size). */
   hideSizeSelector?: boolean;
+  /** Skip the color picker (digital files). The first color stays selected. */
+  hideColorSelector?: boolean;
+  /** Crossed-out price shown beside the sale price on the product page. */
+  compareAtCents?: number;
   /** Use the product `sizes` list directly (apparel XS–XXL) instead of footwear gender sizes. */
   useCatalogSizes?: boolean;
   /** Replace size UI with carry-style options (OWB / IWB). */
@@ -143,6 +147,8 @@ export default function AddToCart({
   defaultGender = "men",
   requireStudentName = false,
   hideSizeSelector = false,
+  hideColorSelector = false,
+  compareAtCents,
   useCatalogSizes = false,
   carryStyles = [],
   selectedCarryStyleId,
@@ -650,7 +656,7 @@ export default function AddToCart({
               })}
             </div>
           </div>
-        ) : (
+        ) : hideColorSelector ? null : (
         /* Primary Color */
         <div className="grid gap-2">
           <label className="text-sm text-neutral-700">Primary Color</label>
@@ -895,11 +901,11 @@ export default function AddToCart({
           </div>
         )}
 
-        {apparelOffer ? (
+        {apparelOffer || (typeof compareAtCents === "number" && compareAtCents > priceCents) ? (
           <SalePrice
             priceCents={priceCents}
-            compareAtCents={apparelOffer.compareAtCents}
-            percentOff={apparelOffer.percentOff}
+            compareAtCents={apparelOffer?.compareAtCents ?? compareAtCents}
+            percentOff={apparelOffer?.percentOff}
             quantity={quantity}
           />
         ) : null}
@@ -911,7 +917,7 @@ export default function AddToCart({
             onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
             className="w-20 h-[48px] rounded-md border border-black/10 px-3 py-2 text-sm text-neutral-900"
           />
-          {!apparelOffer ? (
+          {!apparelOffer && !(typeof compareAtCents === "number" && compareAtCents > priceCents) ? (
             <div className="flex items-center">
               <span className={SHOP_PRICE_CLASS}>{formattedTotal}</span>
             </div>

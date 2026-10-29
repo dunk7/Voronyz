@@ -34,6 +34,7 @@ import {
 } from "@/lib/violettePonybeadAnimals";
 import { GATORS_SLUG, GATORS_THUMBNAIL_URL } from "@/lib/gators";
 import { FILAMENT_SLUG, FILAMENT_THUMBNAIL_URL } from "@/lib/filament";
+import { STL_FILES_SLUG, STL_FILES_THUMBNAIL_URL } from "@/lib/stlFiles";
 import {
   LATTICE_INSOLES_SLUG,
   LATTICE_INSOLES_THUMBNAIL_URL,
@@ -50,6 +51,7 @@ export function getProductThumbnail(input: { slug?: string; images?: unknown }):
   if (isViolettePonybeadSlug(input.slug)) return VIOLETTE_PONYBEAD_THUMBNAIL_URL;
   if (input.slug === GATORS_SLUG) return GATORS_THUMBNAIL_URL;
   if (input.slug === FILAMENT_SLUG) return FILAMENT_THUMBNAIL_URL;
+  if (input.slug === STL_FILES_SLUG) return STL_FILES_THUMBNAIL_URL;
   if (input.slug === LATTICE_INSOLES_SLUG) return LATTICE_INSOLES_THUMBNAIL_URL;
   const apparel = getApparelItem(input.slug);
   if (apparel) return apparel.image;

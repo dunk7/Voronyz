@@ -32,6 +32,16 @@ import {
   FILAMENT_VARIANTS,
 } from "../src/lib/filament";
 import {
+  STL_FILES_DESCRIPTION_SHORT,
+  STL_FILES_IMAGES,
+  STL_FILES_NAME,
+  STL_FILES_PRICE_CENTS,
+  STL_FILES_PRIMARY_COLORS,
+  STL_FILES_SIZES,
+  STL_FILES_SLUG,
+  STL_FILES_VARIANTS,
+} from "../src/lib/stlFiles";
+import {
   LATTICE_INSOLES_DESCRIPTION_SHORT,
   LATTICE_INSOLES_IMAGES,
   LATTICE_INSOLES_NAME,
@@ -461,6 +471,49 @@ async function main() {
         },
       });
       console.log("Updated TPU-90A Filament product and variants.");
+    }
+
+    const existingStl = await prisma.product.findUnique({ where: { slug: STL_FILES_SLUG } });
+    if (!existingStl) {
+      await prisma.product.create({
+        data: {
+          slug: STL_FILES_SLUG,
+          name: STL_FILES_NAME,
+          description: STL_FILES_DESCRIPTION_SHORT,
+          priceCents: STL_FILES_PRICE_CENTS,
+          currency: "usd",
+          images: [...STL_FILES_IMAGES],
+          primaryColors: [...STL_FILES_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...STL_FILES_SIZES],
+          variants: { create: STL_FILES_VARIANTS.map((v) => ({ ...v })) },
+        },
+      });
+      console.log("Seeded product:", STL_FILES_SLUG);
+    } else {
+      await prisma.product.update({
+        where: { id: existingStl.id },
+        data: {
+          name: STL_FILES_NAME,
+          description: STL_FILES_DESCRIPTION_SHORT,
+          priceCents: STL_FILES_PRICE_CENTS,
+          images: [...STL_FILES_IMAGES],
+          primaryColors: [...STL_FILES_PRIMARY_COLORS],
+          sizes: [...STL_FILES_SIZES],
+        },
+      });
+      for (const v of STL_FILES_VARIANTS) {
+        await prisma.variant.upsert({
+          where: { sku: v.sku },
+          update: { stock: v.stock, color: v.color },
+          create: {
+            product: { connect: { id: existingStl.id } },
+            color: v.color,
+            sku: v.sku,
+            stock: v.stock,
+          },
+        });
+      }
     }
 
     // ── Lattice Insoles (All Footwear — same US shoe sizes as the rest of the lineup) ──
