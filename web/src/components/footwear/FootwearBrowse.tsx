@@ -7,6 +7,10 @@ import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 import type { FootwearListProduct } from "@/lib/footwear";
 import { sortFootwearForTab } from "@/lib/footwearRanking";
+import {
+  LATTICE_INSOLES_SLUG,
+  LATTICE_INSOLES_THUMBNAIL_URL,
+} from "@/lib/latticeInsoles";
 import { TRAIL_MIX_SLUG } from "@/lib/trailMix";
 
 type BrowseProduct = FootwearListProduct;
@@ -20,6 +24,10 @@ type FootwearBrowseProps = {
 const SLIP_ONS_BROWSE = {
   cover: "/products/slip-ons/listing-cover.jpg",
   alt: "/products/slip-ons/listing-alt.jpg",
+} as const;
+
+const LATTICE_INSOLES_BROWSE = {
+  cover: LATTICE_INSOLES_THUMBNAIL_URL,
 } as const;
 
 function RankCard({
@@ -38,8 +46,17 @@ function RankCard({
   const slugKey = (product.slug || "").trim().toLowerCase();
   const soldOut = slugKey === TRAIL_MIX_SLUG;
   const isSlipOns = slugKey === "slip-ons";
-  const coverSrc = isSlipOns ? SLIP_ONS_BROWSE.cover : cover;
-  const altSrc = isSlipOns ? SLIP_ONS_BROWSE.alt : alt;
+  const isLatticeInsoles = slugKey === LATTICE_INSOLES_SLUG;
+  const coverSrc = isSlipOns
+    ? SLIP_ONS_BROWSE.cover
+    : isLatticeInsoles
+      ? LATTICE_INSOLES_BROWSE.cover
+      : cover;
+  const altSrc = isSlipOns
+    ? SLIP_ONS_BROWSE.alt
+    : isLatticeInsoles
+      ? undefined
+      : alt;
 
   function handleClick(e: React.MouseEvent) {
     e.preventDefault();
@@ -90,18 +107,18 @@ function RankCard({
             </div>
           ) : null}
 
+          {/* Name stays on this photo so a scroll never leaves it floating between shoes. */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/80 via-black/45 to-transparent px-4 pb-3.5 pt-14 sm:px-5 sm:pb-4">
+            <h2 className="text-lg font-semibold leading-tight tracking-tight text-white line-clamp-2 sm:text-xl">
+              {product.name}
+            </h2>
+          </div>
+
           {navigating ? (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/25 backdrop-blur-[2px]">
               <LogoLoader size="sm" tone="light" showBar={false} className="!gap-0" />
             </div>
           ) : null}
-        </div>
-
-        {/* Name sits under the photo, same as apparel — not in a bar attached to the image. */}
-        <div className="mt-4 px-0.5">
-          <h2 className="text-[15px] font-semibold text-white line-clamp-2">
-            {product.name}
-          </h2>
         </div>
       </Link>
     </article>
@@ -121,11 +138,14 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
           Footwear
         </h1>
 
-        <div className="mt-6 flex flex-col gap-6 sm:gap-8" role="list">
+        <div className="mt-6 flex flex-col" role="list">
           {ranked.map((product, index) => {
             const { cover, alt } = getImages(product);
             return (
               <div key={product.id} role="listitem">
+                {index > 0 ? (
+                  <div className="mx-1 my-5 h-px bg-white/20 sm:my-6" aria-hidden />
+                ) : null}
                 <RankCard
                   product={product}
                   cover={cover}

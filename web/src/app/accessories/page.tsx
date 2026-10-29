@@ -6,7 +6,7 @@ import { Suspense } from "react";
 export const metadata: Metadata = {
   title: "Engineering – Voronyz",
   description:
-    "Shop Voronyz Engineering — TPU-90A filament, the same material we use for footwear.",
+    "Shop Voronyz Engineering — TPU 90A, foaming TPU Air, and super high-tech STL files.",
 };
 
 function EngineeringLoadingFallback() {
@@ -18,7 +18,7 @@ function EngineeringLoadingFallback() {
             Engineering
           </h1>
           <p className="mt-2 text-sm text-neutral-500 max-w-md">
-            Engineered materials — TPU-90A filament, made for makers.
+            TPU 90A and foaming TPU Air, plus super high-tech STL files.
           </p>
           <div className="mt-6 h-px bg-neutral-200" />
         </div>

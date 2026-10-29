@@ -595,17 +595,16 @@ html.site-dark ::selection {
 
 .foot-glow-hatch {
   mix-blend-mode: screen;
-  animation: foot-glow-overlay 14s ease-in-out infinite;
+  animation: foot-glow-overlay 8s ease-in-out infinite;
 }
 
-/* Always partly there. The line drawing only breathes in and out. */
 @keyframes foot-glow-overlay {
   0%,
   100% {
-    opacity: 0.38;
+    opacity: 0.18;
   }
   50% {
-    opacity: 0.72;
+    opacity: 0.55;
   }
 }
 
@@ -629,9 +628,18 @@ html.nav-away .site-header {
 }
 
 .foot-glow-hero-frame .foot-glow-layer {
-  top: -8%;
-  height: 108%;
-  object-position: center center;
+  object-fit: cover;
+  object-position: center top;
+  /*
+    The x-ray PNG has ~8.3% empty canvas above the glow and ~7.5% below.
+    Shift and enlarge so the glow meets the header with no black strip.
+  */
+  inset: auto;
+  left: 0;
+  right: 0;
+  top: -10%;
+  width: 100%;
+  height: 120%;
 }
 
 .foot-glow-print-frame {

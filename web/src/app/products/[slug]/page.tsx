@@ -44,20 +44,30 @@ import {
   GATORS_THUMBNAIL_URL,
 } from "@/lib/gators";
 import {
+  FILAMENT_COMPARE_AT_CENTS,
   FILAMENT_DESCRIPTION,
-  FILAMENT_HOW_ITS_MADE,
   FILAMENT_IMAGES,
+  FILAMENT_MATERIALS,
   FILAMENT_NAME,
+  FILAMENT_PRIMARY_COLORS,
   FILAMENT_SLUG,
   FILAMENT_THUMBNAIL_URL,
 } from "@/lib/filament";
+import {
+  STL_FILES_DESCRIPTION,
+  STL_FILES_HOW_ITS_MADE,
+  STL_FILES_IMAGES,
+  STL_FILES_NAME,
+  STL_FILES_SLUG,
+  STL_FILES_THUMBNAIL_URL,
+} from "@/lib/stlFiles";
 import {
   LATTICE_INSOLES_DESCRIPTION,
   LATTICE_INSOLES_HOW_ITS_MADE,
   LATTICE_INSOLES_IMAGES,
   LATTICE_INSOLES_NAME,
   LATTICE_INSOLES_SLUG,
-  LATTICE_INSOLES_THUMBNAIL_URL,
+  latticeInsolesCatalogProduct,
 } from "@/lib/latticeInsoles";
 import { isAccessorySlug, isApparelSlug, isFootwearSlug, isHealthSlug } from "@/lib/productCategories";
 import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION, SLIP_ONS_PRICE_CENTS } from "@/lib/footwear";
@@ -126,6 +136,44 @@ type ProductWithVariants = {
   updatedAt: Date;
 };
 
+function FilamentPrintNotes() {
+  return (
+    <div className="space-y-8 text-sm sm:text-base">
+      <section>
+        <h3 className="text-base font-semibold text-neutral-900">TPU 90A</h3>
+        <p className="mt-2">
+          Regular flexible TPU. Hardness stays at 90 Shore A. 1.75mm, 1kg. Pink and black.
+        </p>
+        <ul className="mt-3 list-disc space-y-1 pl-5">
+          <li>Nozzle 220–240°C. Start around 225°C.</li>
+          <li>Bed 40–60°C. A cool bed works if you use a glue stick.</li>
+          <li>Speed 20–40 mm/s. Direct drive is the easier setup.</li>
+          <li>Keep retraction short, or turn it off if the filament buckles.</li>
+          <li>Dry the spool before a long print. Wet TPU strings and pops.</li>
+        </ul>
+      </section>
+      <section>
+        <h3 className="text-base font-semibold text-neutral-900">TPU Air</h3>
+        <p className="mt-2">
+          Foaming TPU, black only. Heat is the softness control. A cooler nozzle stays denser and firmer, up around the low 90s A. A hotter nozzle foams the plastic, so the part gets lighter and softer, down through the 70s A. One kilogram prints a lot more volume once it is foaming.
+        </p>
+        <ul className="mt-3 list-disc space-y-1 pl-5">
+          <li>Nozzle 210–270°C. 260°C is a solid place to start.</li>
+          <li>Bed 40–60°C. Glue stick or PEI helps it stay down.</li>
+          <li>Speed at or under 50 mm/s.</li>
+          <li>Drop the flow as the temperature goes up. The filament expands, so a normal 100% flow over-extrudes.</li>
+          <li>230–240°C: denser, firmer, flow about 85–90%.</li>
+          <li>250°C: lighter, flow about 65–70%.</li>
+          <li>260°C: a balanced foam, flow about 55–60%.</li>
+          <li>270°C: softest and lightest, flow about 50–55%.</li>
+          <li>Run a small cube first. Your printer, nozzle, and speed move these numbers.</li>
+          <li>Dry it, and keep it in a sealed bag with desiccant.</li>
+        </ul>
+      </section>
+    </div>
+  );
+}
+
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   if (slug.trim().toLowerCase() === VIOLETTE_PONYBEAD_LEGACY_SLUG) {
@@ -159,6 +207,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       product = apparelCatalogProduct(catalogFallback);
     } else if (slug === "magikid-shoes") {
       product = magikidCatalogProduct();
+    } else if (slug === LATTICE_INSOLES_SLUG) {
+      product = latticeInsolesCatalogProduct();
     } else {
       return (
         <div className="bg-texture-white">
@@ -177,6 +227,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     const catalogFallback = getApparelItem(slug);
     if (catalogFallback) product = apparelCatalogProduct(catalogFallback);
     else if (slug === "magikid-shoes") product = magikidCatalogProduct();
+    else if (slug === LATTICE_INSOLES_SLUG) product = latticeInsolesCatalogProduct();
   }
   if (!product) return <div className="container py-12 text-neutral-900">Not found.</div>;
 
@@ -231,6 +282,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? [...GATORS_IMAGES]
     : slug === FILAMENT_SLUG
     ? [...FILAMENT_IMAGES]
+    : slug === STL_FILES_SLUG
+    ? [...STL_FILES_IMAGES]
     : slug === LATTICE_INSOLES_SLUG
     ? [...LATTICE_INSOLES_IMAGES]
     : getApparelItem(slug)
@@ -252,6 +305,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isViolettePonybead = isViolettePonybeadSlug(slug);
   const isGators = slug === GATORS_SLUG;
   const isFilament = slug === FILAMENT_SLUG;
+  const isStlFiles = slug === STL_FILES_SLUG;
   const isLatticeInsoles = slug === LATTICE_INSOLES_SLUG;
   const apparelItem = getApparelItem(slug);
   const isApparel = Boolean(apparelItem);
@@ -282,6 +336,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         ? GATORS_NAME
         : isFilament
           ? FILAMENT_NAME
+          : isStlFiles
+            ? STL_FILES_NAME
           : isLatticeInsoles
             ? LATTICE_INSOLES_NAME
           : apparelItem
@@ -305,6 +361,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? GATORS_DESCRIPTION
     : isFilament
     ? FILAMENT_DESCRIPTION
+    : isStlFiles
+    ? STL_FILES_DESCRIPTION
     : isLatticeInsoles
     ? LATTICE_INSOLES_DESCRIPTION
     : apparelItem?.slug === "voronyz-oversized-tee"
@@ -332,7 +390,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
           </svg>
-          {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
+          {isMagikidShoes ? "+$7 shipping" : isStlFiles ? "Digital file" : "Free US shipping"}
         </span>
       )}
 
@@ -341,8 +399,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       )}
       {isFilament && (
         <>
-          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">1kg spool</span>
-          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU-90A</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">1kg · 1.75mm</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">TPU 90A or TPU Air</span>
+        </>
+      )}
+      {isStlFiles && (
+        <>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">STL file</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Super high-tech</span>
         </>
       )}
       {isGators && (
@@ -362,12 +426,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Weatherproof</span>
         </>
       )}
-      {!isTrailMix && !isApparel && !isFilament && !isLatticeInsoles && !isViolettePonybead && (
+      {!isTrailMix && !isApparel && !isFilament && !isStlFiles && !isLatticeInsoles && !isViolettePonybead && (
         <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
           {isMagikidShoes ? "Made to order in <7 days" : "Made to order in <2 days"}
         </span>
       )}
-      {!isMagikidShoes && !isTrailMix && !isApparel && !isFilament && !isLatticeInsoles && !isViolettePonybead && (
+      {!isMagikidShoes && !isTrailMix && !isApparel && !isFilament && !isStlFiles && !isLatticeInsoles && !isViolettePonybead && (
         <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
       )}
       {isTrailMix && (
@@ -414,7 +478,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           galleryClassName="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
           addToCartProps={{
             variants: product.variants,
-            primaryColors: isTrailMix || isViolettePonybead ? trailMixColors : (product.primaryColors as string[]),
+            primaryColors: isFilament
+              ? [...FILAMENT_PRIMARY_COLORS]
+              : isTrailMix || isViolettePonybead
+                ? trailMixColors
+                : (product.primaryColors as string[]),
             productPriceCents: product.priceCents,
             ...(isDragonfly && {
               secondaryColors: (product.secondaryColors as string[]).filter(c => c.toLowerCase() !== "#007fff"),
@@ -450,6 +518,21 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             }),
             ...(isFilament && {
               hideSizeSelector: true,
+              compareAtCents: FILAMENT_COMPARE_AT_CENTS,
+              filamentMaterials: FILAMENT_MATERIALS.map((material) => ({
+                id: material.id,
+                label: material.label,
+                colors: material.colors.map((color) => ({
+                  id: color.id,
+                  label: color.label,
+                  swatch: color.swatch,
+                  ...("note" in color ? { note: color.note } : {}),
+                })),
+              })),
+            }),
+            ...(isStlFiles && {
+              hideSizeSelector: true,
+              hideColorSelector: true,
             }),
             ...(isApparel && {
               useCatalogSizes: true,
@@ -473,7 +556,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  {isMagikidShoes ? "+$7 shipping" : "Free US shipping"}
+                  {isMagikidShoes ? "+$7 shipping" : isStlFiles ? "Digital file" : "Free US shipping"}
                 </span>
               )}
               {isApparel && apparelItem?.comingSoon && (
@@ -517,13 +600,16 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                         : isGators
                           ? "Comfort clog"
                           : isFilament
-                            ? "TPU-90A filament"
+                            ? "Print settings"
+                            : isStlFiles
+                              ? "STL file"
                             : isLatticeInsoles
                               ? "TPU lattice"
                             : "How it's made"}
           </div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed">
-            {isDragonfly
+            {isFilament ? <FilamentPrintNotes /> : null}
+            {!isFilament && (isDragonfly
               ? "3D-printed with our TPU lattice for a springy feel, a breathable upper, and your choice of lace color."
               : isMagikidShoes
               ? MAGIKID_SHOES_HOW_ITS_MADE
@@ -545,15 +631,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? "Soft hand-feel and clean fits."
               : isGators
               ? GATORS_HOW_ITS_MADE
-              : isFilament
-              ? FILAMENT_HOW_ITS_MADE
+              : isStlFiles
+              ? STL_FILES_HOW_ITS_MADE
               : isLatticeInsoles
               ? LATTICE_INSOLES_HOW_ITS_MADE
-              : "Printed in foamed TPU, then finished to be light, cushioned, and ready to wear."}
+              : "Printed in foamed TPU, then finished to be light, cushioned, and ready to wear.")}
           </div>
         </div>
 
-        {!isFilament && (
+        {!isFilament && !isStlFiles && (
         <div className="mt-12">
           <h2 className="text-lg font-semibold text-neutral-900 mb-4">FAQs</h2>
           <FAQ
@@ -731,10 +817,22 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     };
   }
 
+  if (slug === STL_FILES_SLUG) {
+    const title = `${STL_FILES_NAME} – Voronyz`;
+    const description = STL_FILES_DESCRIPTION;
+    const images = [STL_FILES_THUMBNAIL_URL, ...STL_FILES_IMAGES];
+    return {
+      title,
+      description,
+      openGraph: { title, description, images },
+      twitter: { card: "summary_large_image", title, description, images },
+    };
+  }
+
   if (slug === LATTICE_INSOLES_SLUG) {
     const title = `${LATTICE_INSOLES_NAME} – Voronyz`;
     const description = LATTICE_INSOLES_DESCRIPTION;
-    const images = [LATTICE_INSOLES_THUMBNAIL_URL, ...LATTICE_INSOLES_IMAGES];
+    const images = [...LATTICE_INSOLES_IMAGES];
     return {
       title,
       description,

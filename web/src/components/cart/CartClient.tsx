@@ -528,9 +528,10 @@ export default function CartClient() {
                       Pre-order
                     </span>
                   )}
-                  {it.variant?.name && (
+                  {it.variant?.name && it.productSlug !== "super-high-tech-stl" && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-black/5 px-2 py-0.5 capitalize">
                       {it.productSlug !== "antioxidant-trail-mix" &&
+                        it.productSlug !== "tpu-90a-filament" &&
                         !isViolettePonybeadSlug(it.productSlug) && (
                         <span
                           className="inline-block h-3 w-3 rounded-full ring-1 ring-black/10"
@@ -550,6 +551,8 @@ export default function CartClient() {
                     <span className="rounded-full bg-black/5 px-2 py-0.5">
                       {it.productSlug === "tpu-90a-filament"
                         ? "1kg spool"
+                        : it.productSlug === "super-high-tech-stl"
+                        ? "Digital file"
                         : (
                           <>
                             Size {String(it.attributes.size)}

@@ -36,6 +36,12 @@ type FlavorOption = {
   description?: string;
 };
 
+type FilamentMaterialOption = {
+  id: string;
+  label: string;
+  colors: { id: string; label: string; swatch: string; note?: string }[];
+};
+
 export type AddToCartProps = {
   variants: VariantProps[];
   primaryColors: string[];
@@ -56,6 +62,15 @@ export type AddToCartProps = {
   requireStudentName?: boolean;
   /** Skip footwear size/gender UI (e.g. accessories with One Size). */
   hideSizeSelector?: boolean;
+  /** Skip the color picker (digital files). The first color stays selected. */
+  hideColorSelector?: boolean;
+  /** Crossed-out price shown beside the sale price on the product page. */
+  compareAtCents?: number;
+  /**
+   * Filament only: material (TPU 90A / TPU Air) plus the colors that material
+   * actually ships in. Variant color is `${materialId}:${colorId}`.
+   */
+  filamentMaterials?: FilamentMaterialOption[];
   /** Use the product `sizes` list directly (apparel XS–XXL) instead of footwear gender sizes. */
   useCatalogSizes?: boolean;
   /** Replace size UI with carry-style options (OWB / IWB). */
@@ -127,6 +142,97 @@ interface CartData {
   shippingInsurance?: boolean;
 }
 
+function FilamentPickers({
+  materials,
+  selectedKey,
+  onMaterial,
+  onColor,
+  priceFor,
+  available,
+}: {
+  materials: FilamentMaterialOption[];
+  selectedKey: string | undefined;
+  onMaterial: (materialId: string) => void;
+  onColor: (colorId: string) => void;
+  priceFor: (key: string) => number | null;
+  available: (key: string) => boolean;
+}) {
+  const [materialId, colorId] = (selectedKey || "").split(":");
+  const material = materials.find((item) => item.id === materialId) ?? materials[0];
+  if (!material) return null;
+
+  return (
+    <>
+      <div className="grid gap-2">
+        <label className="text-sm text-neutral-700">Material</label>
+        <div className="flex flex-wrap gap-2">
+          {materials.map((item) => {
+            const selected = item.id === material.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onMaterial(item.id)}
+                className={`rounded-full px-4 py-2 text-sm ring-1 transition ${
+                  selected
+                    ? "bg-black text-white ring-black"
+                    : "bg-white text-neutral-900 ring-black/10 hover:bg-black/5"
+                }`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="grid gap-2">
+        <label className="text-sm text-neutral-700">Color</label>
+        <div className="flex flex-wrap gap-2">
+          {material.colors.map((color) => {
+            const key = `${material.id}:${color.id}`;
+            const selected = color.id === colorId && material.id === materialId;
+            const inStock = available(key);
+            const cents = priceFor(key);
+            return (
+              <button
+                key={key}
+                type="button"
+                disabled={!inStock}
+                onClick={() => inStock && onColor(color.id)}
+                className={`flex items-center rounded-full px-2 py-2 text-sm ring-1 transition ${
+                  selected
+                    ? "bg-black text-white ring-black"
+                    : inStock
+                      ? "bg-white text-neutral-900 ring-black/10 hover:bg-black/5"
+                      : "cursor-not-allowed bg-neutral-50 text-neutral-400 ring-neutral-200"
+                }`}
+              >
+                <span
+                  className={`mr-2 inline-block h-4 w-4 flex-shrink-0 rounded-full border ${
+                    selected ? "border-white" : "border-black/20"
+                  }`}
+                  style={{ backgroundColor: color.swatch }}
+                />
+                <span>{color.label}</span>
+                {typeof cents === "number" ? (
+                  <span className={`ml-2 text-xs tabular-nums ${selected ? "text-white/80" : "text-neutral-500"}`}>
+                    {formatCentsAsCurrency(cents)}
+                  </span>
+                ) : null}
+                {color.note ? (
+                  <span className={`ml-2 text-[11px] font-semibold uppercase tracking-wide ${selected ? "text-emerald-200" : "text-emerald-700"}`}>
+                    {color.note}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function AddToCart({ 
   variants, 
   primaryColors, 
@@ -143,6 +249,9 @@ export default function AddToCart({
   defaultGender = "men",
   requireStudentName = false,
   hideSizeSelector = false,
+  hideColorSelector = false,
+  compareAtCents,
+  filamentMaterials = [],
   useCatalogSizes = false,
   carryStyles = [],
   selectedCarryStyleId,
@@ -161,6 +270,7 @@ export default function AddToCart({
   const hasFulfillmentOptions = fulfillmentOptions.length > 0;
   const hasCarryStyles = carryStyles.length > 0;
   const hasFlavorOptions = flavorOptions.length > 0;
+  const hasFilamentMaterials = filamentMaterials.length > 0;
   const oneSizeLabel = sizes[0] || "One Size";
   const catalogSizes = useMemo(
     () => (sizes.length > 0 ? sizes : ["S", "M", "L", "XL"]),
@@ -378,6 +488,33 @@ export default function AddToCart({
     onPrimaryColorChange?.(selectedPrimary);
   }, [selectedPrimary, onPrimaryColorChange]);
 
+  function filamentKey(materialId: string, colorId: string) {
+    return `${materialId}:${colorId}`;
+  }
+
+  function filamentChoiceLabel(key: string) {
+    const [materialId, colorId] = key.split(":");
+    const material = filamentMaterials.find((item) => item.id === materialId);
+    const color = material?.colors.find((item) => item.id === colorId);
+    if (!material || !color) return key;
+    return `${material.label} · ${color.label}`;
+  }
+
+  function selectFilamentMaterial(materialId: string) {
+    const material = filamentMaterials.find((item) => item.id === materialId);
+    if (!material) return;
+    const currentColor = (selectedPrimary || "").split(":")[1];
+    const color =
+      material.colors.find((item) => item.id === currentColor) ?? material.colors[0];
+    setSelectedPrimary(filamentKey(material.id, color.id));
+  }
+
+  function selectFilamentColor(colorId: string) {
+    const materialId = (selectedPrimary || "").split(":")[0] || filamentMaterials[0]?.id;
+    if (!materialId) return;
+    setSelectedPrimary(filamentKey(materialId, colorId));
+  }
+
   function selectCarryStyle(id: string) {
     setSelectedSize(id);
     onCarryStyleChange?.(id);
@@ -473,7 +610,12 @@ export default function AddToCart({
           variantId: selectedVariant.id,
           quantity,
           priceCents,
-          variant: { name: selectedPrimary },
+          variant: {
+            name:
+              hasFilamentMaterials && selectedPrimary
+                ? filamentChoiceLabel(selectedPrimary)
+                : selectedPrimary,
+          },
           attributes: { 
             ...(selectedSecondary && { color: selectedSecondary }), 
             size: selectedSize,
@@ -650,7 +792,16 @@ export default function AddToCart({
               })}
             </div>
           </div>
-        ) : (
+        ) : hasFilamentMaterials ? (
+          <FilamentPickers
+            materials={filamentMaterials}
+            selectedKey={selectedPrimary}
+            onMaterial={selectFilamentMaterial}
+            onColor={selectFilamentColor}
+            priceFor={(key) => variants.find((variant) => variant.color === key)?.priceCents ?? null}
+            available={isPrimaryAvailable}
+          />
+        ) : hideColorSelector ? null : (
         /* Primary Color */
         <div className="grid gap-2">
           <label className="text-sm text-neutral-700">Primary Color</label>
@@ -895,11 +1046,11 @@ export default function AddToCart({
           </div>
         )}
 
-        {apparelOffer ? (
+        {apparelOffer || (typeof compareAtCents === "number" && compareAtCents > priceCents) ? (
           <SalePrice
             priceCents={priceCents}
-            compareAtCents={apparelOffer.compareAtCents}
-            percentOff={apparelOffer.percentOff}
+            compareAtCents={apparelOffer?.compareAtCents ?? compareAtCents}
+            percentOff={apparelOffer?.percentOff}
             quantity={quantity}
           />
         ) : null}
@@ -911,7 +1062,7 @@ export default function AddToCart({
             onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
             className="w-20 h-[48px] rounded-md border border-black/10 px-3 py-2 text-sm text-neutral-900"
           />
-          {!apparelOffer ? (
+          {!apparelOffer && !(typeof compareAtCents === "number" && compareAtCents > priceCents) ? (
             <div className="flex items-center">
               <span className={SHOP_PRICE_CLASS}>{formattedTotal}</span>
             </div>

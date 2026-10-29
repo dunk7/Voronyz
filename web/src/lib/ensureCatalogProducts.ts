@@ -42,6 +42,16 @@ import {
   FILAMENT_VARIANTS,
 } from "@/lib/filament";
 import {
+  STL_FILES_DESCRIPTION_SHORT,
+  STL_FILES_IMAGES,
+  STL_FILES_NAME,
+  STL_FILES_PRICE_CENTS,
+  STL_FILES_PRIMARY_COLORS,
+  STL_FILES_SIZES,
+  STL_FILES_SLUG,
+  STL_FILES_VARIANTS,
+} from "@/lib/stlFiles";
+import {
   LATTICE_INSOLES_DESCRIPTION_SHORT,
   LATTICE_INSOLES_IMAGES,
   LATTICE_INSOLES_NAME,
@@ -590,6 +600,71 @@ export async function ensureFilament(): Promise<void> {
   for (const v of FILAMENT_VARIANTS) {
     await prisma.variant.upsert({
       where: { sku: v.sku },
+      update: { stock: v.stock, color: v.color, priceCents: v.priceCents },
+      create: {
+        product: { connect: { id: existing.id } },
+        color: v.color,
+        sku: v.sku,
+        stock: v.stock,
+        priceCents: v.priceCents,
+      },
+    });
+  }
+
+  const keepSkus = FILAMENT_VARIANTS.map((v) => v.sku);
+  await prisma.variant.deleteMany({
+    where: {
+      productId: existing.id,
+      sku: { notIn: [...keepSkus] },
+    },
+  });
+}
+
+/** Idempotently upsert the Engineering STL file listing. */
+export async function ensureStlFiles(): Promise<void> {
+  let existing = await prisma.product.findUnique({ where: { slug: STL_FILES_SLUG } });
+
+  if (!existing) {
+    try {
+      await prisma.product.create({
+        data: {
+          slug: STL_FILES_SLUG,
+          name: STL_FILES_NAME,
+          description: STL_FILES_DESCRIPTION_SHORT,
+          priceCents: STL_FILES_PRICE_CENTS,
+          currency: "usd",
+          images: [...STL_FILES_IMAGES],
+          primaryColors: [...STL_FILES_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...STL_FILES_SIZES],
+          variants: {
+            create: STL_FILES_VARIANTS.map((v) => ({ ...v })),
+          },
+        },
+      });
+      return;
+    } catch (error) {
+      existing = await prisma.product.findUnique({ where: { slug: STL_FILES_SLUG } });
+      if (!existing) throw error;
+    }
+  }
+
+  await prisma.product.update({
+    where: { id: existing.id },
+    data: {
+      name: STL_FILES_NAME,
+      description: STL_FILES_DESCRIPTION_SHORT,
+      priceCents: STL_FILES_PRICE_CENTS,
+      images: [...STL_FILES_IMAGES],
+      primaryColors: [...STL_FILES_PRIMARY_COLORS],
+      secondaryColors: [],
+      sizes: [...STL_FILES_SIZES],
+    },
+  });
+
+  for (const v of STL_FILES_VARIANTS) {
+    await prisma.variant.upsert({
+      where: { sku: v.sku },
       update: { stock: v.stock, color: v.color },
       create: {
         product: { connect: { id: existing.id } },
@@ -600,7 +675,7 @@ export async function ensureFilament(): Promise<void> {
     });
   }
 
-  const keepSkus = FILAMENT_VARIANTS.map((v) => v.sku);
+  const keepSkus = STL_FILES_VARIANTS.map((v) => v.sku);
   await prisma.variant.deleteMany({
     where: {
       productId: existing.id,
@@ -843,6 +918,7 @@ export async function ensureCatalogProducts(): Promise<void> {
         removeGunHolster(),
         removeRcCarStickers(),
         ensureFilament(),
+        ensureStlFiles(),
         ensureTrailMix(),
         ensureViolettePonybeadAnimals(),
         ensureApparelProducts(),
@@ -938,6 +1014,7 @@ export async function ensureAccessoriesCatalog(): Promise<void> {
       await ensureProductCategoryColumns();
       await removeGunHolster();
       await ensureFilament();
+      await ensureStlFiles();
       accessoriesEnsureAt = Date.now();
     } catch (error) {
       console.error("ensureAccessoriesCatalog failed:", error);
