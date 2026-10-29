@@ -16,6 +16,12 @@ import {
   applyOrderLevelDiscountCents,
 } from "@/lib/affiliateApproveLogic";
 import { clearDiscountUrgencySession } from "@/lib/discountUrgencySession";
+import {
+  getHalloweenPairTarget,
+  HALLOWEEN_PAIR_EVENT,
+  isHalloweenPairSeason,
+  readHalloweenPairOptIn,
+} from "@/lib/halloweenPair";
 import { resolveIsPreOrder } from "@/lib/preorder";
 import {
   cartHasInsurableItems,
@@ -68,6 +74,7 @@ const SHIPPING_STORAGE_KEY = "checkoutShipping";
 export default function CartClient() {
   const [items, setItems] = useState<CartItem[]>([]);
   const [discountCode, setDiscountCode] = useState<string | null>(null);
+  const [halloweenPair, setHalloweenPair] = useState(false);
   const [shippingInsurance, setShippingInsurance] = useState(false);
   const [shipping, setShipping] = useState<VerifiedShipping | null>(null);
   const [inputValue, setInputValue] = useState("");
@@ -247,6 +254,17 @@ export default function CartClient() {
     }
   }, [isLoading, discountCode]);
 
+  useEffect(() => {
+    const sync = () => setHalloweenPair(readHalloweenPairOptIn() && isHalloweenPairSeason());
+    sync();
+    window.addEventListener(HALLOWEEN_PAIR_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(HALLOWEEN_PAIR_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
   const clearMessage = () => setMessage("");
   const saveCart = (cartData: CartData) => {
     setItems(cartData.items);
@@ -344,14 +362,25 @@ export default function CartClient() {
   const freeItemLineIndex = isOneItemFreeDiscountCode(discountCode)
     ? getOneFreeItemLineIndex(items.map((it) => unitPriceForItem(it, discountCode)))
     : -1;
+  const orderLevelBase = itemDiscountedSubtotal - oneItemFreeOff;
+  const halloweenTarget = halloweenPair
+    ? getHalloweenPairTarget(
+        items.map((it) => ({
+          quantity: it.quantity,
+          unitCents: unitPriceForItem(it, discountCode),
+        })),
+        freeItemLineIndex
+      )
+    : null;
+  const halloweenOff = halloweenTarget?.savingsCents ?? 0;
   const orderLevelOff =
     discountCode && affiliateDiscountCodes.has(discountCode)
       ? applyOrderLevelDiscountCents(
-          itemDiscountedSubtotal,
+          orderLevelBase - halloweenOff,
           AFFILIATE_ORDER_DISCOUNT_CENTS
         )
       : 0;
-  const subtotal = itemDiscountedSubtotal - oneItemFreeOff - orderLevelOff;
+  const subtotal = orderLevelBase - halloweenOff - orderLevelOff;
   const discountSavings = Math.max(0, subtotalBeforeDiscount - subtotal);
   const canOfferShippingInsurance = cartHasInsurableItems(items);
   const insuranceEnabled = canOfferShippingInsurance && shippingInsurance;
@@ -424,6 +453,7 @@ export default function CartClient() {
           paymentMethod: isInternational ? "card" : method,
           shippingInsurance: insuranceEnabled,
           shipping: shippingPayload,
+          halloweenPair,
           successUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/success`,
           cancelUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/cancel`,
         }),
@@ -640,6 +670,9 @@ export default function CartClient() {
                   if (idx === freeItemLineIndex && oneItemFreeOff > 0) {
                     discountedLine = Math.max(0, discountedLine - unit);
                   }
+                  if (halloweenTarget && idx === halloweenTarget.index) {
+                    discountedLine = Math.max(0, discountedLine - halloweenTarget.savingsCents);
+                  }
                   const size =
                     it.attributes?.size != null ? String(it.attributes.size) : undefined;
                   const offer = getApparelSizeOffer(it.productSlug, size, it.variant?.name);
@@ -740,6 +773,13 @@ export default function CartClient() {
             {message && (
               <div className={`mt-2 text-sm p-2 rounded-md bg-white ${message.includes('applied') || message.includes('removed') ? 'text-green-700 border border-green-200' : 'text-red-700 border border-red-200'}`}>
                 {message}
+              </div>
+            )}
+            {halloweenPair && (
+              <div className="mt-2 text-sm text-neutral-800 bg-neutral-50 p-2 rounded-md border border-black/10">
+                {halloweenOff > 0
+                  ? `Halloween pair — one item is half off this order. You save ${formatCentsAsCurrency(halloweenOff)}. Another order can use it again.`
+                  : "Halloween pair is on. Add one more item and that extra one is half off."}
               </div>
             )}
             {discountCode && (
@@ -926,6 +966,7 @@ export default function CartClient() {
                   discountCode: discountCode || '',
                   shippingInsurance: insuranceEnabled,
                   shipping: shippingPayload,
+                  halloweenPair,
                 }),
               });
 
