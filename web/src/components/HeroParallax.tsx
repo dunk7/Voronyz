@@ -28,9 +28,12 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
         // Scrub from the moment the slide enters the viewport. Measuring
         // against offsetTop made a section below the hero look finished
         // as soon as the page moved.
-        const travel = Math.max(elementHeight * 0.9, window.innerHeight * 0.55);
+        // Hold the closed frame until the slide is actually in front of the
+        // reader, then open it across the rest of the section.
         const entered = window.innerHeight - rect.top;
-        const rawProgress = Math.max(0, Math.min(1, entered / travel));
+        const arrived = window.innerHeight * 0.72;
+        const travel = Math.max(elementHeight * 0.85, window.innerHeight * 0.65);
+        const rawProgress = Math.max(0, Math.min(1, (entered - arrived) / travel));
         smoothedRef.current = rawProgress;
         setSmoothedProgress(rawProgress);
         ticking = false;

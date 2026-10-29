@@ -51,16 +51,16 @@ test("Dragonfly thumbnail is the side-profile photo", () => {
   );
 });
 
-test("All Footwear lists Dragonfly third, before Gators", () => {
+test("All Footwear lists Gators last while they are coming soon", () => {
   assert.deepEqual(FOOTWEAR_SLUGS, [
     "v3-slides",
     "slip-ons",
     "dragonfly",
-    "gators",
     "magikid-shoes",
     "voronyz-lattice-insoles",
+    "gators",
   ]);
-  assert.equal(FOOTWEAR_CATALOG[2]?.slug, "dragonfly");
+  assert.equal(FOOTWEAR_CATALOG.at(-1)?.slug, "gators");
 });
 
 test("white color names match the White swatch", () => {

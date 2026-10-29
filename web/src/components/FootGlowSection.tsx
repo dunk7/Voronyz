@@ -1,12 +1,16 @@
+import type { ReactNode } from "react";
+
 type FootGlowSectionProps = {
   className?: string;
   /** Smaller print — homepage placement above the catalog. */
   poster?: boolean;
   /**
-   * Fills the homepage hero. Black runs to the viewport edges and to the
-   * top of the stage (under the header), the way the slide animation did.
+   * Fills the homepage hero. The full x-ray sits high, with no side fade,
+   * so the caption can live at the bottom left without covering it.
    */
   hero?: boolean;
+  /** Sits under the poster, left-aligned, so it never covers the artwork. */
+  caption?: ReactNode;
 };
 
 /** Original artwork, served as uploaded. The glow is opacity only. */
@@ -21,12 +25,13 @@ export default function FootGlowSection({
   className = "",
   poster = false,
   hero = false,
+  caption,
 }: FootGlowSectionProps) {
   const artwork = (
         <div
-          className={`foot-glow-frame relative aspect-[2000/1399] w-full bg-black ${
-            poster ? "foot-glow-poster-frame" : ""
-          }`}
+          className={`foot-glow-frame relative w-full bg-black ${
+            hero ? "foot-glow-hero-frame h-full" : "aspect-[2000/1399]"
+          } ${poster ? "foot-glow-poster-frame" : ""}`}
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- keep the uploaded PNG bytes, no optimizer */}
           <img
@@ -56,11 +61,9 @@ export default function FootGlowSection({
         aria-hidden
         className={`pointer-events-none absolute inset-0 bg-black ${className}`}
       >
-        <div className="absolute inset-0 bg-black" />
-        <div className="absolute inset-y-0 right-0 flex w-full items-center lg:w-[68%]">
-          <div className="w-full">{artwork}</div>
+        <div className="absolute inset-x-0 top-0 bottom-32 flex items-start justify-center px-2 pt-2 sm:bottom-36 sm:px-6 sm:pt-4">
+          <div className="h-full w-full max-w-6xl">{artwork}</div>
         </div>
-        <div className="absolute inset-y-0 left-0 w-[58%] bg-gradient-to-r from-black from-40% to-transparent lg:w-[46%]" />
       </div>
     );
   }
@@ -69,11 +72,12 @@ export default function FootGlowSection({
     return (
       <section
         aria-label="Foot inside a shoe"
-        className={`foot-glow-section foot-glow-poster relative py-14 sm:py-20 ${className}`}
+        className={`foot-glow-section foot-glow-poster relative pt-2 pb-10 sm:pt-4 sm:pb-14 ${className}`}
       >
         <div className="mx-auto flex w-full max-w-6xl justify-center px-6">
-          <div className="foot-glow-poster-card w-full max-w-[17rem] sm:max-w-xs md:max-w-sm">
-            {artwork}
+          <div className="w-full max-w-[17rem] sm:max-w-xs md:max-w-sm">
+            <div className="foot-glow-poster-card">{artwork}</div>
+            {caption ? <div className="mt-4 text-left">{caption}</div> : null}
           </div>
         </div>
       </section>
