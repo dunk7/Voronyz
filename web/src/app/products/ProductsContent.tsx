@@ -538,9 +538,9 @@ export default function ProductsContent({
 
         {isHomeFootwearTeaser && (
           <>
-            <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
             {advancedFootwear}
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
+            <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
           </>
         )}
       </div>
