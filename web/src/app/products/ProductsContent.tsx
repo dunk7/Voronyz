@@ -3,7 +3,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { filterAccessoryProducts, filterFootwearProducts, filterHealthProducts } from "@/lib/productCategories";
 import { getFootwearCatalogSeed, type FootwearListProduct } from "@/lib/footwear";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, type ReactNode } from "react";
 import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
@@ -82,6 +82,8 @@ type ProductsContentProps = {
   showScrollCue?: boolean;
   /** Skip the hex wrapper when the parent already provides one (homepage). */
   embedded?: boolean;
+  /** Homepage scroll clip, placed between the footwear grid and apparel. */
+  betweenFootwearAndApparel?: ReactNode;
 };
 
 function categorySeed(category: ProductsContentProps["category"]): Product[] {
@@ -95,6 +97,7 @@ export default function ProductsContent({
   category = "footwear",
   showScrollCue = false,
   embedded = false,
+  betweenFootwearAndApparel = null,
 }: ProductsContentProps) {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q");
@@ -529,13 +532,14 @@ export default function ProductsContent({
           </>
         )}
 
-        {advancedFootwear}
+        {isHomeFootwearTeaser ? betweenFootwearAndApparel : null}
         {footGlow}
         {apparelSection}
 
         {isHomeFootwearTeaser && (
           <>
             <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
+            {advancedFootwear}
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
           </>
         )}
