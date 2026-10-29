@@ -56,10 +56,22 @@ function catalogIndex(slug: string): number {
   return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
 
+function isComingSoonGators(slug: string): boolean {
+  return slug.trim().toLowerCase() === GATORS_SLUG;
+}
+
+/** Gators stay the bottom listing while the product image is still a coming-soon placeholder. */
+function pinComingSoonLast<T extends { slug: string }>(products: T[]): T[] {
+  const ready = products.filter((product) => !isComingSoonGators(product.slug));
+  const comingSoon = products.filter((product) => isComingSoonGators(product.slug));
+  return [...ready, ...comingSoon];
+}
+
 /**
  * Trending = catalog order.
  * All time = higher price first (flagship stand-ins without sales data).
- * New in = reverse catalog (newest listings sit at the end of FOOTWEAR_CATALOG).
+ * New in = reverse catalog (newest listings otherwise sit at the end of FOOTWEAR_CATALOG).
+ * Gators are pinned last on every tab while they are coming soon.
  */
 export function sortFootwearForTab<T extends { slug: string; priceCents: number }>(
   products: T[],
@@ -67,12 +79,13 @@ export function sortFootwearForTab<T extends { slug: string; priceCents: number 
 ): T[] {
   const copy = [...products];
   if (tab === "trending") {
-    return copy.sort((a, b) => catalogIndex(a.slug) - catalogIndex(b.slug));
+    copy.sort((a, b) => catalogIndex(a.slug) - catalogIndex(b.slug));
+  } else if (tab === "new-in") {
+    copy.sort((a, b) => catalogIndex(b.slug) - catalogIndex(a.slug));
+  } else {
+    copy.sort(
+      (a, b) => b.priceCents - a.priceCents || catalogIndex(a.slug) - catalogIndex(b.slug),
+    );
   }
-  if (tab === "new-in") {
-    return copy.sort((a, b) => catalogIndex(b.slug) - catalogIndex(a.slug));
-  }
-  return copy.sort(
-    (a, b) => b.priceCents - a.priceCents || catalogIndex(a.slug) - catalogIndex(b.slug),
-  );
+  return pinComingSoonLast(copy);
 }

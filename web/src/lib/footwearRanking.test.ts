@@ -25,9 +25,9 @@ test("trending keeps catalog order", () => {
       "v3-slides",
       "slip-ons",
       "dragonfly",
-      "gators",
       "magikid-shoes",
       "voronyz-lattice-insoles",
+      "gators",
     ],
   );
 });
@@ -36,13 +36,14 @@ test("all-time ranks by price descending", () => {
   const ranked = sortFootwearForTab(sample, "all-time");
   assert.equal(ranked[0]?.slug, "dragonfly");
   assert.equal(ranked[1]?.slug, "slip-ons");
-  assert.equal(ranked.at(-1)?.slug, "magikid-shoes");
+  assert.equal(ranked.at(-2)?.slug, "magikid-shoes");
+  assert.equal(ranked.at(-1)?.slug, "gators");
 });
 
-test("new-in reverses catalog order", () => {
+test("new-in reverses catalog order and keeps coming-soon Gators last", () => {
   const ranked = sortFootwearForTab(sample, "new-in");
   assert.equal(ranked[0]?.slug, "voronyz-lattice-insoles");
-  assert.equal(ranked.at(-1)?.slug, "v3-slides");
+  assert.equal(ranked.at(-1)?.slug, "gators");
 });
 
 test("formats prices and brand labels", () => {
