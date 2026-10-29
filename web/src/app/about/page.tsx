@@ -1,4 +1,5 @@
 import Image from "next/image";
+import TakeTheQuizPromo from "@/components/apparel/TakeTheQuizPromo";
 
 export default function AboutPage() {
   return (
@@ -29,6 +30,8 @@ export default function AboutPage() {
             <p>Follow along on <a href="https://instagram.com/voronyz" target="_blank" rel="noopener noreferrer" className="text-black hover:underline font-medium">Instagram @voronyz</a> for new designs and what we&apos;re working on next.</p>
           </div>
         </div>
+
+        <TakeTheQuizPromo />
       </div>
     </div>
   );
