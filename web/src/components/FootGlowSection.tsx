@@ -4,10 +4,7 @@ type FootGlowSectionProps = {
   className?: string;
   /** Smaller print — homepage placement above the catalog. */
   poster?: boolean;
-  /**
-   * Fills the homepage hero. The full x-ray sits high, with no side fade,
-   * so the caption can live at the bottom left without covering it.
-   */
+  /** Homepage hero. The x-ray sits flush to the top at its own aspect ratio. */
   hero?: boolean;
   /** Sits under the poster, left-aligned, so it never covers the artwork. */
   caption?: ReactNode;
@@ -30,7 +27,7 @@ export default function FootGlowSection({
   const artwork = (
         <div
           className={`foot-glow-frame relative w-full bg-black ${
-            hero ? "foot-glow-hero-frame h-full" : "aspect-[2000/1399]"
+            hero ? "foot-glow-hero-frame aspect-[2000/1399]" : "aspect-[2000/1399]"
           } ${poster ? "foot-glow-poster-frame" : ""}`}
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- keep the uploaded PNG bytes, no optimizer */}
@@ -59,11 +56,9 @@ export default function FootGlowSection({
     return (
       <div
         aria-hidden
-        className={`pointer-events-none absolute inset-0 bg-black ${className}`}
+        className={`pointer-events-none bg-black ${className}`}
       >
-        <div className="absolute inset-x-0 top-0 bottom-32 flex items-start justify-center px-2 pt-2 sm:bottom-36 sm:px-6 sm:pt-4">
-          <div className="h-full w-full max-w-6xl">{artwork}</div>
-        </div>
+        <div className="mx-auto w-full max-w-6xl">{artwork}</div>
       </div>
     );
   }

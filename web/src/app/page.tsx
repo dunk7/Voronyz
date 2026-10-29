@@ -28,7 +28,7 @@ function HomeSlide() {
             V3 Slides
           </p>
           <p className="mt-2 text-base leading-relaxed text-neutral-200 sm:text-lg">
-            Lattice underfoot, open the whole way down. Printed as one piece.
+            Printed as one piece.
           </p>
         </div>
       </div>
@@ -39,10 +39,10 @@ function HomeSlide() {
 export default function Home() {
   return (
     <div className="relative">
-      <section className="hero-stage relative min-h-[100svh] overflow-hidden bg-black">
+      <section className="hero-stage relative overflow-hidden bg-black">
         <FootGlowSection hero />
 
-        <div className="relative z-[1] mx-auto flex min-h-[100svh] max-w-7xl items-end px-4 pb-10 sm:px-6 sm:pb-14 lg:px-8">
+        <div className="relative z-[1] mx-auto max-w-7xl px-4 pb-8 pt-4 sm:px-6 sm:pb-10 sm:pt-5 lg:px-8">
           <div className="w-full max-w-xl space-y-3 sm:space-y-4">
             <p className="uppercase tracking-[0.18em] text-[11px] sm:text-xs font-medium text-neutral-300">
               Voronyz Engineering
