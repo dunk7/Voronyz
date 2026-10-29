@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {
+  checkoutContactEmailError,
+  normalizeCheckoutContact,
+} from "@/lib/checkoutContact";
 
 /**
  * Saves customer / shipping information to a pending Nano order.
- * Called before the payment QR is revealed so we always have contact + shipping
- * details stored in the database for order fulfilment.
+ * Contact details are recommended, not required. Shipping is still stored
+ * when the cart did not already attach a verified address.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -14,16 +18,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Order ID required" }, { status: 400 });
     }
 
-    if (
-      !customer ||
-      !customer.name?.trim() ||
-      !customer.email?.trim()
-    ) {
-      return NextResponse.json(
-        { error: "Name and email are required" },
-        { status: 400 }
-      );
+    const contact = normalizeCheckoutContact(customer);
+    const emailError = checkoutContactEmailError(contact.email);
+    if (emailError) {
+      return NextResponse.json({ error: emailError }, { status: 400 });
     }
+    const fields =
+      customer && typeof customer === "object"
+        ? (customer as Record<string, unknown>)
+        : {};
+    const field = (key: string) =>
+      typeof fields[key] === "string" ? (fields[key] as string).trim() : "";
 
     const order = await prisma.order.findUnique({ where: { id: orderId } });
 
@@ -51,20 +56,16 @@ export async function POST(request: NextRequest) {
       data: {
         metadata: {
           ...metadata,
-          customer: {
-            name: customer.name.trim(),
-            email: customer.email.trim(),
-            phone: customer.phone?.trim() || null,
-          },
+          customer: contact,
           shipping: verifiedShipping ?? {
-            name: customer.name.trim(),
+            name: contact.name,
             address: {
-              line1: customer.addressLine1?.trim() || null,
-              line2: customer.addressLine2?.trim() || null,
-              city: customer.city?.trim() || null,
-              state: customer.state?.trim() || null,
-              postal_code: customer.postalCode?.trim() || null,
-              country: customer.country?.trim() || "US",
+              line1: field("addressLine1") || null,
+              line2: field("addressLine2") || null,
+              city: field("city") || null,
+              state: field("state") || null,
+              postal_code: field("postalCode") || null,
+              country: field("country") || "US",
             },
           },
           customerInfoSavedAt: new Date().toISOString(),

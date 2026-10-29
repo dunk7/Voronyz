@@ -404,9 +404,19 @@ export async function POST(request: NextRequest) {
             },
           },
         }),
+      // Stripe treats phone_number_collection as required when enabled.
+      // Collect phone as an optional recommended custom field instead.
       phone_number_collection: {
-        enabled: true,
+        enabled: false,
       },
+      custom_fields: [
+        {
+          key: "phone",
+          label: { type: "custom", custom: "Phone (recommended)" },
+          type: "text",
+          optional: true,
+        },
+      ],
       billing_address_collection: 'required',
       success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl,
