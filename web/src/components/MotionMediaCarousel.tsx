@@ -126,19 +126,24 @@ function MotionVideoSlide({
 
     // Eagerly start buffering; faststart moov lets playback begin before full download.
     el.load();
-    tryPlay();
 
     const retryId = window.setInterval(() => {
-      if (el.paused) tryPlay();
+      if (el.paused && el.dataset.armed === "1") tryPlay();
     }, 1500);
 
+    // Wait until most of the frame is actually on screen, then play from the open.
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries.some((e) => e.isIntersecting);
-        if (visible) tryPlay();
-        else el.pause();
+        if (visible) {
+          el.dataset.armed = "1";
+          tryPlay();
+        } else {
+          el.pause();
+          if (el.dataset.armed !== "1") el.currentTime = 0;
+        }
       },
-      { threshold: 0.2 }
+      { threshold: 0.72 }
     );
     observer.observe(el);
 
@@ -167,7 +172,6 @@ function MotionVideoSlide({
         className={`pointer-events-none h-full w-full object-cover transition-opacity duration-500 ease-out ${
           isPlaying ? "opacity-100" : "opacity-0"
         }`}
-        autoPlay
         muted
         loop
         playsInline

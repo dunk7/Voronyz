@@ -378,19 +378,19 @@ export default function ProductsContent({
         aria-labelledby="advanced-footwear-heading"
         className="mt-16 sm:mt-24 lg:mt-28 mb-16 sm:mb-24 lg:mb-28"
       >
-        <div className="mx-auto mb-8 max-w-2xl text-center sm:mb-10">
+        <MotionMediaCarousel href="/products" linkLabel="Shop all footwear" />
+        <div className="mt-4 max-w-xl text-left sm:mt-5">
           <h2
             id="advanced-footwear-heading"
-            className={homeSectionTitleClass}
+            className="text-2xl sm:text-[1.75rem] font-semibold tracking-tight text-neutral-900 text-left"
           >
             Advanced Footwear
           </h2>
-          <p className="mt-4 text-base leading-relaxed text-neutral-600 sm:text-lg">
+          <p className="mt-3 text-base leading-relaxed text-neutral-600 sm:text-lg">
             Voronyz prints the shoe around the foot — lattice cushion, a real outsole,
             and a finish you&apos;d wear out tonight. Once it&apos;s on, nothing else feels this engineered.
           </p>
         </div>
-        <MotionMediaCarousel href="/products" linkLabel="Shop all footwear" />
       </section>
     ) : null;
 
