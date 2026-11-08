@@ -204,7 +204,7 @@ export default function ProductsContent({
   /** Footwear stays heading-only (like Apparel on home) — no supporting paragraph. */
   const subheading =
     category === "accessories"
-      ? "TPU 90A and foaming TPU Air, plus printable shoe STLs."
+      ? "TPU 90A, foaming TPU Air, and PLA, plus printable shoe STLs."
       : category === "health"
       ? "Helping the small businesses we support and stand for grow and be seen on the Voronyz marketplace."
       : null;
