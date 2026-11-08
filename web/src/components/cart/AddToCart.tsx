@@ -7,6 +7,7 @@ import { normalizeStudentName } from "@/lib/magikidShoesThumbnail";
 import { getApparelSizeOffer } from "@/lib/apparel";
 import SalePrice from "@/components/ui/SalePrice";
 import { isWhiteColor, SLIP_ONS_WHITE_AD_IMAGE } from "@/lib/footwear";
+import { useFilamentSelection } from "@/components/products/FilamentSelection";
 
 interface VariantProps {
   id: string;
@@ -149,6 +150,7 @@ function FilamentPickers({
   onColor,
   priceFor,
   available,
+  hideMaterial = false,
 }: {
   materials: FilamentMaterialOption[];
   selectedKey: string | undefined;
@@ -156,6 +158,7 @@ function FilamentPickers({
   onColor: (colorId: string) => void;
   priceFor: (key: string) => number | null;
   available: (key: string) => boolean;
+  hideMaterial?: boolean;
 }) {
   const [materialId, colorId] = (selectedKey || "").split(":");
   const material = materials.find((item) => item.id === materialId) ?? materials[0];
@@ -163,6 +166,7 @@ function FilamentPickers({
 
   return (
     <>
+      {hideMaterial ? null : (
       <div className="grid gap-2">
         <label className="text-sm text-neutral-700">Material</label>
         <div className="flex flex-wrap gap-2">
@@ -185,6 +189,7 @@ function FilamentPickers({
           })}
         </div>
       </div>
+      )}
       <div className="grid gap-2">
         <label className="text-sm text-neutral-700">Color</label>
         <div className="flex flex-wrap gap-2">
@@ -281,6 +286,7 @@ export default function AddToCart({
   const [added, setAdded] = useState(false);
 
   const searchParams = useSearchParams();
+  const filamentPageSelection = useFilamentSelection();
 
   const [selectedPrimary, setSelectedPrimary] = useState<string | undefined>(
     () => {
@@ -488,6 +494,12 @@ export default function AddToCart({
     onPrimaryColorChange?.(selectedPrimary);
   }, [selectedPrimary, onPrimaryColorChange]);
 
+  useEffect(() => {
+    const next = filamentPageSelection?.key;
+    if (!next || next === selectedPrimary) return;
+    setSelectedPrimary(next);
+  }, [filamentPageSelection?.key, selectedPrimary]);
+
   function filamentKey(materialId: string, colorId: string) {
     return `${materialId}:${colorId}`;
   }
@@ -506,13 +518,17 @@ export default function AddToCart({
     const currentColor = (selectedPrimary || "").split(":")[1];
     const color =
       material.colors.find((item) => item.id === currentColor) ?? material.colors[0];
-    setSelectedPrimary(filamentKey(material.id, color.id));
+    const next = filamentKey(material.id, color.id);
+    setSelectedPrimary(next);
+    filamentPageSelection?.setKey(next);
   }
 
   function selectFilamentColor(colorId: string) {
     const materialId = (selectedPrimary || "").split(":")[0] || filamentMaterials[0]?.id;
     if (!materialId) return;
-    setSelectedPrimary(filamentKey(materialId, colorId));
+    const next = filamentKey(materialId, colorId);
+    setSelectedPrimary(next);
+    filamentPageSelection?.setKey(next);
   }
 
   function selectCarryStyle(id: string) {
@@ -802,6 +818,7 @@ export default function AddToCart({
             onColor={selectFilamentColor}
             priceFor={(key) => variants.find((variant) => variant.color === key)?.priceCents ?? null}
             available={isPrimaryAvailable}
+            hideMaterial={Boolean(filamentPageSelection)}
           />
         ) : hideColorSelector ? null : (
         /* Primary Color */

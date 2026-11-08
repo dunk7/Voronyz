@@ -2,8 +2,8 @@ import { catalogSeedListedAt } from "@/lib/newListing";
 import { getStlFilesCatalogProduct } from "@/lib/stlFiles";
 
 export const FILAMENT_SLUG = "tpu-90a-filament";
-export const FILAMENT_NAME = "TPU Filament";
-export const FILAMENT_PRICE_CENTS = 3000; // $30 — black TPU 90A and TPU Air
+export const FILAMENT_NAME = "Filament";
+export const FILAMENT_PRICE_CENTS = 3000; // $30 — black TPU 90A, TPU Air, and PLA
 /** Pink TPU 90A is the lower price. */
 export const FILAMENT_PINK_PRICE_CENTS = 2000;
 /** Shown only on the filament product page — crossed out next to the sale price. */
@@ -15,36 +15,98 @@ export const FILAMENT_THUMBNAIL_URL =
   "/products/tpu-90a-filament/filament-clear-spool.jpg";
 
 export const FILAMENT_DESCRIPTION_SHORT =
-  "1kg spools. Pick TPU 90A or foaming TPU Air, then a color. Free US shipping.";
+  "1kg spools of TPU 90A, foaming TPU Air, and rigid PLA. Free US shipping.";
 
 export const FILAMENT_DESCRIPTION =
-  "One listing, two Voronyz TPUs. TPU 90A is a regular flexible filament at a fixed 90 Shore A. TPU Air is our foaming filament: print it hotter and it expands, so the part gets lighter and softer. Each spool is 1kg of 1.75mm. Free US shipping.";
+  "One listing, three materials. TPU 90A stays flexible at a fixed 90 Shore A. TPU Air foams as the nozzle gets hotter, so the part gets lighter and softer. PLA stays rigid, holds detail, and prints faster. Each spool is 1kg of 1.75mm. Free US shipping.";
 
 export const FILAMENT_HOW_ITS_MADE =
-  "TPU 90A holds a steady 90 Shore A. TPU Air foams as the nozzle gets hotter, so the same spool can print firmer or softer depending on temperature and flow.";
+  "TPU 90A holds a steady 90 Shore A. TPU Air foams as the nozzle gets hotter. PLA stays firm and prints faster than either TPU.";
 
 export const FILAMENT_IMAGES = [FILAMENT_THUMBNAIL_URL] as const;
 
 export const FILAMENT_MATERIAL_90A = "tpu-90a";
 export const FILAMENT_MATERIAL_AIR = "tpu-air";
+export const FILAMENT_MATERIAL_PLA = "pla";
 
 export function filamentVariantColor(materialId: string, colorId: string) {
   return `${materialId}:${colorId}`;
 }
 
+const PINK_90A_IMAGES = [
+  "/products/tpu-90a-filament/filament-clear-spool.jpg",
+  "/products/tpu-90a-filament/pink-tpu-90a-spool-labeled.jpg",
+  "/products/tpu-90a-filament/pink-tpu-90a-spool-angle.jpg",
+] as const;
+
+const BLACK_90A_IMAGES = ["/products/tpu-90a-filament/tpu-90a-black-spool.jpg"] as const;
+const AIR_IMAGES = ["/products/tpu-90a-filament/tpu-air-charcoal-spool.jpg"] as const;
+const PLA_IMAGES = ["/products/tpu-90a-filament/pla-white-spool.jpg"] as const;
+
 export const FILAMENT_MATERIALS = [
   {
     id: FILAMENT_MATERIAL_90A,
     label: "TPU 90A",
+    description:
+      "Flexible filament that holds a steady 90 Shore A. It bends and springs back, so it is the spool for wearable parts, gaskets, and anything that should flex without foaming. 1.75mm, 1kg, in pink or black. Free US shipping.",
+    summary:
+      "Regular flexible TPU. Hardness stays at 90 Shore A no matter the nozzle temperature. 1.75mm, 1kg. Pink and black.",
+    printNotes: [
+      "Nozzle 220–240°C. Start around 225°C.",
+      "Bed 40–60°C. A cool bed works if you use a glue stick.",
+      "Speed 20–40 mm/s. Direct drive is the easier setup.",
+      "Keep retraction short, or turn it off if the filament buckles.",
+      "Dry the spool before a long print. Wet TPU strings and pops.",
+    ],
     colors: [
-      { id: "pink", label: "Pink", swatch: "#ec4899", note: "Better deal" },
-      { id: "black", label: "Black", swatch: "#111111" },
+      {
+        id: "pink",
+        label: "Pink",
+        swatch: "#ec4899",
+        note: "Better deal",
+        images: PINK_90A_IMAGES,
+      },
+      { id: "black", label: "Black", swatch: "#111111", images: BLACK_90A_IMAGES },
     ],
   },
   {
     id: FILAMENT_MATERIAL_AIR,
     label: "TPU Air",
-    colors: [{ id: "black", label: "Black", swatch: "#111111" }],
+    description:
+      "Foaming TPU, black only. Heat is the softness control: a cooler nozzle stays denser and firmer, and a hotter nozzle expands the plastic into a lighter, softer part. One kilogram prints more volume once it is foaming. 1.75mm. Free US shipping.",
+    summary:
+      "Foaming TPU, black only. A cooler nozzle stays denser and firmer, up around the low 90s A. A hotter nozzle foams the plastic, so the part gets lighter and softer, down through the 70s A.",
+    printNotes: [
+      "Nozzle 210–270°C. 260°C is a solid place to start.",
+      "Bed 40–60°C. Glue stick or PEI helps it stay down.",
+      "Speed at or under 50 mm/s.",
+      "Drop the flow as the temperature goes up. The filament expands, so a normal 100% flow over-extrudes.",
+      "230–240°C: denser, firmer, flow about 85–90%.",
+      "250°C: lighter, flow about 65–70%.",
+      "260°C: a balanced foam, flow about 55–60%.",
+      "270°C: softest and lightest, flow about 50–55%.",
+      "Run a small cube first. Your printer, nozzle, and speed move these numbers.",
+      "Dry it, and keep it in a sealed bag with desiccant.",
+    ],
+    colors: [
+      { id: "black", label: "Black", swatch: "#111111", images: AIR_IMAGES },
+    ],
+  },
+  {
+    id: FILAMENT_MATERIAL_PLA,
+    label: "PLA",
+    description:
+      "Rigid everyday filament. It holds fine detail, prints faster than either TPU, and stays firm — the spool for shells, jigs, and prototypes that should not flex. 1.75mm, 1kg, white. Free US shipping.",
+    summary:
+      "Stiff PLA. It does not flex like TPU and it does not foam. Use it when the part should keep its shape. 1.75mm, 1kg, white.",
+    printNotes: [
+      "Nozzle 190–220°C. Start at 205°C.",
+      "Bed 50–60°C. A clean PEI sheet or a glue stick is enough.",
+      "Speed 40–80 mm/s. It does not need the slow TPU pace.",
+      "Cooling fan on after the first layer so corners stay sharp.",
+      "Keep the spool dry. Wet PLA gets brittle and strings.",
+    ],
+    colors: [{ id: "white", label: "White", swatch: "#f4f4f5", images: PLA_IMAGES }],
   },
 ] as const;
 
@@ -74,7 +136,28 @@ export const FILAMENT_VARIANTS = [
     stock: 10,
     priceCents: FILAMENT_PRICE_CENTS,
   },
+  {
+    color: filamentVariantColor(FILAMENT_MATERIAL_PLA, "white"),
+    sku: "PLA-WHT",
+    stock: 24,
+    priceCents: FILAMENT_PRICE_CENTS,
+  },
 ] as const;
+
+export function filamentImagesByVariant(): Record<string, string[]> {
+  const images: Record<string, string[]> = {};
+  for (const material of FILAMENT_MATERIALS) {
+    for (const color of material.colors) {
+      images[filamentVariantColor(material.id, color.id)] = [...color.images];
+    }
+  }
+  return images;
+}
+
+export function filamentMaterialFromVariant(variantColor: string | null | undefined) {
+  const materialId = (variantColor || "").split(":")[0];
+  return FILAMENT_MATERIALS.find((item) => item.id === materialId) ?? FILAMENT_MATERIALS[0];
+}
 
 export function filamentSelectionLabel(variantColor: string | null | undefined): string {
   const [materialId, colorId] = (variantColor || "").split(":");
