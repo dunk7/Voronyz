@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import DragonflySprint from "@/components/DragonflySprint";
 
 type FootGlowSectionProps = {
   className?: string;
@@ -17,12 +18,11 @@ type FootGlowSectionProps = {
 /** Original artwork, served as uploaded. The glow is opacity only. */
 const XRAY_SRC = "/graphics/foot-xray.png";
 const HATCH_SRC = "/graphics/foot-hatch.png";
-/** All Footwear only. The Dragonfly outline, animated as a running pair. */
-const PRINT_RUN_SRC = "/graphics/dragonfly-run-v2.gif";
 
 /**
  * Full-bleed pause between Footwear and Apparel.
  * The line drawing sits over the x-ray as a soft screen overlay and slowly breathes.
+ * All Footwear uses the ghost Dragonfly pair sprinting along a lane.
  */
 export default function FootGlowSection({
   className = "",
@@ -32,16 +32,8 @@ export default function FootGlowSection({
   variant = "xray",
 }: FootGlowSectionProps) {
   const artwork = variant === "print" ? (
-        <div className="mx-auto w-full max-w-3xl bg-black">
-          {/* eslint-disable-next-line @next/next/no-img-element -- animated GIF, not a Next image */}
-          <img
-            src={PRINT_RUN_SRC}
-            alt="A pair of Voronyz Dragonfly shoes running, side view, with no one in them"
-            width={800}
-            height={356}
-            draggable={false}
-            className="h-auto w-full"
-          />
+        <div className="mx-auto w-full max-w-4xl bg-black">
+          <DragonflySprint />
         </div>
   ) : (
         <div
@@ -100,7 +92,7 @@ export default function FootGlowSection({
 
   return (
     <section
-      aria-label={variant === "print" ? "Dragonfly shoes running" : "Foot inside a shoe"}
+      aria-label={variant === "print" ? "Dragonfly shoes sprinting along a path" : "Foot inside a shoe"}
       className={`foot-glow-section relative ml-[calc(50%-50vw)] w-screen max-w-[100vw] bg-black py-6 sm:py-10 ${className}`}
     >
       <div className="mx-auto w-full max-w-6xl">{artwork}</div>
