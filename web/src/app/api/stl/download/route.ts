@@ -77,7 +77,11 @@ export async function GET(request: NextRequest) {
 
   const requested = request.nextUrl.searchParams.get("shoe")?.trim();
   const fromOrder = purchased
-    .map((line) => stlShoeById(line.color) ?? stlShoeByName(line.variantName) ?? stlShoeByName(line.name))
+    .map((line) => {
+      const color = "color" in line ? line.color : undefined;
+      const variantName = "variantName" in line ? line.variantName : undefined;
+      return stlShoeById(color) ?? stlShoeByName(variantName) ?? stlShoeByName(line.name);
+    })
     .find((shoe) => shoe?.file);
   const shoe = stlShoeById(requested) ?? stlShoeByName(requested) ?? fromOrder;
   const zip = shoe ? getStlZipPath(shoe.id) : null;
