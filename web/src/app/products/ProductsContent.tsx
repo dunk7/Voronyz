@@ -54,9 +54,7 @@ const productMeta: Record<string, {
     altImage: MAGIKID_SHOES_THUMBNAIL_URL,
   },
   "tpu-90a-filament": {},
-    [STL_FILES_SLUG]: {
-    altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
-  },
+    [STL_FILES_SLUG]: {},
 };
 
 function cardMetaForSlug(slug: string) {

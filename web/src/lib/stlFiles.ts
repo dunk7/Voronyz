@@ -2,31 +2,53 @@ import { catalogSeedListedAt } from "@/lib/newListing";
 import type { AccessoryListProduct } from "@/lib/filament";
 
 export const STL_FILES_SLUG = "super-high-tech-stl";
-export const STL_FILES_NAME = "Voronyz Slip On STL";
-export const STL_FILES_PRICE_CENTS = 100; // $1 digital file
+export const STL_FILES_NAME = "Voronyz STL";
+/** Each shoe file is $1. Buying another shoe is another dollar. */
+export const STL_FILES_PRICE_CENTS = 100;
 
-export const STL_FILES_THUMBNAIL_URL = "/products/slip-ons/InShot_20260405_203151152.jpg";
-export const STL_FILES_ALT_IMAGE_URL = "/products/slip-ons/InShot_20260405_203425292.jpg";
-export const STL_FILES_IMAGES = [STL_FILES_THUMBNAIL_URL, STL_FILES_ALT_IMAGE_URL] as const;
+export const STL_FILES_THUMBNAIL_URL = "/products/stl-files/layers.jpg";
+export const STL_FILES_IMAGES = [STL_FILES_THUMBNAIL_URL] as const;
 
 export const STL_FILES_DESCRIPTION_SHORT =
-  "Printable STL for the Voronyz Slip On.";
+  "Print files for the Voronyz shoes. Pick a shoe — each file is $1.";
 
 export const STL_FILES_DESCRIPTION =
-  "The Voronyz Slip On print file. After checkout, download the STL, slice it, and print it in TPU-90A.";
+  "Voronyz STL. Choose the shoe you want to print. Each file is $1, downloaded after checkout. Slice it and print it in TPU-90A.";
 
 export const STL_FILES_HOW_ITS_MADE =
-  "Digital STL for the Voronyz Slip On. Download after checkout and print it on your machine.";
+  "One listing for every Voronyz shoe file. Select the shoe, pay $1 for that file, then download it after checkout.";
 
-export const STL_FILES_DOWNLOAD_FILENAME = "voronyz-slip-on.zip";
-
-/** One Size stand-in — the buy UI hides size and color. */
-export const STL_FILES_SIZES = ["Download"] as const;
-export const STL_FILES_PRIMARY_COLORS = ["file"] as const;
-
-export const STL_FILES_VARIANTS = [
-  { color: "file", sku: "STL-FILE", stock: 9999 },
+/** Names match the footwear catalog. Only Slip Ons has a file on disk today. */
+export const STL_SHOE_FILES = [
+  { id: "v3-slides", name: "V3 Slides", file: null as string | null },
+  { id: "slip-ons", name: "Slip Ons", file: "slip-on/voronyz-slip-on.zip" },
+  { id: "dragonfly", name: "The Dragonfly's", file: null },
+  { id: "magikid-shoes", name: "Magikid Shoes", file: null },
+  { id: "voronyz-lattice-insoles", name: "Lattice Insoles", file: null },
+  { id: "gators", name: "The Gators", file: null },
 ] as const;
+
+export function stlShoeById(id: string | null | undefined) {
+  const key = (id || "").trim().toLowerCase();
+  return STL_SHOE_FILES.find((shoe) => shoe.id === key) ?? null;
+}
+
+export function stlShoeByName(name: string | null | undefined) {
+  const key = (name || "").trim().toLowerCase();
+  if (!key) return null;
+  return STL_SHOE_FILES.find((shoe) => shoe.name.toLowerCase() === key) ?? null;
+}
+
+/** One Size stand-in — the buy UI hides size and uses the shoe filter instead. */
+export const STL_FILES_SIZES = ["Download"] as const;
+export const STL_FILES_PRIMARY_COLORS = STL_SHOE_FILES.map((shoe) => shoe.id);
+
+export const STL_FILES_VARIANTS = STL_SHOE_FILES.map((shoe) => ({
+  color: shoe.id,
+  sku: `STL-${shoe.id.toUpperCase()}`,
+  stock: 9999,
+  priceCents: STL_FILES_PRICE_CENTS,
+}));
 
 export function isDigitalProductSlug(slug: string | null | undefined): boolean {
   return (slug || "").trim().toLowerCase() === STL_FILES_SLUG;
@@ -45,6 +67,7 @@ export function orderIncludesStlDownload(
     if (!label) return false;
     if (label.includes(STL_FILES_NAME.toLowerCase())) return true;
     if (label.includes("slip on stl") || label.includes("slip-on stl")) return true;
+    if (label.includes("voronyz stl")) return true;
     return label.includes(STL_FILES_SLUG);
   });
 }
@@ -84,7 +107,7 @@ export function stlFilesCatalogProduct() {
       color: v.color,
       sku: v.sku,
       stock: v.stock,
-      priceCents: null as number | null,
+      priceCents: v.priceCents,
     })),
     createdAt: listedAt,
     updatedAt: listedAt,

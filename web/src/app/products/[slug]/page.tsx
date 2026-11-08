@@ -60,6 +60,7 @@ import {
   STL_FILES_NAME,
   STL_FILES_SLUG,
   STL_FILES_THUMBNAIL_URL,
+  STL_SHOE_FILES,
   stlFilesCatalogProduct,
 } from "@/lib/stlFiles";
 import {
@@ -234,6 +235,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     else if (slug === LATTICE_INSOLES_SLUG) product = latticeInsolesCatalogProduct();
   }
   if (!product) return <div className="container py-12 text-neutral-900">Not found.</div>;
+  if (slug === STL_FILES_SLUG) product = stlFilesCatalogProduct();
 
   // First and third gallery frames swapped so the preferred cover leads.
   const defaultImages = [
@@ -537,6 +539,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             ...(isStlFiles && {
               hideSizeSelector: true,
               hideColorSelector: true,
+              flavorLabel: "Shoe",
+              flavorOptions: STL_SHOE_FILES.map((shoe) => ({
+                id: shoe.id,
+                label: shoe.name,
+                description: "$1 file",
+              })),
             }),
             ...(isApparel && {
               useCatalogSizes: true,
@@ -648,10 +656,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <h2 className="text-lg font-semibold text-neutral-900 mb-4">FAQs</h2>
           <FAQ
             items={isStlFiles ? [
-              { q: "What do I get?", a: "The printable Voronyz Slip On STL — left, right, and the two-piece top/bottom files." },
-              { q: "How do I download it?", a: "After checkout, the confirmation page has a download button for the zip." },
+              { q: "What do I get?", a: "The print file for the shoe you select. Slip Ons includes the left, right, and two-piece files." },
+              { q: "How do I download it?", a: "After checkout, the confirmation page has a download button for the shoe you bought." },
               { q: "What filament should I use?", a: "TPU-90A, the same material we print footwear with. We sell it on Engineering." },
-              { q: "How much is it?", a: "$1 for the file. No shipping — it's a digital download." },
+              { q: "How much is it?", a: "$1 per shoe file. Another shoe is another dollar. No shipping — it's a digital download." },
             ] : isDragonfly ? [
               { q: "What colors are available?", a: "The Dragonfly's come in Black, White, Red, Azure Blue, and Pink — white is currently out of stock. Laces can be any color you want!" },
               { q: "Are they true to size?", a: "Yes — we offer Men's, Women's, and Kids' sizing. They're designed for a comfortable, snug fit right out of the box." },

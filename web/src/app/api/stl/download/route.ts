@@ -1,8 +1,8 @@
 import fs from "fs";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { STL_FILES_DOWNLOAD_FILENAME, orderIncludesStlDownload } from "@/lib/stlFiles";
-import { getSlipOnStlZipPath } from "@/lib/stlPurchaseDownload";
+import { orderIncludesStlDownload, stlShoeById, stlShoeByName } from "@/lib/stlFiles";
+import { getStlZipPath } from "@/lib/stlPurchaseDownload";
 
 export const runtime = "nodejs";
 
@@ -52,6 +52,8 @@ export async function GET(request: NextRequest) {
     productSlug?: string;
     productName?: string;
     name?: string;
+    variantName?: string;
+    color?: string;
   }> = [];
   try {
     if (session.metadata?.cartItems) {
@@ -68,14 +70,22 @@ export async function GET(request: NextRequest) {
 
   if (!orderIncludesStlDownload(purchased)) {
     return NextResponse.json(
-      { error: "This order does not include the Slip On STL." },
+      { error: "This order does not include a Voronyz STL." },
       { status: 403 }
     );
   }
 
-  const zip = getSlipOnStlZipPath();
+  const requested = request.nextUrl.searchParams.get("shoe")?.trim();
+  const fromOrder = purchased
+    .map((line) => stlShoeById(line.color) ?? stlShoeByName(line.variantName) ?? stlShoeByName(line.name))
+    .find((shoe) => shoe?.file);
+  const shoe = stlShoeById(requested) ?? stlShoeByName(requested) ?? fromOrder;
+  const zip = shoe ? getStlZipPath(shoe.id) : null;
   if (!zip) {
-    return NextResponse.json({ error: "STL file is not available." }, { status: 404 });
+    return NextResponse.json(
+      { error: "That shoe's STL file is not available yet." },
+      { status: 404 }
+    );
   }
 
   const body = fs.readFileSync(zip.filePath);
@@ -83,7 +93,7 @@ export async function GET(request: NextRequest) {
     headers: {
       "Content-Type": "application/zip",
       "Content-Length": String(body.byteLength),
-      "Content-Disposition": `attachment; filename="${STL_FILES_DOWNLOAD_FILENAME}"`,
+      "Content-Disposition": `attachment; filename="${zip.fileName}"`,
       "Cache-Control": "private, no-store",
     },
   });

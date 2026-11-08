@@ -562,10 +562,11 @@ export default function CartClient() {
                       Pre-order
                     </span>
                   )}
-                  {it.variant?.name && it.productSlug !== STL_FILES_SLUG && (
+                  {it.variant?.name && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-black/5 px-2 py-0.5 capitalize">
                       {it.productSlug !== "antioxidant-trail-mix" &&
                         it.productSlug !== "tpu-90a-filament" &&
+                        it.productSlug !== STL_FILES_SLUG &&
                         !isViolettePonybeadSlug(it.productSlug) && (
                         <span
                           className="inline-block h-3 w-3 rounded-full ring-1 ring-black/10"

@@ -2,7 +2,7 @@ import Link from "next/link";
 import ComplementaryRecs from "@/components/products/ComplementaryRecs";
 import { getComplementaryRecommendations } from "@/lib/complementaryRecommendations";
 import { formatCentsAsCurrency } from "@/lib/money";
-import { STL_FILES_NAME, orderIncludesStlDownload } from "@/lib/stlFiles";
+import { STL_FILES_NAME, STL_FILES_SLUG, orderIncludesStlDownload, stlShoeByName } from "@/lib/stlFiles";
 
 export interface OrderDetails {
   success: boolean;
@@ -23,6 +23,7 @@ export interface OrderDetails {
       name: string;
       productName?: string;
       productSlug?: string;
+      variantName?: string;
       amount: number;
       quantity: number;
       isPreOrder?: boolean;
@@ -71,6 +72,18 @@ export function OrderSuccessContent({
   );
   const addOnRecs = getComplementaryRecommendations(details.lineItems);
   const hasStlDownload = orderIncludesStlDownload(details.lineItems);
+  const stlDownloads = details.lineItems.flatMap((item) => {
+    const shoe =
+      item.productSlug === STL_FILES_SLUG
+        ? stlShoeByName(item.variantName) ?? stlShoeByName(item.name)
+        : null;
+    if (!shoe || !details.stripeId) return [];
+    return [{
+      id: shoe.id,
+      name: shoe.name,
+      href: `/api/stl/download?session_id=${encodeURIComponent(details.stripeId)}&shoe=${encodeURIComponent(shoe.id)}`,
+    }];
+  });
   const stlDownloadHref = details.stripeId
     ? `/api/stl/download?session_id=${encodeURIComponent(details.stripeId)}`
     : null;
@@ -170,14 +183,24 @@ export function OrderSuccessContent({
           <div className="bg-white rounded-xl ring-1 ring-black/10 p-6 space-y-3 text-left">
             <h2 className="text-xl font-semibold">Your print file</h2>
             <p className="text-sm text-neutral-700">
-              {STL_FILES_NAME} is ready. Download the zip, slice it, and print in TPU-90A.
+              {STL_FILES_NAME} is ready. Download the shoe you selected, slice it, and print in TPU-90A.
             </p>
-            <a
-              href={stlDownloadHref}
-              className="inline-flex items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-medium text-white hover:bg-neutral-800"
-            >
-              Download STL
-            </a>
+            <div className="flex flex-wrap gap-3">
+              {(stlDownloads.length > 0
+                ? stlDownloads
+                : stlDownloadHref
+                  ? [{ id: "file", name: "STL", href: stlDownloadHref }]
+                  : []
+              ).map((file) => (
+                <a
+                  key={file.id}
+                  href={file.href}
+                  className="inline-flex items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-medium text-white hover:bg-neutral-800"
+                >
+                  Download {file.name}
+                </a>
+              ))}
+            </div>
           </div>
         )}
 

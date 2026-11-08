@@ -1,16 +1,21 @@
 import fs from "fs";
 import path from "path";
-import { STL_FILES_DOWNLOAD_FILENAME } from "@/lib/stlFiles";
+import { stlShoeById, stlShoeByName } from "@/lib/stlFiles";
 
-export function getSlipOnStlZipPath(): { filePath: string; fileName: string } | null {
+export function getStlZipPath(
+  shoeIdOrName: string | null | undefined
+): { filePath: string; fileName: string; shoeId: string } | null {
+  const shoe = stlShoeById(shoeIdOrName) ?? stlShoeByName(shoeIdOrName);
+  if (!shoe?.file) return null;
+  const fileName = shoe.file.split("/").pop() || shoe.file;
   const candidates = [
-    path.join(process.cwd(), "private", "stl", "slip-on", STL_FILES_DOWNLOAD_FILENAME),
-    path.join(process.cwd(), "web", "private", "stl", "slip-on", STL_FILES_DOWNLOAD_FILENAME),
+    path.join(process.cwd(), "private", "stl", shoe.file),
+    path.join(process.cwd(), "web", "private", "stl", shoe.file),
   ];
   for (const filePath of candidates) {
     try {
       if (fs.statSync(filePath).isFile()) {
-        return { filePath, fileName: STL_FILES_DOWNLOAD_FILENAME };
+        return { filePath, fileName, shoeId: shoe.id };
       }
     } catch {
       // try the next candidate

@@ -614,7 +614,9 @@ export default function AddToCart({
             name:
               hasFilamentMaterials && selectedPrimary
                 ? filamentChoiceLabel(selectedPrimary)
-                : selectedPrimary,
+                : hasFlavorOptions
+                  ? flavorOptions.find((flavor) => flavor.id === selectedPrimary)?.label || selectedPrimary
+                  : selectedPrimary,
           },
           attributes: { 
             ...(selectedSecondary && { color: selectedSecondary }), 

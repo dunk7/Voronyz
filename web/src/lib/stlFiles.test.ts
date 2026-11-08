@@ -8,9 +8,9 @@ import {
   orderIncludesStlDownload,
 } from "./stlFiles";
 
-test("STL listing is the Voronyz Slip On file at $1", () => {
+test("STL listing is Voronyz STL at $1 per shoe file", () => {
   assert.equal(STL_FILES_SLUG, "super-high-tech-stl");
-  assert.equal(STL_FILES_NAME, "Voronyz Slip On STL");
+  assert.equal(STL_FILES_NAME, "Voronyz STL");
   assert.equal(STL_FILES_PRICE_CENTS, 100);
   assert.equal(isDigitalProductSlug(STL_FILES_SLUG), true);
   assert.equal(isDigitalProductSlug("slip-ons"), false);

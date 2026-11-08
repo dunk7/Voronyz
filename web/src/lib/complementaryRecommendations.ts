@@ -174,7 +174,7 @@ export function getComplementaryRecommendations(
   if (hasFilament && !hasStl) {
     ranked.push({
       slug: STL_FILES_SLUG,
-      reason: "The Voronyz Slip On STL to print with that filament.",
+      reason: "Voronyz STL — pick a shoe file to print with that filament.",
     });
   }
 
