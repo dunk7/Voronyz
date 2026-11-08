@@ -42,6 +42,7 @@ import {
   GATORS_NAME,
   GATORS_SLUG,
   GATORS_THUMBNAIL_URL,
+  gatorsCatalogProduct,
 } from "@/lib/gators";
 import {
   FILAMENT_COMPARE_AT_CENTS,
@@ -213,6 +214,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       product = stlFilesCatalogProduct();
     } else if (slug === LATTICE_INSOLES_SLUG) {
       product = latticeInsolesCatalogProduct();
+    } else if (slug === GATORS_SLUG) {
+      product = gatorsCatalogProduct();
     } else {
       return (
         <div className="bg-texture-white">
@@ -233,6 +236,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     else if (slug === "magikid-shoes") product = magikidCatalogProduct();
     else if (slug === STL_FILES_SLUG) product = stlFilesCatalogProduct();
     else if (slug === LATTICE_INSOLES_SLUG) product = latticeInsolesCatalogProduct();
+    else if (slug === GATORS_SLUG) product = gatorsCatalogProduct();
   }
   if (!product) return <div className="container py-12 text-neutral-900">Not found.</div>;
   if (slug === STL_FILES_SLUG) product = stlFilesCatalogProduct();

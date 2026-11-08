@@ -1,9 +1,14 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { GATORS_SIZES } from "./gators";
+import {
+  GATORS_LISTING_COVER_URL,
+  GATORS_SIZES,
+  GATORS_SLUG,
+  GATORS_THUMBNAIL_URL,
+} from "./gators";
 import {
   LATTICE_INSOLES_PRODUCT_IMAGE_URL,
   LATTICE_INSOLES_SIDE_IMAGE_URL,
@@ -70,6 +75,29 @@ test("Dragonfly thumbnail is the side-profile photo", () => {
     productPage,
     /const dragonflyImages = \[\s*"\/products\/dragonfly\/InShot_20260212_153903491\.jpg",/,
   );
+});
+
+test("Gators catalog photos are a centered black clog on white, not the forest crop", () => {
+  const publicDir = join(dirname(fileURLToPath(import.meta.url)), "../..", "public");
+  assert.equal(GATORS_THUMBNAIL_URL, "/products/gators/gators-studio.jpg");
+  assert.equal(GATORS_LISTING_COVER_URL, "/products/gators/gators-listing-cover.jpg");
+  assert.equal(
+    getProductThumbnail({ slug: GATORS_SLUG, images: [GATORS_THUMBNAIL_URL] }),
+    GATORS_THUMBNAIL_URL,
+  );
+  assert.ok(existsSync(join(publicDir, GATORS_THUMBNAIL_URL)));
+  assert.ok(existsSync(join(publicDir, GATORS_LISTING_COVER_URL)));
+  const browse = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "../components/footwear/FootwearBrowse.tsx"),
+    "utf8",
+  );
+  assert.match(browse, /GATORS_LISTING_COVER_URL/);
+  assert.doesNotMatch(GATORS_THUMBNAIL_URL, /forest/);
+  const productPageSrc = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "../app/products/[slug]/page.tsx"),
+    "utf8",
+  );
+  assert.match(productPageSrc, /gatorsCatalogProduct/);
 });
 
 test("All Footwear lists Gators last while they are coming soon", () => {

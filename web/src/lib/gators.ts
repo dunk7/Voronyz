@@ -1,7 +1,9 @@
 export const GATORS_SLUG = "gators";
 export const GATORS_NAME = "The Gators";
 export const GATORS_PRICE_CENTS = 10000; // $100
-export const GATORS_THUMBNAIL_URL = "/products/gators/gators-coming-soon-forest.jpg";
+export const GATORS_THUMBNAIL_URL = "/products/gators/gators-studio.jpg";
+/** Landscape All Footwear card — full clog stays in the 16:9 crop. */
+export const GATORS_LISTING_COVER_URL = "/products/gators/gators-listing-cover.jpg";
 
 export const GATORS_DESCRIPTION_SHORT =
   "Engineered for all-day clog comfort, built to last. Inspired by the alligator — chunky cushion, easy slip-on.";
@@ -25,3 +27,29 @@ export const GATORS_VARIANTS = [
   { color: "grey", sku: "GT-GRY", stock: 2 },
   { color: "tan", sku: "GT-TAN", stock: 2 },
 ] as const;
+
+/** In-memory listing when the catalog DB is unreachable. */
+export function gatorsCatalogProduct() {
+  const now = new Date(0);
+  return {
+    id: GATORS_SLUG,
+    slug: GATORS_SLUG,
+    name: GATORS_NAME,
+    description: GATORS_DESCRIPTION_SHORT,
+    priceCents: GATORS_PRICE_CENTS,
+    currency: "usd",
+    images: [...GATORS_IMAGES],
+    primaryColors: [...GATORS_PRIMARY_COLORS],
+    secondaryColors: [] as string[],
+    sizes: [...GATORS_SIZES],
+    variants: GATORS_VARIANTS.map((v) => ({
+      id: v.sku,
+      color: v.color,
+      sku: v.sku,
+      stock: v.stock,
+      priceCents: null as number | null,
+    })),
+    createdAt: now,
+    updatedAt: now,
+  };
+}
