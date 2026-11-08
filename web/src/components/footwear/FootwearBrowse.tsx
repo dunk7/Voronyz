@@ -7,6 +7,7 @@ import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 import type { FootwearListProduct } from "@/lib/footwear";
 import { sortFootwearForTab } from "@/lib/footwearRanking";
+import { GATORS_LISTING_COVER_URL, GATORS_SLUG } from "@/lib/gators";
 import {
   LATTICE_INSOLES_SLUG,
   LATTICE_INSOLES_THUMBNAIL_URL,
@@ -30,6 +31,10 @@ const LATTICE_INSOLES_BROWSE = {
   cover: LATTICE_INSOLES_THUMBNAIL_URL,
 } as const;
 
+const GATORS_BROWSE = {
+  cover: GATORS_LISTING_COVER_URL,
+} as const;
+
 function RankCard({
   product,
   cover,
@@ -47,14 +52,17 @@ function RankCard({
   const soldOut = slugKey === TRAIL_MIX_SLUG;
   const isSlipOns = slugKey === "slip-ons";
   const isLatticeInsoles = slugKey === LATTICE_INSOLES_SLUG;
+  const isGators = slugKey === GATORS_SLUG;
   const coverSrc = isSlipOns
     ? SLIP_ONS_BROWSE.cover
     : isLatticeInsoles
       ? LATTICE_INSOLES_BROWSE.cover
-      : cover;
+      : isGators
+        ? GATORS_BROWSE.cover
+        : cover;
   const altSrc = isSlipOns
     ? SLIP_ONS_BROWSE.alt
-    : isLatticeInsoles
+    : isLatticeInsoles || isGators
       ? undefined
       : alt;
 
