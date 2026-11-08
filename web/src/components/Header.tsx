@@ -92,7 +92,6 @@ export default function Header() {
   const searchString = searchParams?.toString() ?? "";
   const currentRouteKey = `${pathname}${searchString ? `?${searchString}` : ""}`;
 
-  const affiliatesActive = pathname?.startsWith("/affiliates");
   const apparelActive = Boolean(
     pathname?.startsWith("/apparel") && !pathname?.startsWith("/apparel/accessories")
   );
@@ -327,13 +326,6 @@ export default function Header() {
                 <span>About</span>
                 <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${pathname === "/about" ? "opacity-100" : "opacity-0"}`} aria-hidden />
               </Link>
-              <Link
-                href="/affiliates"
-                className={`relative shrink-0 whitespace-nowrap uppercase tracking-[0.2em] text-[11px] xl:text-[12px] rounded-full px-3.5 py-2 ring-1 ring-transparent transition hover:ring-white/15 hover:text-white hover:bg-white/[.06] ${affiliatesActive ? "text-white" : "text-white/70"}`}
-              >
-                <span>Affiliates</span>
-                <span className={`pointer-events-none absolute left-3.5 right-3.5 -bottom-[2px] h-[2px] rounded-full bg-white/70 transition-opacity ${affiliatesActive ? "opacity-100" : "opacity-0"}`} aria-hidden />
-              </Link>
             </nav>
           </div>
 
@@ -446,7 +438,7 @@ export default function Header() {
                 <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white text-black px-1 text-xs font-medium">{cartCount}</span>
               )}
             </Link>
-            {/* Menu toggle — Accessories lives here (not in the desktop top nav) */}
+            {/* Menu toggle — full site nav below xl breakpoint */}
             <button
               className="relative w-10 h-10 rounded-full ring-1 ring-white/15 text-white hover:bg-white/10 hover:ring-white/25 active:scale-95 transition-all duration-200 flex items-center justify-center"
               onClick={() => setOpen(!open)}
@@ -477,7 +469,7 @@ export default function Header() {
       {/* Fixed bar no longer occupies flow. This spacer keeps page content below it. */}
       <div className="h-20" aria-hidden />
 
-      {/* Slide-down menu (Accessories and full site nav) */}
+      {/* Slide-down menu (full site nav on smaller screens) */}
       <div
         className={`fixed inset-0 z-[60] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           open ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
@@ -547,20 +539,6 @@ export default function Header() {
                   Apparel
                 </Link>
                 <Link
-                  href="/apparel/accessories"
-                  className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
-                    pathname?.startsWith("/apparel/accessories")
-                      ? "text-white bg-white/10"
-                      : "text-white/70 hover:text-white hover:bg-white/[.06]"
-                  }`}
-                  onClick={() => setOpen(false)}
-                >
-                  {pathname?.startsWith("/apparel/accessories") && (
-                    <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
-                  )}
-                  Accessories
-                </Link>
-                <Link
                   href="/accessories"
                   className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
                     pathname?.startsWith("/accessories")
@@ -615,20 +593,6 @@ export default function Header() {
                     <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
                   )}
                   About
-                </Link>
-                <Link
-                  href="/affiliates"
-                  className={`flex items-center gap-3 py-3.5 px-4 rounded-xl uppercase tracking-[0.2em] text-[15px] font-medium transition-all duration-200 ${
-                    affiliatesActive
-                      ? "text-white bg-white/10"
-                      : "text-white/70 hover:text-white hover:bg-white/[.06]"
-                  }`}
-                  onClick={() => setOpen(false)}
-                >
-                  {affiliatesActive && (
-                    <span className="w-1 h-5 rounded-full bg-white/80 flex-shrink-0" />
-                  )}
-                  Affiliates
                 </Link>
               </nav>
             </div>

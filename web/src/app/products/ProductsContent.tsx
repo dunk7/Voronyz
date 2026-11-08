@@ -14,6 +14,7 @@ import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
 import TakeTheQuizPromo from "@/components/apparel/TakeTheQuizPromo";
+import HomeSecondaryLinks from "@/components/HomeSecondaryLinks";
 import PrintedFootwearEducation from "@/components/apparel/PrintedFootwearEducation";
 import FootwearBrowse from "@/components/footwear/FootwearBrowse";
 import FootGlowSection from "@/components/FootGlowSection";
@@ -614,6 +615,7 @@ export default function ProductsContent({
             {advancedFootwear}
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
             <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
+            <HomeSecondaryLinks className="mt-12 sm:mt-16" />
           </>
         )}
       </div>
