@@ -198,15 +198,18 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     images: [
       "/products/apparel/shirt-front-v3.jpg",
       "/products/apparel/shirt-back-blank-v3.jpg",
+      "/products/apparel/shirt-lifestyle.jpg",
     ],
     imagesByColor: {
       white: [
         "/products/apparel/shirt-front-white-v3.jpg",
         "/products/apparel/shirt-back-blank-white-v3.jpg",
+        "/products/apparel/shirt-lifestyle.jpg",
       ],
       grey: [
         "/products/apparel/shirt-front-grey-v3.jpg",
         "/products/apparel/shirt-back-blank-grey-v3.jpg",
+        "/products/apparel/shirt-lifestyle.jpg",
       ],
     },
     skuPrefix: "APP-TEE",
