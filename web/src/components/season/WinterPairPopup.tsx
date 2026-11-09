@@ -125,7 +125,7 @@ function WinterScene() {
   return (
     <div className="relative h-48 bg-[#07141c] sm:h-56" aria-hidden>
       <Image
-        src="/season/winter-popup.jpg"
+        src="/season/winter-popup-v2.jpg"
         alt=""
         fill
         sizes="420px"
