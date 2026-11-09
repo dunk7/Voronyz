@@ -18,10 +18,10 @@ export const FILAMENT_DESCRIPTION_SHORT =
   "1kg spools of TPU 90A, foaming TPU Air, and rigid PLA. Free US shipping.";
 
 export const FILAMENT_DESCRIPTION =
-  "One listing, three materials. TPU 90A stays flexible at a fixed 90 Shore A. TPU Air foams as the nozzle gets hotter, so the part gets lighter and softer. PLA stays rigid, holds detail, and prints faster. Each spool is 1kg of 1.75mm. Free US shipping.";
+  "One listing, three materials. TPU 90A stays flexible at a fixed 90 Shore A and prints footwear great — not only TPU Air makes shoes. TPU Air foams as the nozzle gets hotter, so the part gets lighter and softer (sold out). PLA stays rigid, holds detail, and prints faster. Each spool is 1kg of 1.75mm. Free US shipping.";
 
 export const FILAMENT_HOW_ITS_MADE =
-  "TPU 90A holds a steady 90 Shore A. TPU Air foams as the nozzle gets hotter. PLA stays firm and prints faster than either TPU.";
+  "TPU 90A holds a steady 90 Shore A and prints footwear great. TPU Air foams as the nozzle gets hotter. PLA stays firm and prints faster than either TPU.";
 
 export const FILAMENT_IMAGES = [FILAMENT_THUMBNAIL_URL] as const;
 
@@ -40,6 +40,7 @@ const PINK_90A_IMAGES = [
 ] as const;
 
 const BLACK_90A_IMAGES = ["/products/tpu-90a-filament/tpu-90a-black-spool.jpg"] as const;
+const TAN_90A_IMAGES = ["/products/tpu-90a-filament/filament-clear-spool.jpg"] as const;
 const AIR_IMAGES = ["/products/tpu-90a-filament/tpu-air-charcoal-spool.jpg"] as const;
 const PLA_IMAGES = ["/products/tpu-90a-filament/pla-white-spool.jpg"] as const;
 
@@ -48,9 +49,9 @@ export const FILAMENT_MATERIALS = [
     id: FILAMENT_MATERIAL_90A,
     label: "TPU 90A",
     description:
-      "Flexible filament that holds a steady 90 Shore A. It bends and springs back, so it is the spool for wearable parts, gaskets, and anything that should flex without foaming. 1.75mm, 1kg, in pink or black. Free US shipping.",
+      "Flexible filament that holds a steady 90 Shore A — and it prints footwear great. People sometimes think only foaming TPU Air can make shoes; TPU 90A does too. It bends and springs back for printable shoes, wearables, and anything that should flex without foaming. 1.75mm, 1kg, in black, tan, or pink. Free US shipping.",
     summary:
-      "Regular flexible TPU. Hardness stays at 90 Shore A no matter the nozzle temperature. 1.75mm, 1kg. Pink and black.",
+      "Regular flexible TPU at a fixed 90 Shore A. Prints footwear great — same job as TPU Air for shoes, without the foam. 1.75mm, 1kg. Black, tan, and pink.",
     printNotes: [
       "Nozzle 220–240°C. Start around 225°C.",
       "Bed 40–60°C. A cool bed works if you use a glue stick.",
@@ -59,6 +60,8 @@ export const FILAMENT_MATERIALS = [
       "Dry the spool before a long print. Wet TPU strings and pops.",
     ],
     colors: [
+      { id: "black", label: "Black", swatch: "#111111", images: BLACK_90A_IMAGES },
+      { id: "tan", label: "Tan", swatch: "#d2b48c", images: TAN_90A_IMAGES },
       {
         id: "pink",
         label: "Pink",
@@ -66,16 +69,15 @@ export const FILAMENT_MATERIALS = [
         note: "Better deal",
         images: PINK_90A_IMAGES,
       },
-      { id: "black", label: "Black", swatch: "#111111", images: BLACK_90A_IMAGES },
     ],
   },
   {
     id: FILAMENT_MATERIAL_AIR,
     label: "TPU Air",
     description:
-      "Foaming TPU, black only. Heat is the softness control: a cooler nozzle stays denser and firmer, and a hotter nozzle expands the plastic into a lighter, softer part. One kilogram prints more volume once it is foaming. 1.75mm. Free US shipping.",
+      "Foaming TPU, black only — currently sold out. Heat is the softness control: a cooler nozzle stays denser and firmer, and a hotter nozzle expands the plastic into a lighter, softer part. One kilogram prints more volume once it is foaming. 1.75mm. Free US shipping.",
     summary:
-      "Foaming TPU, black only. A cooler nozzle stays denser and firmer, up around the low 90s A. A hotter nozzle foams the plastic, so the part gets lighter and softer, down through the 70s A.",
+      "Foaming TPU, black only — sold out right now. A cooler nozzle stays denser and firmer, up around the low 90s A. A hotter nozzle foams the plastic, so the part gets lighter and softer, down through the 70s A.",
     printNotes: [
       "Nozzle 210–270°C. 260°C is a solid place to start.",
       "Bed 40–60°C. Glue stick or PEI helps it stay down.",
@@ -119,21 +121,27 @@ export const FILAMENT_SIZES = ["1kg"] as const;
 
 export const FILAMENT_VARIANTS = [
   {
+    color: filamentVariantColor(FILAMENT_MATERIAL_90A, "black"),
+    sku: "TPU90-BLK",
+    stock: 40,
+    priceCents: FILAMENT_PRICE_CENTS,
+  },
+  {
+    color: filamentVariantColor(FILAMENT_MATERIAL_90A, "tan"),
+    sku: "TPU90-TAN",
+    stock: 40,
+    priceCents: FILAMENT_PRICE_CENTS,
+  },
+  {
     color: filamentVariantColor(FILAMENT_MATERIAL_90A, "pink"),
     sku: "TPU90-PNK",
     stock: 70,
     priceCents: FILAMENT_PINK_PRICE_CENTS,
   },
   {
-    color: filamentVariantColor(FILAMENT_MATERIAL_90A, "black"),
-    sku: "TPU90-BLK",
-    stock: 10,
-    priceCents: FILAMENT_PRICE_CENTS,
-  },
-  {
     color: filamentVariantColor(FILAMENT_MATERIAL_AIR, "black"),
     sku: "TPUAIR-BLK",
-    stock: 10,
+    stock: 0,
     priceCents: FILAMENT_PRICE_CENTS,
   },
   {
@@ -157,6 +165,12 @@ export function filamentImagesByVariant(): Record<string, string[]> {
 export function filamentMaterialFromVariant(variantColor: string | null | undefined) {
   const materialId = (variantColor || "").split(":")[0];
   return FILAMENT_MATERIALS.find((item) => item.id === materialId) ?? FILAMENT_MATERIALS[0];
+}
+
+/** True when every color for that material has zero stock. */
+export function filamentMaterialSoldOut(materialId: string) {
+  const variants = FILAMENT_VARIANTS.filter((item) => item.color.startsWith(`${materialId}:`));
+  return variants.length > 0 && variants.every((item) => item.stock <= 0);
 }
 
 export function filamentSelectionLabel(variantColor: string | null | undefined): string {

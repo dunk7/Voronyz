@@ -4,6 +4,7 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from "re
 import {
   FILAMENT_MATERIALS,
   filamentMaterialFromVariant,
+  filamentMaterialSoldOut,
   filamentVariantColor,
 } from "@/lib/filament";
 
@@ -56,6 +57,7 @@ export function FilamentMaterialFilters() {
       <div className="flex flex-wrap gap-2">
         {FILAMENT_MATERIALS.map((item) => {
           const selected = item.id === materialId;
+          const soldOut = filamentMaterialSoldOut(item.id);
           return (
             <button
               key={item.id}
@@ -73,6 +75,11 @@ export function FilamentMaterialFilters() {
               }`}
             >
               {item.label}
+              {soldOut ? (
+                <span className={`ml-2 text-[11px] font-semibold uppercase tracking-wide ${selected ? "text-white/70" : "text-neutral-400"}`}>
+                  Sold out
+                </span>
+              ) : null}
             </button>
           );
         })}
