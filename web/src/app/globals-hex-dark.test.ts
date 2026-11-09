@@ -34,7 +34,10 @@ test("top glow hero sits on lightly crinkled black wrapping paper", () => {
   assert.ok(paper, "expected wrapping paper on the hero field");
   assert.match(paper[0], /black-wrapping-paper\.jpg/);
   assert.match(paper[0], /background-size:\s*cover/);
-  assert.match(paper[0], /background-repeat:\s*no-repeat/);
+  assert.match(home, /cut-paper-strip/);
+  assert.match(home, /Shaped around your foot/);
+  assert.match(css, /\.cut-paper-strip \{/);
+  assert.match(css, /cut-paper-fill\.jpg/);
   assert.doesNotMatch(css, /#ff4d6d/);
 });
 
@@ -74,8 +77,8 @@ test("hero stage has no colorful Voronoi topology behind the GIF", () => {
 });
 
 test("homepage top glow is poster-sized instead of full-bleed", () => {
-  const footGlow = readFileSync(join(dir, "../components/FootGlowSection.tsx"), "utf8");
-  assert.match(footGlow, /max-w-\[15\.5rem\]/);
-  assert.doesNotMatch(footGlow, /max-w-\[64rem\]/);
+  assert.match(home, /w-\[15\.5rem\]/);
+  assert.match(home, /md:w-\[20\.5rem\]/);
+  assert.doesNotMatch(home, /max-w-\[64rem\]/);
   assert.match(css, /\.foot-glow-hero-frame \.foot-glow-layer \{[\s\S]*?object-fit:\s*contain/);
 });

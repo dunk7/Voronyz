@@ -40,18 +40,27 @@ export default function Home() {
   return (
     <div className="relative">
       <section className="hero-stage hero-wrapping relative overflow-hidden">
-        <FootGlowSection hero />
+        <div className="hero-cut-paper relative z-[1] mx-auto flex w-full max-w-5xl flex-col items-center gap-5 px-5 pb-12 pt-8 sm:gap-6 sm:px-8 sm:pb-14 sm:pt-10 md:block md:min-h-[34rem] md:px-10 md:pb-16 md:pt-12">
+          <p className="cut-paper-strip cut-paper-strip--eyebrow cut-paper-strip--tilt-left self-start md:absolute md:left-8 md:top-10 lg:left-12">
+            Voronyz Engineering
+          </p>
 
-        <div className="relative z-[1] mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6 sm:pb-12 sm:pt-8 lg:px-8">
-          <div className="w-full max-w-xl space-y-3 sm:space-y-4">
-            <p className="uppercase tracking-[0.18em] text-[11px] sm:text-xs font-medium text-neutral-300">
-              Voronyz Engineering
-            </p>
-
-            <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-semibold leading-[1.08] sm:leading-[1.1] tracking-tight text-white">
-              3D Printed<br className="hidden sm:block" /> Footwear
-            </h1>
+          <div className="w-[15.5rem] shrink-0 sm:w-[18rem] md:absolute md:left-1/2 md:top-[46%] md:w-[20.5rem] md:-translate-x-1/2 md:-translate-y-1/2">
+            <FootGlowSection hero />
           </div>
+
+          <h1 className="flex flex-col items-start gap-2 self-start md:absolute md:bottom-16 md:left-8 lg:left-12">
+            <span className="cut-paper-strip cut-paper-strip--title cut-paper-strip--tilt-left">
+              3D Printed
+            </span>
+            <span className="cut-paper-strip cut-paper-strip--title cut-paper-strip--tilt-right">
+              Footwear
+            </span>
+          </h1>
+
+          <p className="cut-paper-strip cut-paper-strip--caption cut-paper-strip--tilt-right self-start md:absolute md:right-8 md:top-[48%] md:-translate-y-1/2 lg:right-12">
+            Shaped around your foot
+          </p>
         </div>
       </section>
 

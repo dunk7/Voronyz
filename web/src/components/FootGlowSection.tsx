@@ -65,15 +65,8 @@ export default function FootGlowSection({
 
   if (hero) {
     return (
-      <div
-        aria-hidden
-        className={`pointer-events-none relative z-[1] ${className}`}
-      >
-        <div className="mx-auto flex w-full max-w-7xl justify-center px-6 pt-8 sm:px-8 sm:pt-10 md:pt-12">
-          <div className="w-full max-w-[15.5rem] sm:max-w-[18rem] md:max-w-[20.5rem]">
-            <div className="foot-glow-poster-card">{artwork}</div>
-          </div>
-        </div>
+      <div aria-hidden className={`pointer-events-none w-full ${className}`}>
+        <div className="foot-glow-poster-card">{artwork}</div>
       </div>
     );
   }
