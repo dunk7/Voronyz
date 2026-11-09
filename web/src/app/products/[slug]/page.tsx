@@ -722,14 +722,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   ? "XS–XXL. Large is priced under Medium — the deal size on this hoodie."
                 : "This piece runs XS–XXL." },
               { q: "What colors are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
-                ? "Black, white, and grey are in stock. Pick a color to see the matching front and back shots."
+                ? "Black, white, and grey are in stock. White and grey cost about $75 more than black because stock is limited. Pick a color to see the matching front and back shots."
                 : apparelItem?.slug === "voronyz-core-hoodie"
-                  ? "Black, grey, and white. Black uses the original hoodie photo; grey costs a little more, and white is the most expensive. The gallery updates to the selected color, with the back of the same hoodie on the second photo."
+                  ? "Black, grey, and white. Black uses the original hoodie photo; grey and white cost about $75 more because stock is limited, and white is the most expensive. The gallery updates to the selected color, with the back of the same hoodie on the second photo."
                   : apparelItem?.outOfStockColors?.includes("grey")
                   ? "Grey is currently out of stock. Choose another listed color."
                   : "Pick any listed color that is in stock." },
               ...(apparelItem?.slug === "voronyz-core-hoodie"
-                ? [{ q: "How much does it cost?", a: "Price depends on size. Each hoodie is marked down about 60% from the listed compare-at — sale prices run from $74 (XS) to $99 (XXL), never under $70." }]
+                ? [{ q: "How much does it cost?", a: "Price depends on size and color. Black sale prices run from $72 (XS) to $86 (XXL), never under $70. Grey and white are about $75 more because stock is limited." }]
                 : []),
               { q: "When will my order ship?", a: "Orders typically ship within a few business days. You'll get updates by email." },
               { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Accessories (stickers, shades, jewelry, lace locks, drone parts) live under their own Apparel section." },
