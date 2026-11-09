@@ -202,14 +202,13 @@ function FilamentPickers({
               <button
                 key={key}
                 type="button"
-                disabled={!inStock}
-                onClick={() => inStock && onColor(color.id)}
+                onClick={() => onColor(color.id)}
                 className={`flex items-center rounded-full px-2 py-2 text-sm ring-1 transition ${
                   selected
                     ? "bg-black text-white ring-black"
                     : inStock
                       ? "bg-white text-neutral-900 ring-black/10 hover:bg-black/5"
-                      : "cursor-not-allowed bg-neutral-50 text-neutral-400 ring-neutral-200"
+                      : "bg-neutral-50 text-neutral-400 ring-neutral-200 hover:bg-neutral-100"
                 }`}
               >
                 <span
@@ -227,6 +226,11 @@ function FilamentPickers({
                 {color.note ? (
                   <span className={`ml-2 text-[11px] font-semibold uppercase tracking-wide ${selected ? "text-emerald-200" : "text-emerald-700"}`}>
                     {color.note}
+                  </span>
+                ) : null}
+                {!inStock ? (
+                  <span className={`ml-2 text-[11px] font-semibold uppercase tracking-wide ${selected ? "text-white/70" : "text-neutral-400"}`}>
+                    Sold out
                   </span>
                 ) : null}
               </button>
