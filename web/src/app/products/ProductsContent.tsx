@@ -324,6 +324,93 @@ export default function ProductsContent({
     return { cover, alt };
   }
 
+  /** Shared slides/slip-ons teaser — used at the top and again near the bottom of home. */
+  function homeFootwearTeaserGrid({
+    keyPrefix = "",
+    nameTag = "h2",
+  }: {
+    keyPrefix?: string;
+    nameTag?: "h2" | "h3";
+  } = {}) {
+    const NameTag = nameTag;
+    return (
+      <div className="grid grid-cols-2 gap-4 sm:gap-6">
+        {displayProducts.map((p) => {
+          const slugKey = (p.slug || "").trim().toLowerCase();
+          const { cover, alt } = getImages(p);
+          const meta = cardMetaForSlug(slugKey);
+          const isNavigating = navigatingSlug === p.slug;
+
+          return (
+            <Link
+              key={`${keyPrefix}${p.id}`}
+              href={`/products/${p.slug}`}
+              onClick={(e) => handleCardClick(e, p.slug)}
+              className={`group block outline-none cursor-pointer transition-all duration-200 active:scale-[0.98] ${
+                isNavigating ? "pointer-events-none" : ""
+              }`}
+            >
+              <div
+                className={`relative aspect-square w-full overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:shadow-xl group-hover:ring-black/10 ${
+                  isNavigating ? "ring-black/10 shadow-xl" : ""
+                }`}
+              >
+                <SoftImage
+                  key={cover}
+                  src={cover}
+                  alt={p.name}
+                  fill
+                  className={`object-cover ${apparelCoverObjectPositionClass(cover)} transition-all duration-500 ${
+                    alt ? "group-hover:opacity-0" : "group-hover:scale-105"
+                  } ${isNavigating ? "scale-105 brightness-90" : ""}`}
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                />
+                {alt && (
+                  <SoftImage
+                    key={alt}
+                    src={alt}
+                    alt={`${p.name} – alternate view`}
+                    fill
+                    showLogoPlaceholder={false}
+                    className={`object-cover ${apparelCoverObjectPositionClass(alt)} opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105`}
+                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                    loading="lazy"
+                  />
+                )}
+                {slugKey === TRAIL_MIX_SLUG && (
+                  <div className="absolute top-3 left-3 z-10">
+                    <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-neutral-900 text-white">
+                      Sold Out
+                    </span>
+                  </div>
+                )}
+                {meta?.promo && (
+                  <div className="absolute bottom-0 inset-x-0 z-10">
+                    <div className="bg-gradient-to-t from-black/70 via-black/40 to-transparent px-4 pb-3.5 pt-8">
+                      <span className="text-[12px] font-semibold text-white tracking-wide">
+                        {meta.promo}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                {isNavigating && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px] rounded-2xl animate-in fade-in duration-200 z-20">
+                    <LogoLoader size="sm" tone="light" showBar={false} className="!gap-0" />
+                  </div>
+                )}
+              </div>
+              <div className="mt-4 px-0.5">
+                <NameTag className="text-[15px] font-semibold text-neutral-900 group-hover:text-black transition-colors line-clamp-2">
+                  {p.name}
+                </NameTag>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    );
+  }
+
   const catalogHeading = (
     <div className="mb-12 text-center">
       <TitleTag className={titleClass}>
@@ -394,6 +481,28 @@ export default function ProductsContent({
       </section>
     ) : null;
 
+  /** Closing footwear teaser — most shoppers never hit Shop all footwear at the top. */
+  const footwearBottomSection =
+    isHomeFootwearTeaser && displayProducts.length > 0 ? (
+      <section
+        id="footwear"
+        aria-labelledby="home-footwear-bottom-heading"
+        className="mt-16 sm:mt-24 lg:mt-28"
+      >
+        <div className="mb-8 sm:mb-10 text-center">
+          <h2 id="home-footwear-bottom-heading" className={homeSectionTitleClass}>
+            Footwear
+          </h2>
+        </div>
+        {homeFootwearTeaserGrid({ keyPrefix: "bottom-", nameTag: "h3" })}
+        <div className="mt-10 sm:mt-12 flex justify-center">
+          <Link href="/products" className={SHOP_ALL_CTA_CLASS}>
+            Shop all footwear
+          </Link>
+        </div>
+      </section>
+    ) : null;
+
   return (
     <div className={shellClass}>
       {useFootwearBrowse ? (
@@ -425,14 +534,19 @@ export default function ProductsContent({
               {emptyLabel}
             </Link>
           </div>
-        ) : (
-          /* ── Product grid (home teaser / Engineering / Collaborative / search) ── */
+        ) : isHomeFootwearTeaser ? (
+          /* ── Homepage footwear teaser (also repeated near the bottom) ── */
           <>
-          <div className={`grid gap-4 sm:gap-6 ${
-            isHomeFootwearTeaser
-              ? "grid-cols-2"
-              : "grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
-          }`}>
+            {homeFootwearTeaserGrid()}
+            <div className="mt-10 sm:mt-12 flex justify-center">
+              <Link href="/products" className={SHOP_ALL_CTA_CLASS}>
+                Shop all footwear
+              </Link>
+            </div>
+          </>
+        ) : (
+          /* ── Product grid (Engineering / Collaborative / search) ── */
+          <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 xl:grid-cols-4">
             {displayProducts.map((p) => {
               const slugKey = (p.slug || "").trim().toLowerCase();
               const { cover, alt } = getImages(p);
@@ -448,13 +562,11 @@ export default function ProductsContent({
                     isNavigating ? "pointer-events-none" : ""
                   }`}
                 >
-                  {/* Image container */}
                   <div
                     className={`relative aspect-square w-full overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:shadow-xl group-hover:ring-black/10 ${
                       isNavigating ? "ring-black/10 shadow-xl" : ""
                     }`}
                   >
-                    {/* Primary image */}
                     <SoftImage
                       key={cover}
                       src={cover}
@@ -465,8 +577,6 @@ export default function ProductsContent({
                       } ${isNavigating ? "scale-105 brightness-90" : ""}`}
                       sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
                     />
-
-                    {/* Hover alt image */}
                     {alt && (
                       <SoftImage
                         key={alt}
@@ -479,8 +589,6 @@ export default function ProductsContent({
                         loading="lazy"
                       />
                     )}
-
-                    {/* Availability only — no Best Seller / category pills */}
                     {slugKey === TRAIL_MIX_SLUG && (
                       <div className="absolute top-3 left-3 z-10">
                         <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-neutral-900 text-white">
@@ -488,8 +596,6 @@ export default function ProductsContent({
                         </span>
                       </div>
                     )}
-
-                    {/* Promo ribbon */}
                     {meta?.promo && (
                       <div className="absolute bottom-0 inset-x-0 z-10">
                         <div className="bg-gradient-to-t from-black/70 via-black/40 to-transparent px-4 pb-3.5 pt-8">
@@ -499,16 +605,12 @@ export default function ProductsContent({
                         </div>
                       </div>
                     )}
-
-                    {/* Loading overlay */}
                     {isNavigating && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px] rounded-2xl animate-in fade-in duration-200 z-20">
                         <LogoLoader size="sm" tone="light" showBar={false} className="!gap-0" />
                       </div>
                     )}
                   </div>
-
-                  {/* Card info — name only; price and details live on the product page */}
                   <div className="mt-4 px-0.5">
                     <h2 className="text-[15px] font-semibold text-neutral-900 group-hover:text-black transition-colors line-clamp-2">
                       {p.name}
@@ -518,18 +620,6 @@ export default function ProductsContent({
               );
             })}
           </div>
-
-          {isHomeFootwearTeaser && (
-            <div className="mt-10 sm:mt-12 flex justify-center">
-              <Link
-                href="/products"
-                className={SHOP_ALL_CTA_CLASS}
-              >
-                Shop all footwear
-              </Link>
-            </div>
-          )}
-          </>
         )}
 
         {isHomeFootwearTeaser ? betweenFootwearAndApparel : null}
@@ -615,6 +705,7 @@ export default function ProductsContent({
             {advancedFootwear}
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
             <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
+            {footwearBottomSection}
             <HomeSecondaryLinks className="mt-12 sm:mt-16" />
           </>
         )}
