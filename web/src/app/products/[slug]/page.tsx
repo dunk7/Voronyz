@@ -67,7 +67,6 @@ import {
   STL_FILES_IMAGES,
   STL_FILES_NAME,
   STL_FILES_SLUG,
-  STL_FILES_THUMBNAIL_URL,
   STL_SHOE_FILES,
   stlFilesCatalogProduct,
 } from "@/lib/stlFiles";
@@ -819,7 +818,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug === STL_FILES_SLUG) {
     const title = `${STL_FILES_NAME} – Voronyz`;
     const description = STL_FILES_DESCRIPTION;
-    const images = [STL_FILES_THUMBNAIL_URL, ...STL_FILES_IMAGES];
+    const images = [...STL_FILES_IMAGES];
     return {
       title,
       description,

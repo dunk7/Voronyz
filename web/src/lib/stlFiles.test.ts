@@ -1,9 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  STL_FILES_ALT_IMAGE_URL,
+  STL_FILES_IMAGES,
   STL_FILES_NAME,
   STL_FILES_PRICE_CENTS,
   STL_FILES_SLUG,
+  STL_FILES_THUMBNAIL_URL,
   STL_FILES_VARIANTS,
   STL_SHOE_FILES,
   isDigitalProductSlug,
@@ -19,6 +22,16 @@ test("STL listing is Voronyz STL at $1 per shoe file", () => {
   assert.equal(isDigitalProductSlug("slip-ons"), false);
   assert.equal(orderIncludesStlDownload([{ productSlug: STL_FILES_SLUG }]), true);
   assert.equal(orderIncludesStlDownload([{ name: "Slip Ons" }]), false);
+});
+
+test("STL thumbnail shows the open-back Slip On that matches the downloadable file", () => {
+  assert.equal(STL_FILES_THUMBNAIL_URL, "/products/stl-files/cover.jpg");
+  assert.equal(STL_FILES_ALT_IMAGE_URL, "/products/stl-files/alt.jpg");
+  assert.deepEqual([...STL_FILES_IMAGES], [
+    "/products/stl-files/cover.jpg",
+    "/products/stl-files/alt.jpg",
+  ]);
+  assert.equal(STL_FILES_THUMBNAIL_URL.includes("layers.jpg"), false);
 });
 
 test("only Slip Ons has an STL file; others are out of stock and Magikid/insoles are gone", () => {

@@ -6,8 +6,10 @@ export const STL_FILES_NAME = "Voronyz STL";
 /** Each shoe file is $1. Buying another shoe is another dollar. */
 export const STL_FILES_PRICE_CENTS = 100;
 
-export const STL_FILES_THUMBNAIL_URL = "/products/stl-files/layers.jpg";
-export const STL_FILES_IMAGES = [STL_FILES_THUMBNAIL_URL] as const;
+/** Match the open-back Slip On STL that is actually downloadable (not the closed-heel wireframe). */
+export const STL_FILES_THUMBNAIL_URL = "/products/stl-files/cover.jpg";
+export const STL_FILES_ALT_IMAGE_URL = "/products/stl-files/alt.jpg";
+export const STL_FILES_IMAGES = [STL_FILES_THUMBNAIL_URL, STL_FILES_ALT_IMAGE_URL] as const;
 
 export const STL_FILES_DESCRIPTION_SHORT =
   "Print files for the Voronyz shoes. Pick a shoe — each file is $1.";
