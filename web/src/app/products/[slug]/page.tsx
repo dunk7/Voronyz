@@ -515,11 +515,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             ...(isStlFiles && {
               hideSizeSelector: true,
               hideColorSelector: true,
+              soldOutLabel: "Out of Stock",
               flavorLabel: "Shoe",
               flavorOptions: STL_SHOE_FILES.map((shoe) => ({
                 id: shoe.id,
                 label: shoe.name,
-                description: "$1 file",
+                description: shoe.file ? "$1 file" : "Out of stock",
               })),
             }),
             ...(isApparel && {
@@ -636,7 +637,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <h2 className="text-lg font-semibold text-neutral-900 mb-4">FAQs</h2>
           <FAQ
             items={isStlFiles ? [
-              { q: "What do I get?", a: "The print file for the shoe you select. Slip Ons includes the left, right, and two-piece files." },
+              { q: "What do I get?", a: "The print file for the shoe you select. Right now only Slip Ons is in stock — it includes the left, right, and two-piece files. Other shoes show as out of stock until their files are ready." },
               { q: "How do I download it?", a: "After checkout, the confirmation page has a download button for the shoe you bought." },
               { q: "What filament should I use?", a: "TPU-90A, the same material we print footwear with. We sell it on Engineering." },
               { q: "How much is it?", a: "$1 per shoe file. Another shoe is another dollar. No shipping — it's a digital download." },

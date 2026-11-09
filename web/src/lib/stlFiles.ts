@@ -23,10 +23,14 @@ export const STL_SHOE_FILES = [
   { id: "v3-slides", name: "V3 Slides", file: null as string | null },
   { id: "slip-ons", name: "Slip Ons", file: "slip-on/voronyz-slip-on.zip" },
   { id: "dragonfly", name: "The Dragonfly's", file: null },
-  { id: "magikid-shoes", name: "Magikid Shoes", file: null },
-  { id: "voronyz-lattice-insoles", name: "Lattice Insoles", file: null },
   { id: "gators", name: "The Gators", file: null },
 ] as const;
+
+export function stlShoeHasFile(
+  shoe: (typeof STL_SHOE_FILES)[number] | null | undefined
+): boolean {
+  return Boolean(shoe?.file);
+}
 
 export function stlShoeById(id: string | null | undefined) {
   const key = (id || "").trim().toLowerCase();
@@ -43,10 +47,11 @@ export function stlShoeByName(name: string | null | undefined) {
 export const STL_FILES_SIZES = ["Download"] as const;
 export const STL_FILES_PRIMARY_COLORS = STL_SHOE_FILES.map((shoe) => shoe.id);
 
+/** Shoes without a downloadable STL stay listed at stock 0 (Out of Stock). */
 export const STL_FILES_VARIANTS = STL_SHOE_FILES.map((shoe) => ({
   color: shoe.id,
   sku: `STL-${shoe.id.toUpperCase()}`,
-  stock: 9999,
+  stock: stlShoeHasFile(shoe) ? 9999 : 0,
   priceCents: STL_FILES_PRICE_CENTS,
 }));
 
