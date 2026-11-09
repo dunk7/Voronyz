@@ -124,23 +124,13 @@ export default function WinterPairPopup() {
 
 function GhostMark() {
   return (
-    <svg
-      viewBox="0 0 72 78"
-      className="h-12 w-12 shrink-0"
-      aria-hidden
-      style={{ filter: "drop-shadow(0 0 8px rgba(255,255,255,0.85))" }}
-    >
-      <path d="M30 20c8-16 28-16 34-2-8 2-12 8-12 14" fill="#e23d3d" />
-      <ellipse cx="34" cy="30" rx="18" ry="6" fill="#f7f7f7" />
-      <circle cx="58" cy="16" r="5" fill="#f7f7f7" />
-      <path
-        fill="#f7f7f7"
-        d="M36 26c-16 0-26 14-26 28v12c4-6 10-6 14 0s10 6 14 0 10-6 14 0 10 6 14 0c4-6 10-6 14 0V54c0-14-10-28-26-28h-4z"
-      />
-      <ellipse cx="30" cy="50" rx="3.2" ry="4.2" fill="#111" />
-      <ellipse cx="46" cy="50" rx="3.2" ry="4.2" fill="#111" />
-      <path d="M32 60c2.4 3 10 3 12.5 0" fill="none" stroke="#111" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
+    <Image
+      src="/season/winter-ghost.png"
+      alt=""
+      width={88}
+      height={88}
+      className="h-16 w-16 shrink-0 object-contain"
+    />
   );
 }
 
@@ -148,7 +138,7 @@ function WinterScene() {
   return (
     <div className="relative h-48 bg-[#07141c] sm:h-56" aria-hidden>
       <Image
-        src="/season/winter-chase.jpg"
+        src="/season/winter-chase-v2.jpg"
         alt=""
         fill
         sizes="420px"
