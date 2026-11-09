@@ -40,10 +40,10 @@ export default function Home() {
   return (
     <div className="relative">
       <section className="hero-stage relative overflow-hidden bg-black">
-        <FootGlowSection hero />
+        <div className="relative z-[1] mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6 sm:pb-12 sm:pt-8 lg:px-8">
+          <FootGlowSection hero />
 
-        <div className="relative z-[1] mx-auto max-w-7xl px-4 pb-8 pt-4 sm:px-6 sm:pb-10 sm:pt-5 lg:px-8">
-          <div className="w-full max-w-xl space-y-3 sm:space-y-4">
+          <div className="mx-auto mt-8 w-full max-w-xl space-y-3 sm:mt-10 sm:space-y-4">
             <p className="uppercase tracking-[0.18em] text-[11px] sm:text-xs font-medium text-neutral-300">
               Voronyz Engineering
             </p>

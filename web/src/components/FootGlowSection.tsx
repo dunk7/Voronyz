@@ -9,7 +9,7 @@ type FootGlowSectionProps = {
    * Homepage keeps the foot x-ray. All Footwear uses a separate lattice-shoe outline.
    */
   variant?: "xray" | "print";
-  /** Homepage hero. The x-ray sits flush to the top at its own aspect ratio. */
+  /** Homepage hero. The x-ray sits on a small crinkled poster. */
   hero?: boolean;
   /** Sits under the poster, left-aligned, so it never covers the artwork. */
   caption?: ReactNode;
@@ -18,11 +18,36 @@ type FootGlowSectionProps = {
 /** Original artwork, served as uploaded. The glow is opacity only. */
 const XRAY_SRC = "/graphics/foot-xray.png";
 const HATCH_SRC = "/graphics/foot-hatch.png";
+const PAPER_SRC = "/graphics/crinkled-poster.jpg";
+const POSTER_LINE = "Footwear shaped around your foot.";
+
+function GlowPoster({
+  children,
+  compact = false,
+  line = POSTER_LINE,
+}: {
+  children: ReactNode;
+  compact?: boolean;
+  line?: string;
+}) {
+  return (
+    <figure
+      className={`glow-poster ${compact ? "glow-poster-compact" : "glow-poster-run"}`}
+    >
+      <div className="glow-poster-sheet">
+        {children}
+        {/* eslint-disable-next-line @next/next/no-img-element -- paper grain overlay */}
+        <img src={PAPER_SRC} alt="" aria-hidden className="glow-poster-paper" />
+      </div>
+      <figcaption className="glow-poster-copy">{line}</figcaption>
+    </figure>
+  );
+}
 
 /**
  * Full-bleed pause between Footwear and Apparel.
  * The line drawing sits over the x-ray as a soft screen overlay and slowly breathes.
- * All Footwear uses the ghost Dragonfly pair sprinting along a lane.
+ * All Footwear uses the ghost Dragonfly pair sprinting on a crinkled poster.
  */
 export default function FootGlowSection({
   className = "",
@@ -31,15 +56,11 @@ export default function FootGlowSection({
   caption,
   variant = "xray",
 }: FootGlowSectionProps) {
-  const artwork = variant === "print" ? (
-        <div className="mx-auto w-full max-w-4xl bg-black">
-          <DragonflySprint />
-        </div>
-  ) : (
+  const xray = (
         <div
-          className={`foot-glow-frame relative w-full bg-black ${
-            hero ? "foot-glow-hero-frame aspect-[2000/1399]" : "aspect-[2000/1399]"
-          } ${poster ? "foot-glow-poster-frame" : ""}`}
+          className={`foot-glow-frame relative aspect-[2000/1399] w-full bg-black ${
+            poster ? "foot-glow-poster-frame" : ""
+          }`}
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- keep the uploaded PNG bytes, no optimizer */}
           <img
@@ -65,11 +86,8 @@ export default function FootGlowSection({
 
   if (hero) {
     return (
-      <div
-        aria-hidden
-        className={`pointer-events-none bg-black ${className}`}
-      >
-        <div className="mx-auto w-full max-w-[64rem]">{artwork}</div>
+      <div className={`bg-black ${className}`}>
+        <GlowPoster compact>{xray}</GlowPoster>
       </div>
     );
   }
@@ -82,7 +100,7 @@ export default function FootGlowSection({
       >
         <div className="mx-auto flex w-full max-w-6xl justify-center px-6">
           <div className="w-full max-w-[17rem] sm:max-w-xs md:max-w-sm">
-            <div className="foot-glow-poster-card">{artwork}</div>
+            <GlowPoster compact>{xray}</GlowPoster>
             {caption ? <div className="mt-4 text-left">{caption}</div> : null}
           </div>
         </div>
@@ -90,12 +108,25 @@ export default function FootGlowSection({
     );
   }
 
+  if (variant === "print") {
+    return (
+      <section
+        aria-label="Dragonfly shoes running"
+        className={`foot-glow-section relative py-10 sm:py-14 ${className}`}
+      >
+        <GlowPoster>
+          <DragonflySprint />
+        </GlowPoster>
+      </section>
+    );
+  }
+
   return (
     <section
-      aria-label={variant === "print" ? "Dragonfly shoes running a rocky trail" : "Foot inside a shoe"}
+      aria-label="Foot inside a shoe"
       className={`foot-glow-section relative ml-[calc(50%-50vw)] w-screen max-w-[100vw] bg-black py-6 sm:py-10 ${className}`}
     >
-      <div className="mx-auto w-full max-w-6xl">{artwork}</div>
+      <div className="mx-auto w-full max-w-6xl">{xray}</div>
     </section>
   );
 }
