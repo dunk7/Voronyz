@@ -14,7 +14,6 @@ import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
 import TakeTheQuizPromo from "@/components/apparel/TakeTheQuizPromo";
-import AboutStory from "@/components/about/AboutStory";
 import HomeSecondaryLinks from "@/components/HomeSecondaryLinks";
 import PrintedFootwearEducation from "@/components/apparel/PrintedFootwearEducation";
 import FootwearBrowse from "@/components/footwear/FootwearBrowse";
@@ -615,18 +614,6 @@ export default function ProductsContent({
           <>
             {advancedFootwear}
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
-            <section
-              id="about"
-              aria-labelledby="home-about-heading"
-              className="mt-16 sm:mt-24 lg:mt-28"
-            >
-              <div className="mb-8 sm:mb-10 text-center">
-                <h2 id="home-about-heading" className={homeSectionTitleClass}>
-                  About Us
-                </h2>
-              </div>
-              <AboutStory />
-            </section>
             <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
             <HomeSecondaryLinks className="mt-12 sm:mt-16" />
           </>
