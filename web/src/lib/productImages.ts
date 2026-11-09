@@ -32,6 +32,10 @@ import {
   isViolettePonybeadSlug,
   VIOLETTE_PONYBEAD_THUMBNAIL_URL,
 } from "@/lib/violettePonybeadAnimals";
+import {
+  PEPPERMINT_MIST_SLUG,
+  PEPPERMINT_MIST_THUMBNAIL_URL,
+} from "@/lib/aineFernPeppermintMist";
 import { GATORS_SLUG, GATORS_THUMBNAIL_URL } from "@/lib/gators";
 import { FILAMENT_SLUG, FILAMENT_THUMBNAIL_URL } from "@/lib/filament";
 import { STL_FILES_SLUG, STL_FILES_THUMBNAIL_URL } from "@/lib/stlFiles";
@@ -49,6 +53,7 @@ export function getProductThumbnail(input: { slug?: string; images?: unknown }):
   if (input.slug === "magikid-shoes") return MAGIKID_SHOES_COVER;
   if (input.slug === "antioxidant-trail-mix") return TRAIL_MIX_THUMBNAIL_URL;
   if (isViolettePonybeadSlug(input.slug)) return VIOLETTE_PONYBEAD_THUMBNAIL_URL;
+  if (input.slug === PEPPERMINT_MIST_SLUG) return PEPPERMINT_MIST_THUMBNAIL_URL;
   if (input.slug === GATORS_SLUG) return GATORS_THUMBNAIL_URL;
   if (input.slug === FILAMENT_SLUG) return FILAMENT_THUMBNAIL_URL;
   if (input.slug === STL_FILES_SLUG) return STL_FILES_THUMBNAIL_URL;
