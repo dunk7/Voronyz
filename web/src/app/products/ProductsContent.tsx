@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState, useCallback, type ReactNode } from "react
 import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
-import { FILAMENT_SLUG, getAccessoryCatalogSeed } from "@/lib/filament";
+import { FILAMENT_SLUG, FILAMENT_THUMBNAIL_URL, getAccessoryCatalogSeed } from "@/lib/filament";
 import { STL_FILES_SLUG } from "@/lib/stlFiles";
 import { APPAREL_CATALOG, apparelCoverObjectPositionClass } from "@/lib/apparel";
 import ApparelProductGrid, {
@@ -313,6 +313,8 @@ export default function ProductsContent({
 
     const cover = slugKey === GATORS_SLUG
       ? GATORS_THUMBNAIL_URL
+      : slugKey === FILAMENT_SLUG
+      ? FILAMENT_THUMBNAIL_URL
       : isV3
       ? "/products/v3-slides/InShot_20260212_194352014.jpg"
       : (p.thumbnail || images[0]);

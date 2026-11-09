@@ -52,6 +52,7 @@ import {
 } from "@/lib/gators";
 import {
   FILAMENT_COMPARE_AT_CENTS,
+  FILAMENT_DEFAULT_COLOR,
   FILAMENT_DESCRIPTION,
   FILAMENT_IMAGES,
   FILAMENT_MATERIALS,
@@ -432,7 +433,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   );
 
   return (
-    <FilamentPageFrame enabled={isFilament} initialKey={FILAMENT_PRIMARY_COLORS[0]}>
+    <FilamentPageFrame enabled={isFilament} initialKey={FILAMENT_DEFAULT_COLOR}>
     <div className="bg-texture-white">
       <div className="mx-auto w-full max-w-[1500px] pt-3 pb-12 lg:pt-5 lg:px-6">
         <div className="mb-3 lg:mb-5 px-4 sm:px-6 lg:px-0">
