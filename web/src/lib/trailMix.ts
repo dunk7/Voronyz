@@ -6,6 +6,7 @@ import {
   VIOLETTE_PONYBEAD_SLUG,
   VIOLETTE_PONYBEAD_THUMBNAIL_URL,
 } from "@/lib/violettePonybeadAnimals";
+import { peppermintMistHealthCatalogSeed } from "@/lib/aineFernPeppermintMist";
 import { catalogSeedListedAt } from "@/lib/newListing";
 
 export const TRAIL_MIX_SLUG = "antioxidant-trail-mix";
@@ -106,5 +107,6 @@ export function getHealthCatalogSeed(): HealthListProduct[] {
       createdAt: catalogSeedListedAt(TRAIL_MIX_SLUG),
       updatedAt: catalogSeedListedAt(TRAIL_MIX_SLUG),
     },
+    peppermintMistHealthCatalogSeed(),
   ];
 }

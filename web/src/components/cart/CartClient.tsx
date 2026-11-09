@@ -47,6 +47,7 @@ import ComplementaryRecs from "@/components/products/ComplementaryRecs";
 import { getComplementaryRecommendations } from "@/lib/complementaryRecommendations";
 import { trailMixFlavorLabel } from "@/lib/trailMix";
 import { violetteAnimalLabel, isViolettePonybeadSlug, VIOLETTE_PONYBEAD_NAME, VIOLETTE_PONYBEAD_SLUG } from "@/lib/violettePonybeadAnimals";
+import { PEPPERMINT_MIST_SLUG } from "@/lib/aineFernPeppermintMist";
 
 interface CartItem {
   id: string;
@@ -565,6 +566,7 @@ export default function CartClient() {
                   {it.variant?.name && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-black/5 px-2 py-0.5 capitalize">
                       {it.productSlug !== "antioxidant-trail-mix" &&
+                        it.productSlug !== PEPPERMINT_MIST_SLUG &&
                         it.productSlug !== "tpu-90a-filament" &&
                         it.productSlug !== STL_FILES_SLUG &&
                         !isViolettePonybeadSlug(it.productSlug) && (
@@ -577,11 +579,14 @@ export default function CartClient() {
                         ? trailMixFlavorLabel(it.variant.name)
                         : isViolettePonybeadSlug(it.productSlug)
                           ? violetteAnimalLabel(it.variant.name)
+                          : it.productSlug === PEPPERMINT_MIST_SLUG
+                            ? "Peppermint"
                           : it.variant.name}
                     </span>
                   )}
                   {it.attributes?.size !== undefined &&
                     it.productSlug !== "antioxidant-trail-mix" &&
+                    it.productSlug !== PEPPERMINT_MIST_SLUG &&
                     !isViolettePonybeadSlug(it.productSlug) && (
                     <span className="rounded-full bg-black/5 px-2 py-0.5">
                       {it.productSlug === "tpu-90a-filament"

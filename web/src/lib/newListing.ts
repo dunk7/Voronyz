@@ -7,10 +7,12 @@ const NEW_LISTING_MS = NEW_LISTING_DAYS * 24 * 60 * 60 * 1000;
  * Public launch dates for listings that should show the “New Listing” bubble.
  * Prefer this over DB `createdAt` when set.
  *
- * Empty for now — no products show the badge. Re-add a slug → ISO date to
- * turn it back on for up to NEW_LISTING_DAYS after that launch.
+ * Re-add a slug → ISO date to turn the badge on for up to NEW_LISTING_DAYS
+ * after that launch.
  */
-export const PRODUCT_LISTED_AT: Record<string, string> = {};
+export const PRODUCT_LISTED_AT: Record<string, string> = {
+  "aine-fern-peppermint-freshening-mist": "2026-11-09T00:00:00.000Z",
+};
 
 /** Fallback for catalog seeds of established products (never “new”). */
 export const CATALOG_LEGACY_LISTED_AT = "2025-01-01T00:00:00.000Z";

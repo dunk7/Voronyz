@@ -42,6 +42,16 @@ import {
   VIOLETTE_PONYBEAD_THUMBNAIL_URL,
 } from "@/lib/violettePonybeadAnimals";
 import {
+  PEPPERMINT_MIST_DESCRIPTION,
+  PEPPERMINT_MIST_HOW_ITS_MADE,
+  PEPPERMINT_MIST_IMAGES,
+  PEPPERMINT_MIST_META_DESCRIPTION,
+  PEPPERMINT_MIST_NAME,
+  PEPPERMINT_MIST_SLUG,
+  PEPPERMINT_MIST_THUMBNAIL_URL,
+  peppermintMistCatalogProduct,
+} from "@/lib/aineFernPeppermintMist";
+import {
   GATORS_DESCRIPTION,
   GATORS_HOW_ITS_MADE,
   GATORS_IMAGES,
@@ -184,6 +194,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       product = latticeInsolesCatalogProduct();
     } else if (slug === GATORS_SLUG) {
       product = gatorsCatalogProduct();
+    } else if (slug === PEPPERMINT_MIST_SLUG) {
+      product = peppermintMistCatalogProduct();
     } else {
       return (
         <div className="bg-texture-white">
@@ -205,6 +217,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     else if (slug === STL_FILES_SLUG) product = stlFilesCatalogProduct();
     else if (slug === LATTICE_INSOLES_SLUG) product = latticeInsolesCatalogProduct();
     else if (slug === GATORS_SLUG) product = gatorsCatalogProduct();
+    else if (slug === PEPPERMINT_MIST_SLUG) product = peppermintMistCatalogProduct();
   }
   if (!product) return <div className="container py-12 text-neutral-900">Not found.</div>;
   if (slug === STL_FILES_SLUG) product = stlFilesCatalogProduct();
@@ -256,6 +269,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? [...TRAIL_MIX_IMAGES]
     : isViolettePonybeadSlug(slug)
     ? [...VIOLETTE_PONYBEAD_IMAGES]
+    : slug === PEPPERMINT_MIST_SLUG
+    ? [...PEPPERMINT_MIST_IMAGES]
     : slug === GATORS_SLUG
     ? [...GATORS_IMAGES]
     : slug === FILAMENT_SLUG
@@ -281,6 +296,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isMagikidShoes = slug === "magikid-shoes";
   const isTrailMix = slug === TRAIL_MIX_SLUG;
   const isViolettePonybead = isViolettePonybeadSlug(slug);
+  const isPeppermintMist = slug === PEPPERMINT_MIST_SLUG;
   const isGators = slug === GATORS_SLUG;
   const isFilament = slug === FILAMENT_SLUG;
   const isStlFiles = slug === STL_FILES_SLUG;
@@ -310,6 +326,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       ? TRAIL_MIX_NAME
       : isViolettePonybead
         ? VIOLETTE_PONYBEAD_NAME
+      : isPeppermintMist
+        ? PEPPERMINT_MIST_NAME
       : isGators
         ? GATORS_NAME
         : isFilament
@@ -335,6 +353,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? TRAIL_MIX_DESCRIPTION
     : isViolettePonybead
     ? VIOLETTE_PONYBEAD_DESCRIPTION
+    : isPeppermintMist
+    ? PEPPERMINT_MIST_DESCRIPTION
     : isGators
     ? GATORS_DESCRIPTION
     : isFilament
@@ -391,6 +411,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <span className="rounded-full bg-amber-600 px-3 py-1 text-xs font-semibold text-white">
           Low Stock
         </span>
+      )}
+      {isPeppermintMist && (
+        <>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Áine & Fern</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">3 FL OZ</span>
+        </>
       )}
       {isLatticeInsoles && (
         <>
@@ -497,6 +523,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               flavorLabel: "Animal",
               flavorOptions: VIOLETTE_PONYBEAD_ANIMALS,
             }),
+            ...(isPeppermintMist && {
+              hideSizeSelector: true,
+              hideColorSelector: true,
+            }),
             ...(isFilament && {
               hideSizeSelector: true,
               compareAtCents: FILAMENT_COMPARE_AT_CENTS,
@@ -563,7 +593,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             {isFilament ? (
               <FilamentMaterialDescription />
             ) : displayDescription ? (
-              <p className="footwear-description">
+              <p className={`footwear-description${isPeppermintMist ? " whitespace-pre-line" : ""}`}>
                 {displayDescription}
               </p>
             ) : null}
@@ -586,6 +616,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   : isTrailMix
                       ? "Collaborative"
                       : isViolettePonybead
+                        ? "Collaborative"
+                      : isPeppermintMist
                         ? "Collaborative"
                       : isApparel
                         ? "Apparel"
@@ -610,6 +642,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? TRAIL_MIX_HOW_ITS_MADE
               : isViolettePonybead
               ? VIOLETTE_PONYBEAD_HOW_ITS_MADE
+              : isPeppermintMist
+              ? PEPPERMINT_MIST_HOW_ITS_MADE
               : apparelItem?.slug === "voronyz-oversized-tee"
               ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves."
               : apparelItem?.slug === "voronyz-core-hoodie"
@@ -666,6 +700,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "What animals are available?", a: "Raccoon, chipmunk, skunk, and fox — each a handmade pony bead keychain with a silver lobster clasp." },
               { q: "How much do they cost?", a: "$10 per animal." },
               { q: "Does it come in sizes?", a: "No sizes — pick the animal style you want." },
+              { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
+            ] : isPeppermintMist ? [
+              { q: "What is it?", a: "Áine & Fern Peppermint Freshening Mist — a bright minty spray with natural peppermint essential oil for body, belongings, and everyday spaces." },
+              { q: "Is it good for shoes?", a: "Yes — lightly mist the insides of shoes, sneakers, slides, and gym shoes for a fresh minty scent. Also great on gym bags, backpacks, luggage, and compatible fabrics. Spot-test first." },
+              { q: "Is this a sanitizer?", a: "No. This is a freshening mist for scent and everyday freshness — not a sanitizer, disinfectant, or medicine, and not intended to diagnose, treat, cure, or prevent fungal infections or any disease." },
+              { q: "How do I use it?", a: "Shake well, lightly mist as needed, and allow to dry. Test a small area of skin and an inconspicuous area of fabric before first use. External use only." },
+              { q: "How much does it cost?", a: "$20 for a 3 FL OZ (89 mL) bottle." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : apparelItem?.slug === "voronyz-stickers" ? [
               { q: "What is included?", a: "One vinyl sheet with three stacked VORONYZ logo strips — peel and apply each strip, or keep the sheet together." },
@@ -783,6 +824,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const title = `${VIOLETTE_PONYBEAD_NAME} – Voronyz`;
     const description = VIOLETTE_PONYBEAD_DESCRIPTION;
     const images = [VIOLETTE_PONYBEAD_THUMBNAIL_URL];
+    return {
+      title,
+      description,
+      openGraph: { title, description, images },
+      twitter: { card: "summary_large_image", title, description, images },
+    };
+  }
+
+  if (slug === PEPPERMINT_MIST_SLUG) {
+    const title = `${PEPPERMINT_MIST_NAME} – Voronyz`;
+    const description = PEPPERMINT_MIST_META_DESCRIPTION;
+    const images = [PEPPERMINT_MIST_THUMBNAIL_URL];
     return {
       title,
       description,

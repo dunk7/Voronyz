@@ -181,14 +181,25 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    products = applyCategoryFilter(products, category).filter(
+    const filtered = applyCategoryFilter(products, category).filter(
       (product) => !isObsoleteApparelSlug(product.slug),
     );
+
+    // Collaborative grid is seed-first. If the DB row is not written yet, still
+    // return the static listing so a new product is visible on the live site.
+    let listed: Array<{ slug: string; images?: unknown }> = filtered;
+    if (category === "health" && !(query && query.trim().length > 0)) {
+      const present = new Set(filtered.map((product) => product.slug));
+      const missing = getHealthCatalogSeed().filter((product) => !present.has(product.slug));
+      if (missing.length > 0) {
+        listed = [...missing, ...filtered];
+      }
+    }
 
     // Single-product categories — never return/cache an empty listing.
     if (
       (category === "health" || category === "accessories") &&
-      products.length === 0 &&
+      listed.length === 0 &&
       !(query && query.trim().length > 0)
     ) {
       const fallback = applyCategoryFilter(getStaticCatalogFallback(), category);
@@ -202,7 +213,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const productsWithThumbnail = products.map((p) => ({
+    const productsWithThumbnail = listed.map((p) => ({
       ...p,
       thumbnail: getProductThumbnail({ slug: p.slug, images: p.images }),
     }));

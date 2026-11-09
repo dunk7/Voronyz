@@ -22,6 +22,16 @@ import {
   VIOLETTE_PONYBEAD_VARIANTS,
 } from "../src/lib/violettePonybeadAnimals";
 import {
+  PEPPERMINT_MIST_DESCRIPTION_SHORT,
+  PEPPERMINT_MIST_IMAGES,
+  PEPPERMINT_MIST_NAME,
+  PEPPERMINT_MIST_PRICE_CENTS,
+  PEPPERMINT_MIST_PRIMARY_COLORS,
+  PEPPERMINT_MIST_SIZES,
+  PEPPERMINT_MIST_SLUG,
+  PEPPERMINT_MIST_VARIANTS,
+} from "../src/lib/aineFernPeppermintMist";
+import {
   FILAMENT_DESCRIPTION_SHORT,
   FILAMENT_IMAGES,
   FILAMENT_NAME,
@@ -706,6 +716,64 @@ async function main() {
         },
       });
       console.log("Updated Keychain product and variants.");
+    }
+
+    // ── Peppermint Freshening Mist (Collaborative — Áine & Fern) ──
+    const existingMist = await prisma.product.findUnique({ where: { slug: PEPPERMINT_MIST_SLUG } });
+    console.log("Peppermint Freshening Mist product check:", existingMist ? "Found" : "Not found");
+    if (!existingMist) {
+      const mistProduct = await prisma.product.create({
+        data: {
+          slug: PEPPERMINT_MIST_SLUG,
+          name: PEPPERMINT_MIST_NAME,
+          description: PEPPERMINT_MIST_DESCRIPTION_SHORT,
+          priceCents: PEPPERMINT_MIST_PRICE_CENTS,
+          currency: "usd",
+          images: [...PEPPERMINT_MIST_IMAGES],
+          primaryColors: [...PEPPERMINT_MIST_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...PEPPERMINT_MIST_SIZES],
+          variants: {
+            create: PEPPERMINT_MIST_VARIANTS.map((v) => ({ ...v })),
+          },
+        },
+        include: { variants: true },
+      });
+      console.log("Seeded product:", mistProduct.slug);
+    } else {
+      console.log("Updating existing Peppermint Freshening Mist product...");
+      await prisma.product.update({
+        where: { id: existingMist.id },
+        data: {
+          name: PEPPERMINT_MIST_NAME,
+          description: PEPPERMINT_MIST_DESCRIPTION_SHORT,
+          priceCents: PEPPERMINT_MIST_PRICE_CENTS,
+          images: [...PEPPERMINT_MIST_IMAGES],
+          primaryColors: [...PEPPERMINT_MIST_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...PEPPERMINT_MIST_SIZES],
+        },
+      });
+      for (const v of PEPPERMINT_MIST_VARIANTS) {
+        await prisma.variant.upsert({
+          where: { sku: v.sku },
+          update: { stock: v.stock, color: v.color },
+          create: {
+            product: { connect: { id: existingMist.id } },
+            color: v.color,
+            sku: v.sku,
+            stock: v.stock,
+          },
+        });
+      }
+      const keepMistSkus = PEPPERMINT_MIST_VARIANTS.map((v) => v.sku);
+      await prisma.variant.deleteMany({
+        where: {
+          productId: existingMist.id,
+          sku: { notIn: [...keepMistSkus] },
+        },
+      });
+      console.log("Updated Peppermint Freshening Mist product and variants.");
     }
 
     // ── The Gators (comfort clog footwear) ──

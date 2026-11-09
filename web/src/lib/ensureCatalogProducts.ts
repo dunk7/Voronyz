@@ -22,6 +22,16 @@ import {
   VIOLETTE_PONYBEAD_VARIANTS,
 } from "@/lib/violettePonybeadAnimals";
 import {
+  PEPPERMINT_MIST_DESCRIPTION_SHORT,
+  PEPPERMINT_MIST_IMAGES,
+  PEPPERMINT_MIST_NAME,
+  PEPPERMINT_MIST_PRICE_CENTS,
+  PEPPERMINT_MIST_PRIMARY_COLORS,
+  PEPPERMINT_MIST_SIZES,
+  PEPPERMINT_MIST_SLUG,
+  PEPPERMINT_MIST_VARIANTS,
+} from "@/lib/aineFernPeppermintMist";
+import {
   GATORS_DESCRIPTION_SHORT,
   GATORS_IMAGES,
   GATORS_NAME,
@@ -496,6 +506,70 @@ export async function ensureViolettePonybeadAnimals(): Promise<void> {
   });
 }
 
+/** Idempotently upsert Peppermint Freshening Mist so Collaborative shows it without a manual seed. */
+export async function ensurePeppermintMist(): Promise<void> {
+  let existing = await prisma.product.findUnique({ where: { slug: PEPPERMINT_MIST_SLUG } });
+
+  if (!existing) {
+    try {
+      await prisma.product.create({
+        data: {
+          slug: PEPPERMINT_MIST_SLUG,
+          name: PEPPERMINT_MIST_NAME,
+          description: PEPPERMINT_MIST_DESCRIPTION_SHORT,
+          priceCents: PEPPERMINT_MIST_PRICE_CENTS,
+          currency: "usd",
+          images: [...PEPPERMINT_MIST_IMAGES],
+          primaryColors: [...PEPPERMINT_MIST_PRIMARY_COLORS],
+          secondaryColors: [],
+          sizes: [...PEPPERMINT_MIST_SIZES],
+          variants: {
+            create: PEPPERMINT_MIST_VARIANTS.map((v) => ({ ...v })),
+          },
+        },
+      });
+      return;
+    } catch (error) {
+      existing = await prisma.product.findUnique({ where: { slug: PEPPERMINT_MIST_SLUG } });
+      if (!existing) throw error;
+    }
+  }
+
+  await prisma.product.update({
+    where: { id: existing.id },
+    data: {
+      name: PEPPERMINT_MIST_NAME,
+      description: PEPPERMINT_MIST_DESCRIPTION_SHORT,
+      priceCents: PEPPERMINT_MIST_PRICE_CENTS,
+      images: [...PEPPERMINT_MIST_IMAGES],
+      primaryColors: [...PEPPERMINT_MIST_PRIMARY_COLORS],
+      secondaryColors: [],
+      sizes: [...PEPPERMINT_MIST_SIZES],
+    },
+  });
+
+  for (const v of PEPPERMINT_MIST_VARIANTS) {
+    await prisma.variant.upsert({
+      where: { sku: v.sku },
+      update: { stock: v.stock, color: v.color },
+      create: {
+        product: { connect: { id: existing.id } },
+        color: v.color,
+        sku: v.sku,
+        stock: v.stock,
+      },
+    });
+  }
+
+  const keepSkus = PEPPERMINT_MIST_VARIANTS.map((v) => v.sku);
+  await prisma.variant.deleteMany({
+    where: {
+      productId: existing.id,
+      sku: { notIn: [...keepSkus] },
+    },
+  });
+}
+
 /** Idempotently upsert The Gators so the listing appears without a manual seed run. */
 export async function ensureGators(): Promise<void> {
   const existing = await prisma.product.findUnique({ where: { slug: GATORS_SLUG } });
@@ -922,6 +996,7 @@ export async function ensureCatalogProducts(): Promise<void> {
         ensureStlFiles(),
         ensureTrailMix(),
         ensureViolettePonybeadAnimals(),
+        ensurePeppermintMist(),
         ensureApparelProducts(),
       ]);
       for (const result of results) {
@@ -989,6 +1064,7 @@ export async function ensureHealthCatalog(): Promise<void> {
       await ensureProductCategoryColumns();
       await ensureViolettePonybeadAnimals();
       await ensureTrailMix();
+      await ensurePeppermintMist();
       healthEnsureAt = Date.now();
     } catch (error) {
       console.error("ensureHealthCatalog failed:", error);
