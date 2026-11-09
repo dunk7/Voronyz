@@ -3,11 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Fredoka } from "next/font/google";
-import {
-  isWinterPairSeason,
-  readWinterPairOptIn,
-  writeWinterPairOptIn,
-} from "@/lib/winterPair";
+import { isWinterPairSeason, writeWinterPairOptIn } from "@/lib/winterPair";
 
 const fredoka = Fredoka({
   weight: ["500", "600"],
@@ -15,7 +11,8 @@ const fredoka = Fredoka({
   display: "swap",
 });
 
-const DISMISS_KEY = "voronyz-winter-pair-dismissed";
+/** Resets on a full reload, so a refresh shows the popup again. */
+let shownThisLoad = false;
 
 function hiddenPath(pathname: string | null): boolean {
   if (!pathname) return false;
@@ -32,14 +29,11 @@ export default function WinterPairPopup() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (!isWinterPairSeason() || hiddenPath(pathname)) return;
-    if (readWinterPairOptIn()) return;
-    try {
-      if (sessionStorage.getItem(DISMISS_KEY) === "1") return;
-    } catch {
-      /* ignore */
-    }
-    const timer = window.setTimeout(() => setOpen(true), 900);
+    if (!isWinterPairSeason() || hiddenPath(pathname) || shownThisLoad) return;
+    const timer = window.setTimeout(() => {
+      shownThisLoad = true;
+      setOpen(true);
+    }, 900);
     return () => window.clearTimeout(timer);
   }, [pathname]);
 
@@ -76,11 +70,6 @@ export default function WinterPairPopup() {
   }, [open]);
 
   function dismiss() {
-    try {
-      sessionStorage.setItem(DISMISS_KEY, "1");
-    } catch {
-      /* ignore */
-    }
     setOpen(false);
   }
 
