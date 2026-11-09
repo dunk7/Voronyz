@@ -11,8 +11,9 @@ export const FILAMENT_COMPARE_AT_CENTS = 20000;
 /** Checkout-only via code Young — do not show on PDP/marketing. */
 export const FILAMENT_YOUNG_PRICE_CENTS = 2000;
 
+/** Black spool cover — never use pink photos for the listing card. */
 export const FILAMENT_THUMBNAIL_URL =
-  "/products/tpu-90a-filament/filament-clear-spool.jpg";
+  "/products/tpu-90a-filament/tpu-90a-black-spool.jpg";
 
 export const FILAMENT_DESCRIPTION_SHORT =
   "1kg spools of TPU 90A, foaming TPU Air, and rigid PLA. Free US shipping.";
@@ -34,7 +35,6 @@ export function filamentVariantColor(materialId: string, colorId: string) {
 }
 
 const PINK_90A_IMAGES = [
-  "/products/tpu-90a-filament/filament-clear-spool.jpg",
   "/products/tpu-90a-filament/pink-tpu-90a-spool-labeled.jpg",
   "/products/tpu-90a-filament/pink-tpu-90a-spool-angle.jpg",
 ] as const;
@@ -114,6 +114,12 @@ export const FILAMENT_MATERIALS = [
 
 export const FILAMENT_PRIMARY_COLORS = FILAMENT_MATERIALS.flatMap((material) =>
   material.colors.map((color) => filamentVariantColor(material.id, color.id)),
+);
+
+/** Default PDP / gallery selection — black first so the page does not open on pink. */
+export const FILAMENT_DEFAULT_COLOR = filamentVariantColor(
+  FILAMENT_MATERIAL_90A,
+  "black",
 );
 
 /** One Size = 1kg spool — buy UI hides footwear size selectors. */
