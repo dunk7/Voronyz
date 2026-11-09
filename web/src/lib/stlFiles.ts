@@ -6,7 +6,18 @@ export const STL_FILES_NAME = "Voronyz STL";
 /** Each shoe file is $1. Buying another shoe is another dollar. */
 export const STL_FILES_PRICE_CENTS = 100;
 
-export const STL_FILES_THUMBNAIL_URL = "/products/stl-files/layers.jpg";
+/**
+ * Per-shoe wireframe / product art for the Voronyz STL picker.
+ * Slip Ons leads — that’s the only downloadable file today.
+ */
+export const STL_SHOE_THUMBNAILS = {
+  "slip-ons": "/products/stl-files/cover.jpg",
+  dragonfly: "/products/stl-files/layers.jpg",
+  "v3-slides": "/products/v3-slides/InShot_20260212_194352014.jpg",
+  gators: "/products/gators/gators-listing-cover.jpg",
+} as const;
+
+export const STL_FILES_THUMBNAIL_URL = STL_SHOE_THUMBNAILS["slip-ons"];
 export const STL_FILES_IMAGES = [STL_FILES_THUMBNAIL_URL] as const;
 
 export const STL_FILES_DESCRIPTION_SHORT =
@@ -20,11 +31,45 @@ export const STL_FILES_HOW_ITS_MADE =
 
 /** Names match the footwear catalog. Only Slip Ons has a file on disk today. */
 export const STL_SHOE_FILES = [
-  { id: "v3-slides", name: "V3 Slides", file: null as string | null },
-  { id: "slip-ons", name: "Slip Ons", file: "slip-on/voronyz-slip-on.zip" },
-  { id: "dragonfly", name: "The Dragonfly's", file: null },
-  { id: "gators", name: "The Gators", file: null },
+  {
+    id: "slip-ons",
+    name: "Slip Ons",
+    file: "slip-on/voronyz-slip-on.zip" as string | null,
+    thumbnail: STL_SHOE_THUMBNAILS["slip-ons"],
+  },
+  {
+    id: "dragonfly",
+    name: "The Dragonfly's",
+    file: null,
+    thumbnail: STL_SHOE_THUMBNAILS.dragonfly,
+  },
+  {
+    id: "v3-slides",
+    name: "V3 Slides",
+    file: null,
+    thumbnail: STL_SHOE_THUMBNAILS["v3-slides"],
+  },
+  {
+    id: "gators",
+    name: "The Gators",
+    file: null,
+    thumbnail: STL_SHOE_THUMBNAILS.gators,
+  },
 ] as const;
+
+/** Gallery shots keyed by shoe id — swaps when the STL shoe picker changes. */
+export function stlImagesByShoe(): Record<string, string[]> {
+  const images: Record<string, string[]> = {};
+  for (const shoe of STL_SHOE_FILES) {
+    images[shoe.id] = [shoe.thumbnail];
+  }
+  return images;
+}
+
+export function stlThumbnailForShoe(id: string | null | undefined): string {
+  const shoe = stlShoeById(id);
+  return shoe?.thumbnail ?? STL_FILES_THUMBNAIL_URL;
+}
 
 export function stlShoeHasFile(
   shoe: (typeof STL_SHOE_FILES)[number] | null | undefined

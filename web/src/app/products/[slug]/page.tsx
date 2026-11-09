@@ -70,6 +70,7 @@ import {
   STL_FILES_THUMBNAIL_URL,
   STL_SHOE_FILES,
   stlFilesCatalogProduct,
+  stlImagesByShoe,
 } from "@/lib/stlFiles";
 import {
   LATTICE_INSOLES_DESCRIPTION,
@@ -454,9 +455,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         {/* Gallery-first retail layout: large photos lead, buy box sits beside */}
         <PdpGalleryBuyBox
           media={galleryMedia}
-          colorImages={isFilament ? filamentImagesByVariant() : apparelColorImages}
+          colorImages={
+            isFilament
+              ? filamentImagesByVariant()
+              : isStlFiles
+                ? stlImagesByShoe()
+                : apparelColorImages
+          }
           leadWhiteSlipOns={isSlipOns}
-          fit={isFootwearSlug(slug) ? "contain" : "cover"}
+          fit={isFootwearSlug(slug) || isStlFiles ? "contain" : "cover"}
           galleryClassName="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
           addToCartProps={{
             variants: product.variants,
@@ -535,7 +542,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             productName: displayName,
             coverImage: (images[0] as string) || defaultImages[0],
             productSlug: slug,
-            allowOutOfStockColorPreview: isSlipOns,
+            allowOutOfStockColorPreview: isSlipOns || isStlFiles,
           }}
           footer={
             <div className="flex items-center gap-4 text-xs text-neutral-500">
