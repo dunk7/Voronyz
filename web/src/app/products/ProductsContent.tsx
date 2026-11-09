@@ -21,6 +21,7 @@ import FootGlowSection from "@/components/FootGlowSection";
 import MotionMediaCarousel from "@/components/MotionMediaCarousel";
 import { MAGIKID_SHOES_THUMBNAIL_URL } from "@/lib/magikidShoesThumbnail";
 import { GATORS_SLUG, GATORS_THUMBNAIL_URL } from "@/lib/gators";
+import { PEPPERMINT_MIST_SLUG } from "@/lib/aineFernPeppermintMist";
 
 /** Homepage footwear teaser — slides + slip-ons only; full catalog on /products. */
 const HOME_FOOTWEAR_TEASER_SLUGS = ["v3-slides", "slip-ons"] as const;
@@ -30,6 +31,17 @@ const HOME_APPAREL_TEASER_SLUGS = [
   "voronyz-oversized-tee",
   "voronyz-core-hoodie",
 ] as const;
+
+/** Homepage Collaborative teaser — peppermint mist only; full catalog on /health. */
+const HOME_COLLABORATIVE_TEASER_SLUGS = [PEPPERMINT_MIST_SLUG] as const;
+
+/** Landscape bottle art crops too hard under object-cover — keep the full mist bottle in frame. */
+function productCardImageFitClass(slug: string, src: string): string {
+  if ((slug || "").trim().toLowerCase() === PEPPERMINT_MIST_SLUG) {
+    return "object-contain object-center";
+  }
+  return `object-cover ${apparelCoverObjectPositionClass(src)}`;
+}
 
 /** Shop-all CTA under the home Footwear and Apparel teasers — shared width so both match. */
 const SHOP_ALL_CTA_CLASS =
@@ -362,7 +374,7 @@ export default function ProductsContent({
                   src={cover}
                   alt={p.name}
                   fill
-                  className={`object-cover ${apparelCoverObjectPositionClass(cover)} transition-all duration-500 ${
+                  className={`${productCardImageFitClass(slugKey, cover)} transition-all duration-500 ${
                     alt ? "group-hover:opacity-0" : "group-hover:scale-105"
                   } ${isNavigating ? "scale-105 brightness-90" : ""}`}
                   sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
@@ -374,7 +386,7 @@ export default function ProductsContent({
                     alt={`${p.name} – alternate view`}
                     fill
                     showLogoPlaceholder={false}
-                    className={`object-cover ${apparelCoverObjectPositionClass(alt)} opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105`}
+                    className={`${productCardImageFitClass(slugKey, alt)} opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105`}
                     sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
                     loading="lazy"
                   />
@@ -574,7 +586,7 @@ export default function ProductsContent({
                       src={cover}
                       alt={p.name}
                       fill
-                      className={`object-cover ${apparelCoverObjectPositionClass(cover)} transition-all duration-500 ${
+                      className={`${productCardImageFitClass(slugKey, cover)} transition-all duration-500 ${
                         alt ? "group-hover:opacity-0" : "group-hover:scale-105"
                       } ${isNavigating ? "scale-105 brightness-90" : ""}`}
                       sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
@@ -586,7 +598,7 @@ export default function ProductsContent({
                         alt={`${p.name} – alternate view`}
                         fill
                         showLogoPlaceholder={false}
-                        className={`object-cover ${apparelCoverObjectPositionClass(alt)} opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105`}
+                        className={`${productCardImageFitClass(slugKey, alt)} opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105`}
                         sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
                         loading="lazy"
                       />
@@ -695,6 +707,85 @@ export default function ProductsContent({
             <div className="mt-10 sm:mt-12 flex justify-center">
               <Link href="/accessories" className={SHOP_ALL_CTA_CLASS}>
                 Shop all engineering
+              </Link>
+            </div>
+          </section>
+        ) : null}
+        {isHomeFootwearTeaser ? (
+          <section
+            id="collaborative"
+            aria-labelledby="home-collaborative-heading"
+            className="mt-16 sm:mt-24"
+          >
+            <div className="mb-8 sm:mb-10 text-center">
+              <h2 id="home-collaborative-heading" className={homeSectionTitleClass}>
+                Collaborative
+              </h2>
+            </div>
+            <div className="mx-auto grid w-full max-w-md grid-cols-1 gap-4 sm:max-w-lg sm:gap-6">
+              {HOME_COLLABORATIVE_TEASER_SLUGS.flatMap((slug) => {
+                const p = getHealthCatalogSeed().find(
+                  (item) => (item.slug || "").trim().toLowerCase() === slug,
+                );
+                return p ? [p] : [];
+              }).map((p) => {
+                const slugKey = (p.slug || "").trim().toLowerCase();
+                const { cover, alt } = getImages(p);
+                const isNavigating = navigatingSlug === p.slug;
+                return (
+                  <Link
+                    key={p.id}
+                    href={`/products/${p.slug}`}
+                    onClick={(e) => handleCardClick(e, p.slug)}
+                    className={`group block outline-none cursor-pointer transition-all duration-200 active:scale-[0.98] ${
+                      isNavigating ? "pointer-events-none" : ""
+                    }`}
+                  >
+                    <div
+                      className={`relative aspect-square w-full overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:shadow-xl group-hover:ring-black/10 ${
+                        isNavigating ? "ring-black/10 shadow-xl" : ""
+                      }`}
+                    >
+                      <SoftImage
+                        key={cover}
+                        src={cover}
+                        alt={p.name}
+                        fill
+                        className={`${productCardImageFitClass(slugKey, cover)} transition-all duration-500 ${
+                          alt ? "group-hover:opacity-0" : "group-hover:scale-105"
+                        } ${isNavigating ? "scale-105 brightness-90" : ""}`}
+                        sizes="(max-width: 768px) 80vw, 28rem"
+                      />
+                      {alt && (
+                        <SoftImage
+                          key={alt}
+                          src={alt}
+                          alt={`${p.name} – alternate view`}
+                          fill
+                          showLogoPlaceholder={false}
+                          className={`${productCardImageFitClass(slugKey, alt)} opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105`}
+                          sizes="(max-width: 768px) 80vw, 28rem"
+                          loading="lazy"
+                        />
+                      )}
+                      {isNavigating && (
+                        <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/20 backdrop-blur-[2px]">
+                          <LogoLoader size="sm" tone="light" showBar={false} className="!gap-0" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-4 px-0.5">
+                      <h3 className="text-[15px] font-semibold text-neutral-900 transition-colors group-hover:text-black line-clamp-2">
+                        {p.name}
+                      </h3>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+            <div className="mt-10 sm:mt-12 flex justify-center">
+              <Link href="/health" className={SHOP_ALL_CTA_CLASS}>
+                Shop all collaborative
               </Link>
             </div>
           </section>

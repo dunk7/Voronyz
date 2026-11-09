@@ -482,7 +482,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           media={galleryMedia}
           colorImages={isFilament ? filamentImagesByVariant() : apparelColorImages}
           leadWhiteSlipOns={isSlipOns}
-          fit={isFootwearSlug(slug) ? "contain" : "cover"}
+          fit={isFootwearSlug(slug) || isPeppermintMist ? "contain" : "cover"}
           galleryClassName="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
           addToCartProps={{
             variants: product.variants,
