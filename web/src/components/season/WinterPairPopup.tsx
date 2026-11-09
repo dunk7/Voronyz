@@ -2,20 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Creepster } from "next/font/google";
+import { Fredoka } from "next/font/google";
 import {
-  isHalloweenPairSeason,
-  readHalloweenPairOptIn,
-  writeHalloweenPairOptIn,
-} from "@/lib/halloweenPair";
+  isWinterPairSeason,
+  readWinterPairOptIn,
+  writeWinterPairOptIn,
+} from "@/lib/winterPair";
 
-const creepster = Creepster({
-  weight: "400",
+const fredoka = Fredoka({
+  weight: ["500", "600"],
   subsets: ["latin"],
   display: "swap",
 });
 
-const DISMISS_KEY = "voronyz-halloween-pair-dismissed";
+const DISMISS_KEY = "voronyz-winter-pair-dismissed";
 
 function hiddenPath(pathname: string | null): boolean {
   if (!pathname) return false;
@@ -27,13 +27,13 @@ function hiddenPath(pathname: string | null): boolean {
   );
 }
 
-export default function HalloweenPairPopup() {
+export default function WinterPairPopup() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (!isHalloweenPairSeason() || hiddenPath(pathname)) return;
-    if (readHalloweenPairOptIn()) return;
+    if (!isWinterPairSeason() || hiddenPath(pathname)) return;
+    if (readWinterPairOptIn()) return;
     try {
       if (sessionStorage.getItem(DISMISS_KEY) === "1") return;
     } catch {
@@ -85,7 +85,7 @@ export default function HalloweenPairPopup() {
   }
 
   function claim() {
-    writeHalloweenPairOptIn();
+    writeWinterPairOptIn();
     setOpen(false);
   }
 
@@ -93,15 +93,15 @@ export default function HalloweenPairPopup() {
 
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-center justify-center overflow-hidden overscroll-none bg-black/70 p-5"
+      className="fixed inset-0 z-[80] flex items-center justify-center overflow-hidden overscroll-none bg-[#061018]/75 p-5"
       role="presentation"
       onClick={dismiss}
     >
       <div
         role="dialog"
         aria-modal="true"
-        aria-labelledby="halloween-pair-title"
-        className="relative w-full max-w-[420px] overflow-hidden rounded-[28px] border border-white/15 bg-black text-white shadow-[0_0_80px_rgba(255,255,255,0.12)]"
+        aria-labelledby="winter-pair-title"
+        className="relative w-full max-w-[420px] overflow-hidden rounded-[28px] border border-white/20 bg-[#0b1a24] text-white shadow-[0_0_80px_rgba(140,200,255,0.18)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div
@@ -109,19 +109,19 @@ export default function HalloweenPairPopup() {
           aria-hidden
           style={{
             background:
-              "radial-gradient(ellipse at center, rgba(255,255,255,0.22), rgba(255,255,255,0) 68%)",
+              "radial-gradient(ellipse at center, rgba(170,220,255,0.28), rgba(170,220,255,0) 68%)",
           }}
         />
         <GhostScene />
         <div className="relative px-6 pb-6 pt-1 text-center">
-          <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-white/55">
+          <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-sky-100/55">
             Seasonal
           </p>
           <h2
-            id="halloween-pair-title"
-            className={`${creepster.className} mt-2 text-[52px] leading-none text-[#ff7a18]`}
+            id="winter-pair-title"
+            className={`${fredoka.className} mt-2 text-[48px] font-semibold leading-none text-[#c8e7ff]`}
           >
-            Halloween
+            Winter
           </h2>
           <p className="mx-auto mt-3 max-w-[16rem] text-[15px] font-medium leading-snug text-white">
             Half off a second purchase.
@@ -129,7 +129,7 @@ export default function HalloweenPairPopup() {
           <button
             type="button"
             onClick={claim}
-            className="mt-5 w-full rounded-full bg-white px-5 py-3 text-sm font-medium text-black transition hover:bg-neutral-200"
+            className="mt-5 w-full rounded-full bg-white px-5 py-3 text-sm font-medium text-[#0b1a24] transition hover:bg-sky-50"
           >
             Shop the pair
           </button>
@@ -151,49 +151,72 @@ function GhostScene() {
     <div className="relative h-48" aria-hidden>
       <div
         className="pointer-events-none absolute left-1/2 top-6 h-28 w-28 -translate-x-1/2"
-        style={{ background: "radial-gradient(circle, rgba(255,255,255,0.45), transparent 68%)" }}
+        style={{ background: "radial-gradient(circle, rgba(190,230,255,0.42), transparent 68%)" }}
       />
       <svg viewBox="0 0 320 190" className="relative h-full w-full">
-        <polygon points="118,78 160,42 202,78" fill="#1c1c1c" />
-        <rect x="126" y="78" width="68" height="46" fill="#141414" />
-        <rect x="136" y="88" width="14" height="18" fill="#ff7a18" />
-        <rect x="170" y="88" width="14" height="18" fill="#ffb020" />
-        <rect x="152" y="96" width="16" height="28" fill="#0c0c0c" />
-        <rect x="132" y="124" width="56" height="8" fill="#2c2c2c" />
-        <rect x="112" y="132" width="96" height="8" fill="#383838" />
-        <rect x="90" y="140" width="140" height="10" fill="#454545" />
-        <PumpkinGlyph x={94} y={114} />
-        <PumpkinGlyph x={178} y={106} />
-        <g style={{ filter: "drop-shadow(0 0 12px rgba(255,255,255,0.85))" }}>
+        <Snowflake x={48} y={46} size={0.7} opacity={0.55} />
+        <Snowflake x={250} y={38} size={0.85} opacity={0.65} />
+        <Snowflake x={86} y={118} size={0.55} opacity={0.4} />
+        <Snowflake x={230} y={110} size={0.6} opacity={0.45} />
+        <g style={{ filter: "drop-shadow(0 0 12px rgba(190,230,255,0.75))" }}>
           <path
-            fill="#f4f4f4"
-            d="M160 50c-24 0-38 18-38 40v24c6-8 14-8 18 0s12 8 18 0 12-8 18 0 12 8 18 0c4-8 12-8 18 0V90c0-22-14-40-34-40z"
+            fill="#f4f8fb"
+            d="M160 58c-24 0-38 18-38 40v24c6-8 14-8 18 0s12 8 18 0 12-8 18 0 12 8 18 0c4-8 12-8 18 0V98c0-22-14-40-34-40z"
           />
-          <ellipse cx="148" cy="86" rx="4" ry="5.5" fill="#111" />
-          <ellipse cx="172" cy="86" rx="4" ry="5.5" fill="#111" />
+          <ellipse cx="148" cy="94" rx="4" ry="5.5" fill="#111" />
+          <ellipse cx="172" cy="94" rx="4" ry="5.5" fill="#111" />
           <path
-            d="M151 100c3 4 13 4 16 0"
+            d="M151 108c3 4 13 4 16 0"
             fill="none"
             stroke="#111"
             strokeWidth="2"
             strokeLinecap="round"
           />
-          <ellipse cx="147" cy="120" rx="12" ry="4" fill="#f7f7f7" stroke="#111" strokeWidth="1.1" />
-          <ellipse cx="173" cy="120" rx="12" ry="4" fill="#f7f7f7" stroke="#111" strokeWidth="1.1" />
-          <path d="M138 120h18M164 120h18" stroke="#111" strokeWidth="1.5" strokeLinecap="round" />
+          <ellipse cx="147" cy="128" rx="12" ry="4" fill="#f7f7f7" stroke="#111" strokeWidth="1.1" />
+          <ellipse cx="173" cy="128" rx="12" ry="4" fill="#f7f7f7" stroke="#111" strokeWidth="1.1" />
+          <path d="M138 128h18M164 128h18" stroke="#111" strokeWidth="1.5" strokeLinecap="round" />
+          <SantaHat />
         </g>
       </svg>
     </div>
   );
 }
 
-function PumpkinGlyph({ x, y }: { x: number; y: number }) {
+function SantaHat() {
   return (
-    <g transform={`translate(${x} ${y})`}>
-      <path d="M14 4c1-4 6-5 7-3" fill="none" stroke="#3d9a3a" strokeWidth="1.6" strokeLinecap="round" />
-      <ellipse cx="14" cy="16" rx="8" ry="10" fill="#ff7a18" />
-      <ellipse cx="8" cy="16" rx="5.5" ry="9" fill="#ff9a2e" />
-      <ellipse cx="20" cy="16" rx="5.5" ry="9" fill="#ff5a00" />
+    <g transform="translate(160 46) rotate(-12)">
+      <path
+        d="M-2 -4 C-6 -28, 8 -42, 26 -46 C18 -28, 16 -14, 14 -2 Z"
+        fill="#d62828"
+      />
+      <ellipse cx="0" cy="2" rx="26" ry="9" fill="#f5f5f5" />
+      <circle cx="26" cy="-46" r="7.5" fill="#f5f5f5" />
+      <circle cx="24" cy="-44" r="2.2" fill="#ffffff" opacity="0.7" />
+    </g>
+  );
+}
+
+function Snowflake({
+  x,
+  y,
+  size = 1,
+  opacity = 0.6,
+}: {
+  x: number;
+  y: number;
+  size?: number;
+  opacity?: number;
+}) {
+  return (
+    <g transform={`translate(${x} ${y}) scale(${size})`} opacity={opacity}>
+      <path
+        d="M0 -12 L0 12 M-10.4 -6 L10.4 6 M-10.4 6 L10.4 -6"
+        fill="none"
+        stroke="#dff2ff"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <circle cx="0" cy="0" r="2.2" fill="#ffffff" />
     </g>
   );
 }

@@ -8,9 +8,9 @@ import {
   isOneItemFreeDiscountCode,
 } from "@/lib/discountPricing";
 import {
-  applyHalloweenPairToQuantityPricedLines,
-  isHalloweenPairSeason,
-} from "@/lib/halloweenPair";
+  applyWinterPairToQuantityPricedLines,
+  isWinterPairSeason,
+} from "@/lib/winterPair";
 import { resolveActiveDiscountCode } from "@/lib/discountDisabled";
 import { getOrderLevelDiscountCentsForCode } from "@/lib/affiliateDiscounts";
 import { applyOrderLevelDiscountCents } from "@/lib/affiliateApproveLogic";
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       discountCode,
       shippingInsurance,
       shipping: rawShipping,
-      halloweenPair,
+      winterPair,
     } = await request.json();
 
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -175,8 +175,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (halloweenPair === true && isHalloweenPairSeason()) {
-      applyHalloweenPairToQuantityPricedLines(lineItems);
+    if (winterPair === true && isWinterPairSeason()) {
+      applyWinterPairToQuantityPricedLines(lineItems);
       productSubtotalCents = lineItems.reduce(
         (sum, line) => sum + line.unitCents * line.quantity,
         0
