@@ -324,18 +324,27 @@ export default function ProductsContent({
     return { cover, alt };
   }
 
-  /** Shared slides/slip-ons teaser — used at the top and again near the bottom of home. */
+  /** Shared footwear product grid — teaser at top (slides/slip-ons); full catalog near bottom. */
   function homeFootwearTeaserGrid({
     keyPrefix = "",
     nameTag = "h2",
+    items = displayProducts,
+    dense = false,
   }: {
     keyPrefix?: string;
     nameTag?: "h2" | "h3";
+    items?: Product[];
+    /** Wider breakpoints for the full catalog (bottom of home). */
+    dense?: boolean;
   } = {}) {
     const NameTag = nameTag;
     return (
-      <div className="grid grid-cols-2 gap-4 sm:gap-6">
-        {displayProducts.map((p) => {
+      <div
+        className={`grid grid-cols-2 gap-4 sm:gap-6${
+          dense ? " md:grid-cols-3 xl:grid-cols-4" : ""
+        }`}
+      >
+        {items.map((p) => {
           const slugKey = (p.slug || "").trim().toLowerCase();
           const { cover, alt } = getImages(p);
           const meta = cardMetaForSlug(slugKey);
@@ -481,9 +490,9 @@ export default function ProductsContent({
       </section>
     ) : null;
 
-  /** Closing footwear teaser — most shoppers never hit Shop all footwear at the top. */
+  /** Closing footwear section — full catalog so shoppers who skip the top teaser still see every pair. */
   const footwearBottomSection =
-    isHomeFootwearTeaser && displayProducts.length > 0 ? (
+    isHomeFootwearTeaser && products.length > 0 ? (
       <section
         id="footwear"
         aria-labelledby="home-footwear-bottom-heading"
@@ -494,7 +503,12 @@ export default function ProductsContent({
             Footwear
           </h2>
         </div>
-        {homeFootwearTeaserGrid({ keyPrefix: "bottom-", nameTag: "h3" })}
+        {homeFootwearTeaserGrid({
+          keyPrefix: "bottom-",
+          nameTag: "h3",
+          items: products,
+          dense: true,
+        })}
         <div className="mt-10 sm:mt-12 flex justify-center">
           <Link href="/products" className={SHOP_ALL_CTA_CLASS}>
             Shop all footwear
