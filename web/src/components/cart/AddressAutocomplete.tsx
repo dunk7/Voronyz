@@ -36,6 +36,8 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
   const [resolvingId, setResolvingId] = useState<string | null>(null);
   const sessionRef = useRef(newSessionToken());
   const containerRef = useRef<HTMLDivElement>(null);
+  const line2Ref = useRef<HTMLInputElement>(null);
+  const [showLine2, setShowLine2] = useState(false);
 
   useEffect(() => {
     if (value) return;
@@ -93,7 +95,12 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
   const [name, setName] = useState("");
   useEffect(() => {
     if (value) setName(value.address.name);
+    else setShowLine2(false);
   }, [value]);
+
+  useEffect(() => {
+    if (showLine2) line2Ref.current?.focus();
+  }, [showLine2]);
 
   const select = async (suggestion: AddressSuggestion) => {
     setErrorMessage("");
@@ -227,25 +234,37 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
               Change
             </button>
           </div>
-          <div className="space-y-1">
-            <label htmlFor={`${listId}-line2`} className="text-sm font-medium text-neutral-900">
-              Apt, suite, unit <span className="font-normal text-neutral-500">(optional)</span>
-            </label>
-            <input
-              id={`${listId}-line2`}
-              type="text"
-              autoComplete="address-line2"
-              value={value.address.line2 ?? ""}
-              maxLength={100}
-              onChange={(event) =>
-                onChange({
-                  ...value,
-                  address: { ...value.address, line2: event.target.value || null },
-                })
-              }
-              className="w-full rounded-lg border border-black/15 bg-white px-3 py-2.5 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none"
-            />
-          </div>
+          {showLine2 || value.address.line2 ? (
+            <div className="space-y-1">
+              <label htmlFor={`${listId}-line2`} className="text-xs font-medium text-neutral-700">
+                Apt, suite, unit
+              </label>
+              <input
+                ref={line2Ref}
+                id={`${listId}-line2`}
+                type="text"
+                autoComplete="address-line2"
+                value={value.address.line2 ?? ""}
+                maxLength={100}
+                onChange={(event) =>
+                  onChange({
+                    ...value,
+                    address: { ...value.address, line2: event.target.value || null },
+                  })
+                }
+                placeholder="Apt 4B"
+                className="w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none"
+              />
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowLine2(true)}
+              className="text-[10px] leading-none text-neutral-400 underline underline-offset-2 hover:text-neutral-600"
+            >
+              Add apt, suite, or unit
+            </button>
+          )}
           {international && (
             <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
               International orders add a flat {formatCentsAsCurrency(INTERNATIONAL_SHIPPING_CENTS)}{" "}
