@@ -17,11 +17,11 @@ import {
 } from "@/lib/affiliateApproveLogic";
 import { clearDiscountUrgencySession } from "@/lib/discountUrgencySession";
 import {
-  getHalloweenPairTarget,
-  HALLOWEEN_PAIR_EVENT,
-  isHalloweenPairSeason,
-  readHalloweenPairOptIn,
-} from "@/lib/halloweenPair";
+  getWinterPairTarget,
+  isWinterPairSeason,
+  readWinterPairOptIn,
+  WINTER_PAIR_EVENT,
+} from "@/lib/winterPair";
 import { resolveIsPreOrder } from "@/lib/preorder";
 import {
   cartHasInsurableItems,
@@ -76,7 +76,7 @@ const SHIPPING_STORAGE_KEY = "checkoutShipping";
 export default function CartClient() {
   const [items, setItems] = useState<CartItem[]>([]);
   const [discountCode, setDiscountCode] = useState<string | null>(null);
-  const [halloweenPair, setHalloweenPair] = useState(false);
+  const [winterPair, setWinterPair] = useState(false);
   const [shippingInsurance, setShippingInsurance] = useState(false);
   const [shipping, setShipping] = useState<VerifiedShipping | null>(null);
   const [inputValue, setInputValue] = useState("");
@@ -257,12 +257,12 @@ export default function CartClient() {
   }, [isLoading, discountCode]);
 
   useEffect(() => {
-    const sync = () => setHalloweenPair(readHalloweenPairOptIn() && isHalloweenPairSeason());
+    const sync = () => setWinterPair(readWinterPairOptIn() && isWinterPairSeason());
     sync();
-    window.addEventListener(HALLOWEEN_PAIR_EVENT, sync);
+    window.addEventListener(WINTER_PAIR_EVENT, sync);
     window.addEventListener("storage", sync);
     return () => {
-      window.removeEventListener(HALLOWEEN_PAIR_EVENT, sync);
+      window.removeEventListener(WINTER_PAIR_EVENT, sync);
       window.removeEventListener("storage", sync);
     };
   }, []);
@@ -365,8 +365,8 @@ export default function CartClient() {
     ? getOneFreeItemLineIndex(items.map((it) => unitPriceForItem(it, discountCode)))
     : -1;
   const orderLevelBase = itemDiscountedSubtotal - oneItemFreeOff;
-  const halloweenTarget = halloweenPair
-    ? getHalloweenPairTarget(
+  const winterTarget = winterPair
+    ? getWinterPairTarget(
         items.map((it) => ({
           quantity: it.quantity,
           unitCents: unitPriceForItem(it, discountCode),
@@ -374,15 +374,15 @@ export default function CartClient() {
         freeItemLineIndex
       )
     : null;
-  const halloweenOff = halloweenTarget?.savingsCents ?? 0;
+  const winterOff = winterTarget?.savingsCents ?? 0;
   const orderLevelOff =
     discountCode && affiliateDiscountCodes.has(discountCode)
       ? applyOrderLevelDiscountCents(
-          orderLevelBase - halloweenOff,
+          orderLevelBase - winterOff,
           AFFILIATE_ORDER_DISCOUNT_CENTS
         )
       : 0;
-  const subtotal = orderLevelBase - halloweenOff - orderLevelOff;
+  const subtotal = orderLevelBase - winterOff - orderLevelOff;
   const discountSavings = Math.max(0, subtotalBeforeDiscount - subtotal);
   const canOfferShippingInsurance = cartHasInsurableItems(items);
   const insuranceEnabled = canOfferShippingInsurance && shippingInsurance;
@@ -457,7 +457,7 @@ export default function CartClient() {
           paymentMethod: isInternational ? "card" : method,
           shippingInsurance: insuranceEnabled,
           shipping: shippingPayload,
-          halloweenPair,
+          winterPair,
           successUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/success`,
           cancelUrl: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/checkout/cancel`,
         }),
@@ -676,8 +676,8 @@ export default function CartClient() {
                   if (idx === freeItemLineIndex && oneItemFreeOff > 0) {
                     discountedLine = Math.max(0, discountedLine - unit);
                   }
-                  if (halloweenTarget && idx === halloweenTarget.index) {
-                    discountedLine = Math.max(0, discountedLine - halloweenTarget.savingsCents);
+                  if (winterTarget && idx === winterTarget.index) {
+                    discountedLine = Math.max(0, discountedLine - winterTarget.savingsCents);
                   }
                   const size =
                     it.attributes?.size != null ? String(it.attributes.size) : undefined;
@@ -783,11 +783,11 @@ export default function CartClient() {
                 {message}
               </div>
             )}
-            {halloweenPair && (
+            {winterPair && (
               <div className="mt-2 text-sm text-neutral-800 bg-neutral-50 p-2 rounded-md border border-black/10">
-                {halloweenOff > 0
-                  ? `Second item is half off. You save ${formatCentsAsCurrency(halloweenOff)}.`
-                  : "Add a second item and it’s half off."}
+                {winterOff > 0
+                  ? `Winter pair · second item is half off. You save ${formatCentsAsCurrency(winterOff)}.`
+                  : "Winter pair · add a second item and it’s half off."}
               </div>
             )}
             {discountCode && (
@@ -982,7 +982,7 @@ export default function CartClient() {
                   discountCode: discountCode || '',
                   shippingInsurance: insuranceEnabled,
                   shipping: shippingPayload,
-                  halloweenPair,
+                  winterPair,
                 }),
               });
 
