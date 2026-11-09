@@ -12,8 +12,6 @@ export const ACCESSORY_SLUGS = ["tpu-90a-filament", "super-high-tech-stl"] as co
 
 /** Product slugs in Collaborative (not footwear). */
 export const HEALTH_SLUGS = [
-  "keychain",
-  "violette-ponybead-animals",
   "antioxidant-trail-mix",
   "aine-fern-peppermint-freshening-mist",
 ] as const;

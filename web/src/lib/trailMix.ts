@@ -1,11 +1,3 @@
-import {
-  VIOLETTE_PONYBEAD_DESCRIPTION_SHORT,
-  VIOLETTE_PONYBEAD_IMAGES,
-  VIOLETTE_PONYBEAD_NAME,
-  VIOLETTE_PONYBEAD_PRICE_CENTS,
-  VIOLETTE_PONYBEAD_SLUG,
-  VIOLETTE_PONYBEAD_THUMBNAIL_URL,
-} from "@/lib/violettePonybeadAnimals";
 import { peppermintMistHealthCatalogSeed } from "@/lib/aineFernPeppermintMist";
 import { catalogSeedListedAt } from "@/lib/newListing";
 
@@ -83,18 +75,6 @@ export type HealthListProduct = {
 /** Instant Collaborative seed so listings never flash empty while the API loads. */
 export function getHealthCatalogSeed(): HealthListProduct[] {
   return [
-    {
-      id: `catalog-${VIOLETTE_PONYBEAD_SLUG}`,
-      slug: VIOLETTE_PONYBEAD_SLUG,
-      name: VIOLETTE_PONYBEAD_NAME,
-      description: VIOLETTE_PONYBEAD_DESCRIPTION_SHORT,
-      priceCents: VIOLETTE_PONYBEAD_PRICE_CENTS,
-      currency: "usd",
-      images: [...VIOLETTE_PONYBEAD_IMAGES],
-      thumbnail: VIOLETTE_PONYBEAD_THUMBNAIL_URL,
-      createdAt: catalogSeedListedAt(VIOLETTE_PONYBEAD_SLUG),
-      updatedAt: catalogSeedListedAt(VIOLETTE_PONYBEAD_SLUG),
-    },
     {
       id: `catalog-${TRAIL_MIX_SLUG}`,
       slug: TRAIL_MIX_SLUG,
