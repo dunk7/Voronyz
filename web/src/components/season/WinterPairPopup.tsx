@@ -101,8 +101,9 @@ export default function WinterPairPopup() {
           </p>
           <h2
             id="winter-pair-title"
-            className={`${fredoka.className} mt-2 text-[48px] font-semibold leading-none text-[#c8e7ff]`}
+            className={`${fredoka.className} mt-2 flex items-center justify-center gap-2 text-[48px] font-semibold leading-none text-[#c8e7ff]`}
           >
+            <GhostMark />
             Winter
           </h2>
           <p className="mx-auto mt-3 max-w-[16rem] text-[15px] font-medium leading-snug text-white">
@@ -121,11 +122,33 @@ export default function WinterPairPopup() {
   );
 }
 
+function GhostMark() {
+  return (
+    <svg
+      viewBox="0 0 72 78"
+      className="h-12 w-12 shrink-0"
+      aria-hidden
+      style={{ filter: "drop-shadow(0 0 8px rgba(255,255,255,0.85))" }}
+    >
+      <path d="M30 20c8-16 28-16 34-2-8 2-12 8-12 14" fill="#e23d3d" />
+      <ellipse cx="34" cy="30" rx="18" ry="6" fill="#f7f7f7" />
+      <circle cx="58" cy="16" r="5" fill="#f7f7f7" />
+      <path
+        fill="#f7f7f7"
+        d="M36 26c-16 0-26 14-26 28v12c4-6 10-6 14 0s10 6 14 0 10-6 14 0 10 6 14 0c4-6 10-6 14 0V54c0-14-10-28-26-28h-4z"
+      />
+      <ellipse cx="30" cy="50" rx="3.2" ry="4.2" fill="#111" />
+      <ellipse cx="46" cy="50" rx="3.2" ry="4.2" fill="#111" />
+      <path d="M32 60c2.4 3 10 3 12.5 0" fill="none" stroke="#111" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function WinterScene() {
   return (
     <div className="relative h-48 bg-[#07141c] sm:h-56" aria-hidden>
       <Image
-        src="/season/winter-popup-v2.jpg"
+        src="/season/winter-chase.jpg"
         alt=""
         fill
         sizes="420px"
