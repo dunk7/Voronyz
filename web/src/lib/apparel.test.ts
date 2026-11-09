@@ -103,8 +103,8 @@ test("grey oversized tee has matching front and back shots with the same chest l
   const tee = getApparelItem("voronyz-oversized-tee");
   assert.ok(tee);
   assert.deepEqual(getApparelImagesForColor(tee, "grey"), [
-    "/products/apparel/shirt-front-grey-v3.jpg",
-    "/products/apparel/shirt-back-blank-grey-v3.jpg",
+    "/products/apparel/shirt-front-grey-v4.jpg",
+    "/products/apparel/shirt-back-blank-grey-v4.jpg",
   ]);
 });
 
