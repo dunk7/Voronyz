@@ -84,9 +84,15 @@ const nextConfig: NextConfig = {
         destination: "/apparel/accessories",
         permanent: true,
       },
+      // Removed Collaborative Keychain (pony bead animals) listing.
+      {
+        source: "/products/keychain",
+        destination: "/health",
+        permanent: true,
+      },
       {
         source: "/products/violette-ponybead-animals",
-        destination: "/products/keychain",
+        destination: "/health",
         permanent: true,
       },
       // Removed Nice Shirt — keep Oversized Tee as the shirts listing.

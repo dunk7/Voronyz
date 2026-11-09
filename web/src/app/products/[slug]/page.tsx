@@ -31,17 +31,6 @@ import {
   TRAIL_MIX_THUMBNAIL_URL,
 } from "@/lib/trailMix";
 import {
-  isViolettePonybeadSlug,
-  VIOLETTE_PONYBEAD_ANIMALS,
-  VIOLETTE_PONYBEAD_DESCRIPTION,
-  VIOLETTE_PONYBEAD_HOW_ITS_MADE,
-  VIOLETTE_PONYBEAD_IMAGES,
-  VIOLETTE_PONYBEAD_LEGACY_SLUG,
-  VIOLETTE_PONYBEAD_NAME,
-  VIOLETTE_PONYBEAD_SLUG,
-  VIOLETTE_PONYBEAD_THUMBNAIL_URL,
-} from "@/lib/violettePonybeadAnimals";
-import {
   PEPPERMINT_MIST_DESCRIPTION,
   PEPPERMINT_MIST_HOW_ITS_MADE,
   PEPPERMINT_MIST_IMAGES,
@@ -158,10 +147,11 @@ type ProductWithVariants = {
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  if (slug.trim().toLowerCase() === VIOLETTE_PONYBEAD_LEGACY_SLUG) {
-    redirect(`/products/${VIOLETTE_PONYBEAD_SLUG}`);
+  const key = slug.trim().toLowerCase();
+  if (key === "keychain" || key === "violette-ponybead-animals") {
+    redirect("/health");
   }
-  const obsoleteRedirect = OBSOLETE_APPAREL_PRODUCT_REDIRECTS[slug.trim().toLowerCase()];
+  const obsoleteRedirect = OBSOLETE_APPAREL_PRODUCT_REDIRECTS[key];
   if (obsoleteRedirect || isObsoleteApparelSlug(slug)) {
     redirect(obsoleteRedirect ?? "/apparel");
   }
@@ -268,8 +258,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? magikidShoesImages
     : slug === TRAIL_MIX_SLUG
     ? [...TRAIL_MIX_IMAGES]
-    : isViolettePonybeadSlug(slug)
-    ? [...VIOLETTE_PONYBEAD_IMAGES]
     : slug === PEPPERMINT_MIST_SLUG
     ? [...PEPPERMINT_MIST_IMAGES]
     : slug === GATORS_SLUG
@@ -296,7 +284,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const isSlipOns = slug === "slip-ons";
   const isMagikidShoes = slug === "magikid-shoes";
   const isTrailMix = slug === TRAIL_MIX_SLUG;
-  const isViolettePonybead = isViolettePonybeadSlug(slug);
   const isPeppermintMist = slug === PEPPERMINT_MIST_SLUG;
   const isGators = slug === GATORS_SLUG;
   const isFilament = slug === FILAMENT_SLUG;
@@ -325,8 +312,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         : "Back to Shop";
   const displayName = isTrailMix
       ? TRAIL_MIX_NAME
-      : isViolettePonybead
-        ? VIOLETTE_PONYBEAD_NAME
       : isPeppermintMist
         ? PEPPERMINT_MIST_NAME
       : isGators
@@ -352,8 +337,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? SLIP_ONS_DESCRIPTION
     : isTrailMix
     ? TRAIL_MIX_DESCRIPTION
-    : isViolettePonybead
-    ? VIOLETTE_PONYBEAD_DESCRIPTION
     : isPeppermintMist
     ? PEPPERMINT_MIST_DESCRIPTION
     : isGators
@@ -370,8 +353,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   const trailMixColors = isTrailMix
     ? TRAIL_MIX_FLAVORS.map((flavor) => flavor.id)
-    : isViolettePonybead
-    ? VIOLETTE_PONYBEAD_ANIMALS.map((animal) => animal.id)
     : (product.primaryColors as string[]);
 
   const productBadges = (
@@ -393,9 +374,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         </span>
       )}
 
-      {isViolettePonybead && (
-        <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">4 animals</span>
-      )}
       {isFilament && (
         <>
           <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">1kg · 1.75mm</span>
@@ -431,12 +409,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Weatherproof</span>
         </>
       )}
-      {!isTrailMix && !isApparel && !isFilament && !isStlFiles && !isLatticeInsoles && !isViolettePonybead && (
+      {!isTrailMix && !isApparel && !isFilament && !isStlFiles && !isLatticeInsoles && (
         <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
           {isMagikidShoes ? "Made to order in <7 days" : "Made to order in <2 days"}
         </span>
       )}
-      {!isMagikidShoes && !isTrailMix && !isApparel && !isFilament && !isStlFiles && !isLatticeInsoles && !isViolettePonybead && (
+      {!isMagikidShoes && !isTrailMix && !isApparel && !isFilament && !isStlFiles && !isLatticeInsoles && (
         <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
       )}
       {isTrailMix && (
@@ -488,7 +466,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             variants: product.variants,
             primaryColors: isFilament
               ? [...FILAMENT_PRIMARY_COLORS]
-              : isTrailMix || isViolettePonybead
+              : isTrailMix
                 ? trailMixColors
                 : (product.primaryColors as string[]),
             productPriceCents: product.priceCents,
@@ -518,11 +496,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               hideSizeSelector: true,
               soldOut: true,
               flavorOptions: TRAIL_MIX_FLAVORS,
-            }),
-            ...(isViolettePonybead && {
-              hideSizeSelector: true,
-              flavorLabel: "Animal",
-              flavorOptions: VIOLETTE_PONYBEAD_ANIMALS,
             }),
             ...(isPeppermintMist && {
               hideSizeSelector: true,
@@ -616,8 +589,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   ? "Print + finish"
                   : isTrailMix
                       ? "Collaborative"
-                      : isViolettePonybead
-                        ? "Collaborative"
                       : isPeppermintMist
                         ? "Collaborative"
                       : isApparel
@@ -641,8 +612,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? "Printed in one piece per colorway, then finished for flex and daily wear."
               : isTrailMix
               ? TRAIL_MIX_HOW_ITS_MADE
-              : isViolettePonybead
-              ? VIOLETTE_PONYBEAD_HOW_ITS_MADE
               : isPeppermintMist
               ? PEPPERMINT_MIST_HOW_ITS_MADE
               : apparelItem?.slug === "voronyz-oversized-tee"
@@ -697,11 +666,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Does it come in sizes?", a: "No sizes — choose a flavor instead." },
               { q: "How much does it cost?", a: "$60 per bag when back in stock." },
               { q: "When will it restock?", a: "We're restocking the next batch soon. Check back on Collaborative." },
-            ] : isViolettePonybead ? [
-              { q: "What animals are available?", a: "Raccoon, chipmunk, skunk, and fox — each a handmade pony bead keychain with a silver lobster clasp." },
-              { q: "How much do they cost?", a: "$10 per animal." },
-              { q: "Does it come in sizes?", a: "No sizes — pick the animal style you want." },
-              { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isPeppermintMist ? [
               { q: "What is it?", a: "Áine & Fern Peppermint Freshening Mist — a bright minty spray with natural peppermint essential oil for body, belongings, and everyday spaces." },
               { q: "Is it good for shoes?", a: "Yes — lightly mist the insides of shoes, sneakers, slides, and gym shoes for a fresh minty scent. Also great on gym bags, backpacks, luggage, and compatible fabrics. Spot-test first." },
@@ -813,18 +777,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const title = `${TRAIL_MIX_NAME} – Voronyz`;
     const description = TRAIL_MIX_DESCRIPTION;
     const images = [TRAIL_MIX_THUMBNAIL_URL];
-    return {
-      title,
-      description,
-      openGraph: { title, description, images },
-      twitter: { card: "summary_large_image", title, description, images },
-    };
-  }
-
-  if (isViolettePonybeadSlug(slug)) {
-    const title = `${VIOLETTE_PONYBEAD_NAME} – Voronyz`;
-    const description = VIOLETTE_PONYBEAD_DESCRIPTION;
-    const images = [VIOLETTE_PONYBEAD_THUMBNAIL_URL];
     return {
       title,
       description,

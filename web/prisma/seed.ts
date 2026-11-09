@@ -11,17 +11,6 @@ import {
   TRAIL_MIX_VARIANTS,
 } from "../src/lib/trailMix";
 import {
-  VIOLETTE_PONYBEAD_ANIMAL_IDS,
-  VIOLETTE_PONYBEAD_DESCRIPTION_SHORT,
-  VIOLETTE_PONYBEAD_IMAGES,
-  VIOLETTE_PONYBEAD_LEGACY_SLUG,
-  VIOLETTE_PONYBEAD_NAME,
-  VIOLETTE_PONYBEAD_PRICE_CENTS,
-  VIOLETTE_PONYBEAD_SIZES,
-  VIOLETTE_PONYBEAD_SLUG,
-  VIOLETTE_PONYBEAD_VARIANTS,
-} from "../src/lib/violettePonybeadAnimals";
-import {
   PEPPERMINT_MIST_DESCRIPTION_SHORT,
   PEPPERMINT_MIST_IMAGES,
   PEPPERMINT_MIST_NAME,
@@ -656,66 +645,26 @@ async function main() {
       console.log("Updated Antioxidant Trail Mix product and variants.");
     }
 
-    // ── Keychain (Collaborative — not footwear) ──
-    let existingViolette = await prisma.product.findUnique({ where: { slug: VIOLETTE_PONYBEAD_SLUG } });
-    if (!existingViolette) {
-      existingViolette = await prisma.product.findUnique({ where: { slug: VIOLETTE_PONYBEAD_LEGACY_SLUG } });
-    }
-    console.log("Keychain product check:", existingViolette ? "Found" : "Not found");
-    if (!existingViolette) {
-      const violetteProduct = await prisma.product.create({
-        data: {
-          slug: VIOLETTE_PONYBEAD_SLUG,
-          name: VIOLETTE_PONYBEAD_NAME,
-          description: VIOLETTE_PONYBEAD_DESCRIPTION_SHORT,
-          priceCents: VIOLETTE_PONYBEAD_PRICE_CENTS,
-          currency: "usd",
-          images: [...VIOLETTE_PONYBEAD_IMAGES],
-          primaryColors: [...VIOLETTE_PONYBEAD_ANIMAL_IDS],
-          secondaryColors: [],
-          sizes: [...VIOLETTE_PONYBEAD_SIZES],
-          variants: {
-            create: VIOLETTE_PONYBEAD_VARIANTS.map((v) => ({ ...v })),
-          },
-        },
-        include: { variants: true },
+    // ── Remove retired Collaborative Keychain listing ──
+    const retiredKeychains = await prisma.product.findMany({
+      where: { slug: { in: ["keychain", "violette-ponybead-animals"] } },
+      select: { id: true },
+    });
+    if (retiredKeychains.length > 0) {
+      const keychainIds = retiredKeychains.map((p) => p.id);
+      const keychainVariants = await prisma.variant.findMany({
+        where: { productId: { in: keychainIds } },
+        select: { id: true },
       });
-      console.log("Seeded product:", violetteProduct.slug);
-    } else {
-      console.log("Updating existing Keychain product...");
-      await prisma.product.update({
-        where: { id: existingViolette.id },
-        data: {
-          slug: VIOLETTE_PONYBEAD_SLUG,
-          name: VIOLETTE_PONYBEAD_NAME,
-          description: VIOLETTE_PONYBEAD_DESCRIPTION_SHORT,
-          priceCents: VIOLETTE_PONYBEAD_PRICE_CENTS,
-          images: [...VIOLETTE_PONYBEAD_IMAGES],
-          primaryColors: [...VIOLETTE_PONYBEAD_ANIMAL_IDS],
-          secondaryColors: [],
-          sizes: [...VIOLETTE_PONYBEAD_SIZES],
-        },
-      });
-      for (const v of VIOLETTE_PONYBEAD_VARIANTS) {
-        await prisma.variant.upsert({
-          where: { sku: v.sku },
-          update: { stock: v.stock, color: v.color },
-          create: {
-            product: { connect: { id: existingViolette.id } },
-            color: v.color,
-            sku: v.sku,
-            stock: v.stock,
-          },
-        });
+      const keychainVariantIds = keychainVariants.map((v) => v.id);
+      if (keychainVariantIds.length > 0) {
+        await prisma.cartItem.deleteMany({ where: { variantId: { in: keychainVariantIds } } });
+        await prisma.variant.deleteMany({ where: { id: { in: keychainVariantIds } } });
       }
-      const keepVioletteSkus = VIOLETTE_PONYBEAD_VARIANTS.map((v) => v.sku);
-      await prisma.variant.deleteMany({
-        where: {
-          productId: existingViolette.id,
-          sku: { notIn: [...keepVioletteSkus] },
-        },
-      });
-      console.log("Updated Keychain product and variants.");
+      await prisma.product.deleteMany({ where: { id: { in: keychainIds } } });
+      console.log("Removed Keychain product.");
+    } else {
+      console.log("Keychain product check: Not found (already removed)");
     }
 
     // ── Peppermint Freshening Mist (Collaborative — Áine & Fern) ──
