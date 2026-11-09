@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { footPose, SPRINT_STANCE } from "./dragonflySprint";
+import {
+  SPRINT_STANCE,
+  SPRINT_STRIDES_PER_SEC,
+  footPose,
+  trailSample,
+} from "./dragonflySprint";
 
 function close(a: number, b: number, eps = 0.75) {
   assert.ok(Math.abs(a - b) <= eps, `${a} not within ${eps} of ${b}`);
@@ -9,11 +14,11 @@ function close(a: number, b: number, eps = 0.75) {
 test("stride loops without a pose pop", () => {
   const start = footPose(0);
   const end = footPose(0.999);
-  close(end.x, start.x, 8);
-  close(end.y, start.y, 8);
+  close(end.x, start.x, 12);
+  close(end.y, start.y, 10);
   close(end.rot, start.rot, 4);
+  close(end.bend, start.bend, 4);
   assert.equal(start.squash, 1);
-  assert.equal(footPose(SPRINT_STANCE - 0.0001).squash, 1);
   assert.equal(footPose(SPRINT_STANCE).squash, 1);
 
   const planted = footPose(SPRINT_STANCE - 0.0001);
@@ -21,6 +26,7 @@ test("stride loops without a pose pop", () => {
   close(planted.x, liftoff.x, 2);
   close(planted.y, liftoff.y, 2);
   close(planted.rot, liftoff.rot, 2);
+  close(planted.bend, liftoff.bend, 2);
 });
 
 test("contact slides backward at a constant rate", () => {
@@ -33,21 +39,33 @@ test("contact slides backward at a constant rate", () => {
   assert.equal(c.y, 0);
 });
 
-test("toe-off is a sprint stride, not a rocking pair", () => {
+test("toe-off folds the shoe instead of keeping it stiff", () => {
   const back = footPose(SPRINT_STANCE);
   const front = footPose(SPRINT_STANCE + 0.5);
-  assert.ok(back.rot > 30, `expected a heel-up push, got ${back.rot}`);
+  assert.ok(back.rot > 28, `expected a heel-up push, got ${back.rot}`);
+  assert.ok(back.bend < -18, `expected the toe to fold up, bend=${back.bend}`);
+  assert.ok(back.rot + back.bend < 14, "toe should stay nearer the ground than the heel");
   assert.equal(back.y, 0);
-  assert.ok(front.y > 70, `front foot should be reaching in the air, y=${front.y}`);
-  assert.ok(front.x > back.x + 250, `stride too short: ${front.x - back.x}`);
-  assert.ok(front.rot < 0, `reaching foot should be toe-up, rot=${front.rot}`);
+  assert.ok(front.y > 60, `front foot should be in the air, y=${front.y}`);
+  assert.ok(front.x > back.x + 200, `stride too short: ${front.x - back.x}`);
 });
 
-test("both shoes leave the path during the stride", () => {
-  let flight = false;
-  for (let i = 0; i < 24; i++) {
-    const phase = i / 24;
-    if (footPose(phase).y > 30 && footPose(phase + 0.5).y > 30) flight = true;
+test("the pace is slow", () => {
+  assert.ok(SPRINT_STRIDES_PER_SEC <= 0.55);
+});
+
+test("the trail climbs, drops, and cuts both ways", () => {
+  let minH = Infinity;
+  let maxH = -Infinity;
+  let minL = Infinity;
+  let maxL = -Infinity;
+  for (let d = 0; d <= 4000; d += 20) {
+    const sample = trailSample(d);
+    if (sample.height < minH) minH = sample.height;
+    if (sample.height > maxH) maxH = sample.height;
+    if (sample.lateral < minL) minL = sample.lateral;
+    if (sample.lateral > maxL) maxL = sample.lateral;
   }
-  assert.equal(flight, true);
+  assert.ok(minH < -40 && maxH > 40, `height range ${minH}..${maxH}`);
+  assert.ok(minL < -80 && maxL > 80, `lateral range ${minL}..${maxL}`);
 });
