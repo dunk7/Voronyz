@@ -28,6 +28,16 @@ test("homepage hero stage stays black and does not reuse the shop hex tile", () 
   assert.match(hero[0], /background-color:\s*#000/);
 });
 
+test("top glow hero sits on lightly crinkled black wrapping paper", () => {
+  assert.match(home, /hero-wrapping/);
+  const paper = css.match(/\.hero-wrapping::before \{[\s\S]*?\n\}/);
+  assert.ok(paper, "expected wrapping paper on the hero field");
+  assert.match(paper[0], /black-wrapping-paper\.jpg/);
+  assert.match(paper[0], /background-size:\s*cover/);
+  assert.match(paper[0], /background-repeat:\s*no-repeat/);
+  assert.doesNotMatch(css, /#ff4d6d/);
+});
+
 test("shop hex tiles stay static and are not pointer-driven", () => {
   const shopMesh = css.match(/\.bg-texture-white::before \{[\s\S]*?\n\}/);
   assert.ok(shopMesh, "expected a hex overlay on shop panels");
@@ -61,4 +71,11 @@ test("hero stage has no colorful Voronoi topology behind the GIF", () => {
   assert.ok(hero, "expected a homepage hero stage");
   assert.match(hero[0], /background-color:\s*#000/);
   assert.doesNotMatch(hero[0], /background-image/);
+});
+
+test("homepage top glow is poster-sized instead of full-bleed", () => {
+  const footGlow = readFileSync(join(dir, "../components/FootGlowSection.tsx"), "utf8");
+  assert.match(footGlow, /max-w-\[15\.5rem\]/);
+  assert.doesNotMatch(footGlow, /max-w-\[64rem\]/);
+  assert.match(css, /\.foot-glow-hero-frame \.foot-glow-layer \{[\s\S]*?object-fit:\s*contain/);
 });

@@ -9,7 +9,7 @@ type FootGlowSectionProps = {
    * Homepage keeps the foot x-ray. All Footwear uses a separate lattice-shoe outline.
    */
   variant?: "xray" | "print";
-  /** Homepage hero. The x-ray sits flush to the top at its own aspect ratio. */
+  /** Homepage hero. Poster-sized x-ray on the wrapping-paper field. */
   hero?: boolean;
   /** Sits under the poster, left-aligned, so it never covers the artwork. */
   caption?: ReactNode;
@@ -39,7 +39,7 @@ export default function FootGlowSection({
         <div
           className={`foot-glow-frame relative w-full bg-black ${
             hero ? "foot-glow-hero-frame aspect-[2000/1399]" : "aspect-[2000/1399]"
-          } ${poster ? "foot-glow-poster-frame" : ""}`}
+          } ${poster || hero ? "foot-glow-poster-frame" : ""}`}
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- keep the uploaded PNG bytes, no optimizer */}
           <img
@@ -67,9 +67,13 @@ export default function FootGlowSection({
     return (
       <div
         aria-hidden
-        className={`pointer-events-none bg-black ${className}`}
+        className={`pointer-events-none relative z-[1] ${className}`}
       >
-        <div className="mx-auto w-full max-w-[64rem]">{artwork}</div>
+        <div className="mx-auto flex w-full max-w-7xl justify-center px-6 pt-8 sm:px-8 sm:pt-10 md:pt-12">
+          <div className="w-full max-w-[15.5rem] sm:max-w-[18rem] md:max-w-[20.5rem]">
+            <div className="foot-glow-poster-card">{artwork}</div>
+          </div>
+        </div>
       </div>
     );
   }
