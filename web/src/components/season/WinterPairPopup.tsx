@@ -131,14 +131,7 @@ export default function WinterPairPopup() {
             onClick={claim}
             className="mt-5 w-full rounded-full bg-white px-5 py-3 text-sm font-medium text-[#0b1a24] transition hover:bg-sky-50"
           >
-            Shop the pair
-          </button>
-          <button
-            type="button"
-            onClick={dismiss}
-            className="mt-2 w-full rounded-full px-5 py-2.5 text-sm text-white/60 transition hover:text-white"
-          >
-            Not now
+            Continue
           </button>
         </div>
       </div>
