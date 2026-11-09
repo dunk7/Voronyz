@@ -326,15 +326,8 @@ export default function ProductsContent({
     return { cover, alt };
   }
 
-  /** Shared slides/slip-ons teaser — used at the top and again near the bottom of home. */
-  function homeFootwearTeaserGrid({
-    keyPrefix = "",
-    nameTag = "h2",
-  }: {
-    keyPrefix?: string;
-    nameTag?: "h2" | "h3";
-  } = {}) {
-    const NameTag = nameTag;
+  /** Homepage slides/slip-ons teaser. */
+  function homeFootwearTeaserGrid() {
     return (
       <div className="grid grid-cols-2 gap-4 sm:gap-6">
         {displayProducts.map((p) => {
@@ -345,7 +338,7 @@ export default function ProductsContent({
 
           return (
             <Link
-              key={`${keyPrefix}${p.id}`}
+              key={p.id}
               href={`/products/${p.slug}`}
               onClick={(e) => handleCardClick(e, p.slug)}
               className={`group block outline-none cursor-pointer transition-all duration-200 active:scale-[0.98] ${
@@ -402,9 +395,9 @@ export default function ProductsContent({
                 )}
               </div>
               <div className="mt-4 px-0.5">
-                <NameTag className="text-[15px] font-semibold text-neutral-900 group-hover:text-black transition-colors line-clamp-2">
+                <h2 className="text-[15px] font-semibold text-neutral-900 group-hover:text-black transition-colors line-clamp-2">
                   {p.name}
-                </NameTag>
+                </h2>
               </div>
             </Link>
           );
@@ -483,28 +476,6 @@ export default function ProductsContent({
       </section>
     ) : null;
 
-  /** Closing footwear teaser — most shoppers never hit Shop all footwear at the top. */
-  const footwearBottomSection =
-    isHomeFootwearTeaser && displayProducts.length > 0 ? (
-      <section
-        id="footwear"
-        aria-labelledby="home-footwear-bottom-heading"
-        className="mt-16 sm:mt-24 lg:mt-28"
-      >
-        <div className="mb-8 sm:mb-10 text-center">
-          <h2 id="home-footwear-bottom-heading" className={homeSectionTitleClass}>
-            Footwear
-          </h2>
-        </div>
-        {homeFootwearTeaserGrid({ keyPrefix: "bottom-", nameTag: "h3" })}
-        <div className="mt-10 sm:mt-12 flex justify-center">
-          <Link href="/products" className={SHOP_ALL_CTA_CLASS}>
-            Shop all footwear
-          </Link>
-        </div>
-      </section>
-    ) : null;
-
   return (
     <div className={shellClass}>
       {useFootwearBrowse ? (
@@ -537,15 +508,15 @@ export default function ProductsContent({
             </Link>
           </div>
         ) : isHomeFootwearTeaser ? (
-          /* ── Homepage footwear teaser (also repeated near the bottom) ── */
-          <>
+          /* ── Homepage footwear teaser ── */
+          <section id="footwear" aria-label="Footwear">
             {homeFootwearTeaserGrid()}
             <div className="mt-10 sm:mt-12 flex justify-center">
               <Link href="/products" className={SHOP_ALL_CTA_CLASS}>
                 Shop all footwear
               </Link>
             </div>
-          </>
+          </section>
         ) : (
           /* ── Product grid (Engineering / Collaborative / search) ── */
           <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 xl:grid-cols-4">
@@ -705,10 +676,9 @@ export default function ProductsContent({
         {isHomeFootwearTeaser && (
           <>
             {advancedFootwear}
-            <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
             <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
-            {footwearBottomSection}
             <HomeSecondaryLinks className="mt-12 sm:mt-16" />
+            <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
           </>
         )}
       </div>
