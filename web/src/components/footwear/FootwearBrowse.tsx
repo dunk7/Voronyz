@@ -6,7 +6,11 @@ import { useMemo, useState } from "react";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 import type { FootwearListProduct } from "@/lib/footwear";
-import { sortFootwearForTab } from "@/lib/footwearRanking";
+import {
+  FOOTWEAR_TOP_COUNT,
+  sortFootwearForTab,
+  type FootwearRankTab,
+} from "@/lib/footwearRanking";
 import { GATORS_LISTING_COVER_URL, GATORS_SLUG } from "@/lib/gators";
 import {
   LATTICE_INSOLES_SLUG,
@@ -34,6 +38,12 @@ const LATTICE_INSOLES_BROWSE = {
 const GATORS_BROWSE = {
   cover: GATORS_LISTING_COVER_URL,
 } as const;
+
+const TABS: { id: FootwearRankTab; label: string }[] = [
+  { id: "trending", label: "Trending" },
+  { id: "all-time", label: "All time" },
+  { id: "new-in", label: "New in" },
+];
 
 function RankCard({
   product,
@@ -115,18 +125,18 @@ function RankCard({
             </div>
           ) : null}
 
-          {/* Name stays on this photo so a scroll never leaves it floating between shoes. */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/80 via-black/45 to-transparent px-4 pb-3.5 pt-14 sm:px-5 sm:pb-4">
-            <h2 className="text-lg font-semibold leading-tight tracking-tight text-white line-clamp-2 sm:text-xl">
-              {product.name}
-            </h2>
-          </div>
-
           {navigating ? (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/25 backdrop-blur-[2px]">
               <LogoLoader size="sm" tone="light" showBar={false} className="!gap-0" />
             </div>
           ) : null}
+        </div>
+
+        {/* Name sits under the photo — no divider lines between cards. */}
+        <div className="mt-4 px-0.5">
+          <h2 className="text-[15px] font-semibold text-white line-clamp-2">
+            {product.name}
+          </h2>
         </div>
       </Link>
     </article>
@@ -134,7 +144,9 @@ function RankCard({
 }
 
 export default function FootwearBrowse({ products, getImages }: FootwearBrowseProps) {
-  const ranked = useMemo(() => sortFootwearForTab(products, "trending"), [products]);
+  const [tab, setTab] = useState<FootwearRankTab>("trending");
+  const ranked = useMemo(() => sortFootwearForTab(products, tab), [products, tab]);
+  const topCount = Math.min(FOOTWEAR_TOP_COUNT, ranked.length);
 
   return (
     <section className="bg-black text-white" aria-labelledby="footwear-browse-heading">
@@ -146,14 +158,45 @@ export default function FootwearBrowse({ products, getImages }: FootwearBrowsePr
           Footwear
         </h1>
 
-        <div className="mt-6 flex flex-col" role="list">
+        <div
+          role="tablist"
+          aria-label="Footwear ranking"
+          className="mt-6 flex gap-2 overflow-x-auto no-scrollbar"
+        >
+          {TABS.map((item) => {
+            const selected = tab === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                aria-selected={selected}
+                onClick={() => setTab(item.id)}
+                className={`shrink-0 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] transition-colors ${
+                  selected
+                    ? "bg-white text-black"
+                    : "bg-[#1f1f1f] text-white hover:bg-[#2a2a2a]"
+                }`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {topCount > 0 ? (
+          <div className="mt-5 rounded-2xl bg-white px-5 py-3">
+            <p className="text-xl font-bold tracking-tight text-black sm:text-[1.35rem]">
+              Top {topCount}
+            </p>
+          </div>
+        ) : null}
+
+        <div className="mt-5 flex flex-col gap-6 sm:gap-8" role="list">
           {ranked.map((product, index) => {
             const { cover, alt } = getImages(product);
             return (
               <div key={product.id} role="listitem">
-                {index > 0 ? (
-                  <div className="mx-1 my-5 h-px bg-white/20 sm:my-6" aria-hidden />
-                ) : null}
                 <RankCard
                   product={product}
                   cover={cover}

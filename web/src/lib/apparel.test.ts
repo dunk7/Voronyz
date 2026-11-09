@@ -76,26 +76,29 @@ test("tee listing back link returns to Apparel", () => {
   assert.equal(apparelProductShopLabel("voronyz-oversized-tee"), "Back to Apparel");
 });
 
-test("oversized tee leads with the chest-logo front shot, then the blank back photo", () => {
+test("oversized tee leads with the chest-logo front shot, blank back, then lifestyle", () => {
   const tee = getApparelItem("voronyz-oversized-tee");
   assert.ok(tee);
   assert.equal(tee.image, "/products/apparel/shirt-front-v3.jpg");
   assert.deepEqual(getApparelImages(tee), [
     "/products/apparel/shirt-front-v3.jpg",
     "/products/apparel/shirt-back-blank-v3.jpg",
+    "/products/apparel/shirt-lifestyle.jpg",
   ]);
 });
 
-test("white oversized tee uses the black-logo mockup and a plain white back", () => {
+test("white oversized tee uses the black-logo mockup, plain white back, and lifestyle", () => {
   const tee = getApparelItem("voronyz-oversized-tee");
   assert.ok(tee);
   assert.deepEqual(getApparelImagesForColor(tee, "white"), [
     "/products/apparel/shirt-front-white-v3.jpg",
     "/products/apparel/shirt-back-blank-white-v3.jpg",
+    "/products/apparel/shirt-lifestyle.jpg",
   ]);
   assert.deepEqual(getApparelImagesForColor(tee, "black"), [
     "/products/apparel/shirt-front-v3.jpg",
     "/products/apparel/shirt-back-blank-v3.jpg",
+    "/products/apparel/shirt-lifestyle.jpg",
   ]);
 });
 
@@ -105,6 +108,7 @@ test("grey oversized tee has matching front and back shots with the same chest l
   assert.deepEqual(getApparelImagesForColor(tee, "grey"), [
     "/products/apparel/shirt-front-grey-v3.jpg",
     "/products/apparel/shirt-back-blank-grey-v3.jpg",
+    "/products/apparel/shirt-lifestyle.jpg",
   ]);
 });
 
