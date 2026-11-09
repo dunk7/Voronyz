@@ -92,7 +92,7 @@ export default function FootGlowSection({
 
   return (
     <section
-      aria-label={variant === "print" ? "Dragonfly shoes sprinting along a path" : "Foot inside a shoe"}
+      aria-label={variant === "print" ? "Dragonfly shoes running a rocky trail" : "Foot inside a shoe"}
       className={`foot-glow-section relative ml-[calc(50%-50vw)] w-screen max-w-[100vw] bg-black py-6 sm:py-10 ${className}`}
     >
       <div className="mx-auto w-full max-w-6xl">{artwork}</div>
