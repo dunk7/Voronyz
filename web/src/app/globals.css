@@ -139,11 +139,42 @@ video {
 }
 
 /*
-  Homepage hero: solid black behind the GIF so the white headline stays
-  readable. Shop panels use the hex honeycomb.
+  Homepage hero: solid black by default. The top glow sits on a lightly
+  crinkled black wrapping-paper field (.hero-wrapping). Shop panels use
+  the hex honeycomb.
 */
 .hero-stage {
   background-color: #000;
+}
+
+.hero-wrapping {
+  background-color: #050505;
+}
+
+/* One sheet of black wrapping paper — a little crinkled, no hard tile seams. */
+.hero-wrapping::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("/graphics/black-wrapping-paper.jpg");
+  background-size: cover;
+  background-position: center 28%;
+  background-repeat: no-repeat;
+  opacity: 0.78;
+  filter: contrast(1.22) brightness(1.2) saturate(0.75);
+}
+
+.hero-wrapping::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 78% 52% at 50% 16%, rgb(0 0 0 / 0.1), transparent 68%),
+    linear-gradient(180deg, rgb(0 0 0 / 0.16), transparent 38%, rgb(0 0 0 / 0.38));
 }
 
 .bg-texture-white {
@@ -608,9 +639,21 @@ html.site-dark ::selection {
   }
 }
 
-/* Homepage poster: same artwork, pulled back, left level. */
+/* Homepage poster: same artwork, pulled back on the wrapping paper. */
 .foot-glow-poster-card {
-  filter: drop-shadow(0 22px 28px rgb(0 0 0 / 0.28));
+  filter: drop-shadow(0 18px 26px rgb(0 0 0 / 0.55));
+  animation: foot-glow-poster-settle 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes foot-glow-poster-settle {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .site-header {
@@ -619,21 +662,12 @@ html.site-dark ::selection {
 
 .foot-glow-hero-frame {
   overflow: hidden;
+  background-color: #000;
 }
 
 .foot-glow-hero-frame .foot-glow-layer {
-  object-fit: cover;
-  object-position: center top;
-  /*
-    The x-ray PNG has ~8.3% empty canvas above the glow and ~7.5% below.
-    Shift and enlarge so the glow meets the header with no black strip.
-  */
-  inset: auto;
-  left: 0;
-  right: 0;
-  top: -10%;
-  width: 100%;
-  height: 120%;
+  object-fit: contain;
+  object-position: center center;
 }
 
 .foot-glow-print-frame {
@@ -642,13 +676,17 @@ html.site-dark ::selection {
 
 .foot-glow-poster-frame {
   box-shadow:
-    0 0 0 10px #111,
-    0 0 0 11px rgb(255 255 255 / 0.14);
+    0 0 0 8px #0a0a0a,
+    0 0 0 9px rgb(255 255 255 / 0.1);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .foot-glow-hatch {
     animation: none;
     opacity: 0.32;
+  }
+
+  .foot-glow-poster-card {
+    animation: none;
   }
 }
