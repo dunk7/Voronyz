@@ -24,14 +24,16 @@ test("STL listing is Voronyz STL at $1 per shoe file", () => {
   assert.equal(orderIncludesStlDownload([{ name: "Slip Ons" }]), false);
 });
 
-test("STL thumbnail shows the open-back Slip On that matches the downloadable file", () => {
+test("STL thumbnail uses padded CAD wireframe art (not a product photo path)", () => {
   assert.equal(STL_FILES_THUMBNAIL_URL, "/products/stl-files/cover.jpg");
   assert.equal(STL_FILES_ALT_IMAGE_URL, "/products/stl-files/alt.jpg");
   assert.deepEqual([...STL_FILES_IMAGES], [
     "/products/stl-files/cover.jpg",
     "/products/stl-files/alt.jpg",
   ]);
-  assert.equal(STL_FILES_THUMBNAIL_URL.includes("layers.jpg"), false);
+  // Listing art stays on the dedicated stl-files wireframe assets — never Slip On product photos.
+  assert.equal(STL_FILES_THUMBNAIL_URL.includes("/products/slip-ons/"), false);
+  assert.equal(STL_FILES_ALT_IMAGE_URL.includes("/products/slip-ons/"), false);
 });
 
 test("only Slip Ons has an STL file; others are out of stock and Magikid/insoles are gone", () => {

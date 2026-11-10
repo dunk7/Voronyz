@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { getProductThumbnail } from "@/lib/productImages";
 import { apparelCoverObjectPositionClass } from "@/lib/apparel";
+import { isAccessorySlug } from "@/lib/productCategories";
 import LogoLoader, { LogoMark } from "@/components/ui/LogoLoader";
 
 type SearchProductResult = {
@@ -369,6 +370,9 @@ export default function Header() {
                     <div className="py-2">
                       {searchResults.map((product, index) => {
                         const cover = getProductThumbnail({ slug: product.slug, images: product.images });
+                        const thumbFit = isAccessorySlug(product.slug)
+                          ? "object-contain bg-neutral-100"
+                          : `object-cover ${apparelCoverObjectPositionClass(cover)}`;
                         return (
                           <button
                             key={product.id}
@@ -386,7 +390,7 @@ export default function Header() {
                                 alt={product.name}
                                 width={48}
                                 height={48}
-                                className={`w-full h-full object-cover ${apparelCoverObjectPositionClass(cover)} transition-transform duration-200 group-hover:scale-105`}
+                                className={`w-full h-full ${thumbFit} transition-transform duration-200 group-hover:scale-105`}
                                 priority={index < 3}
                               />
                             </div>

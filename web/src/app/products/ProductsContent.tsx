@@ -35,12 +35,27 @@ const HOME_APPAREL_TEASER_SLUGS = [
 /** Homepage Collaborative teaser — peppermint mist only; full catalog on /health. */
 const HOME_COLLABORATIVE_TEASER_SLUGS = [PEPPERMINT_MIST_SLUG] as const;
 
-/** Landscape bottle art crops too hard under object-cover — keep the full mist bottle in frame. */
+/** Keep framed product art fully visible — mist bottle, STL wireframe, filament spool. */
 function productCardImageFitClass(slug: string, src: string): string {
-  if ((slug || "").trim().toLowerCase() === PEPPERMINT_MIST_SLUG) {
+  const key = (slug || "").trim().toLowerCase();
+  if (
+    key === PEPPERMINT_MIST_SLUG ||
+    key === STL_FILES_SLUG ||
+    key === FILAMENT_SLUG ||
+    key === "tpu-90a-filament"
+  ) {
     return "object-contain object-center";
   }
   return `object-cover ${apparelCoverObjectPositionClass(src)}`;
+}
+
+function productCardNeedsInset(slug: string): boolean {
+  const key = (slug || "").trim().toLowerCase();
+  return (
+    key === STL_FILES_SLUG ||
+    key === FILAMENT_SLUG ||
+    key === "tpu-90a-filament"
+  );
 }
 
 /** Shop-all CTA under the home Footwear and Apparel teasers — shared width so both match. */
@@ -537,6 +552,7 @@ export default function ProductsContent({
               const { cover, alt } = getImages(p);
               const meta = cardMetaForSlug(slugKey);
               const isNavigating = navigatingSlug === p.slug;
+              const inset = productCardNeedsInset(slugKey);
 
               return (
                 <Link
@@ -552,28 +568,30 @@ export default function ProductsContent({
                       isNavigating ? "ring-black/10 shadow-xl" : ""
                     }`}
                   >
-                    <SoftImage
-                      key={cover}
-                      src={cover}
-                      alt={p.name}
-                      fill
-                      className={`${productCardImageFitClass(slugKey, cover)} transition-all duration-500 ${
-                        alt ? "group-hover:opacity-0" : "group-hover:scale-105"
-                      } ${isNavigating ? "scale-105 brightness-90" : ""}`}
-                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                    />
-                    {alt && (
+                    <div className={inset ? "absolute inset-3 sm:inset-4" : "absolute inset-0"}>
                       <SoftImage
-                        key={alt}
-                        src={alt}
-                        alt={`${p.name} – alternate view`}
+                        key={cover}
+                        src={cover}
+                        alt={p.name}
                         fill
-                        showLogoPlaceholder={false}
-                        className={`${productCardImageFitClass(slugKey, alt)} opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105`}
+                        className={`${productCardImageFitClass(slugKey, cover)} transition-all duration-500 ${
+                          alt ? "group-hover:opacity-0" : "group-hover:scale-105"
+                        } ${isNavigating ? "scale-105 brightness-90" : ""}`}
                         sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                        loading="lazy"
                       />
-                    )}
+                      {alt && (
+                        <SoftImage
+                          key={alt}
+                          src={alt}
+                          alt={`${p.name} – alternate view`}
+                          fill
+                          showLogoPlaceholder={false}
+                          className={`${productCardImageFitClass(slugKey, alt)} opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105`}
+                          sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                          loading="lazy"
+                        />
+                      )}
+                    </div>
                     {slugKey === TRAIL_MIX_SLUG && (
                       <div className="absolute top-3 left-3 z-10">
                         <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-neutral-900 text-white">
@@ -638,28 +656,30 @@ export default function ProductsContent({
                         isNavigating ? "ring-black/10 shadow-xl" : ""
                       }`}
                     >
-                      <SoftImage
-                        key={cover}
-                        src={cover}
-                        alt={p.name}
-                        fill
-                        className={`object-contain transition-all duration-500 ${
-                          alt ? "group-hover:opacity-0" : "group-hover:scale-105"
-                        } ${isNavigating ? "scale-105 brightness-90" : ""}`}
-                        sizes="(max-width: 768px) 50vw, 33vw"
-                      />
-                      {alt && (
+                      <div className="absolute inset-3 sm:inset-4">
                         <SoftImage
-                          key={alt}
-                          src={alt}
-                          alt={`${p.name} – alternate view`}
+                          key={cover}
+                          src={cover}
+                          alt={p.name}
                           fill
-                          showLogoPlaceholder={false}
-                          className="object-contain opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
+                          className={`object-contain transition-all duration-500 ${
+                            alt ? "group-hover:opacity-0" : "group-hover:scale-105"
+                          } ${isNavigating ? "scale-105 brightness-90" : ""}`}
                           sizes="(max-width: 768px) 50vw, 33vw"
-                          loading="lazy"
                         />
-                      )}
+                        {alt && (
+                          <SoftImage
+                            key={alt}
+                            src={alt}
+                            alt={`${p.name} – alternate view`}
+                            fill
+                            showLogoPlaceholder={false}
+                            className="object-contain opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
+                            sizes="(max-width: 768px) 50vw, 33vw"
+                            loading="lazy"
+                          />
+                        )}
+                      </div>
                       {isNavigating && (
                         <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/20 backdrop-blur-[2px]">
                           <LogoLoader size="sm" tone="light" showBar={false} className="!gap-0" />
