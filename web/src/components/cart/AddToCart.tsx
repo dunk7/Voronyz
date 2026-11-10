@@ -8,6 +8,7 @@ import { getApparelSizeOffer } from "@/lib/apparel";
 import SalePrice from "@/components/ui/SalePrice";
 import { isWhiteColor, SLIP_ONS_WHITE_AD_IMAGE } from "@/lib/footwear";
 import { useFilamentSelection } from "@/components/products/FilamentSelection";
+import ShareProductButton from "@/components/products/ShareProductButton";
 
 interface VariantProps {
   id: string;
@@ -1130,6 +1131,11 @@ export default function AddToCart({
             )}
           </div>
         </div>
+        <ShareProductButton
+          productName={productName}
+          productSlug={productSlug}
+          imageUrl={resolvedCoverImage}
+        />
       </div>
     </>
   );
