@@ -25,14 +25,17 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
       requestAnimationFrame(() => {
         const rect = el.getBoundingClientRect();
         const elementHeight = rect.height || el.offsetHeight || 1;
-        // Scrub from the moment the slide enters the viewport. Measuring
-        // against offsetTop made a section below the hero look finished
-        // as soon as the page moved.
-        // Hold the closed frame until the slide is actually in front of the
-        // reader, then open it across the rest of the section.
+        // Scrub against viewport entry (not offsetTop) so a section below
+        // the hero does not look finished as soon as the page moves.
+        // Desktop holds the closed frame until the slide is mostly in front
+        // of the reader. Mobile starts sooner — tall phones otherwise keep
+        // the closed frame on screen for a long scroll before it opens.
         const entered = window.innerHeight - rect.top;
-        const arrived = window.innerHeight * 0.72;
-        const travel = Math.max(elementHeight * 0.85, window.innerHeight * 0.65);
+        const isNarrow = window.matchMedia("(max-width: 767px)").matches;
+        const arrived = window.innerHeight * (isNarrow ? 0.28 : 0.72);
+        const travel = isNarrow
+          ? Math.max(elementHeight * 0.7, window.innerHeight * 0.45)
+          : Math.max(elementHeight * 0.85, window.innerHeight * 0.65);
         const rawProgress = Math.max(0, Math.min(1, (entered - arrived) / travel));
         smoothedRef.current = rawProgress;
         setSmoothedProgress(rawProgress);
