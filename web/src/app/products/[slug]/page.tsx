@@ -409,12 +409,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Weatherproof</span>
         </>
       )}
-      {!isTrailMix && !isApparel && !isFilament && !isStlFiles && !isLatticeInsoles && (
+      {!isTrailMix && !isApparel && !isFilament && !isStlFiles && !isLatticeInsoles && !isPeppermintMist && (
         <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
           {isMagikidShoes ? "Made to order in <7 days" : "Made to order in <2 days"}
         </span>
       )}
-      {!isMagikidShoes && !isTrailMix && !isApparel && !isFilament && !isStlFiles && !isLatticeInsoles && (
+      {!isMagikidShoes && !isTrailMix && !isApparel && !isFilament && !isStlFiles && !isLatticeInsoles && !isPeppermintMist && (
         <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
       )}
       {isTrailMix && (
@@ -567,7 +567,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             {isFilament ? (
               <FilamentMaterialDescription />
             ) : displayDescription ? (
-              <p className={`footwear-description${isPeppermintMist ? " whitespace-pre-line" : ""}`}>
+              <p className="footwear-description">
                 {displayDescription}
               </p>
             ) : null}
@@ -667,8 +667,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "How much does it cost?", a: "$60 per bag when back in stock." },
               { q: "When will it restock?", a: "We're restocking the next batch soon. Check back on Collaborative." },
             ] : isPeppermintMist ? [
-              { q: "What is it?", a: "Áine & Fern Peppermint Freshening Mist — a bright minty spray with natural peppermint essential oil for body, belongings, and everyday spaces." },
-              { q: "Is it good for shoes?", a: "Yes — mist the insides of shoes, sneakers, slides, and gym shoes for a fresh minty scent. Also great on gym bags, backpacks, luggage, and compatible fabrics." },
+              { q: "What is it?", a: "A bright minty freshening mist with natural peppermint oil from Áine & Fern. It pairs with printed footwear and works on bags, body, and everyday spaces." },
+              { q: "Does it work with shoes?", a: "Yes — lightly mist the insides of shoes, sneakers, slides, and gym shoes for a fresh minty scent. Spot-test first." },
+              { q: "Is this a sanitizer?", a: "No. This is a freshening mist for scent and everyday freshness — not a sanitizer, disinfectant, or medicine, and not intended to diagnose, treat, cure, or prevent fungal infections or any disease." },
+              { q: "How do I use it?", a: "Shake well, lightly mist as needed, and allow to dry. Test a small area of skin and an inconspicuous area of fabric before first use." },
               { q: "How much does it cost?", a: "$20 for a 3 FL OZ (89 mL) bottle." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : apparelItem?.slug === "voronyz-stickers" ? [

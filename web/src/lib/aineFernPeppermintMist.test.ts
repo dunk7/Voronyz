@@ -5,6 +5,7 @@ import { isHealthSlug } from "@/lib/productCategories";
 import {
   PEPPERMINT_MIST_DESCRIPTION,
   PEPPERMINT_MIST_DESCRIPTION_SHORT,
+  PEPPERMINT_MIST_HOW_ITS_MADE,
   PEPPERMINT_MIST_NAME,
   PEPPERMINT_MIST_PRICE_CENTS,
   PEPPERMINT_MIST_SLUG,
@@ -22,14 +23,24 @@ test("peppermint mist is a $20 Collaborative listing", () => {
   assert.equal(PEPPERMINT_MIST_VARIANTS[0]?.sku, "AF-PFM");
 });
 
-test("peppermint mist copy leads with the product name and sells the use", () => {
-  assert.match(PEPPERMINT_MIST_DESCRIPTION, /^Áine & Fern Peppermint Freshening Mist/);
-  assert.doesNotMatch(PEPPERMINT_MIST_DESCRIPTION, /^This stuff is the best/i);
-  const blob = `${PEPPERMINT_MIST_DESCRIPTION_SHORT}\n${PEPPERMINT_MIST_DESCRIPTION}`.toLowerCase();
+test("peppermint mist buy-box copy stays short and footwear-friendly", () => {
+  assert.ok(PEPPERMINT_MIST_DESCRIPTION.length < 280);
+  assert.doesNotMatch(PEPPERMINT_MIST_DESCRIPTION, /\n\n/);
+  assert.match(PEPPERMINT_MIST_DESCRIPTION.toLowerCase(), /footwear|shoes/);
+  assert.match(PEPPERMINT_MIST_DESCRIPTION.toLowerCase(), /peppermint/);
+});
+
+test("peppermint mist copy stays cosmetic-only", () => {
+  const blob =
+    `${PEPPERMINT_MIST_DESCRIPTION_SHORT}\n${PEPPERMINT_MIST_DESCRIPTION}\n${PEPPERMINT_MIST_HOW_ITS_MADE}`.toLowerCase();
   assert.match(blob, /freshen/);
-  assert.match(blob, /shoes/);
-  assert.doesNotMatch(blob, /not a sanitizer/);
-  assert.doesNotMatch(blob, /not intended to diagnose, treat, cure, or prevent/);
+  assert.match(blob, /footwear|shoes/);
+  assert.match(blob, /not a sanitizer/);
+  assert.match(blob, /not a .*disinfectant/);
+  assert.doesNotMatch(blob, /\bantifungal\b/);
+  assert.doesNotMatch(blob, /kills (germs|bacteria|fungus)/);
+  assert.doesNotMatch(blob, /treats? (athlete.?s foot|fungal|fungus)/);
+  assert.match(blob, /not intended to diagnose, treat, cure, or prevent/);
 });
 
 test("peppermint mist appears in Collaborative catalog seed", () => {
@@ -51,17 +62,13 @@ test("homepage Collaborative teaser is peppermint mist only", () => {
   );
   assert.match(homeSource, /id="collaborative"/);
   assert.match(homeSource, /home-collaborative-heading/);
-  assert.match(
-    homeSource,
-    /=== PEPPERMINT_MIST_SLUG\) \{\s*return "object-contain object-center";/,
-  );
+  assert.match(homeSource, /key === PEPPERMINT_MIST_SLUG/);
+  assert.match(homeSource, /object-contain object-center/);
 
   const pdpSource = readFileSync(
     new URL("../app/products/[slug]/page.tsx", import.meta.url),
     "utf8",
   );
-  assert.match(
-    pdpSource,
-    /isFootwearSlug\(slug\) \|\| isPeppermintMist \? "contain"/,
-  );
+  assert.match(pdpSource, /isPeppermintMist/);
+  assert.match(pdpSource, /fit=\{[^}]*isPeppermintMist[^}]*"contain"/);
 });
