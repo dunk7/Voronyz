@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { isHealthSlug } from "@/lib/productCategories";
 import {
@@ -39,4 +40,30 @@ test("peppermint mist appears in Collaborative catalog seed", () => {
   const catalog = peppermintMistCatalogProduct();
   assert.equal(catalog.priceCents, 2000);
   assert.equal(peppermintMistHealthCatalogSeed().slug, PEPPERMINT_MIST_SLUG);
+});
+
+test("homepage Collaborative teaser is peppermint mist only", () => {
+  const homeSource = readFileSync(
+    new URL("../app/products/ProductsContent.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    homeSource,
+    /const HOME_COLLABORATIVE_TEASER_SLUGS = \[PEPPERMINT_MIST_SLUG\] as const/,
+  );
+  assert.match(homeSource, /id="collaborative"/);
+  assert.match(homeSource, /home-collaborative-heading/);
+  assert.match(
+    homeSource,
+    /=== PEPPERMINT_MIST_SLUG\) \{\s*return "object-contain object-center";/,
+  );
+
+  const pdpSource = readFileSync(
+    new URL("../app/products/[slug]/page.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    pdpSource,
+    /isFootwearSlug\(slug\) \|\| isPeppermintMist \? "contain"/,
+  );
 });
