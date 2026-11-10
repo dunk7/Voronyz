@@ -17,7 +17,6 @@ test("stride loops without a pose pop", () => {
   close(end.x, start.x, 12);
   close(end.y, start.y, 10);
   close(end.rot, start.rot, 4);
-  close(end.bend, start.bend, 4);
   assert.equal(start.squash, 1);
   assert.equal(footPose(SPRINT_STANCE).squash, 1);
 
@@ -26,7 +25,6 @@ test("stride loops without a pose pop", () => {
   close(planted.x, liftoff.x, 2);
   close(planted.y, liftoff.y, 2);
   close(planted.rot, liftoff.rot, 2);
-  close(planted.bend, liftoff.bend, 2);
 });
 
 test("contact slides backward at a constant rate", () => {
@@ -39,19 +37,30 @@ test("contact slides backward at a constant rate", () => {
   assert.equal(c.y, 0);
 });
 
-test("toe-off folds the shoe instead of keeping it stiff", () => {
+test("push-off is a mild rigid heel-up stride, not a bent toe", () => {
   const back = footPose(SPRINT_STANCE);
   const front = footPose(SPRINT_STANCE + 0.5);
-  assert.ok(back.rot > 28, `expected a heel-up push, got ${back.rot}`);
-  assert.ok(back.bend < -18, `expected the toe to fold up, bend=${back.bend}`);
-  assert.ok(back.rot + back.bend < 14, "toe should stay nearer the ground than the heel");
+  assert.ok(back.rot >= 10, `expected a heel-up push, got ${back.rot}`);
+  assert.ok(back.rot <= 16, `heel tip too extreme, rot=${back.rot}`);
   assert.equal(back.y, 0);
-  assert.ok(front.y > 60, `front foot should be in the air, y=${front.y}`);
-  assert.ok(front.x > back.x + 200, `stride too short: ${front.x - back.x}`);
+  assert.ok(front.y > 50, `front foot should be in the air, y=${front.y}`);
+  assert.ok(front.x > back.x + 180, `stride too short: ${front.x - back.x}`);
+  for (let i = 0; i < 40; i++) {
+    const pose = footPose(i / 40);
+    assert.ok(pose.rot >= -1, `toe-down tip at ${i / 40}: rot=${pose.rot}`);
+  }
 });
 
-test("the pace is slow", () => {
-  assert.ok(SPRINT_STRIDES_PER_SEC <= 0.55);
+test("the sole never drops below the trail", () => {
+  for (let i = 0; i < 40; i++) {
+    const pose = footPose(i / 40);
+    assert.ok(pose.y >= 0, `y went negative at phase ${i / 40}: ${pose.y}`);
+  }
+});
+
+test("the pace is athletic", () => {
+  assert.ok(SPRINT_STRIDES_PER_SEC >= 0.9);
+  assert.ok(SPRINT_STRIDES_PER_SEC <= 1.4);
 });
 
 test("the trail climbs, drops, and cuts both ways", () => {

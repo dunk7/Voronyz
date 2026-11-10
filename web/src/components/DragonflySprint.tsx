@@ -7,9 +7,9 @@ import {
   SPRINT_GROUND_Y,
   SPRINT_SHOE_SCALE,
   SPRINT_STRIDES_PER_SEC,
+  SPRINT_TRAIL_TOP,
   footPose,
   pathSpeed,
-  trailRocks,
   trailSample,
   type FootPose,
 } from "@/lib/dragonflySprint";
@@ -21,7 +21,6 @@ type Point = { x: number; y: number };
 type Sprite = {
   canvas: HTMLCanvasElement;
   pivot: Point;
-  toeX: number;
   contour: Point[];
 };
 
@@ -34,7 +33,6 @@ function prepareSprite(img: HTMLImageElement): Sprite {
     return {
       canvas,
       pivot: { x: img.naturalWidth / 2, y: img.naturalHeight },
-      toeX: img.naturalWidth,
       contour: [],
     };
   }
@@ -50,13 +48,11 @@ function prepareSprite(img: HTMLImageElement): Sprite {
   const contour: Point[] = [];
   const w = canvas.width;
   const h = canvas.height;
-  let toeX = 0;
-  for (let x = 0; x < w; x += 3) {
+  for (let x = 0; x < w; x += 2) {
     for (let y = h - 1; y >= 0; y--) {
       const a = data[(y * w + x) * 4 + 3];
       if (a > 18) {
         contour.push({ x, y });
-        if (x > toeX) toeX = x;
         break;
       }
     }
@@ -69,27 +65,21 @@ function prepareSprite(img: HTMLImageElement): Sprite {
     if (p.y >= sole - 6 && p.x > pivot.x) pivot = p;
   }
 
-  return { canvas, pivot, toeX, contour };
+  return { canvas, pivot, contour };
 }
 
-/** 0 at the heel, 1 at the toe. The fold lives just ahead of the ball. */
-function toeBlend(imgX: number, ballX: number, toeX: number) {
-  if (imgX <= ballX) return 0;
-  const t = Math.min(1, (imgX - ballX) / Math.max(1, toeX - ballX));
-  const u = Math.min(1, Math.max(0, (t - 0.04) / 0.42));
-  return u * u * (3 - 2 * u);
-}
-
-/** How far the bent sole hangs below the forefoot, in design pixels. */
-function soleDip(sprite: Sprite, rotDeg: number, squash: number, bendDeg: number) {
+/** How far the sole hangs below the pivot after rotation, in design pixels. */
+function soleDip(sprite: Sprite, rotDeg: number, squash: number) {
   const pivx = sprite.pivot.x * SPRINT_SHOE_SCALE;
   const pivy = sprite.pivot.y * SPRINT_SHOE_SCALE * squash;
+  const ang = (rotDeg * Math.PI) / 180;
+  const cos = Math.cos(ang);
+  const sin = Math.sin(ang);
   let below = 0;
   for (const p of sprite.contour) {
-    const ang = ((rotDeg + bendDeg * toeBlend(p.x, sprite.pivot.x, sprite.toeX)) * Math.PI) / 180;
     const dx = p.x * SPRINT_SHOE_SCALE - pivx;
     const dy = p.y * SPRINT_SHOE_SCALE * squash - pivy;
-    const drop = dx * Math.sin(ang) + dy * Math.cos(ang);
+    const drop = dx * sin + dy * cos;
     if (drop > below) below = drop;
   }
   return below;
@@ -104,21 +94,19 @@ function drawShoe(
   slopeRad: number,
 ) {
   const rotDeg = foot.rot + (slopeRad * 180) / Math.PI;
-  const dip = soleDip(sprite, rotDeg, foot.squash, foot.bend);
+  const lift = Math.max(0, foot.y);
+  // Contact sits on the top of the trail stroke, never through it.
+  const groundY = contactY - SPRINT_TRAIL_TOP;
+  // Only plant-correct while on the trail. In the air, skip so the toe
+  // does not get levered upward to keep a rear sole pixel from sinking.
+  const dip = lift < 4 ? soleDip(sprite, rotDeg, foot.squash) : 0;
   ctx.save();
-  ctx.translate(contactX, contactY - foot.y - dip);
+  // Pivot lands on the contact point, then the shoe rotates around it.
+  ctx.translate(contactX, groundY - lift - dip);
+  ctx.rotate((rotDeg * Math.PI) / 180);
   ctx.scale(SPRINT_SHOE_SCALE, SPRINT_SHOE_SCALE * foot.squash);
-  const column = 5;
-  const { width, height } = sprite.canvas;
-  for (let x = 0; x < width; x += column) {
-    const ang = ((rotDeg + foot.bend * toeBlend(x, sprite.pivot.x, sprite.toeX)) * Math.PI) / 180;
-    ctx.save();
-    ctx.translate(sprite.pivot.x, sprite.pivot.y);
-    ctx.rotate(ang);
-    ctx.translate(-sprite.pivot.x, -sprite.pivot.y);
-    ctx.drawImage(sprite.canvas, x, 0, column + 2, height, x, 0, column + 2, height);
-    ctx.restore();
-  }
+  ctx.translate(-sprite.pivot.x, -sprite.pivot.y);
+  ctx.drawImage(sprite.canvas, 0, 0);
   ctx.restore();
 }
 
@@ -140,32 +128,6 @@ function screenOf(dist: number, bodyDist: number, body: { height: number; latera
     ...here,
     slope: Math.atan2(ahead.y - here.y, ahead.x - here.x),
   };
-}
-
-function drawRock(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  size: number,
-  seed: number,
-) {
-  const sides = 5 + Math.floor(seed * 3);
-  ctx.beginPath();
-  for (let i = 0; i < sides; i++) {
-    const a = (i / sides) * Math.PI * 2 - 0.5;
-    const jag = 0.62 + (Math.sin(seed * 40 + i * 2.3) * 0.5 + 0.5) * 0.5;
-    const px = x + Math.cos(a) * size * jag;
-    const py = y + Math.sin(a) * size * jag * 0.7;
-    if (i === 0) ctx.moveTo(px, py);
-    else ctx.lineTo(px, py);
-  }
-  ctx.closePath();
-  const shade = Math.floor(70 + seed * 55);
-  ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
-  ctx.fill();
-  ctx.strokeStyle = `rgb(${Math.min(210, shade + 70)},${Math.min(210, shade + 70)},${Math.min(210, shade + 70)})`;
-  ctx.lineWidth = 1.4;
-  ctx.stroke();
 }
 
 function drawTrail(ctx: CanvasRenderingContext2D, bodyDist: number) {
@@ -197,20 +159,6 @@ function drawTrail(ctx: CanvasRenderingContext2D, bodyDist: number) {
   ctx.strokeStyle = "#c8c8c8";
   ctx.lineWidth = 2.5;
   ctx.stroke();
-
-  const rocks = trailRocks(from, to);
-  for (const rock of rocks) {
-    const here = trailSample(rock.dist);
-    const ahead = trailSample(rock.dist + 10);
-    const tx = 10 + (ahead.lateral - here.lateral);
-    const ty = ahead.height - here.height;
-    const len = Math.hypot(tx, ty) || 1;
-    const nx = -ty / len;
-    const ny = tx / len;
-    const off = rock.side * (16 + rock.size * 0.85);
-    const at = screenOf(rock.dist, bodyDist, body);
-    drawRock(ctx, at.x + nx * off, at.y + ny * off + rock.size * 0.15, rock.size, rock.seed);
-  }
 }
 
 function paint(ctx: CanvasRenderingContext2D, sprite: Sprite, elapsedSec: number) {
@@ -224,14 +172,15 @@ function paint(ctx: CanvasRenderingContext2D, sprite: Sprite, elapsedSec: number
   const feet = [footPose(phase), footPose(phase + 0.5)].sort((a, b) => b.y - a.y || a.x - b.x);
   for (const foot of feet) {
     const placed = screenOf(bodyDist + foot.x, bodyDist, body);
-    const slope = foot.y > 24 ? placed.slope * 0.35 : placed.slope;
+    // Follow the hill gently — full slope tips the silhouette into the trail.
+    const slope = foot.y > 18 ? placed.slope * 0.15 : placed.slope * 0.4;
     drawShoe(ctx, sprite, placed.x, placed.y, foot, slope);
   }
 }
 
 /**
- * Slow trail run of the wireframe Dragonfly pair.
- * The shoes flex at the toe and follow a path that hills and cuts.
+ * Athletic trail run of the wireframe Dragonfly pair.
+ * Rigid shoes follow a curvy hilled path — no rocks, no bent toes.
  */
 export default function DragonflySprint() {
   const ref = useRef<HTMLCanvasElement>(null);
