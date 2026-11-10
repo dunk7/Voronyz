@@ -1,8 +1,7 @@
 /**
- * Ghost Dragonfly pair on a rocky trail.
- * The stride is slow enough to read. Each shoe folds at the ball of the foot
- * instead of rotating as one stiff shape. The trail climbs, drops, and cuts
- * left and right; a planted shoe stays on the same rock while the body moves on.
+ * Ghost Dragonfly pair on a hilled trail.
+ * Rigid shoes (no toe fold) run an athletic stride. The trail climbs, drops,
+ * and cuts left and right; a planted shoe stays planted while the body moves on.
  */
 
 export const SPRINT_DESIGN_W = 1440;
@@ -11,32 +10,29 @@ export const SPRINT_DESIGN_H = 820;
 export const SPRINT_GROUND_Y = 530;
 /** Drawn shoe size relative to the outline artwork. */
 export const SPRINT_SHOE_SCALE = 0.32;
-/** Fraction of the stride a foot stays on the trail. Below half, so both feet leave the ground. */
-export const SPRINT_STANCE = 0.28;
-/** How far the forefoot travels along the trail during contact, in design pixels. */
-export const SPRINT_STRIDE = 420;
-/** Peak height of the forefoot in the air. */
-export const SPRINT_LIFT = 132;
 /**
- * Full strides per second. Slow on purpose — the old loop was a sprint blur.
- * One stride here lasts a little over two seconds.
+ * Lift the contact point so soles sit on the top of the trail stroke
+ * instead of sinking through its thickness (gray stroke is ~16px).
  */
-export const SPRINT_STRIDES_PER_SEC = 0.42;
+export const SPRINT_TRAIL_TOP = 14;
+/** Fraction of the stride a foot stays on the trail. Below half, so both feet leave the ground. */
+export const SPRINT_STANCE = 0.3;
+/** How far the forefoot travels along the trail during contact, in design pixels. */
+export const SPRINT_STRIDE = 400;
+/** Peak height of the forefoot in the air. */
+export const SPRINT_LIFT = 128;
+/** Full strides per second — athletic jog pace, readable on the poster. */
+export const SPRINT_STRIDES_PER_SEC = 1.1;
 
 const REACH = SPRINT_STRIDE / 2;
 
 export type FootPose = {
   /** Forefoot position along the trail, relative to the runner. Positive is forward. */
   x: number;
-  /** Forefoot height above the trail. */
+  /** Forefoot height above the trail. Never negative — the sole stays on or above the line. */
   y: number;
-  /** Clockwise degrees of the heel. Positive lifts the heel. */
+  /** Clockwise degrees of the whole shoe. Positive lifts the heel. Kept mild so toes stay level. */
   rot: number;
-  /**
-   * Extra clockwise degrees at the toe, blended from the ball forward.
-   * Negative folds the toe up so the shoe bends instead of staying straight.
-   */
-  bend: number;
   /** Vertical scale at impact. 1 at the loop seam. */
   squash: number;
 };
@@ -75,43 +71,43 @@ export function footPose(phase: number): FootPose {
   if (p < SPRINT_STANCE) {
     const u = p / SPRINT_STANCE;
     let squash = 1;
-    if (u < 0.12) squash = lerp(1, 0.84, u / 0.12);
-    else if (u < 0.4) squash = lerp(0.84, 1, (u - 0.12) / 0.28);
-    const rot = lerp(2, 34, u ** 1.25);
+    if (u < 0.1) squash = lerp(1, 0.92, u / 0.1);
+    else if (u < 0.35) squash = lerp(0.92, 1, (u - 0.1) / 0.25);
+    // Flat land, then a mild heel-up push. No toe-down angles — those tip the front up.
+    const rot = keyed(u, [
+      [0, 2],
+      [0.25, 0],
+      [0.6, 6],
+      [1, 12],
+    ]);
     return {
       x: REACH - SPRINT_STRIDE * u,
       y: 0,
       rot,
-      // Heel rises, toe stays nearer the ground: the shoe folds at the ball.
-      bend: lerp(-4, -42, u ** 1.1),
       squash,
     };
   }
 
   const u = (p - SPRINT_STANCE) / (1 - SPRINT_STANCE);
-  const whip = smoother(clamp((u - 0.08) / 0.8, 0, 1));
+  const whip = smoother(clamp((u - 0.05) / 0.76, 0, 1));
   const rise =
-    u < 0.3
-      ? Math.sin((u / 0.3) * Math.PI / 2)
-      : Math.cos(clamp((u - 0.3) / 0.7, 0, 1) * Math.PI / 2);
+    u < 0.26
+      ? Math.sin((u / 0.26) * (Math.PI / 2))
+      : Math.cos(clamp((u - 0.26) / 0.74, 0, 1) * (Math.PI / 2));
 
+  const height = SPRINT_LIFT * rise;
   return {
     x: REACH - SPRINT_STRIDE + SPRINT_STRIDE * whip,
-    y: SPRINT_LIFT * rise,
+    // Snap float dust at toe-off / land so the sole never reads as below the line.
+    y: height < 0.05 ? 0 : height,
+    // Keep the shoe nearly level in the air — athletic recovery, not a tipped toe.
     rot: keyed(u, [
-      [0, 34],
-      [0.22, 14],
-      [0.46, -2],
-      [0.7, -16],
-      [0.88, -4],
+      [0, 12],
+      [0.2, 6],
+      [0.45, 1],
+      [0.7, 0],
+      [0.88, 1],
       [1, 2],
-    ]),
-    bend: keyed(u, [
-      [0, -42],
-      [0.28, -22],
-      [0.62, -16],
-      [0.84, -8],
-      [1, -4],
     ]),
     squash: 1,
   };
@@ -147,39 +143,4 @@ export function trailSample(distance: number): TrailSample {
     lateral,
     slope: Math.atan2(dh, 1),
   };
-}
-
-export type TrailRock = {
-  dist: number;
-  /** -1 to 1, across the trail. Near 0 sits on the path they run. */
-  side: number;
-  size: number;
-  seed: number;
-};
-
-function hash(n: number) {
-  const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
-  return x - Math.floor(x);
-}
-
-/** Rocks along a stretch of trail. Same distance always returns the same stones. */
-export function trailRocks(from: number, to: number): TrailRock[] {
-  const rocks: TrailRock[] = [];
-  const start = Math.floor(from / 96) - 1;
-  const end = Math.ceil(to / 96) + 1;
-  for (let i = start; i <= end; i++) {
-    const seed = hash(i + 2);
-    const dist = i * 96 + hash(i + 11) * 42;
-    if (dist < from || dist > to) continue;
-    const onPath = hash(i + 5) > 0.62;
-    const side = onPath ? (hash(i + 19) - 0.5) * 0.35 : (hash(i + 19) - 0.5) * 2;
-    const boulder = hash(i + 8) < 0.18;
-    rocks.push({
-      dist,
-      side,
-      size: (boulder ? 22 : 8) + seed * (boulder ? 20 : 14),
-      seed,
-    });
-  }
-  return rocks;
 }
