@@ -39,18 +39,31 @@ function HomeSlide() {
 export default function Home() {
   return (
     <div className="relative">
-      <section className="hero-stage relative overflow-hidden bg-black">
-        <div className="relative z-[1] mx-auto max-w-7xl px-4 pb-10 pt-6 sm:px-6 sm:pb-12 sm:pt-8 lg:px-8">
-          <FootGlowSection hero />
+      <section className="hero-stage hero-paper relative overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element -- full-bleed paper plane */}
+        <img
+          src="/graphics/crinkled-poster.jpg"
+          alt=""
+          aria-hidden
+          className="hero-paper-sheet"
+        />
+        <div className="relative z-[1] mx-auto flex w-full max-w-7xl flex-col px-4 pb-12 pt-8 sm:px-6 sm:pb-16 sm:pt-10 lg:px-8">
+          <div className="mx-auto w-full max-w-3xl sm:max-w-4xl md:max-w-5xl">
+            <FootGlowSection hero />
+          </div>
 
-          <div className="mx-auto mt-8 w-full max-w-xl space-y-3 sm:mt-10 sm:space-y-4">
-            <p className="uppercase tracking-[0.18em] text-[11px] sm:text-xs font-medium text-neutral-300">
+          <div className="mt-8 w-full max-w-xl space-y-3 sm:mt-10 sm:space-y-4">
+            <p className="hero-paper-kicker uppercase tracking-[0.18em] text-[11px] sm:text-xs font-medium">
               Voronyz Engineering
             </p>
 
-            <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-semibold leading-[1.08] sm:leading-[1.1] tracking-tight text-white">
+            <h1 className="hero-paper-title text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-semibold leading-[1.08] sm:leading-[1.1] tracking-tight">
               3D Printed<br className="hidden sm:block" /> Footwear
             </h1>
+
+            <p className="hero-paper-support text-base leading-relaxed sm:text-lg">
+              Shaped around your foot.
+            </p>
           </div>
         </div>
       </section>

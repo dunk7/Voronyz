@@ -139,11 +139,59 @@ video {
 }
 
 /*
-  Homepage hero: solid black behind the GIF so the white headline stays
-  readable. Shop panels use the hex honeycomb.
+  Homepage hero: solid black by default. The top stage (.hero-paper) is a
+  full-bleed crinkled black poster sheet. Shop panels use the hex honeycomb.
 */
 .hero-stage {
   background-color: #000;
+}
+
+.hero-paper {
+  background-color: #050505;
+  min-height: min(92svh, 56rem);
+}
+
+.hero-paper-sheet {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 28%;
+  pointer-events: none;
+  user-select: none;
+  filter: contrast(1.5) brightness(1.55) saturate(0.85);
+}
+
+.hero-paper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgb(0 0 0 / 0.04), transparent 32%, rgb(0 0 0 / 0.16));
+}
+
+.hero-paper-kicker {
+  color: #f0f0f0;
+  text-shadow: 0 1px 12px rgb(0 0 0 / 0.55);
+}
+
+.hero-paper-title {
+  color: #fff;
+  text-shadow: 0 2px 24px rgb(0 0 0 / 0.55);
+}
+
+.hero-paper-support {
+  color: #e8e8e8;
+  text-shadow: 0 1px 14px rgb(0 0 0 / 0.5);
+}
+
+.hero-foot-glow {
+  width: 100%;
+  /* Avoid transform/filter on this wrapper — either one isolates blend
+     modes and would trap the x-ray's black canvas as a flat box. */
 }
 
 .bg-texture-white {
@@ -689,22 +737,20 @@ html.site-dark ::selection {
 }
 
 .foot-glow-hero-frame {
-  overflow: hidden;
+  overflow: visible;
+  isolation: auto;
+  background-color: transparent !important;
 }
 
+/* Punch out the PNG's black so bones float on the full-bleed paper sheet. */
 .foot-glow-hero-frame .foot-glow-layer {
-  object-fit: cover;
-  object-position: center top;
-  /*
-    The x-ray PNG has ~8.3% empty canvas above the glow and ~7.5% below.
-    Shift and enlarge so the glow meets the header with no black strip.
-  */
-  inset: auto;
-  left: 0;
-  right: 0;
-  top: -10%;
-  width: 100%;
-  height: 120%;
+  object-fit: contain;
+  object-position: center center;
+  mix-blend-mode: screen;
+}
+
+.foot-glow-hero-frame .foot-glow-hatch {
+  mix-blend-mode: screen;
 }
 
 .foot-glow-print-frame {

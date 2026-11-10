@@ -28,6 +28,17 @@ test("homepage hero stage stays black and does not reuse the shop hex tile", () 
   assert.match(hero[0], /background-color:\s*#000/);
 });
 
+test("top hero fills the viewport with clearly crinkled black paper", () => {
+  assert.match(home, /hero-paper/);
+  assert.match(home, /hero-paper-sheet/);
+  assert.match(home, /crinkled-poster\.jpg/);
+  const sheet = css.match(/\.hero-paper-sheet \{[\s\S]*?\n\}/);
+  assert.ok(sheet, "expected a full-bleed paper sheet on the top hero");
+  assert.match(sheet[0], /object-fit:\s*cover/);
+  assert.match(home, /max-w-5xl/);
+  assert.doesNotMatch(home, /glow-poster-compact/);
+});
+
 test("shop hex tiles stay static and are not pointer-driven", () => {
   const shopMesh = css.match(/\.bg-texture-white::before \{[\s\S]*?\n\}/);
   assert.ok(shopMesh, "expected a hex overlay on shop panels");
@@ -61,4 +72,5 @@ test("hero stage has no colorful Voronoi topology behind the GIF", () => {
   assert.ok(hero, "expected a homepage hero stage");
   assert.match(hero[0], /background-color:\s*#000/);
   assert.doesNotMatch(hero[0], /background-image/);
+  assert.doesNotMatch(css, /\.hero-paper::before \{[\s\S]*?#ff4d6d/);
 });

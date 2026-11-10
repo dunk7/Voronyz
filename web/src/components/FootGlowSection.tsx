@@ -9,7 +9,7 @@ type FootGlowSectionProps = {
    * Homepage keeps the foot x-ray. All Footwear uses a separate lattice-shoe outline.
    */
   variant?: "xray" | "print";
-  /** Homepage hero. The x-ray sits on a small crinkled poster. */
+  /** Homepage hero. Dominant foot glow on the full-bleed paper stage. */
   hero?: boolean;
   /** Sits under the poster, left-aligned, so it never covers the artwork. */
   caption?: ReactNode;
@@ -58,9 +58,9 @@ export default function FootGlowSection({
 }: FootGlowSectionProps) {
   const xray = (
         <div
-          className={`foot-glow-frame relative aspect-[2000/1399] w-full bg-black ${
-            poster ? "foot-glow-poster-frame" : ""
-          }`}
+          className={`foot-glow-frame relative aspect-[2000/1399] w-full ${
+            hero ? "foot-glow-hero-frame" : "bg-black"
+          } ${poster ? "foot-glow-poster-frame" : ""}`}
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- keep the uploaded PNG bytes, no optimizer */}
           <img
@@ -86,8 +86,8 @@ export default function FootGlowSection({
 
   if (hero) {
     return (
-      <div className={`bg-black ${className}`}>
-        <GlowPoster compact>{xray}</GlowPoster>
+      <div aria-hidden className={`hero-foot-glow ${className}`}>
+        {xray}
       </div>
     );
   }
