@@ -4,7 +4,7 @@ export const PEPPERMINT_MIST_SLUG = "aine-fern-peppermint-freshening-mist";
 export const PEPPERMINT_MIST_NAME = "Peppermint Freshening Mist";
 export const PEPPERMINT_MIST_PRICE_CENTS = 2000; // $20
 export const PEPPERMINT_MIST_THUMBNAIL_URL =
-  "/products/aine-fern-peppermint-freshening-mist/peppermint-freshening-mist.jpg";
+  "/products/aine-fern-peppermint-freshening-mist/peppermint-freshening-mist-front.jpg";
 
 export const PEPPERMINT_MIST_DESCRIPTION_SHORT =
   "Bright minty freshening mist with natural peppermint oil. Pairs with footwear, bags & everyday spaces. 3 FL OZ.";
@@ -23,7 +23,12 @@ export const PEPPERMINT_MIST_HOW_ITS_MADE =
 export const PEPPERMINT_MIST_META_DESCRIPTION =
   "Áine & Fern Peppermint Freshening Mist — minty spray that pairs with footwear, bags & belongings. 3 FL OZ. $20 on Voronyz Collaborative.";
 
-export const PEPPERMINT_MIST_IMAGES = [PEPPERMINT_MIST_THUMBNAIL_URL] as const;
+/** Front → side → back; thumbnail is front only (not the old 3-up mock). */
+export const PEPPERMINT_MIST_IMAGES = [
+  PEPPERMINT_MIST_THUMBNAIL_URL,
+  "/products/aine-fern-peppermint-freshening-mist/peppermint-freshening-mist-side.jpg",
+  "/products/aine-fern-peppermint-freshening-mist/peppermint-freshening-mist-back.jpg",
+] as const;
 
 export const PEPPERMINT_MIST_PRIMARY_COLORS = ["peppermint"] as const;
 
