@@ -95,11 +95,11 @@ function drawShoe(
 ) {
   const rotDeg = foot.rot + (slopeRad * 180) / Math.PI;
   const lift = Math.max(0, foot.y);
-  // Only plant-correct while on the trail. In the air, skip dip so the toe
-  // does not get levered upward to keep a rear sole pixel from sinking.
-  const dip = lift < 4 ? soleDip(sprite, rotDeg, foot.squash) : 0;
   // Contact sits on the top of the trail stroke, never through it.
   const groundY = contactY - SPRINT_TRAIL_TOP;
+  // Only plant-correct while on the trail. In the air, skip so the toe
+  // does not get levered upward to keep a rear sole pixel from sinking.
+  const dip = lift < 4 ? soleDip(sprite, rotDeg, foot.squash) : 0;
   ctx.save();
   // Pivot lands on the contact point, then the shoe rotates around it.
   ctx.translate(contactX, groundY - lift - dip);
@@ -173,7 +173,7 @@ function paint(ctx: CanvasRenderingContext2D, sprite: Sprite, elapsedSec: number
   for (const foot of feet) {
     const placed = screenOf(bodyDist + foot.x, bodyDist, body);
     // Follow the hill gently — full slope tips the silhouette into the trail.
-    const slope = foot.y > 18 ? placed.slope * 0.2 : placed.slope * 0.55;
+    const slope = foot.y > 18 ? placed.slope * 0.15 : placed.slope * 0.4;
     drawShoe(ctx, sprite, placed.x, placed.y, foot, slope);
   }
 }

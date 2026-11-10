@@ -14,7 +14,7 @@ export const SPRINT_SHOE_SCALE = 0.32;
  * Lift the contact point so soles sit on the top of the trail stroke
  * instead of sinking through its thickness (gray stroke is ~16px).
  */
-export const SPRINT_TRAIL_TOP = 14;
+export const SPRINT_TRAIL_TOP = 12;
 /** Fraction of the stride a foot stays on the trail. Below half, so both feet leave the ground. */
 export const SPRINT_STANCE = 0.3;
 /** How far the forefoot travels along the trail during contact, in design pixels. */
