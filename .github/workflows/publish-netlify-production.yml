@@ -1,4 +1,5 @@
 # Starts a production build of the current main branch on Netlify.
+# Last production ship: glow poster caption (shaped around your foot).
 # GitHub webhooks have not been enqueueing production deploys.
 name: Publish Netlify production
 
