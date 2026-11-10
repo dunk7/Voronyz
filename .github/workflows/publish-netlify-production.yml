@@ -1,6 +1,10 @@
 # Starts a production build of the current main branch on Netlify.
-# Last production ship: void duplicate bottom Footwear; Footwear done properly last.
-# GitHub webhooks have not been enqueueing production deploys.
+# GitHub webhooks have not been enqueueing production deploys, so this
+# workflow is the fallback that publishes main via the Netlify Builds API.
+# Last production ship pending: void duplicate bottom Footwear (on main, needs deploy).
+#
+# One-time setup: add a Netlify personal access token as the repository secret
+# NETLIFY_AUTH_TOKEN (https://app.netlify.com/user/applications#personal-access-tokens)
 name: Publish Netlify production
 
 on:
@@ -8,8 +12,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - ".github/workflows/publish-netlify-production.yml"
 
 env:
   NETLIFY_SITE_ID: cd229aa6-16ce-4912-8da2-39b756823133
@@ -19,10 +21,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Require Netlify token
-        if: ${{ secrets.NETLIFY_AUTH_TOKEN == '' }}
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         run: |
-          echo "::error::NETLIFY_AUTH_TOKEN is not configured."
-          exit 1
+          if [ -z "${NETLIFY_AUTH_TOKEN}" ]; then
+            echo "::error::NETLIFY_AUTH_TOKEN is not configured."
+            echo "Add it under GitHub → Settings → Secrets and variables → Actions,"
+            echo "then re-run this workflow (or push to main)."
+            echo "Create a token at https://app.netlify.com/user/applications#personal-access-tokens"
+            echo "Or trigger Deploy site for main in the Netlify UI:"
+            echo "https://app.netlify.com/projects/voronyz/deploys"
+            exit 1
+          fi
 
       - name: Start production build and wait until it is ready
         env:
@@ -31,7 +41,7 @@ jobs:
           set -euo pipefail
           auth=(-H "Authorization: Bearer ${NETLIFY_AUTH_TOKEN}" -H "Content-Type: application/json")
           response=$(curl -fsS -X POST "${auth[@]}" \
-            -d '{}' \
+            -d '{"clear_cache":true}' \
             "https://api.netlify.com/api/v1/sites/${NETLIFY_SITE_ID}/builds")
           id=$(echo "$response" | jq -r '.id')
           echo "Deploy ${id} state=$(echo "$response" | jq -r '.state') context=$(echo "$response" | jq -r '.context')"
@@ -41,6 +51,7 @@ jobs:
               | jq -r '.state')
             echo "Attempt ${attempt}: ${state}"
             if [ "$state" = "ready" ]; then
+              echo "Production deploy is ready."
               exit 0
             fi
             if [ "$state" = "error" ]; then
