@@ -32,10 +32,14 @@ test("top hero fills the viewport with clearly crinkled black paper", () => {
   assert.match(home, /hero-paper/);
   assert.match(home, /hero-paper-sheet/);
   assert.match(home, /crinkled-poster\.jpg/);
+  const paper = css.match(/\.hero-paper \{[\s\S]*?\n\}/);
+  assert.ok(paper, "expected a full-bleed paper stage on the top hero");
+  assert.match(paper[0], /background-image:\s*url\("\/graphics\/crinkled-poster\.jpg"\)/);
+  assert.match(paper[0], /background-size:\s*cover/);
   const sheet = css.match(/\.hero-paper-sheet \{[\s\S]*?\n\}/);
   assert.ok(sheet, "expected a full-bleed paper sheet on the top hero");
   assert.match(sheet[0], /object-fit:\s*cover/);
-  assert.match(home, /max-w-5xl/);
+  assert.match(home, /max-w-7xl/);
   assert.doesNotMatch(home, /glow-poster-compact/);
 });
 

@@ -47,12 +47,12 @@ export default function Home() {
           aria-hidden
           className="hero-paper-sheet"
         />
-        <div className="relative z-[1] mx-auto flex w-full max-w-7xl flex-col px-4 pb-12 pt-8 sm:px-6 sm:pb-16 sm:pt-10 lg:px-8">
-          <div className="mx-auto w-full max-w-3xl sm:max-w-4xl md:max-w-5xl">
+        <div className="relative mx-auto flex min-h-[inherit] w-full max-w-[90rem] flex-col justify-end px-4 pb-10 pt-6 sm:px-6 sm:pb-14 sm:pt-8 lg:px-10">
+          <div className="mx-auto w-full max-w-6xl md:max-w-7xl">
             <FootGlowSection hero />
           </div>
 
-          <div className="mt-8 w-full max-w-xl space-y-3 sm:mt-10 sm:space-y-4">
+          <div className="mt-6 w-full max-w-2xl space-y-3 sm:mt-8 sm:space-y-4">
             <p className="hero-paper-kicker uppercase tracking-[0.18em] text-[11px] sm:text-xs font-medium">
               Voronyz Engineering
             </p>

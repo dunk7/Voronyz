@@ -147,30 +147,25 @@ video {
 }
 
 .hero-paper {
-  background-color: #050505;
-  min-height: min(92svh, 56rem);
+  /* Fallback + belt: paper is the stage itself, not a inset card on flat black. */
+  background-color: #0a0a0a;
+  background-image: url("/graphics/crinkled-poster.jpg");
+  background-size: cover;
+  background-position: center 28%;
+  background-repeat: no-repeat;
+  min-height: min(94svh, 58rem);
 }
 
 .hero-paper-sheet {
   position: absolute;
   inset: 0;
-  z-index: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center 28%;
   pointer-events: none;
   user-select: none;
-  filter: contrast(1.5) brightness(1.55) saturate(0.85);
-}
-
-.hero-paper::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgb(0 0 0 / 0.04), transparent 32%, rgb(0 0 0 / 0.16));
+  /* Asset is already contrast-lifted; no filter — filters create isolation groups. */
 }
 
 .hero-paper-kicker {
@@ -190,8 +185,7 @@ video {
 
 .hero-foot-glow {
   width: 100%;
-  /* Avoid transform/filter on this wrapper — either one isolates blend
-     modes and would trap the x-ray's black canvas as a flat box. */
+  /* Dominant hero mark — fills the paper stage, not a postage stamp. */
 }
 
 .bg-texture-white {
@@ -742,15 +736,16 @@ html.site-dark ::selection {
   background-color: transparent !important;
 }
 
-/* Punch out the PNG's black so bones float on the full-bleed paper sheet. */
+/* Transparent glow PNGs — paper shows through; no mix-blend stacking traps. */
 .foot-glow-hero-frame .foot-glow-layer {
   object-fit: contain;
   object-position: center center;
-  mix-blend-mode: screen;
+  mix-blend-mode: normal;
 }
 
 .foot-glow-hero-frame .foot-glow-hatch {
   mix-blend-mode: screen;
+  opacity: 0.9;
 }
 
 .foot-glow-print-frame {
