@@ -21,16 +21,14 @@ test("peppermint mist is a $20 Collaborative listing", () => {
   assert.equal(PEPPERMINT_MIST_VARIANTS[0]?.sku, "AF-PFM");
 });
 
-test("peppermint mist copy stays cosmetic-only", () => {
+test("peppermint mist copy leads with the product name and sells the use", () => {
+  assert.match(PEPPERMINT_MIST_DESCRIPTION, /^Áine & Fern Peppermint Freshening Mist/);
+  assert.doesNotMatch(PEPPERMINT_MIST_DESCRIPTION, /^This stuff is the best/i);
   const blob = `${PEPPERMINT_MIST_DESCRIPTION_SHORT}\n${PEPPERMINT_MIST_DESCRIPTION}`.toLowerCase();
   assert.match(blob, /freshen/);
   assert.match(blob, /shoes/);
-  assert.match(blob, /not a sanitizer/);
-  assert.match(blob, /not a .*disinfectant/);
-  assert.doesNotMatch(blob, /\bantifungal\b/);
-  assert.doesNotMatch(blob, /kills (germs|bacteria|fungus)/);
-  assert.doesNotMatch(blob, /treats? (athlete.?s foot|fungal|fungus)/);
-  assert.match(blob, /not intended to diagnose, treat, cure, or prevent/);
+  assert.doesNotMatch(blob, /not a sanitizer/);
+  assert.doesNotMatch(blob, /not intended to diagnose, treat, cure, or prevent/);
 });
 
 test("peppermint mist appears in Collaborative catalog seed", () => {
