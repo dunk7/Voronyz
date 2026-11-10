@@ -9,17 +9,11 @@ export const PEPPERMINT_MIST_THUMBNAIL_URL =
 export const PEPPERMINT_MIST_DESCRIPTION_SHORT =
   "Áine & Fern peppermint freshening mist — bright minty scent for shoes, gym bags, body & everyday spaces. 3 FL OZ.";
 
-/**
- * Cosmetic freshening copy only.
- * Avoids sanitizer / disinfectant / antifungal / “kills germs” claims that can
- * trigger FDA OTC drug requirements (cosmetic vs drug is driven by intended use).
- */
+/** Sales-focused listing copy — bottle label covers directions, cautions, and ingredients. */
 export const PEPPERMINT_MIST_DESCRIPTION =
-  "This stuff is the best. Áine & Fern Peppermint Freshening Mist is a bright, minty everyday spray with natural peppermint essential oil — made for body, belongings, and the spaces you live in.\n\n" +
-  "It especially shines on footwear. Lightly mist the insides of shoes, sneakers, slides, and gym shoes when they need a fresh, minty reset after long days, workouts, or travel. Same go-to energy for gym bags, backpacks, luggage, clothing, washable fabric car mats, and other compatible fabrics — at home, in the car, or on the go.\n\n" +
-  "Shake well before each use. Lightly mist as needed and allow to dry. Spot-test a small area of skin and an inconspicuous area of fabric before first use. Use only on compatible materials.\n\n" +
-  "Ingredients: Alcohol, Water, Peppermint Oil. Size: 3 FL OZ (89 mL).\n\n" +
-  "This is a freshening mist for scent and everyday freshness — not a sanitizer, disinfectant, or medicine. It is not intended to diagnose, treat, cure, or prevent fungal infections, athlete’s foot, or any disease.";
+  "Áine & Fern Peppermint Freshening Mist is a bright, minty everyday spray with natural peppermint essential oil — made for body, belongings, and the spaces you live in.\n\n" +
+  "It especially shines on footwear. Mist the insides of shoes, sneakers, slides, and gym shoes when they need a fresh, minty reset after long days, workouts, or travel. Same go-to energy for gym bags, backpacks, luggage, clothing, washable fabric car mats, and other compatible fabrics — at home, in the car, or on the go.\n\n" +
+  "3 FL OZ (89 mL) of clean peppermint freshness you can throw in a bag and use anywhere. Grab one and keep every pair smelling right.";
 
 export const PEPPERMINT_MIST_HOW_ITS_MADE =
   "Áine & Fern collab on Voronyz. A simple peppermint freshening mist — alcohol, water, and peppermint oil in a 3 FL OZ (89 mL) spray. Shake, mist, freshen shoes and everyday gear.";

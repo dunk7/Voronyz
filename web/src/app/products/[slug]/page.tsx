@@ -668,9 +668,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "When will it restock?", a: "We're restocking the next batch soon. Check back on Collaborative." },
             ] : isPeppermintMist ? [
               { q: "What is it?", a: "Áine & Fern Peppermint Freshening Mist — a bright minty spray with natural peppermint essential oil for body, belongings, and everyday spaces." },
-              { q: "Is it good for shoes?", a: "Yes — lightly mist the insides of shoes, sneakers, slides, and gym shoes for a fresh minty scent. Also great on gym bags, backpacks, luggage, and compatible fabrics. Spot-test first." },
-              { q: "Is this a sanitizer?", a: "No. This is a freshening mist for scent and everyday freshness — not a sanitizer, disinfectant, or medicine, and not intended to diagnose, treat, cure, or prevent fungal infections or any disease." },
-              { q: "How do I use it?", a: "Shake well, lightly mist as needed, and allow to dry. Test a small area of skin and an inconspicuous area of fabric before first use. External use only." },
+              { q: "Is it good for shoes?", a: "Yes — mist the insides of shoes, sneakers, slides, and gym shoes for a fresh minty scent. Also great on gym bags, backpacks, luggage, and compatible fabrics." },
               { q: "How much does it cost?", a: "$20 for a 3 FL OZ (89 mL) bottle." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : apparelItem?.slug === "voronyz-stickers" ? [
