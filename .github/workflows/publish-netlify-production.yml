@@ -1,0 +1,52 @@
+# Starts a production build of the current main branch on Netlify.
+# GitHub webhooks have not been enqueueing production deploys.
+name: Publish Netlify production
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/publish-netlify-production.yml"
+
+env:
+  NETLIFY_SITE_ID: cd229aa6-16ce-4912-8da2-39b756823133
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require Netlify token
+        if: ${{ secrets.NETLIFY_AUTH_TOKEN == '' }}
+        run: |
+          echo "::error::NETLIFY_AUTH_TOKEN is not configured."
+          exit 1
+
+      - name: Start production build and wait until it is ready
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: |
+          set -euo pipefail
+          auth=(-H "Authorization: Bearer ${NETLIFY_AUTH_TOKEN}" -H "Content-Type: application/json")
+          response=$(curl -fsS -X POST "${auth[@]}" \
+            -d '{}' \
+            "https://api.netlify.com/api/v1/sites/${NETLIFY_SITE_ID}/builds")
+          id=$(echo "$response" | jq -r '.id')
+          echo "Deploy ${id} state=$(echo "$response" | jq -r '.state') context=$(echo "$response" | jq -r '.context')"
+          for attempt in $(seq 1 60); do
+            state=$(curl -fsS "${auth[@]}" \
+              "https://api.netlify.com/api/v1/sites/${NETLIFY_SITE_ID}/deploys/${id}" \
+              | jq -r '.state')
+            echo "Attempt ${attempt}: ${state}"
+            if [ "$state" = "ready" ]; then
+              exit 0
+            fi
+            if [ "$state" = "error" ]; then
+              echo "::error::Netlify deploy failed."
+              exit 1
+            fi
+            sleep 15
+          done
+          echo "::error::Timed out waiting for Netlify."
+          exit 1
