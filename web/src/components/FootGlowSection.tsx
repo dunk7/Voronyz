@@ -19,7 +19,7 @@ type FootGlowSectionProps = {
 const XRAY_SRC = "/graphics/foot-xray.png";
 const HATCH_SRC = "/graphics/foot-hatch.png";
 const PAPER_SRC = "/graphics/crinkled-poster.jpg";
-const POSTER_LINE = "Footwear shaped around your foot.";
+const POSTER_LINE = "Shaped around your foot.";
 
 function GlowPoster({
   children,
