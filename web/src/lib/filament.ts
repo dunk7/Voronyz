@@ -3,9 +3,11 @@ import { getStlFilesCatalogProduct } from "@/lib/stlFiles";
 
 export const FILAMENT_SLUG = "tpu-90a-filament";
 export const FILAMENT_NAME = "Filament";
-export const FILAMENT_PRICE_CENTS = 3000; // $30 — black TPU 90A, TPU Air, and PLA
+export const FILAMENT_PRICE_CENTS = 3000; // $30 — black / tan TPU 90A
 /** Pink TPU 90A is the lower price. */
 export const FILAMENT_PINK_PRICE_CENTS = 2000;
+/** Foaming TPU Air — $50 when in stock. */
+export const FILAMENT_AIR_PRICE_CENTS = 5000;
 /** Shown only on the filament product page — crossed out next to the sale price. */
 export const FILAMENT_COMPARE_AT_CENTS = 20000;
 /** Checkout-only via code Young — do not show on PDP/marketing. */
@@ -16,10 +18,10 @@ export const FILAMENT_THUMBNAIL_URL =
   "/products/tpu-90a-filament/tpu90a-black-side.jpg";
 
 export const FILAMENT_DESCRIPTION_SHORT =
-  "1kg spools of TPU 90A, foaming TPU Air, and rigid PLA. Free US shipping.";
+  "1kg spools of TPU 90A (pink, tan, black), foaming TPU Air, and rigid PLA. Free US shipping.";
 
 export const FILAMENT_DESCRIPTION =
-  "One listing, three materials. TPU 90A stays flexible at a fixed 90 Shore A and prints footwear great — not only TPU Air makes shoes. TPU Air foams as the nozzle gets hotter, so the part gets lighter and softer (sold out). PLA stays rigid, holds detail, and prints faster. Each spool is 1kg of 1.75mm. Free US shipping.";
+  "One listing, three materials. TPU 90A stays flexible at a fixed 90 Shore A and prints footwear great — not only TPU Air makes shoes. Pick pink, tan, or black. TPU Air foams as the nozzle gets hotter, so the part gets lighter and softer (sold out, $50). PLA stays rigid, holds detail, and prints faster (sold out). Each spool is 1kg of 1.75mm. Free US shipping.";
 
 export const FILAMENT_HOW_ITS_MADE =
   "TPU 90A holds a steady 90 Shore A and prints footwear great. TPU Air foams as the nozzle gets hotter. PLA stays firm and prints faster than either TPU.";
@@ -96,9 +98,9 @@ export const FILAMENT_MATERIALS = [
     id: FILAMENT_MATERIAL_AIR,
     label: "TPU Air",
     description:
-      "Foaming TPU, black only — currently sold out. Heat is the softness control: a cooler nozzle stays denser and firmer, and a hotter nozzle expands the plastic into a lighter, softer part. One kilogram prints more volume once it is foaming. 1.75mm. Free US shipping.",
+      "Foaming TPU, black only — currently sold out at $50. Heat is the softness control: a cooler nozzle stays denser and firmer, and a hotter nozzle expands the plastic into a lighter, softer part. One kilogram prints more volume once it is foaming. 1.75mm. Free US shipping.",
     summary:
-      "Foaming TPU, black only — sold out right now. A cooler nozzle stays denser and firmer, up around the low 90s A. A hotter nozzle foams the plastic, so the part gets lighter and softer, down through the 70s A.",
+      "Foaming TPU, black only — sold out right now at $50. A cooler nozzle stays denser and firmer, up around the low 90s A. A hotter nozzle foams the plastic, so the part gets lighter and softer, down through the 70s A.",
     printNotes: [
       "Nozzle 210–270°C. 260°C is a solid place to start.",
       "Bed 40–60°C. Glue stick or PEI helps it stay down.",
@@ -119,9 +121,9 @@ export const FILAMENT_MATERIALS = [
     id: FILAMENT_MATERIAL_PLA,
     label: "PLA",
     description:
-      "Rigid everyday filament. It holds fine detail, prints faster than either TPU, and stays firm — the spool for shells, jigs, and prototypes that should not flex. 1.75mm, 1kg, white. Free US shipping.",
+      "Rigid everyday filament — currently sold out. It holds fine detail, prints faster than either TPU, and stays firm — the spool for shells, jigs, and prototypes that should not flex. 1.75mm, 1kg, white. Free US shipping.",
     summary:
-      "Stiff PLA. It does not flex like TPU and it does not foam. Use it when the part should keep its shape. 1.75mm, 1kg, white.",
+      "Stiff PLA — sold out right now. It does not flex like TPU and it does not foam. Use it when the part should keep its shape. 1.75mm, 1kg, white.",
     printNotes: [
       "Nozzle 190–220°C. Start at 205°C.",
       "Bed 50–60°C. A clean PEI sheet or a glue stick is enough.",
@@ -169,12 +171,12 @@ export const FILAMENT_VARIANTS = [
     color: filamentVariantColor(FILAMENT_MATERIAL_AIR, "black"),
     sku: "TPUAIR-BLK",
     stock: 0,
-    priceCents: FILAMENT_PRICE_CENTS,
+    priceCents: FILAMENT_AIR_PRICE_CENTS,
   },
   {
     color: filamentVariantColor(FILAMENT_MATERIAL_PLA, "white"),
     sku: "PLA-WHT",
-    stock: 24,
+    stock: 0,
     priceCents: FILAMENT_PRICE_CENTS,
   },
 ] as const;

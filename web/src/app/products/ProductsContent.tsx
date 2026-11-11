@@ -362,11 +362,27 @@ export default function ProductsContent({
     return { cover, alt };
   }
 
-  /** Homepage slides/slip-ons teaser. */
-  function homeFootwearTeaserGrid() {
+  /** Shared footwear product grid — teaser at top (slides/slip-ons); full catalog near bottom. */
+  function homeFootwearTeaserGrid({
+    keyPrefix = "",
+    nameTag = "h2",
+    items = displayProducts,
+    dense = false,
+  }: {
+    keyPrefix?: string;
+    nameTag?: "h2" | "h3";
+    items?: Product[];
+    /** Wider breakpoints for the full catalog (bottom of home). */
+    dense?: boolean;
+  } = {}) {
+    const NameTag = nameTag;
     return (
-      <div className="grid grid-cols-2 gap-4 sm:gap-6">
-        {displayProducts.map((p) => {
+      <div
+        className={`grid grid-cols-2 gap-4 sm:gap-6${
+          dense ? " md:grid-cols-3 xl:grid-cols-4" : ""
+        }`}
+      >
+        {items.map((p) => {
           const slugKey = (p.slug || "").trim().toLowerCase();
           const { cover, alt } = getImages(p);
           const meta = cardMetaForSlug(slugKey);
@@ -374,7 +390,7 @@ export default function ProductsContent({
 
           return (
             <Link
-              key={p.id}
+              key={`${keyPrefix}${p.id}`}
               href={`/products/${p.slug}`}
               onClick={(e) => handleCardClick(e, p.slug)}
               className={`group block outline-none cursor-pointer transition-all duration-200 active:scale-[0.98] ${
@@ -431,9 +447,9 @@ export default function ProductsContent({
                 )}
               </div>
               <div className="mt-4 px-0.5">
-                <h2 className="text-[15px] font-semibold text-neutral-900 group-hover:text-black transition-colors line-clamp-2">
+                <NameTag className="text-[15px] font-semibold text-neutral-900 group-hover:text-black transition-colors line-clamp-2">
                   {p.name}
-                </h2>
+                </NameTag>
               </div>
             </Link>
           );
@@ -512,6 +528,33 @@ export default function ProductsContent({
       </section>
     ) : null;
 
+  /** Closing footwear section — full catalog so shoppers who skip the top teaser still see every pair. */
+  const footwearBottomSection =
+    isHomeFootwearTeaser && products.length > 0 ? (
+      <section
+        id="footwear"
+        aria-labelledby="home-footwear-bottom-heading"
+        className="mt-16 sm:mt-24 lg:mt-28"
+      >
+        <div className="mb-8 sm:mb-10 text-center">
+          <h2 id="home-footwear-bottom-heading" className={homeSectionTitleClass}>
+            Footwear
+          </h2>
+        </div>
+        {homeFootwearTeaserGrid({
+          keyPrefix: "bottom-",
+          nameTag: "h3",
+          items: products,
+          dense: true,
+        })}
+        <div className="mt-10 sm:mt-12 flex justify-center">
+          <Link href="/products" className={SHOP_ALL_CTA_CLASS}>
+            Shop all footwear
+          </Link>
+        </div>
+      </section>
+    ) : null;
+
   return (
     <div className={shellClass}>
       {useFootwearBrowse ? (
@@ -544,8 +587,8 @@ export default function ProductsContent({
             </Link>
           </div>
         ) : isHomeFootwearTeaser ? (
-          /* ── Homepage footwear teaser ── */
-          <section id="footwear" aria-label="Footwear">
+          /* ── Homepage footwear teaser (slides/slip-ons); full catalog anchors #footwear below. */
+          <section aria-label="Footwear">
             {homeFootwearTeaserGrid()}
             <div className="mt-10 sm:mt-12 flex justify-center">
               <Link href="/products" className={SHOP_ALL_CTA_CLASS}>
@@ -796,6 +839,7 @@ export default function ProductsContent({
           <>
             {advancedFootwear}
             <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
+            {footwearBottomSection}
             <HomeSecondaryLinks className="mt-12 sm:mt-16" />
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
           </>

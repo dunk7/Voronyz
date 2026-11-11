@@ -9,7 +9,7 @@ import {
 import FAQ from "@/components/FAQ";
 import Link from "next/link";
 import { Metadata } from "next";
-import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
+import { ensureCatalogProducts, ensureLatticeInsoles } from "@/lib/ensureCatalogProducts";
 import {
   MAGIKID_SHOES_COVER,
   MAGIKID_SHOES_IMAGES,
@@ -72,6 +72,7 @@ import {
   STL_FILES_THUMBNAIL_URL,
   STL_SHOE_FILES,
   stlFilesCatalogProduct,
+  stlImagesByShoe,
 } from "@/lib/stlFiles";
 import {
   LATTICE_INSOLES_DESCRIPTION,
@@ -161,6 +162,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   let product: ProductWithVariants | null = null;
   try {
     await ensureCatalogProducts();
+    // Always re-sync Lattice Insoles on its PDP so legacy APP-INSL-* stock-0
+    // rows are migrated even if the catalog ensure TTL skipped a failed run.
+    if (slug === LATTICE_INSOLES_SLUG) {
+      await ensureLatticeInsoles();
+    }
     product = await prisma.product.findUnique({ 
       where: { slug }, 
       include: { 
@@ -464,7 +470,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         {/* Gallery-first retail layout: large photos lead, buy box sits beside */}
         <PdpGalleryBuyBox
           media={galleryMedia}
-          colorImages={isFilament ? filamentImagesByVariant() : apparelColorImages}
+          colorImages={
+            isFilament
+              ? filamentImagesByVariant()
+              : isStlFiles
+                ? stlImagesByShoe()
+                : apparelColorImages
+          }
           leadWhiteSlipOns={isSlipOns}
           fit={isFootwearSlug(slug) || isPeppermintMist || isStlFiles || isFilament ? "contain" : "cover"}
           galleryClassName="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
@@ -544,7 +556,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             productName: displayName,
             coverImage: (images[0] as string) || defaultImages[0],
             productSlug: slug,
-            allowOutOfStockColorPreview: isSlipOns,
+            allowOutOfStockColorPreview: isSlipOns || isStlFiles,
           }}
           footer={
             <div className="flex items-center gap-4 text-xs text-neutral-500">

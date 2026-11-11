@@ -60,7 +60,7 @@ export type FootwearCatalogItem = {
 
 /**
  * Display order for All Footwear:
- * Slides → Slip Ons → Sneakers (Dragonfly) → Magikid → Lattice Insoles → Gators.
+ * Slides → Slip Ons → Sneakers (Dragonfly) → Lattice Insoles → Magikid → Gators.
  * Gators stay last while they still use a coming-soon placeholder image.
  */
 export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
@@ -118,18 +118,18 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     ],
   },
   {
-    slug: "magikid-shoes",
-    name: "Magikid Shoes",
-    description: MAGIKID_SHOES_DESCRIPTION_SHORT,
-    priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
-    images: [...MAGIKID_SHOES_IMAGES],
-  },
-  {
     slug: LATTICE_INSOLES_SLUG,
     name: LATTICE_INSOLES_NAME,
     description: LATTICE_INSOLES_DESCRIPTION_SHORT,
     priceCents: LATTICE_INSOLES_PRICE_CENTS,
     images: [...LATTICE_INSOLES_IMAGES],
+  },
+  {
+    slug: "magikid-shoes",
+    name: "Magikid Shoes",
+    description: MAGIKID_SHOES_DESCRIPTION_SHORT,
+    priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
+    images: [...MAGIKID_SHOES_IMAGES],
   },
   {
     slug: GATORS_SLUG,
