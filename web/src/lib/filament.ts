@@ -240,3 +240,28 @@ export function getAccessoryCatalogSeed(): AccessoryListProduct[] {
     getStlFilesCatalogProduct(),
   ];
 }
+
+export function filamentCatalogProduct() {
+  const now = new Date(0);
+  return {
+    id: FILAMENT_SLUG,
+    slug: FILAMENT_SLUG,
+    name: FILAMENT_NAME,
+    description: FILAMENT_DESCRIPTION_SHORT,
+    priceCents: FILAMENT_PRICE_CENTS,
+    currency: "usd",
+    images: [...FILAMENT_IMAGES],
+    primaryColors: [...FILAMENT_PRIMARY_COLORS],
+    secondaryColors: [] as string[],
+    sizes: [...FILAMENT_SIZES],
+    variants: FILAMENT_VARIANTS.map((v) => ({
+      id: v.sku,
+      color: v.color,
+      sku: v.sku,
+      stock: v.stock,
+      priceCents: v.priceCents ?? null,
+    })),
+    createdAt: now,
+    updatedAt: now,
+  };
+}
