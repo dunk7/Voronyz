@@ -3,11 +3,11 @@ export const LATTICE_INSOLES_NAME = "Lattice Insoles";
 export const LATTICE_INSOLES_PRICE_CENTS = 6300; // $63
 
 export const LATTICE_INSOLES_PRODUCT_IMAGE_URL =
-  "/products/lattice-insoles/lattice-insoles.jpg";
+  "/products/lattice-insoles/lattice-insoles-v2.jpg";
 export const LATTICE_INSOLES_SIDE_IMAGE_URL =
-  "/products/lattice-insoles/lattice-insoles-side.jpg";
+  "/products/lattice-insoles/lattice-insoles-side-v2.jpg";
 export const LATTICE_INSOLES_THUMBNAIL_URL =
-  "/products/lattice-insoles/lattice-insoles-listing.jpg";
+  "/products/lattice-insoles/lattice-insoles-listing-v2.jpg";
 
 export const LATTICE_INSOLES_DESCRIPTION_SHORT =
   "Engineered for everyday cushion and bounce, built to last. 3D-printed TPU lattice insoles for all-day support. Free US shipping.";
