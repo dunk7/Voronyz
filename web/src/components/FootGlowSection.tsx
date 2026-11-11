@@ -9,7 +9,7 @@ type FootGlowSectionProps = {
    * Homepage keeps the foot x-ray. All Footwear uses a separate lattice-shoe outline.
    */
   variant?: "xray" | "print";
-  /** Homepage hero. The x-ray sits on a small crinkled poster. */
+  /** Homepage hero. Dominant foot glow on the full-bleed paper stage. */
   hero?: boolean;
   /** Sits under the poster, left-aligned, so it never covers the artwork. */
   caption?: ReactNode;
@@ -18,6 +18,9 @@ type FootGlowSectionProps = {
 /** Original artwork, served as uploaded. The glow is opacity only. */
 const XRAY_SRC = "/graphics/foot-xray.png";
 const HATCH_SRC = "/graphics/foot-hatch.png";
+/** Hero assets: near-black punched to alpha so paper shows through (no blend trap). */
+const XRAY_HERO_SRC = "/graphics/foot-xray-glow.png";
+const HATCH_HERO_SRC = "/graphics/foot-hatch-glow.png";
 const PAPER_SRC = "/graphics/crinkled-poster.jpg";
 const POSTER_LINE = "Shaped around your foot.";
 
@@ -56,15 +59,18 @@ export default function FootGlowSection({
   caption,
   variant = "xray",
 }: FootGlowSectionProps) {
+  const xraySrc = hero ? XRAY_HERO_SRC : XRAY_SRC;
+  const hatchSrc = hero ? HATCH_HERO_SRC : HATCH_SRC;
+
   const xray = (
         <div
-          className={`foot-glow-frame relative aspect-[2000/1399] w-full bg-black ${
-            poster ? "foot-glow-poster-frame" : ""
-          }`}
+          className={`foot-glow-frame relative aspect-[2000/1399] w-full ${
+            hero ? "foot-glow-hero-frame" : "bg-black"
+          } ${poster ? "foot-glow-poster-frame" : ""}`}
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- keep the uploaded PNG bytes, no optimizer */}
           <img
-            src={XRAY_SRC}
+            src={xraySrc}
             alt="X-ray of a foot inside a shoe"
             width={1500}
             height={1049}
@@ -73,7 +79,7 @@ export default function FootGlowSection({
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={HATCH_SRC}
+            src={hatchSrc}
             alt=""
             aria-hidden
             width={2000}
@@ -86,8 +92,8 @@ export default function FootGlowSection({
 
   if (hero) {
     return (
-      <div className={`bg-black ${className}`}>
-        <GlowPoster compact>{xray}</GlowPoster>
+      <div aria-hidden className={`hero-foot-glow ${className}`}>
+        {xray}
       </div>
     );
   }
