@@ -159,6 +159,7 @@ video {
 .hero-paper-sheet {
   position: absolute;
   inset: 0;
+  z-index: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -166,6 +167,33 @@ video {
   pointer-events: none;
   user-select: none;
   /* Asset is already contrast-lifted; no filter — filters create isolation groups. */
+}
+
+/*
+  Zellerfeld-style side falloff on the paper stage. Desktop only — a
+  left-to-right fade under the stacked mobile headline reads uneven.
+*/
+.hero-side-shade {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .hero-side-shade {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: linear-gradient(
+      to right,
+      #000 0%,
+      rgb(0 0 0 / 0.55) 7%,
+      transparent 16%,
+      transparent 84%,
+      rgb(0 0 0 / 0.55) 93%,
+      #000 100%
+    );
+  }
 }
 
 .hero-paper-kicker {
@@ -185,7 +213,16 @@ video {
 
 .hero-foot-glow {
   width: 100%;
-  /* Dominant hero mark — fills the paper stage, not a postage stamp. */
+  display: flex;
+  justify-content: center;
+}
+
+/* Cap height so the support line stays under the mark in the first viewport. */
+.hero-foot-glow .foot-glow-frame {
+  width: auto;
+  max-width: 100%;
+  height: min(50vh, 28rem);
+  aspect-ratio: 2000 / 1399;
 }
 
 .bg-texture-white {
