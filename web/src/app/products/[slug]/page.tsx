@@ -393,7 +393,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       )}
       {isPeppermintMist && (
         <>
-          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Áine & Fern</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Peppermint Mist</span>
           <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">3 FL OZ</span>
         </>
       )}
@@ -590,7 +590,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   : isTrailMix
                       ? "Collaborative"
                       : isPeppermintMist
-                        ? "Collaborative"
+                        ? "Áine & Fern"
                       : isApparel
                         ? "Apparel"
                         : isGators
