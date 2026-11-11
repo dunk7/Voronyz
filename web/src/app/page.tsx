@@ -47,7 +47,8 @@ export default function Home() {
           aria-hidden
           className="hero-paper-sheet"
         />
-        <div className="relative mx-auto flex min-h-[inherit] w-full max-w-[90rem] flex-col justify-end px-4 pb-10 pt-6 sm:px-6 sm:pb-14 sm:pt-8 lg:px-10">
+        <div className="hero-side-shade" aria-hidden />
+        <div className="relative z-[1] mx-auto flex min-h-[inherit] w-full max-w-[90rem] flex-col justify-end px-4 pb-10 pt-6 sm:px-6 sm:pb-14 sm:pt-8 lg:px-10">
           <div className="mx-auto w-full max-w-6xl md:max-w-7xl">
             <FootGlowSection hero />
           </div>
