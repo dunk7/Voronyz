@@ -6,10 +6,25 @@ export const STL_FILES_NAME = "Voronyz STL";
 /** Each shoe file is $1. Buying another shoe is another dollar. */
 export const STL_FILES_PRICE_CENTS = 100;
 
-/** CAD wireframe art — reads as an STL file, not a product photo. cover/alt are padded so the mesh isn’t clipped top/bottom. */
+/**
+ * CAD wireframe art leads — reads as an STL file, not a product photo.
+ * Real Slip On photos follow so shoppers can scroll the gallery to see
+ * what they’re printing after they open the listing.
+ */
 export const STL_FILES_THUMBNAIL_URL = "/products/stl-files/cover.jpg";
 export const STL_FILES_ALT_IMAGE_URL = "/products/stl-files/alt.jpg";
-export const STL_FILES_IMAGES = [STL_FILES_THUMBNAIL_URL, STL_FILES_ALT_IMAGE_URL] as const;
+/** Product photos shown after the wireframe on the PDP gallery. */
+export const STL_FILES_PRODUCT_PREVIEW_IMAGES = [
+  "/products/slip-ons/InShot_20260405_203151152.jpg",
+  "/products/slip-ons/InShot_20260405_203425292.jpg",
+  "/products/slip-ons/listing-cover.jpg",
+  "/products/slip-ons/InShot_20260405_203601045.jpg",
+] as const;
+export const STL_FILES_IMAGES = [
+  STL_FILES_THUMBNAIL_URL,
+  STL_FILES_ALT_IMAGE_URL,
+  ...STL_FILES_PRODUCT_PREVIEW_IMAGES,
+] as const;
 
 export const STL_FILES_DESCRIPTION_SHORT =
   "Print files for the Voronyz shoes. Pick a shoe — each file is $1.";

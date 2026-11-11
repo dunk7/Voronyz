@@ -5,6 +5,7 @@ import {
   STL_FILES_IMAGES,
   STL_FILES_NAME,
   STL_FILES_PRICE_CENTS,
+  STL_FILES_PRODUCT_PREVIEW_IMAGES,
   STL_FILES_SLUG,
   STL_FILES_THUMBNAIL_URL,
   STL_FILES_VARIANTS,
@@ -24,16 +25,26 @@ test("STL listing is Voronyz STL at $1 per shoe file", () => {
   assert.equal(orderIncludesStlDownload([{ name: "Slip Ons" }]), false);
 });
 
-test("STL thumbnail uses padded CAD wireframe art (not a product photo path)", () => {
+test("STL thumbnail is wireframe art; product photos come after for gallery scroll", () => {
   assert.equal(STL_FILES_THUMBNAIL_URL, "/products/stl-files/cover.jpg");
   assert.equal(STL_FILES_ALT_IMAGE_URL, "/products/stl-files/alt.jpg");
-  assert.deepEqual([...STL_FILES_IMAGES], [
-    "/products/stl-files/cover.jpg",
-    "/products/stl-files/alt.jpg",
-  ]);
-  // Listing art stays on the dedicated stl-files wireframe assets — never Slip On product photos.
+  assert.equal(STL_FILES_IMAGES[0], STL_FILES_THUMBNAIL_URL);
+  assert.equal(STL_FILES_IMAGES[1], STL_FILES_ALT_IMAGE_URL);
+  // Listing art stays on the dedicated stl-files wireframe assets.
   assert.equal(STL_FILES_THUMBNAIL_URL.includes("/products/slip-ons/"), false);
   assert.equal(STL_FILES_ALT_IMAGE_URL.includes("/products/slip-ons/"), false);
+  // After click, shoppers can scroll past the mesh to real Slip On photos.
+  assert.deepEqual(
+    [...STL_FILES_IMAGES.slice(2)],
+    [...STL_FILES_PRODUCT_PREVIEW_IMAGES]
+  );
+  assert.ok(STL_FILES_PRODUCT_PREVIEW_IMAGES.length >= 3);
+  assert.equal(
+    STL_FILES_PRODUCT_PREVIEW_IMAGES.every((src) =>
+      src.startsWith("/products/slip-ons/")
+    ),
+    true
+  );
 });
 
 test("only Slip Ons has an STL file; others are out of stock and Magikid/insoles are gone", () => {

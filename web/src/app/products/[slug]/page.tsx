@@ -62,11 +62,13 @@ import {
   FILAMENT_THUMBNAIL_URL,
 } from "@/lib/filament";
 import {
+  STL_FILES_ALT_IMAGE_URL,
   STL_FILES_DESCRIPTION,
   STL_FILES_HOW_ITS_MADE,
   STL_FILES_IMAGES,
   STL_FILES_NAME,
   STL_FILES_SLUG,
+  STL_FILES_THUMBNAIL_URL,
   STL_SHOE_FILES,
   stlFilesCatalogProduct,
 } from "@/lib/stlFiles";
@@ -824,7 +826,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug === STL_FILES_SLUG) {
     const title = `${STL_FILES_NAME} – Voronyz`;
     const description = STL_FILES_DESCRIPTION;
-    const images = [...STL_FILES_IMAGES];
+    // Share cards stay on the wireframe; product photos live in the PDP gallery.
+    const images = [STL_FILES_THUMBNAIL_URL, STL_FILES_ALT_IMAGE_URL];
     return {
       title,
       description,
