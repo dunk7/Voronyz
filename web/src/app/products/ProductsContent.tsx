@@ -8,7 +8,11 @@ import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 import { FILAMENT_SLUG, FILAMENT_THUMBNAIL_URL, getAccessoryCatalogSeed } from "@/lib/filament";
-import { STL_FILES_SLUG } from "@/lib/stlFiles";
+import {
+  STL_FILES_ALT_IMAGE_URL,
+  STL_FILES_SLUG,
+  STL_FILES_THUMBNAIL_URL,
+} from "@/lib/stlFiles";
 import { APPAREL_CATALOG, apparelCoverObjectPositionClass } from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
@@ -83,7 +87,9 @@ const productMeta: Record<string, {
     altImage: MAGIKID_SHOES_THUMBNAIL_URL,
   },
   "tpu-90a-filament": {},
-    [STL_FILES_SLUG]: {},
+  [STL_FILES_SLUG]: {
+    altImage: STL_FILES_ALT_IMAGE_URL,
+  },
 };
 
 function cardMetaForSlug(slug: string) {
@@ -343,6 +349,8 @@ export default function ProductsContent({
       ? GATORS_THUMBNAIL_URL
       : slugKey === FILAMENT_SLUG
       ? FILAMENT_THUMBNAIL_URL
+      : slugKey === STL_FILES_SLUG
+      ? STL_FILES_THUMBNAIL_URL
       : isV3
       ? "/products/v3-slides/InShot_20260212_194352014.jpg"
       : (p.thumbnail || images[0]);
