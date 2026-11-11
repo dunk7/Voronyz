@@ -52,6 +52,7 @@ function productCardImageFitClass(slug: string, src: string): string {
 function productCardNeedsInset(slug: string): boolean {
   const key = (slug || "").trim().toLowerCase();
   return (
+    key === PEPPERMINT_MIST_SLUG ||
     key === STL_FILES_SLUG ||
     key === FILAMENT_SLUG ||
     key === "tpu-90a-filament"
@@ -713,7 +714,8 @@ export default function ProductsContent({
                 Collaborative
               </h2>
             </div>
-            <div className="mx-auto grid w-full max-w-md grid-cols-1 gap-4 sm:max-w-lg sm:gap-6">
+            {/* Same 2-col square cards as the Footwear teaser so the bottle isn’t oversized. */}
+            <div className="grid grid-cols-2 gap-4 sm:gap-6">
               {HOME_COLLABORATIVE_TEASER_SLUGS.flatMap((slug) => {
                 const p = getHealthCatalogSeed().find(
                   (item) => (item.slug || "").trim().toLowerCase() === slug,
@@ -723,6 +725,7 @@ export default function ProductsContent({
                 const slugKey = (p.slug || "").trim().toLowerCase();
                 const { cover, alt } = getImages(p);
                 const isNavigating = navigatingSlug === p.slug;
+                const inset = productCardNeedsInset(slugKey);
                 return (
                   <Link
                     key={p.id}
@@ -737,28 +740,30 @@ export default function ProductsContent({
                         isNavigating ? "ring-black/10 shadow-xl" : ""
                       }`}
                     >
-                      <SoftImage
-                        key={cover}
-                        src={cover}
-                        alt={p.name}
-                        fill
-                        className={`${productCardImageFitClass(slugKey, cover)} transition-all duration-500 ${
-                          alt ? "group-hover:opacity-0" : "group-hover:scale-105"
-                        } ${isNavigating ? "scale-105 brightness-90" : ""}`}
-                        sizes="(max-width: 768px) 80vw, 28rem"
-                      />
-                      {alt && (
+                      <div className={inset ? "absolute inset-3 sm:inset-4" : "absolute inset-0"}>
                         <SoftImage
-                          key={alt}
-                          src={alt}
-                          alt={`${p.name} – alternate view`}
+                          key={cover}
+                          src={cover}
+                          alt={p.name}
                           fill
-                          showLogoPlaceholder={false}
-                          className={`${productCardImageFitClass(slugKey, alt)} opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105`}
-                          sizes="(max-width: 768px) 80vw, 28rem"
-                          loading="lazy"
+                          className={`${productCardImageFitClass(slugKey, cover)} transition-all duration-500 ${
+                            alt ? "group-hover:opacity-0" : "group-hover:scale-105"
+                          } ${isNavigating ? "scale-105 brightness-90" : ""}`}
+                          sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
                         />
-                      )}
+                        {alt && (
+                          <SoftImage
+                            key={alt}
+                            src={alt}
+                            alt={`${p.name} – alternate view`}
+                            fill
+                            showLogoPlaceholder={false}
+                            className={`${productCardImageFitClass(slugKey, alt)} opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105`}
+                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                            loading="lazy"
+                          />
+                        )}
+                      </div>
                       {isNavigating && (
                         <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/20 backdrop-blur-[2px]">
                           <LogoLoader size="sm" tone="light" showBar={false} className="!gap-0" />

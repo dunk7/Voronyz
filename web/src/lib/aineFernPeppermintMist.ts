@@ -1,13 +1,13 @@
 import { catalogSeedListedAt } from "@/lib/newListing";
 
 export const PEPPERMINT_MIST_SLUG = "aine-fern-peppermint-freshening-mist";
-export const PEPPERMINT_MIST_NAME = "Peppermint Freshening Mist";
+export const PEPPERMINT_MIST_NAME = "Áine & Fern";
 export const PEPPERMINT_MIST_PRICE_CENTS = 2000; // $20
 export const PEPPERMINT_MIST_THUMBNAIL_URL =
   "/products/aine-fern-peppermint-freshening-mist/peppermint-freshening-mist-front.jpg";
 
 export const PEPPERMINT_MIST_DESCRIPTION_SHORT =
-  "Bright minty freshening mist with natural peppermint oil. Pairs with footwear, bags & everyday spaces. 3 FL OZ.";
+  "Peppermint freshening mist with natural peppermint oil. Pairs with footwear, bags & everyday spaces. 3 FL OZ.";
 
 /**
  * Buy-box copy stays short so Add to Cart stays high.
@@ -15,13 +15,13 @@ export const PEPPERMINT_MIST_DESCRIPTION_SHORT =
  * (cosmetic vs drug is driven by intended use). Longer use notes live in FAQ.
  */
 export const PEPPERMINT_MIST_DESCRIPTION =
-  "Bright minty freshening mist with natural peppermint oil — a quick scent reset that pairs with printed footwear, and works just as well on gym bags, body, and everyday spaces. 3 FL OZ.";
+  "Peppermint Freshening Mist with natural peppermint oil — a quick scent reset that pairs with printed footwear, and works just as well on gym bags, body, and everyday spaces. 3 FL OZ.";
 
 export const PEPPERMINT_MIST_HOW_ITS_MADE =
   "Áine & Fern collab on Voronyz. Alcohol, water, and peppermint oil in a 3 FL OZ (89 mL) spray. Shake well, lightly mist as needed, and allow to dry. Spot-test skin and fabric first. Freshening mist for scent only — not a sanitizer, disinfectant, or medicine, and not intended to diagnose, treat, cure, or prevent fungal infections, athlete’s foot, or any disease.";
 
 export const PEPPERMINT_MIST_META_DESCRIPTION =
-  "Áine & Fern Peppermint Freshening Mist — minty spray that pairs with footwear, bags & belongings. 3 FL OZ. $20 on Voronyz Collaborative.";
+  "Áine & Fern — peppermint freshening mist that pairs with footwear, bags & belongings. 3 FL OZ. $20 on Voronyz Collaborative.";
 
 /** Front → side → back; thumbnail is front only (not the old 3-up mock). */
 export const PEPPERMINT_MIST_IMAGES = [
