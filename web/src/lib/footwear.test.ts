@@ -42,6 +42,9 @@ test("lattice insoles use the same US sizes as the rest of the footwear lineup",
 
 test("Lattice Insoles listing uses a single side-view insole; PDP keeps pair then side", () => {
   const lattice = FOOTWEAR_CATALOG.find((item) => item.slug === LATTICE_INSOLES_SLUG);
+  assert.match(LATTICE_INSOLES_THUMBNAIL_URL, /listing-v2\.jpg$/);
+  assert.match(LATTICE_INSOLES_PRODUCT_IMAGE_URL, /lattice-insoles-v2\.jpg$/);
+  assert.match(LATTICE_INSOLES_SIDE_IMAGE_URL, /side-v2\.jpg$/);
   assert.equal(lattice?.images[0], LATTICE_INSOLES_PRODUCT_IMAGE_URL);
   assert.equal(lattice?.images[1], LATTICE_INSOLES_SIDE_IMAGE_URL);
   assert.equal(
