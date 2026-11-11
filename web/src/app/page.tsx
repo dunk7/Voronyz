@@ -60,9 +60,9 @@ export default function Home() {
           </div>
 
           {/* Foot glow stays the dominant visual; support line sits tight under it. */}
-          <div className="mx-auto mt-5 w-full max-w-6xl md:max-w-7xl sm:mt-7">
+          <div className="mx-auto mt-4 w-full max-w-3xl sm:mt-5 sm:max-w-4xl lg:max-w-5xl">
             <FootGlowSection hero />
-            <p className="hero-paper-support mt-3 text-center text-base leading-relaxed sm:mt-4 sm:text-lg">
+            <p className="hero-paper-support mt-2 text-center text-base leading-relaxed sm:mt-2.5 sm:text-lg">
               Shaped around your foot.
             </p>
           </div>
