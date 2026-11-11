@@ -715,7 +715,7 @@ export default function ProductsContent({
               </h2>
             </div>
             {/* Same half-width square card as Footwear, centered — Áine & Fern is its own home block (still under Collaborative in the menu). */}
-            <div className="flex justify-center">
+            <div className="mx-auto w-1/2">
               {HOME_AINE_FERN_TEASER_SLUGS.flatMap((slug) => {
                 const p = getHealthCatalogSeed().find(
                   (item) => (item.slug || "").trim().toLowerCase() === slug,
@@ -731,7 +731,7 @@ export default function ProductsContent({
                     key={p.id}
                     href={`/products/${p.slug}`}
                     onClick={(e) => handleCardClick(e, p.slug)}
-                    className={`group block w-[calc((100%-1rem)/2)] sm:w-[calc((100%-1.5rem)/2)] outline-none cursor-pointer transition-all duration-200 active:scale-[0.98] ${
+                    className={`group block w-full outline-none cursor-pointer transition-all duration-200 active:scale-[0.98] ${
                       isNavigating ? "pointer-events-none" : ""
                     }`}
                   >

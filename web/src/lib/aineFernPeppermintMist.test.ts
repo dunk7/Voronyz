@@ -91,8 +91,7 @@ test("homepage Áine & Fern teaser is its own centered block (still Collaborativ
   assert.match(homeSource, /Áine & Fern/);
   assert.doesNotMatch(homeSource, /Shop all collaborative/);
   assert.doesNotMatch(homeSource, /id="collaborative"/);
-  assert.match(homeSource, /flex justify-center/);
-  assert.match(homeSource, /w-\[calc\(\(100%-1rem\)\/2\)\]/);
+  assert.match(homeSource, /mx-auto w-1\/2/);
   assert.match(homeSource, /key === PEPPERMINT_MIST_SLUG/);
   assert.match(homeSource, /key === PEPPERMINT_MIST_SLUG \|\|/);
   assert.match(homeSource, /object-contain object-center/);
