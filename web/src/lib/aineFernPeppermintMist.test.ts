@@ -22,9 +22,9 @@ import { getHealthCatalogSeed } from "@/lib/trailMix";
 
 const publicDir = join(dirname(fileURLToPath(import.meta.url)), "../..", "public");
 
-test("peppermint mist is a $20 Collaborative listing", () => {
+test("peppermint mist is a $20 Collaborative listing named Áine & Fern", () => {
   assert.equal(PEPPERMINT_MIST_PRICE_CENTS, 2000);
-  assert.equal(PEPPERMINT_MIST_NAME, "Peppermint Freshening Mist");
+  assert.equal(PEPPERMINT_MIST_NAME, "Áine & Fern");
   assert.ok(isHealthSlug(PEPPERMINT_MIST_SLUG));
   assert.equal(PEPPERMINT_MIST_VARIANTS.length, 1);
   assert.equal(PEPPERMINT_MIST_VARIANTS[0]?.sku, "AF-PFM");
@@ -77,7 +77,7 @@ test("peppermint mist appears in Collaborative catalog seed", () => {
   assert.equal(peppermintMistHealthCatalogSeed().slug, PEPPERMINT_MIST_SLUG);
 });
 
-test("homepage Collaborative teaser is peppermint mist only", () => {
+test("homepage Collaborative teaser matches footwear card sizing", () => {
   const homeSource = readFileSync(
     new URL("../app/products/ProductsContent.tsx", import.meta.url),
     "utf8",
@@ -89,6 +89,8 @@ test("homepage Collaborative teaser is peppermint mist only", () => {
   assert.match(homeSource, /id="collaborative"/);
   assert.match(homeSource, /home-collaborative-heading/);
   assert.match(homeSource, /key === PEPPERMINT_MIST_SLUG/);
+  assert.match(homeSource, /Same 2-col square cards as the Footwear teaser/);
+  assert.match(homeSource, /key === PEPPERMINT_MIST_SLUG \|\|/);
   assert.match(homeSource, /object-contain object-center/);
 
   const pdpSource = readFileSync(
