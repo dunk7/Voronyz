@@ -185,7 +185,16 @@ video {
 
 .hero-foot-glow {
   width: 100%;
-  /* Dominant hero mark — fills the paper stage, not a postage stamp. */
+  display: flex;
+  justify-content: center;
+}
+
+/* Cap height so the support line stays under the mark in the first viewport. */
+.hero-foot-glow .foot-glow-frame {
+  width: auto;
+  max-width: 100%;
+  height: min(50vh, 28rem);
+  aspect-ratio: 2000 / 1399;
 }
 
 .bg-texture-white {

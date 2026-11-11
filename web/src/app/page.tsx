@@ -47,21 +47,22 @@ export default function Home() {
           aria-hidden
           className="hero-paper-sheet"
         />
-        <div className="relative mx-auto flex min-h-[inherit] w-full max-w-[90rem] flex-col justify-end px-4 pb-10 pt-6 sm:px-6 sm:pb-14 sm:pt-8 lg:px-10">
-          <div className="mx-auto w-full max-w-6xl md:max-w-7xl">
-            <FootGlowSection hero />
-          </div>
-
-          <div className="mt-6 w-full max-w-2xl space-y-3 sm:mt-8 sm:space-y-4">
-            <p className="hero-paper-kicker uppercase tracking-[0.18em] text-[11px] sm:text-xs font-medium">
+        <div className="relative mx-auto flex min-h-[inherit] w-full max-w-[90rem] flex-col px-4 pb-10 pt-6 sm:px-6 sm:pb-14 sm:pt-8 lg:px-10">
+          {/* Brand + headline lead the first viewport from the top center. */}
+          <div className="mx-auto w-full max-w-3xl space-y-3 text-center sm:space-y-4">
+            <p className="hero-paper-kicker text-[11px] font-medium uppercase tracking-[0.18em] sm:text-xs">
               Voronyz Engineering
             </p>
 
-            <h1 className="hero-paper-title text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-semibold leading-[1.08] sm:leading-[1.1] tracking-tight">
+            <h1 className="hero-paper-title text-3xl font-semibold leading-[1.08] tracking-tight xs:text-4xl sm:text-5xl sm:leading-[1.1] md:text-6xl">
               3D Printed<br className="hidden sm:block" /> Footwear
             </h1>
+          </div>
 
-            <p className="hero-paper-support text-base leading-relaxed sm:text-lg">
+          {/* Foot glow stays the dominant visual; support line sits tight under it. */}
+          <div className="mx-auto mt-4 w-full max-w-3xl sm:mt-5 sm:max-w-4xl lg:max-w-5xl">
+            <FootGlowSection hero />
+            <p className="hero-paper-support mt-2 text-center text-base leading-relaxed sm:mt-2.5 sm:text-lg">
               Shaped around your foot.
             </p>
           </div>
