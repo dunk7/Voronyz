@@ -36,8 +36,8 @@ const HOME_APPAREL_TEASER_SLUGS = [
   "voronyz-core-hoodie",
 ] as const;
 
-/** Homepage Collaborative teaser — peppermint mist only; full catalog on /health. */
-const HOME_COLLABORATIVE_TEASER_SLUGS = [PEPPERMINT_MIST_SLUG] as const;
+/** Homepage Áine & Fern teaser — peppermint mist only (still listed under Collaborative in the menu /health). */
+const HOME_AINE_FERN_TEASER_SLUGS = [PEPPERMINT_MIST_SLUG] as const;
 
 /** Keep framed product art fully visible — mist bottle, STL wireframe, filament spool. */
 function productCardImageFitClass(slug: string, src: string): string {
@@ -713,18 +713,18 @@ export default function ProductsContent({
         ) : null}
         {isHomeFootwearTeaser ? (
           <section
-            id="collaborative"
-            aria-labelledby="home-collaborative-heading"
+            id="aine-fern"
+            aria-labelledby="home-aine-fern-heading"
             className="mt-16 sm:mt-24"
           >
             <div className="mb-8 sm:mb-10 text-center">
-              <h2 id="home-collaborative-heading" className={homeSectionTitleClass}>
-                Collaborative
+              <h2 id="home-aine-fern-heading" className={homeSectionTitleClass}>
+                Áine & Fern
               </h2>
             </div>
-            {/* Same half-width square card as Footwear, centered for the single Áine & Fern listing. */}
+            {/* Same half-width square card as Footwear, centered — Áine & Fern is its own home block (still under Collaborative in the menu). */}
             <div className="mx-auto w-1/2">
-              {HOME_COLLABORATIVE_TEASER_SLUGS.flatMap((slug) => {
+              {HOME_AINE_FERN_TEASER_SLUGS.flatMap((slug) => {
                 const p = getHealthCatalogSeed().find(
                   (item) => (item.slug || "").trim().toLowerCase() === slug,
                 );
@@ -786,11 +786,6 @@ export default function ProductsContent({
                   </Link>
                 );
               })}
-            </div>
-            <div className="mt-10 sm:mt-12 flex justify-center">
-              <Link href="/health" className={SHOP_ALL_CTA_CLASS}>
-                Shop all collaborative
-              </Link>
             </div>
           </section>
         ) : null}
