@@ -47,7 +47,8 @@ export default function Home() {
           aria-hidden
           className="hero-paper-sheet"
         />
-        <div className="relative mx-auto flex min-h-[inherit] w-full max-w-[90rem] flex-col px-4 pb-10 pt-6 sm:px-6 sm:pb-14 sm:pt-8 lg:px-10">
+        <div className="hero-side-shade" aria-hidden />
+        <div className="relative z-[1] mx-auto flex min-h-[inherit] w-full max-w-[90rem] flex-col px-4 pb-10 pt-6 sm:px-6 sm:pb-14 sm:pt-8 lg:px-10">
           {/* Brand + headline lead the first viewport from the top center. */}
           <div className="mx-auto w-full max-w-3xl space-y-3 text-center sm:space-y-4">
             <p className="hero-paper-kicker text-[11px] font-medium uppercase tracking-[0.18em] sm:text-xs">
