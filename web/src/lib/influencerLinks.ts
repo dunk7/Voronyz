@@ -16,6 +16,7 @@ export const INFLUENCER_DISCOUNT_LINKS = [
   { slug: "pedro", code: "pedro30", label: "Pedro" },
   { slug: "nicole", code: "nicole50", label: "Nicole" },
   { slug: "andy", code: "andy50", label: "Andy" },
+  { slug: "arabella", code: "arabella50", label: "Arabella" },
   { slug: "maximus", code: "maximus27", label: "Maximus" },
   { slug: "chud", code: "chud25", label: "Chud" },
   { slug: "emptyaus", code: "emptyaus", label: "Emptyaus" },
