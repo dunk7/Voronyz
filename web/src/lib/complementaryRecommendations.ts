@@ -44,7 +44,7 @@ const NAME_SLUG_HINTS: Array<[RegExp, string]> = [
   [/dragonfly/i, "dragonfly"],
   [/\bgators?\b/i, "gators"],
   [/magikid/i, "magikid-shoes"],
-  [/oversized tee|\bnice shirt\b/i, OVERSIZED_TEE_SLUG],
+  [/voronyz tee|oversized tee|\bnice shirt\b/i, OVERSIZED_TEE_SLUG],
   [/atelier hoodie|core hoodie/i, ATELIER_HOODIE_SLUG],
   [/logo sticker|\bstickers?\b/i, "voronyz-stickers"],
   [/cool shades|\bshades\b/i, "voronyz-cool-shades"],
@@ -193,12 +193,12 @@ export function getComplementaryRecommendations(
   } else if (hasHoodie && !hasTee) {
     ranked.push({
       slug: OVERSIZED_TEE_SLUG,
-      reason: "Layer an Oversized Tee under the hoodie.",
+      reason: "Layer a Voronyz Tee under the hoodie.",
     });
   } else if (hasFootwear && !hasTee) {
     ranked.push({
       slug: OVERSIZED_TEE_SLUG,
-      reason: "Throw on an Oversized Tee to finish the look.",
+      reason: "Throw on a Voronyz Tee to finish the look.",
     });
   }
 
@@ -212,7 +212,7 @@ export function getComplementaryRecommendations(
   if (!hasFootwear && !hasTee && !hasHoodie) {
     ranked.push({
       slug: OVERSIZED_TEE_SLUG,
-      reason: "An Oversized Tee is an easy add.",
+      reason: "A Voronyz Tee is an easy add.",
     });
   }
 

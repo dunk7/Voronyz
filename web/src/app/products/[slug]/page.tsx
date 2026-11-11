@@ -681,7 +681,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "When will my order ship?", a: "Orders typically ship within a few business days. You'll get updates by email." },
             ] : isApparel && !apparelItem?.comingSoon ? [
               { q: "What sizes are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
-                ? "The Oversized Tee ships in XS, S, M, L, XL, and XXL. Smaller sizes cost less than Medium; larger sizes cost more."
+                ? "The Voronyz Tee ships in XS, S, M, L, XL, and XXL. Smaller sizes cost less than Medium; larger sizes cost more."
                 : apparelItem?.slug === "voronyz-core-hoodie"
                   ? "XS–XXL. Large is priced under Medium — the deal size on this hoodie."
                 : "This piece runs XS–XXL." },

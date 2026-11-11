@@ -18,6 +18,7 @@ test("infers catalog slugs from Stripe line names when metadata is missing", () 
     inferProductSlug({ productName: "Lattice Insoles" }),
     LATTICE_INSOLES_SLUG
   );
+  assert.equal(inferProductSlug({ name: "Voronyz Tee" }), OVERSIZED_TEE_SLUG);
   assert.equal(inferProductSlug({ name: "Oversized Tee" }), OVERSIZED_TEE_SLUG);
   assert.equal(inferProductSlug({ productSlug: "dragonfly", name: "ignored" }), "dragonfly");
 });
