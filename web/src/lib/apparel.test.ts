@@ -26,6 +26,10 @@ test("core hoodie listing is named The Atelier Hoodie", () => {
   assert.equal(getApparelItem("voronyz-core-hoodie")?.name, "The Atelier Hoodie");
 });
 
+test("shirt listing is named Voronyz Tee", () => {
+  assert.equal(getApparelItem("voronyz-oversized-tee")?.name, "Voronyz Tee");
+});
+
 test("The Atelier Hoodie is a live listing, not a pre-order", () => {
   assert.equal(getApparelItem("voronyz-core-hoodie")?.comingSoon, false);
   assert.equal(isComingSoonPreOrderProduct("voronyz-core-hoodie"), false);

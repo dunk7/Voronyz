@@ -95,7 +95,7 @@ const nextConfig: NextConfig = {
         destination: "/health",
         permanent: true,
       },
-      // Removed Nice Shirt — keep Oversized Tee as the shirts listing.
+      // Removed Nice Shirt — keep Voronyz Tee as the shirts listing.
       {
         source: "/products/voronyz-nice-shirt",
         destination: "/products/voronyz-oversized-tee",
