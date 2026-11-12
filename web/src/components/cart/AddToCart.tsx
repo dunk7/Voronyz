@@ -52,6 +52,8 @@ export type AddToCartProps = {
   /** Used when variant.priceCents is null (same price for all colors). */
   productPriceCents?: number;
   productName?: string;
+  /** Used for Instagram share captions — never includes price. */
+  productDescription?: string;
   coverImage?: string;
   /** When set, the cart thumbnail follows the selected primary color. */
   coverImagesByColor?: Record<string, string>;
@@ -249,7 +251,8 @@ export default function AddToCart({
   secondaryColors = [], 
   sizes, 
   productPriceCents,
-  productName, 
+  productName,
+  productDescription,
   coverImage,
   coverImagesByColor,
   productSlug,
@@ -1134,6 +1137,7 @@ export default function AddToCart({
         <ShareProductButton
           productName={productName}
           productSlug={productSlug}
+          productDescription={productDescription}
           imageUrl={resolvedCoverImage}
         />
       </div>
