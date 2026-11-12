@@ -55,11 +55,13 @@ test("shop hex tiles stay static and are not pointer-driven", () => {
   assert.doesNotMatch(css, /HexTextureMotion/);
 });
 
-test("homepage keeps hex shop panels without a hero Voronoi lattice", () => {
+test("homepage uses solid black without hex; shop pages keep the honeycomb", () => {
   assert.doesNotMatch(home, /HeroVoronoiLattice/);
   assert.doesNotMatch(home, /shop-hex-rail/);
   assert.doesNotMatch(home, /bg-texture-hex/);
-  assert.match(home, /className="bg-texture-white"/);
+  assert.doesNotMatch(home, /bg-texture-white/);
+  assert.match(home, /className="bg-black"/);
+  assert.match(home, /hero-paper/);
   assert.match(footer, /bg-texture-white/);
   assert.doesNotMatch(footer, /bg-texture-hex/);
   assert.doesNotMatch(css, /\.shop-hex-rail/);

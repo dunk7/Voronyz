@@ -139,8 +139,8 @@ video {
 }
 
 /*
-  Homepage hero: solid black by default. The top stage (.hero-paper) is a
-  full-bleed crinkled black poster sheet. Shop panels use the hex honeycomb.
+  Homepage: solid black below the fold. The top stage (.hero-paper) is a
+  full-bleed crinkled black poster sheet. Product/shop pages keep the hex honeycomb.
 */
 .hero-stage {
   background-color: #000;
