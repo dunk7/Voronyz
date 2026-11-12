@@ -30,11 +30,12 @@ test("peppermint mist is a $20 Collaborative listing named Áine & Fern", () => 
   assert.equal(PEPPERMINT_MIST_VARIANTS[0]?.sku, "AF-PFM");
 });
 
-test("peppermint mist gallery is front/side/back squares; thumbnail is front", () => {
-  assert.equal(PEPPERMINT_MIST_IMAGES.length, 3);
+test("peppermint mist gallery is front/side squares; thumbnail is front", () => {
+  assert.equal(PEPPERMINT_MIST_IMAGES.length, 2);
   assert.equal(PEPPERMINT_MIST_IMAGES[0], PEPPERMINT_MIST_THUMBNAIL_URL);
   assert.match(PEPPERMINT_MIST_THUMBNAIL_URL, /-front\.jpg$/);
   assert.doesNotMatch(PEPPERMINT_MIST_THUMBNAIL_URL, /peppermint-freshening-mist\.jpg$/);
+  assert.match(PEPPERMINT_MIST_IMAGES[1] ?? "", /-side\.jpg$/);
   for (const url of PEPPERMINT_MIST_IMAGES) {
     assert.ok(existsSync(join(publicDir, url.slice(1))), `missing ${url}`);
   }
@@ -43,6 +44,15 @@ test("peppermint mist gallery is front/side/back squares; thumbnail is front", (
       join(
         publicDir,
         "products/aine-fern-peppermint-freshening-mist/peppermint-freshening-mist.jpg",
+      ),
+    ),
+    false,
+  );
+  assert.equal(
+    existsSync(
+      join(
+        publicDir,
+        "products/aine-fern-peppermint-freshening-mist/peppermint-freshening-mist-back.jpg",
       ),
     ),
     false,
@@ -89,7 +99,8 @@ test("homepage Collaborative teaser matches footwear card sizing", () => {
   assert.match(homeSource, /id="collaborative"/);
   assert.match(homeSource, /home-collaborative-heading/);
   assert.match(homeSource, /key === PEPPERMINT_MIST_SLUG/);
-  assert.match(homeSource, /Same 2-col square cards as the Footwear teaser/);
+  assert.match(homeSource, /Same half-width square card as Footwear, centered/);
+  assert.match(homeSource, /mx-auto w-1\/2/);
   assert.match(homeSource, /key === PEPPERMINT_MIST_SLUG \|\|/);
   assert.match(homeSource, /object-contain object-center/);
 

@@ -714,8 +714,8 @@ export default function ProductsContent({
                 Collaborative
               </h2>
             </div>
-            {/* Same 2-col square cards as the Footwear teaser so the bottle isn’t oversized. */}
-            <div className="grid grid-cols-2 gap-4 sm:gap-6">
+            {/* Same half-width square card as Footwear, centered for the single Áine & Fern listing. */}
+            <div className="mx-auto w-1/2">
               {HOME_COLLABORATIVE_TEASER_SLUGS.flatMap((slug) => {
                 const p = getHealthCatalogSeed().find(
                   (item) => (item.slug || "").trim().toLowerCase() === slug,
@@ -731,7 +731,7 @@ export default function ProductsContent({
                     key={p.id}
                     href={`/products/${p.slug}`}
                     onClick={(e) => handleCardClick(e, p.slug)}
-                    className={`group block outline-none cursor-pointer transition-all duration-200 active:scale-[0.98] ${
+                    className={`group block w-full outline-none cursor-pointer transition-all duration-200 active:scale-[0.98] ${
                       isNavigating ? "pointer-events-none" : ""
                     }`}
                   >
@@ -770,7 +770,7 @@ export default function ProductsContent({
                         </div>
                       )}
                     </div>
-                    <div className="mt-4 px-0.5">
+                    <div className="mt-4 px-0.5 text-center">
                       <h3 className="text-[15px] font-semibold text-neutral-900 transition-colors group-hover:text-black line-clamp-2">
                         {p.name}
                       </h3>
