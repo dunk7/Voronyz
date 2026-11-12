@@ -196,19 +196,56 @@ video {
   }
 }
 
+/*
+  Soft local darkening behind the hero type so white letters lift off the
+  crinkled paper without a boxed card.
+*/
+.hero-paper-copy {
+  position: relative;
+  isolation: isolate;
+}
+
+.hero-paper-copy::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  z-index: -1;
+  width: min(112%, 62rem);
+  height: calc(100% + 5.5rem);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 74% 70% at 50% 48%,
+    rgb(0 0 0 / 0.88) 0%,
+    rgb(0 0 0 / 0.58) 40%,
+    rgb(0 0 0 / 0.22) 66%,
+    transparent 82%
+  );
+}
+
 .hero-paper-kicker {
-  color: #f0f0f0;
-  text-shadow: 0 1px 12px rgb(0 0 0 / 0.55);
+  color: #fff;
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 0.95),
+    0 8px 40px rgb(0 0 0 / 0.85),
+    0 0 64px rgb(0 0 0 / 0.55);
 }
 
 .hero-paper-title {
   color: #fff;
-  text-shadow: 0 2px 24px rgb(0 0 0 / 0.55);
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 0.95),
+    0 6px 36px rgb(0 0 0 / 0.8),
+    0 0 60px rgb(0 0 0 / 0.5);
 }
 
 .hero-paper-support {
-  color: #e8e8e8;
-  text-shadow: 0 1px 14px rgb(0 0 0 / 0.5);
+  color: #f7f7f7;
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 0.95),
+    0 4px 24px rgb(0 0 0 / 0.75),
+    0 0 40px rgb(0 0 0 / 0.45);
 }
 
 .hero-foot-glow {
@@ -221,8 +258,14 @@ video {
 .hero-foot-glow .foot-glow-frame {
   width: auto;
   max-width: 100%;
-  height: min(50vh, 28rem);
+  height: min(34vh, 20rem);
   aspect-ratio: 2000 / 1399;
+}
+
+@media (min-width: 1024px) {
+  .hero-foot-glow .foot-glow-frame {
+    height: min(32vh, 18rem);
+  }
 }
 
 .bg-texture-white {
