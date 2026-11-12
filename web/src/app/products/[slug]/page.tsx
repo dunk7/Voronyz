@@ -536,6 +536,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             }),
             sizes: product.sizes as string[],
             productName: displayName,
+            productDescription: displayDescription,
             coverImage: (images[0] as string) || defaultImages[0],
             productSlug: slug,
             allowOutOfStockColorPreview: isSlipOns,
