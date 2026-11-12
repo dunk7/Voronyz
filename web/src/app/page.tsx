@@ -49,24 +49,20 @@ export default function Home() {
         />
         <div className="hero-side-shade" aria-hidden />
         <div className="relative z-[1] mx-auto flex min-h-[inherit] w-full max-w-[90rem] flex-col justify-start px-4 pb-8 pt-6 sm:px-6 sm:pb-10 sm:pt-8 lg:px-10">
-          {/* Brand sits clear of the top-left mark, then the product line. */}
+          {/* Product line leads; brand kicker stays smaller and clear of the nav mark. */}
           <div className="hero-paper-copy mx-auto mt-12 w-full max-w-5xl space-y-3 text-center sm:mt-14 sm:space-y-4 lg:mt-16">
-            <p className="hero-paper-kicker font-logo text-[1.85rem] font-semibold uppercase leading-[1.05] tracking-[0.14em] sm:text-5xl sm:tracking-[0.16em] md:text-6xl md:tracking-[0.18em] lg:text-7xl">
-              Voronyz<br />
-              Engineering
+            <p className="hero-paper-kicker font-logo text-sm font-semibold uppercase tracking-[0.2em] sm:text-base sm:tracking-[0.22em] md:text-lg">
+              Voronyz Engineering
             </p>
 
-            <h1 className="hero-paper-title text-xl font-semibold leading-[1.12] tracking-tight sm:text-3xl sm:leading-[1.08] md:text-4xl lg:text-5xl">
+            <h1 className="hero-paper-title text-4xl font-semibold leading-[1.06] tracking-tight xs:text-5xl sm:text-6xl sm:leading-[1.05] md:text-7xl">
               3D Printed<br className="hidden sm:block" /> Footwear
             </h1>
           </div>
 
-          {/* Foot glow stays the dominant visual; support line sits tight under it. */}
+          {/* Foot glow stays the dominant visual; support line locks to its width. */}
           <div className="mx-auto mt-3 w-full max-w-3xl sm:mt-4 sm:max-w-4xl lg:max-w-5xl">
             <FootGlowSection hero />
-            <p className="hero-paper-support mt-2 text-center text-lg leading-relaxed sm:mt-2.5 sm:text-xl md:text-2xl">
-              Shaped around your foot.
-            </p>
           </div>
         </div>
       </section>
