@@ -824,7 +824,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug === STL_FILES_SLUG) {
     const title = `${STL_FILES_NAME} – Voronyz`;
     const description = STL_FILES_DESCRIPTION;
-    const images = [...STL_FILES_IMAGES];
+    // Share the Slip On wireframe only — product photos stay in the PDP gallery.
+    const images = [STL_FILES_IMAGES[0]];
     return {
       title,
       description,
