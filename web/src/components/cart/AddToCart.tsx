@@ -787,16 +787,18 @@ export default function AddToCart({
               {sortedFlavorOptions.map((flavor) => {
                 const isSelected = selectedPrimary === flavor.id;
                 const available = isPrimaryAvailable(flavor.id);
+                const canPreview =
+                  available || (previewOutOfStockColors && !soldOut);
                 return (
                   <button
                     key={flavor.id}
                     type="button"
-                    onClick={() => available && setSelectedPrimary(flavor.id)}
-                    disabled={!available || soldOut}
+                    onClick={() => canPreview && setSelectedPrimary(flavor.id)}
+                    disabled={!canPreview}
                     className={`flex flex-col items-start rounded-2xl px-4 py-3 text-left ring-1 transition ${
                       isSelected
                         ? "bg-black text-white ring-black"
-                        : available
+                        : canPreview
                           ? "bg-white text-neutral-900 ring-black/10 hover:bg-black/5"
                           : "bg-neutral-50 text-neutral-400 ring-neutral-200 cursor-not-allowed"
                     }`}

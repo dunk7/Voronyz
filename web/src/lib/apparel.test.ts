@@ -252,24 +252,26 @@ test("hoodie sale prices change by size, stay $70–$100, and advertise a deep c
   assert.equal(getApparelSizeOffer("voronyz-oversized-tee", "M"), null);
 });
 
-test("hoodie grey costs a little more than black and white is the most expensive", () => {
+test("hoodie grey and white cost about $75 more than black because stock is limited", () => {
   const hoodie = getApparelItem("voronyz-core-hoodie");
   assert.ok(hoodie);
   const blackM = apparelPriceCentsForSelection(hoodie, { size: "M", color: "black" });
   const greyM = apparelPriceCentsForSelection(hoodie, { size: "M", color: "grey" });
   const whiteM = apparelPriceCentsForSelection(hoodie, { size: "M", color: "white" });
   assert.equal(blackM, 7800);
-  assert.equal(greyM, 8400);
-  assert.equal(whiteM, 9200);
+  assert.equal(greyM, 15900);
+  assert.equal(whiteM, 16700);
   assert.ok(blackM < greyM);
   assert.ok(greyM < whiteM);
+  assert.equal(greyM - blackM, 8100);
+  assert.equal(whiteM - blackM, 8900);
   assert.equal(
     apparelPriceCentsForSelection(hoodie, { size: "L", color: "grey" }),
-    8000,
+    15500,
   );
   assert.equal(
     apparelPriceCentsForSelection(hoodie, { size: "L", color: "white" }),
-    8800,
+    16300,
   );
   assert.equal(
     catalogUnitPriceCents({
@@ -278,10 +280,35 @@ test("hoodie grey costs a little more than black and white is the most expensive
       color: "white",
       fallbackCents: 7800,
     }),
-    9200,
+    16700,
   );
   const whiteOffer = getApparelSizeOffer("voronyz-core-hoodie", "M", "white");
   assert.ok(whiteOffer);
-  assert.equal(whiteOffer.priceCents, 9200);
+  assert.equal(whiteOffer.priceCents, 16700);
   assert.ok(whiteOffer.percentOff >= 55);
+});
+
+test("oversized tee white and grey cost about $75 more than black", () => {
+  const tee = getApparelItem("voronyz-oversized-tee");
+  assert.ok(tee);
+  const blackM = apparelPriceCentsForSelection(tee, { size: "M", color: "black" });
+  const greyM = apparelPriceCentsForSelection(tee, { size: "M", color: "grey" });
+  const whiteM = apparelPriceCentsForSelection(tee, { size: "M", color: "white" });
+  assert.equal(blackM, 4800);
+  assert.equal(greyM, 12300);
+  assert.equal(whiteM, 12300);
+  assert.equal(greyM - blackM, 7500);
+  assert.equal(
+    apparelPriceCentsForSelection(tee, { size: "L", color: "white" }),
+    12600,
+  );
+  assert.equal(
+    catalogUnitPriceCents({
+      productSlug: "voronyz-oversized-tee",
+      size: "M",
+      color: "grey",
+      fallbackCents: 4800,
+    }),
+    12300,
+  );
 });

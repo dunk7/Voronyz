@@ -9,7 +9,7 @@ import {
 import FAQ from "@/components/FAQ";
 import Link from "next/link";
 import { Metadata } from "next";
-import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
+import { ensureCatalogProducts, ensureLatticeInsoles } from "@/lib/ensureCatalogProducts";
 import {
   MAGIKID_SHOES_COVER,
   MAGIKID_SHOES_IMAGES,
@@ -60,15 +60,19 @@ import {
   FILAMENT_PRIMARY_COLORS,
   FILAMENT_SLUG,
   FILAMENT_THUMBNAIL_URL,
+  filamentCatalogProduct,
 } from "@/lib/filament";
 import {
+  STL_FILES_ALT_IMAGE_URL,
   STL_FILES_DESCRIPTION,
   STL_FILES_HOW_ITS_MADE,
   STL_FILES_IMAGES,
   STL_FILES_NAME,
   STL_FILES_SLUG,
+  STL_FILES_THUMBNAIL_URL,
   STL_SHOE_FILES,
   stlFilesCatalogProduct,
+  stlImagesByShoe,
 } from "@/lib/stlFiles";
 import {
   LATTICE_INSOLES_DESCRIPTION,
@@ -158,6 +162,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   let product: ProductWithVariants | null = null;
   try {
     await ensureCatalogProducts();
+    // Always re-sync Lattice Insoles on its PDP so legacy APP-INSL-* stock-0
+    // rows are migrated even if the catalog ensure TTL skipped a failed run.
+    if (slug === LATTICE_INSOLES_SLUG) {
+      await ensureLatticeInsoles();
+    }
     product = await prisma.product.findUnique({ 
       where: { slug }, 
       include: { 
@@ -187,6 +196,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       product = gatorsCatalogProduct();
     } else if (slug === PEPPERMINT_MIST_SLUG) {
       product = peppermintMistCatalogProduct();
+    } else if (slug === FILAMENT_SLUG) {
+      product = filamentCatalogProduct();
     } else {
       return (
         <div className="bg-texture-white">
@@ -208,6 +219,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     else if (slug === STL_FILES_SLUG) product = stlFilesCatalogProduct();
     else if (slug === LATTICE_INSOLES_SLUG) product = latticeInsolesCatalogProduct();
     else if (slug === GATORS_SLUG) product = gatorsCatalogProduct();
+    else if (slug === FILAMENT_SLUG) product = filamentCatalogProduct();
     else if (slug === PEPPERMINT_MIST_SLUG) product = peppermintMistCatalogProduct();
   }
   if (!product) return <div className="container py-12 text-neutral-900">Not found.</div>;
@@ -393,7 +405,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       )}
       {isPeppermintMist && (
         <>
-          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Áine & Fern</span>
+          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Peppermint Mist</span>
           <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">3 FL OZ</span>
         </>
       )}
@@ -458,7 +470,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         {/* Gallery-first retail layout: large photos lead, buy box sits beside */}
         <PdpGalleryBuyBox
           media={galleryMedia}
-          colorImages={isFilament ? filamentImagesByVariant() : apparelColorImages}
+          colorImages={
+            isFilament
+              ? filamentImagesByVariant()
+              : isStlFiles
+                ? stlImagesByShoe()
+                : apparelColorImages
+          }
           leadWhiteSlipOns={isSlipOns}
           fit={isFootwearSlug(slug) || isPeppermintMist || isStlFiles || isFilament ? "contain" : "cover"}
           galleryClassName="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
@@ -538,7 +556,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             productName: displayName,
             coverImage: (images[0] as string) || defaultImages[0],
             productSlug: slug,
-            allowOutOfStockColorPreview: isSlipOns,
+            allowOutOfStockColorPreview: isSlipOns || isStlFiles,
           }}
           footer={
             <div className="flex items-center gap-4 text-xs text-neutral-500">
@@ -590,7 +608,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   : isTrailMix
                       ? "Collaborative"
                       : isPeppermintMist
-                        ? "Collaborative"
+                        ? "Áine & Fern"
                       : isApparel
                         ? "Apparel"
                         : isGators
@@ -686,14 +704,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   ? "XS–XXL. Large is priced under Medium — the deal size on this hoodie."
                 : "This piece runs XS–XXL." },
               { q: "What colors are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
-                ? "Black, white, and grey are in stock. Pick a color to see the matching front and back shots."
+                ? "Black, white, and grey are in stock. White and grey cost about $75 more than black because stock is limited. Pick a color to see the matching front and back shots."
                 : apparelItem?.slug === "voronyz-core-hoodie"
-                  ? "Black, grey, and white. Black uses the original hoodie photo; grey costs a little more, and white is the most expensive. The gallery updates to the selected color, with the back of the same hoodie on the second photo."
+                  ? "Black, grey, and white. Black uses the original hoodie photo; grey and white cost about $75 more because stock is limited, and white is the most expensive. The gallery updates to the selected color, with the back of the same hoodie on the second photo."
                   : apparelItem?.outOfStockColors?.includes("grey")
                   ? "Grey is currently out of stock. Choose another listed color."
                   : "Pick any listed color that is in stock." },
               ...(apparelItem?.slug === "voronyz-core-hoodie"
-                ? [{ q: "How much does it cost?", a: "Price depends on size. Each hoodie is marked down about 60% from the listed compare-at — sale prices run from $74 (XS) to $99 (XXL), never under $70." }]
+                ? [{ q: "How much does it cost?", a: "Price depends on size and color. Black sale prices run from $72 (XS) to $86 (XXL), never under $70. Grey and white are about $75 more because stock is limited." }]
                 : []),
               { q: "When will my order ship?", a: "Orders typically ship within a few business days. You'll get updates by email." },
               { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Accessories (stickers, shades, jewelry, lace locks, drone parts) live under their own Apparel section." },
@@ -824,7 +842,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (slug === STL_FILES_SLUG) {
     const title = `${STL_FILES_NAME} – Voronyz`;
     const description = STL_FILES_DESCRIPTION;
-    const images = [...STL_FILES_IMAGES];
+    // Share cards stay on the wireframe; product photos live in the PDP gallery.
+    const images = [STL_FILES_THUMBNAIL_URL, STL_FILES_ALT_IMAGE_URL];
     return {
       title,
       description,

@@ -77,19 +77,22 @@ test("peppermint mist appears in Collaborative catalog seed", () => {
   assert.equal(peppermintMistHealthCatalogSeed().slug, PEPPERMINT_MIST_SLUG);
 });
 
-test("homepage Collaborative teaser matches footwear card sizing", () => {
+test("homepage Áine & Fern teaser is its own centered block (still Collaborative in menu)", () => {
   const homeSource = readFileSync(
     new URL("../app/products/ProductsContent.tsx", import.meta.url),
     "utf8",
   );
   assert.match(
     homeSource,
-    /const HOME_COLLABORATIVE_TEASER_SLUGS = \[PEPPERMINT_MIST_SLUG\] as const/,
+    /const HOME_AINE_FERN_TEASER_SLUGS = \[PEPPERMINT_MIST_SLUG\] as const/,
   );
-  assert.match(homeSource, /id="collaborative"/);
-  assert.match(homeSource, /home-collaborative-heading/);
+  assert.match(homeSource, /id="aine-fern"/);
+  assert.match(homeSource, /home-aine-fern-heading/);
+  assert.match(homeSource, /Áine & Fern/);
+  assert.doesNotMatch(homeSource, /Shop all collaborative/);
+  assert.doesNotMatch(homeSource, /id="collaborative"/);
+  assert.match(homeSource, /mx-auto w-1\/2/);
   assert.match(homeSource, /key === PEPPERMINT_MIST_SLUG/);
-  assert.match(homeSource, /Same 2-col square cards as the Footwear teaser/);
   assert.match(homeSource, /key === PEPPERMINT_MIST_SLUG \|\|/);
   assert.match(homeSource, /object-contain object-center/);
 
@@ -99,4 +102,12 @@ test("homepage Collaborative teaser matches footwear card sizing", () => {
   );
   assert.match(pdpSource, /isPeppermintMist/);
   assert.match(pdpSource, /fit=\{[^}]*isPeppermintMist[^}]*"contain"/);
+  assert.match(pdpSource, /isPeppermintMist\s*\?\s*"Áine & Fern"/);
+
+  const headerSource = readFileSync(
+    new URL("../components/Header.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(headerSource, /href="\/health"/);
+  assert.match(headerSource, /Collaborative/);
 });

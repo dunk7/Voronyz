@@ -8,7 +8,11 @@ import { getHealthCatalogSeed, TRAIL_MIX_SLUG } from "@/lib/trailMix";
 import SoftImage from "@/components/ui/SoftImage";
 import LogoLoader from "@/components/ui/LogoLoader";
 import { FILAMENT_SLUG, FILAMENT_THUMBNAIL_URL, getAccessoryCatalogSeed } from "@/lib/filament";
-import { STL_FILES_SLUG } from "@/lib/stlFiles";
+import {
+  STL_FILES_ALT_IMAGE_URL,
+  STL_FILES_SLUG,
+  STL_FILES_THUMBNAIL_URL,
+} from "@/lib/stlFiles";
 import { APPAREL_CATALOG, apparelCoverObjectPositionClass } from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
@@ -32,8 +36,8 @@ const HOME_APPAREL_TEASER_SLUGS = [
   "voronyz-core-hoodie",
 ] as const;
 
-/** Homepage Collaborative teaser — peppermint mist only; full catalog on /health. */
-const HOME_COLLABORATIVE_TEASER_SLUGS = [PEPPERMINT_MIST_SLUG] as const;
+/** Homepage Áine & Fern teaser — peppermint mist only (still listed under Collaborative in the menu /health). */
+const HOME_AINE_FERN_TEASER_SLUGS = [PEPPERMINT_MIST_SLUG] as const;
 
 /** Keep framed product art fully visible — mist bottle, STL wireframe, filament spool. */
 function productCardImageFitClass(slug: string, src: string): string {
@@ -83,7 +87,9 @@ const productMeta: Record<string, {
     altImage: MAGIKID_SHOES_THUMBNAIL_URL,
   },
   "tpu-90a-filament": {},
-    [STL_FILES_SLUG]: {},
+  [STL_FILES_SLUG]: {
+    altImage: STL_FILES_ALT_IMAGE_URL,
+  },
 };
 
 function cardMetaForSlug(slug: string) {
@@ -343,6 +349,8 @@ export default function ProductsContent({
       ? GATORS_THUMBNAIL_URL
       : slugKey === FILAMENT_SLUG
       ? FILAMENT_THUMBNAIL_URL
+      : slugKey === STL_FILES_SLUG
+      ? STL_FILES_THUMBNAIL_URL
       : isV3
       ? "/products/v3-slides/InShot_20260212_194352014.jpg"
       : (p.thumbnail || images[0]);
@@ -354,11 +362,27 @@ export default function ProductsContent({
     return { cover, alt };
   }
 
-  /** Homepage slides/slip-ons teaser. */
-  function homeFootwearTeaserGrid() {
+  /** Shared footwear product grid — teaser at top (slides/slip-ons); full catalog near bottom. */
+  function homeFootwearTeaserGrid({
+    keyPrefix = "",
+    nameTag = "h2",
+    items = displayProducts,
+    dense = false,
+  }: {
+    keyPrefix?: string;
+    nameTag?: "h2" | "h3";
+    items?: Product[];
+    /** Wider breakpoints for the full catalog (bottom of home). */
+    dense?: boolean;
+  } = {}) {
+    const NameTag = nameTag;
     return (
-      <div className="grid grid-cols-2 gap-4 sm:gap-6">
-        {displayProducts.map((p) => {
+      <div
+        className={`grid grid-cols-2 gap-4 sm:gap-6${
+          dense ? " md:grid-cols-3 xl:grid-cols-4" : ""
+        }`}
+      >
+        {items.map((p) => {
           const slugKey = (p.slug || "").trim().toLowerCase();
           const { cover, alt } = getImages(p);
           const meta = cardMetaForSlug(slugKey);
@@ -366,7 +390,7 @@ export default function ProductsContent({
 
           return (
             <Link
-              key={p.id}
+              key={`${keyPrefix}${p.id}`}
               href={`/products/${p.slug}`}
               onClick={(e) => handleCardClick(e, p.slug)}
               className={`group block outline-none cursor-pointer transition-all duration-200 active:scale-[0.98] ${
@@ -423,9 +447,9 @@ export default function ProductsContent({
                 )}
               </div>
               <div className="mt-4 px-0.5">
-                <h2 className="text-[15px] font-semibold text-neutral-900 group-hover:text-black transition-colors line-clamp-2">
+                <NameTag className="text-[15px] font-semibold text-neutral-900 group-hover:text-black transition-colors line-clamp-2">
                   {p.name}
-                </h2>
+                </NameTag>
               </div>
             </Link>
           );
@@ -504,6 +528,33 @@ export default function ProductsContent({
       </section>
     ) : null;
 
+  /** Closing footwear section — full catalog so shoppers who skip the top teaser still see every pair. */
+  const footwearBottomSection =
+    isHomeFootwearTeaser && products.length > 0 ? (
+      <section
+        id="footwear"
+        aria-labelledby="home-footwear-bottom-heading"
+        className="mt-16 sm:mt-24 lg:mt-28"
+      >
+        <div className="mb-8 sm:mb-10 text-center">
+          <h2 id="home-footwear-bottom-heading" className={homeSectionTitleClass}>
+            Footwear
+          </h2>
+        </div>
+        {homeFootwearTeaserGrid({
+          keyPrefix: "bottom-",
+          nameTag: "h3",
+          items: products,
+          dense: true,
+        })}
+        <div className="mt-10 sm:mt-12 flex justify-center">
+          <Link href="/products" className={SHOP_ALL_CTA_CLASS}>
+            Shop all footwear
+          </Link>
+        </div>
+      </section>
+    ) : null;
+
   return (
     <div className={shellClass}>
       {useFootwearBrowse ? (
@@ -536,8 +587,8 @@ export default function ProductsContent({
             </Link>
           </div>
         ) : isHomeFootwearTeaser ? (
-          /* ── Homepage footwear teaser ── */
-          <section id="footwear" aria-label="Footwear">
+          /* ── Homepage footwear teaser (slides/slip-ons); full catalog anchors #footwear below. */
+          <section aria-label="Footwear">
             {homeFootwearTeaserGrid()}
             <div className="mt-10 sm:mt-12 flex justify-center">
               <Link href="/products" className={SHOP_ALL_CTA_CLASS}>
@@ -705,18 +756,18 @@ export default function ProductsContent({
         ) : null}
         {isHomeFootwearTeaser ? (
           <section
-            id="collaborative"
-            aria-labelledby="home-collaborative-heading"
+            id="aine-fern"
+            aria-labelledby="home-aine-fern-heading"
             className="mt-16 sm:mt-24"
           >
             <div className="mb-8 sm:mb-10 text-center">
-              <h2 id="home-collaborative-heading" className={homeSectionTitleClass}>
-                Collaborative
+              <h2 id="home-aine-fern-heading" className={homeSectionTitleClass}>
+                Áine & Fern
               </h2>
             </div>
-            {/* Same 2-col square cards as the Footwear teaser so the bottle isn’t oversized. */}
-            <div className="grid grid-cols-2 gap-4 sm:gap-6">
-              {HOME_COLLABORATIVE_TEASER_SLUGS.flatMap((slug) => {
+            {/* Same half-width square card as Footwear, centered — Áine & Fern is its own home block (still under Collaborative in the menu). */}
+            <div className="mx-auto w-1/2">
+              {HOME_AINE_FERN_TEASER_SLUGS.flatMap((slug) => {
                 const p = getHealthCatalogSeed().find(
                   (item) => (item.slug || "").trim().toLowerCase() === slug,
                 );
@@ -731,7 +782,7 @@ export default function ProductsContent({
                     key={p.id}
                     href={`/products/${p.slug}`}
                     onClick={(e) => handleCardClick(e, p.slug)}
-                    className={`group block outline-none cursor-pointer transition-all duration-200 active:scale-[0.98] ${
+                    className={`group block w-full outline-none cursor-pointer transition-all duration-200 active:scale-[0.98] ${
                       isNavigating ? "pointer-events-none" : ""
                     }`}
                   >
@@ -770,7 +821,7 @@ export default function ProductsContent({
                         </div>
                       )}
                     </div>
-                    <div className="mt-4 px-0.5">
+                    <div className="mt-4 px-0.5 text-center">
                       <h3 className="text-[15px] font-semibold text-neutral-900 transition-colors group-hover:text-black line-clamp-2">
                         {p.name}
                       </h3>
@@ -778,11 +829,6 @@ export default function ProductsContent({
                   </Link>
                 );
               })}
-            </div>
-            <div className="mt-10 sm:mt-12 flex justify-center">
-              <Link href="/health" className={SHOP_ALL_CTA_CLASS}>
-                Shop all collaborative
-              </Link>
             </div>
           </section>
         ) : null}
@@ -793,6 +839,7 @@ export default function ProductsContent({
           <>
             {advancedFootwear}
             <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
+            {footwearBottomSection}
             <HomeSecondaryLinks className="mt-12 sm:mt-16" />
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
           </>
