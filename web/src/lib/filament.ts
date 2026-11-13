@@ -13,7 +13,7 @@ export const FILAMENT_YOUNG_PRICE_CENTS = 2000;
 
 /** Black spool cover — never use pink photos for the listing card. */
 export const FILAMENT_THUMBNAIL_URL =
-  "/products/tpu-90a-filament/tpu-90a-black-spool.jpg";
+  "/products/tpu-90a-filament/tpu90a-black-side.jpg";
 
 export const FILAMENT_DESCRIPTION_SHORT =
   "1kg spools of TPU 90A, foaming TPU Air, and rigid PLA. Free US shipping.";
@@ -34,15 +34,36 @@ export function filamentVariantColor(materialId: string, colorId: string) {
   return `${materialId}:${colorId}`;
 }
 
-const PINK_90A_IMAGES = [
-  "/products/tpu-90a-filament/pink-tpu-90a-spool-labeled.jpg",
-  "/products/tpu-90a-filament/pink-tpu-90a-spool-angle.jpg",
+/** White-bg side views + rotated faces, mixed with soft TPU print lifestyle shots. */
+const BLACK_90A_IMAGES = [
+  "/products/tpu-90a-filament/tpu90a-black-side.jpg",
+  "/products/tpu-90a-filament/tpu90a-black-side-rot.jpg",
+  "/products/tpu-90a-filament/tpu-black-tire-mars.jpg",
 ] as const;
 
-const BLACK_90A_IMAGES = ["/products/tpu-90a-filament/tpu-90a-black-spool.jpg"] as const;
-const TAN_90A_IMAGES = ["/products/tpu-90a-filament/filament-clear-spool.jpg"] as const;
-const AIR_IMAGES = ["/products/tpu-90a-filament/tpu-air-charcoal-spool.jpg"] as const;
-const PLA_IMAGES = ["/products/tpu-90a-filament/pla-white-spool.jpg"] as const;
+const TAN_90A_IMAGES = [
+  "/products/tpu-90a-filament/tpu90a-tan-side.jpg",
+  "/products/tpu-90a-filament/tpu90a-tan-side-rot.jpg",
+  "/products/tpu-90a-filament/tpu-tan-football-field.jpg",
+] as const;
+
+const PINK_90A_IMAGES = [
+  "/products/tpu-90a-filament/tpu90a-pink-side.jpg",
+  "/products/tpu-90a-filament/tpu90a-pink-side-rot.jpg",
+  "/products/tpu-90a-filament/tpu-pink-football-field.jpg",
+  "/products/tpu-90a-filament/tpu-pink-tire-mars.jpg",
+] as const;
+
+const AIR_IMAGES = [
+  "/products/tpu-90a-filament/tpu-air-black-side.jpg",
+  "/products/tpu-90a-filament/tpu-air-black-side-rot.jpg",
+  "/products/tpu-90a-filament/tpu-air-squish-tire.jpg",
+] as const;
+
+const PLA_IMAGES = [
+  "/products/tpu-90a-filament/pla-white-side.jpg",
+  "/products/tpu-90a-filament/pla-white-side-rot.jpg",
+] as const;
 
 export const FILAMENT_MATERIALS = [
   {
@@ -218,4 +239,29 @@ export function getAccessoryCatalogSeed(): AccessoryListProduct[] {
     },
     getStlFilesCatalogProduct(),
   ];
+}
+
+export function filamentCatalogProduct() {
+  const now = new Date(0);
+  return {
+    id: FILAMENT_SLUG,
+    slug: FILAMENT_SLUG,
+    name: FILAMENT_NAME,
+    description: FILAMENT_DESCRIPTION_SHORT,
+    priceCents: FILAMENT_PRICE_CENTS,
+    currency: "usd",
+    images: [...FILAMENT_IMAGES],
+    primaryColors: [...FILAMENT_PRIMARY_COLORS],
+    secondaryColors: [] as string[],
+    sizes: [...FILAMENT_SIZES],
+    variants: FILAMENT_VARIANTS.map((v) => ({
+      id: v.sku,
+      color: v.color,
+      sku: v.sku,
+      stock: v.stock,
+      priceCents: v.priceCents ?? null,
+    })),
+    createdAt: now,
+    updatedAt: now,
+  };
 }
