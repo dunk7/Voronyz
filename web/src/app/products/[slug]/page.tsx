@@ -60,6 +60,7 @@ import {
   FILAMENT_PRIMARY_COLORS,
   FILAMENT_SLUG,
   FILAMENT_THUMBNAIL_URL,
+  filamentCatalogProduct,
 } from "@/lib/filament";
 import {
   STL_FILES_DESCRIPTION,
@@ -187,6 +188,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       product = gatorsCatalogProduct();
     } else if (slug === PEPPERMINT_MIST_SLUG) {
       product = peppermintMistCatalogProduct();
+    } else if (slug === FILAMENT_SLUG) {
+      product = filamentCatalogProduct();
     } else {
       return (
         <div className="bg-texture-white">
@@ -208,6 +211,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     else if (slug === STL_FILES_SLUG) product = stlFilesCatalogProduct();
     else if (slug === LATTICE_INSOLES_SLUG) product = latticeInsolesCatalogProduct();
     else if (slug === GATORS_SLUG) product = gatorsCatalogProduct();
+    else if (slug === FILAMENT_SLUG) product = filamentCatalogProduct();
     else if (slug === PEPPERMINT_MIST_SLUG) product = peppermintMistCatalogProduct();
   }
   if (!product) return <div className="container py-12 text-neutral-900">Not found.</div>;

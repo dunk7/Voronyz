@@ -11,9 +11,9 @@ export const FILAMENT_COMPARE_AT_CENTS = 20000;
 /** Checkout-only via code Young — do not show on PDP/marketing. */
 export const FILAMENT_YOUNG_PRICE_CENTS = 2000;
 
-/** Black spool cover — never use pink photos for the listing card. */
+/** Face-on black clear spool — never use pink photos for the listing card. */
 export const FILAMENT_THUMBNAIL_URL =
-  "/products/tpu-90a-filament/tpu-90a-black-spool.jpg";
+  "/products/tpu-90a-filament/filament-clear-spool.jpg";
 
 export const FILAMENT_DESCRIPTION_SHORT =
   "1kg spools of TPU 90A, foaming TPU Air, and rigid PLA. Free US shipping.";
@@ -34,13 +34,23 @@ export function filamentVariantColor(materialId: string, colorId: string) {
   return `${materialId}:${colorId}`;
 }
 
-const PINK_90A_IMAGES = [
-  "/products/tpu-90a-filament/pink-tpu-90a-spool-labeled.jpg",
-  "/products/tpu-90a-filament/pink-tpu-90a-spool-angle.jpg",
+/** Face-on black spool first; scroll to the three-quarter side roll. */
+const BLACK_90A_IMAGES = [
+  "/products/tpu-90a-filament/filament-clear-spool.jpg",
+  "/products/tpu-90a-filament/tpu-90a-black-spool.jpg",
 ] as const;
 
-const BLACK_90A_IMAGES = ["/products/tpu-90a-filament/tpu-90a-black-spool.jpg"] as const;
-const TAN_90A_IMAGES = ["/products/tpu-90a-filament/filament-clear-spool.jpg"] as const;
+/** Actually tan face-on + matching three-quarter side roll. */
+const TAN_90A_IMAGES = [
+  "/products/tpu-90a-filament/tpu-90a-tan-spool.jpg",
+  "/products/tpu-90a-filament/tpu-90a-tan-spool-angle.jpg",
+] as const;
+
+/** Matching pink face-on side view + three-quarter roll. */
+const PINK_90A_IMAGES = [
+  "/products/tpu-90a-filament/tpu-90a-pink-spool.jpg",
+  "/products/tpu-90a-filament/tpu-90a-pink-spool-angle.jpg",
+] as const;
 const AIR_IMAGES = ["/products/tpu-90a-filament/tpu-air-charcoal-spool.jpg"] as const;
 const PLA_IMAGES = ["/products/tpu-90a-filament/pla-white-spool.jpg"] as const;
 
@@ -218,4 +228,30 @@ export function getAccessoryCatalogSeed(): AccessoryListProduct[] {
     },
     getStlFilesCatalogProduct(),
   ];
+}
+
+/** Local catalog fallback when Postgres is unavailable. */
+export function filamentCatalogProduct() {
+  const listedAt = catalogSeedListedAt(FILAMENT_SLUG);
+  return {
+    id: `catalog-${FILAMENT_SLUG}`,
+    slug: FILAMENT_SLUG,
+    name: FILAMENT_NAME,
+    description: FILAMENT_DESCRIPTION_SHORT,
+    priceCents: FILAMENT_PRICE_CENTS,
+    currency: "usd",
+    images: [...FILAMENT_IMAGES],
+    primaryColors: [...FILAMENT_PRIMARY_COLORS],
+    secondaryColors: [] as string[],
+    sizes: [...FILAMENT_SIZES],
+    variants: FILAMENT_VARIANTS.map((v) => ({
+      id: `catalog-variant-${v.sku}`,
+      color: v.color,
+      sku: v.sku,
+      stock: v.stock,
+      priceCents: v.priceCents,
+    })),
+    createdAt: listedAt,
+    updatedAt: listedAt,
+  };
 }
