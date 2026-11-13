@@ -34,24 +34,33 @@ export function filamentVariantColor(materialId: string, colorId: string) {
   return `${materialId}:${colorId}`;
 }
 
-/** Face-on black spool first; scroll to the three-quarter side roll. */
+/** Face-on black spool, side roll, then soft TPU tire on Mars. */
 const BLACK_90A_IMAGES = [
   "/products/tpu-90a-filament/filament-clear-spool.jpg",
   "/products/tpu-90a-filament/tpu-90a-black-spool.jpg",
+  "/products/tpu-90a-filament/tpu-black-tire-mars.jpg",
 ] as const;
 
-/** Actually tan face-on + matching three-quarter side roll. */
+/** Tan face-on + side roll, then TPU football on the field. */
 const TAN_90A_IMAGES = [
   "/products/tpu-90a-filament/tpu-90a-tan-spool.jpg",
   "/products/tpu-90a-filament/tpu-90a-tan-spool-angle.jpg",
+  "/products/tpu-90a-filament/tpu-tan-football-field.jpg",
 ] as const;
 
-/** Matching pink face-on side view + three-quarter roll. */
+/** Pink face-on + side roll, then football on grass and tire on Mars. */
 const PINK_90A_IMAGES = [
   "/products/tpu-90a-filament/tpu-90a-pink-spool.jpg",
   "/products/tpu-90a-filament/tpu-90a-pink-spool-angle.jpg",
+  "/products/tpu-90a-filament/tpu-pink-football-field.jpg",
+  "/products/tpu-90a-filament/tpu-pink-tire-mars.jpg",
 ] as const;
-const AIR_IMAGES = ["/products/tpu-90a-filament/tpu-air-charcoal-spool.jpg"] as const;
+
+/** Charcoal Air spool, then hand-squished foaming TPU tire. */
+const AIR_IMAGES = [
+  "/products/tpu-90a-filament/tpu-air-charcoal-spool.jpg",
+  "/products/tpu-90a-filament/tpu-air-squish-tire.jpg",
+] as const;
 const PLA_IMAGES = ["/products/tpu-90a-filament/pla-white-spool.jpg"] as const;
 
 export const FILAMENT_MATERIALS = [
