@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 type PrintedFootwearEducationProps = {
   className?: string;
 };
@@ -43,6 +45,27 @@ export default function PrintedFootwearEducation({
         finished with the care of a company that has spent years getting every
         step of this right.
       </p>
+
+      <div className="mt-8 grid grid-cols-1 overflow-hidden rounded-xl sm:grid-cols-2">
+        <div className="relative aspect-[16/10] sm:aspect-auto sm:min-h-[220px]">
+          <Image
+            src="/lifestyle/dragonfly-walk.jpg"
+            alt="Model walking in Voronyz Dragonfly sneakers"
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, 50vw"
+          />
+        </div>
+        <div className="relative aspect-[16/10] sm:aspect-auto sm:min-h-[220px]">
+          <Image
+            src="/lifestyle/v3-slides-street.jpg"
+            alt="Model wearing Voronyz V3 Slides on a city street"
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, 50vw"
+          />
+        </div>
+      </div>
 
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
         {TOPICS.map((topic) => (

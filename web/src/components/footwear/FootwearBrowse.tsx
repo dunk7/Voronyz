@@ -19,6 +19,9 @@ type BrowseProduct = FootwearListProduct;
 type FootwearBrowseProps = {
   products: BrowseProduct[];
   getImages: (p: BrowseProduct) => { cover: string; alt?: string };
+  /** Home embeds the same vertical shop under product spotlights. */
+  variant?: "page" | "home";
+  heading?: string;
 };
 
 /** Listing frames with empty left/right studio edges trimmed — full shoe stays in frame. */
@@ -133,18 +136,41 @@ function RankCard({
   );
 }
 
-export default function FootwearBrowse({ products, getImages }: FootwearBrowseProps) {
+export default function FootwearBrowse({
+  products,
+  getImages,
+  variant = "page",
+  heading,
+}: FootwearBrowseProps) {
   const ranked = useMemo(() => sortFootwearForTab(products, "trending"), [products]);
+  const isHome = variant === "home";
+  const title = heading ?? (isHome ? "All Footwear" : "Footwear");
+  const TitleTag = isHome ? "h2" : "h1";
 
   return (
-    <section className="bg-black text-white" aria-labelledby="footwear-browse-heading">
-      <div className="mx-auto w-full max-w-2xl px-3 pb-12 pt-8 sm:px-5 sm:pt-10">
-        <h1
+    <section
+      className={
+        isHome
+          ? "overflow-hidden rounded-3xl bg-black text-white ring-1 ring-black/10"
+          : "bg-black text-white"
+      }
+      aria-labelledby="footwear-browse-heading"
+    >
+      <div
+        className={`mx-auto w-full max-w-2xl px-3 pb-12 pt-8 sm:px-5 sm:pt-10 ${
+          isHome ? "sm:pb-14" : ""
+        }`}
+      >
+        <TitleTag
           id="footwear-browse-heading"
-          className="text-[2.65rem] font-bold leading-none tracking-tight sm:text-5xl"
+          className={
+            isHome
+              ? "text-3xl font-bold leading-none tracking-tight sm:text-4xl"
+              : "text-[2.65rem] font-bold leading-none tracking-tight sm:text-5xl"
+          }
         >
-          Footwear
-        </h1>
+          {title}
+        </TitleTag>
 
         <div className="mt-6 flex flex-col gap-5 sm:gap-6" role="list">
           {ranked.map((product, index) => {

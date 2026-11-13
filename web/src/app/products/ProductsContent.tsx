@@ -17,14 +17,12 @@ import TakeTheQuizPromo from "@/components/apparel/TakeTheQuizPromo";
 import HomeSecondaryLinks from "@/components/HomeSecondaryLinks";
 import PrintedFootwearEducation from "@/components/apparel/PrintedFootwearEducation";
 import FootwearBrowse from "@/components/footwear/FootwearBrowse";
+import HomeFootwearHighlights from "@/components/footwear/HomeFootwearHighlights";
 import FootGlowSection from "@/components/FootGlowSection";
 import MotionMediaCarousel from "@/components/MotionMediaCarousel";
 import { MAGIKID_SHOES_THUMBNAIL_URL } from "@/lib/magikidShoesThumbnail";
 import { GATORS_SLUG, GATORS_THUMBNAIL_URL } from "@/lib/gators";
 import { PEPPERMINT_MIST_SLUG } from "@/lib/aineFernPeppermintMist";
-
-/** Homepage footwear teaser — slides + slip-ons only; full catalog on /products. */
-const HOME_FOOTWEAR_TEASER_SLUGS = ["v3-slides", "slip-ons"] as const;
 
 /** Homepage apparel teaser — a couple of highlights, not the full catalog. */
 const HOME_APPAREL_TEASER_SLUGS = [
@@ -207,20 +205,11 @@ export default function ProductsContent({
   const isHomeFootwearTeaser =
     showScrollCue && category === "footwear" && !searchQuery;
   const showApparelContinuation = category === "footwear" && !searchQuery;
-  /** Shopping catalog on All Footwear; home keeps the slides/slip-ons teaser grid. */
+  /** Shopping catalog on All Footwear; home uses per-shoe spotlights + vertical All Footwear. */
   const useFootwearBrowse =
     category === "footwear" && !searchQuery && !isHomeFootwearTeaser;
 
-  const displayProducts = useMemo(() => {
-    if (!isHomeFootwearTeaser) return products;
-    const bySlug = new Map(
-      products.map((p) => [(p.slug || "").trim().toLowerCase(), p]),
-    );
-    return HOME_FOOTWEAR_TEASER_SLUGS.flatMap((slug) => {
-      const product = bySlug.get(slug);
-      return product ? [product] : [];
-    });
-  }, [isHomeFootwearTeaser, products]);
+  const displayProducts = products;
 
   const heading =
     searchQuery
@@ -354,87 +343,7 @@ export default function ProductsContent({
     return { cover, alt };
   }
 
-  /** Homepage slides/slip-ons teaser. */
-  function homeFootwearTeaserGrid() {
-    return (
-      <div className="grid grid-cols-2 gap-4 sm:gap-6">
-        {displayProducts.map((p) => {
-          const slugKey = (p.slug || "").trim().toLowerCase();
-          const { cover, alt } = getImages(p);
-          const meta = cardMetaForSlug(slugKey);
-          const isNavigating = navigatingSlug === p.slug;
-
-          return (
-            <Link
-              key={p.id}
-              href={`/products/${p.slug}`}
-              onClick={(e) => handleCardClick(e, p.slug)}
-              className={`group block outline-none cursor-pointer transition-all duration-200 active:scale-[0.98] ${
-                isNavigating ? "pointer-events-none" : ""
-              }`}
-            >
-              <div
-                className={`relative aspect-square w-full overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:shadow-xl group-hover:ring-black/10 ${
-                  isNavigating ? "ring-black/10 shadow-xl" : ""
-                }`}
-              >
-                <SoftImage
-                  key={cover}
-                  src={cover}
-                  alt={p.name}
-                  fill
-                  className={`${productCardImageFitClass(slugKey, cover)} transition-all duration-500 ${
-                    alt ? "group-hover:opacity-0" : "group-hover:scale-105"
-                  } ${isNavigating ? "scale-105 brightness-90" : ""}`}
-                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                />
-                {alt && (
-                  <SoftImage
-                    key={alt}
-                    src={alt}
-                    alt={`${p.name} – alternate view`}
-                    fill
-                    showLogoPlaceholder={false}
-                    className={`${productCardImageFitClass(slugKey, alt)} opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105`}
-                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                    loading="lazy"
-                  />
-                )}
-                {slugKey === TRAIL_MIX_SLUG && (
-                  <div className="absolute top-3 left-3 z-10">
-                    <span className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-sm bg-neutral-900 text-white">
-                      Sold Out
-                    </span>
-                  </div>
-                )}
-                {meta?.promo && (
-                  <div className="absolute bottom-0 inset-x-0 z-10">
-                    <div className="bg-gradient-to-t from-black/70 via-black/40 to-transparent px-4 pb-3.5 pt-8">
-                      <span className="text-[12px] font-semibold text-white tracking-wide">
-                        {meta.promo}
-                      </span>
-                    </div>
-                  </div>
-                )}
-                {isNavigating && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px] rounded-2xl animate-in fade-in duration-200 z-20">
-                    <LogoLoader size="sm" tone="light" showBar={false} className="!gap-0" />
-                  </div>
-                )}
-              </div>
-              <div className="mt-4 px-0.5">
-                <h2 className="text-[15px] font-semibold text-neutral-900 group-hover:text-black transition-colors line-clamp-2">
-                  {p.name}
-                </h2>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-    );
-  }
-
-  const catalogHeading = (
+  const catalogHeading = isHomeFootwearTeaser ? null : (
     <div className="mb-12 text-center">
       <TitleTag className={titleClass}>
         {headingNode}
@@ -536,15 +445,12 @@ export default function ProductsContent({
             </Link>
           </div>
         ) : isHomeFootwearTeaser ? (
-          /* ── Homepage footwear teaser ── */
-          <section id="footwear" aria-label="Footwear">
-            {homeFootwearTeaserGrid()}
-            <div className="mt-10 sm:mt-12 flex justify-center">
-              <Link href="/products" className={SHOP_ALL_CTA_CLASS}>
-                Shop all footwear
-              </Link>
-            </div>
-          </section>
+          /* ── Homepage: per-shoe spotlights, then vertical All Footwear ── */
+          <HomeFootwearHighlights
+            products={products}
+            getImages={getImages}
+            scrollCue={scrollCue}
+          />
         ) : (
           /* ── Product grid (Engineering / Collaborative / search) ── */
           <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 xl:grid-cols-4">
@@ -640,7 +546,6 @@ export default function ProductsContent({
             </div>
             <div className="grid grid-cols-2 gap-4 sm:gap-6">
               {getAccessoryCatalogSeed().map((p) => {
-                const slugKey = (p.slug || "").trim().toLowerCase();
                 const { cover, alt } = getImages(p);
                 const isNavigating = navigatingSlug === p.slug;
                 return (
