@@ -35,7 +35,7 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
     options: [
       { id: "myself", label: "Myself" },
       { id: "partner", label: "A partner or friend" },
-      { id: "kids", label: "Kids", hint: "Youth sizes & Magikid options" },
+      { id: "kids", label: "Kids", hint: "Youth sizes & easy everyday options" },
       { id: "gift", label: "Someone as a gift" },
     ],
   },
@@ -177,9 +177,9 @@ export const QUIZ_PROFILES: Record<QuizProfileId, QuizProfile> = {
     id: "kids",
     title: "Kid-ready picks",
     summary:
-      "You're shopping for younger feet — Magikid shoes are sized and built for kids, with room to customize.",
+      "You're shopping for younger feet — easy slides and slip-ons that work for kids' sizes.",
     why: "You told us this is for kids, so we're focusing on youth-friendly options.",
-    productSlugs: ["magikid-shoes", "v3-slides"],
+    productSlugs: ["v3-slides", "slip-ons"],
   },
 };
 

@@ -16,7 +16,7 @@ const SPEED = 240; // px/sec
 
 const SHELVES: Rect[] = [
   { x: 120, y: 140, w: 200, h: 70, color: "#FF6B6B", label: "V3 Slides", labelColor: "#fff" },
-  { x: 380, y: 140, w: 200, h: 70, color: "#4ECDC4", label: "Magikid", labelColor: "#0b2e2c" },
+  { x: 380, y: 140, w: 200, h: 70, color: "#4ECDC4", label: "Slip Ons", labelColor: "#0b2e2c" },
   { x: 640, y: 140, w: 200, h: 70, color: "#FFE66D", label: "Footwear", labelColor: "#5a4a00" },
   { x: 900, y: 140, w: 180, h: 70, color: "#A8E6CF", label: "New Drops", labelColor: "#1a4d3a" },
   { x: 1140, y: 140, w: 180, h: 70, color: "#54A0FF", label: "Limited", labelColor: "#fff" },
