@@ -38,26 +38,26 @@ export function filamentVariantColor(materialId: string, colorId: string) {
 const BLACK_90A_IMAGES = [
   "/products/tpu-90a-filament/tpu90a-black-side.jpg",
   "/products/tpu-90a-filament/tpu90a-black-side-rot.jpg",
-  "/products/tpu-90a-filament/tpu-black-tire-mars.jpg",
+  "/products/tpu-90a-filament/tpu-black-tire-mars-v2.jpg",
 ] as const;
 
 const TAN_90A_IMAGES = [
   "/products/tpu-90a-filament/tpu90a-tan-side.jpg",
   "/products/tpu-90a-filament/tpu90a-tan-side-rot.jpg",
-  "/products/tpu-90a-filament/tpu-tan-football-field.jpg",
+  "/products/tpu-90a-filament/tpu-tan-football-field-v2.jpg",
 ] as const;
 
 const PINK_90A_IMAGES = [
   "/products/tpu-90a-filament/tpu90a-pink-side.jpg",
   "/products/tpu-90a-filament/tpu90a-pink-side-rot.jpg",
-  "/products/tpu-90a-filament/tpu-pink-football-field.jpg",
-  "/products/tpu-90a-filament/tpu-pink-tire-mars.jpg",
+  "/products/tpu-90a-filament/tpu-pink-football-field-v2.jpg",
+  "/products/tpu-90a-filament/tpu-pink-tire-mars-v2.jpg",
 ] as const;
 
 const AIR_IMAGES = [
   "/products/tpu-90a-filament/tpu-air-black-side.jpg",
   "/products/tpu-90a-filament/tpu-air-black-side-rot.jpg",
-  "/products/tpu-90a-filament/tpu-air-squish-tire.jpg",
+  "/products/tpu-90a-filament/tpu-air-squish-tire-v2.jpg",
 ] as const;
 
 const PLA_IMAGES = [
