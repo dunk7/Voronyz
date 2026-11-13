@@ -395,7 +395,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       )}
       {!isTrailMix && !isApparel && !isFilament && !isStlFiles && !isLatticeInsoles && !isPeppermintMist && (
         <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
-          Made to order in <2 days
+          {"Made to order in <2 days"}
         </span>
       )}
       {!isTrailMix && !isApparel && !isFilament && !isStlFiles && !isLatticeInsoles && !isPeppermintMist && (

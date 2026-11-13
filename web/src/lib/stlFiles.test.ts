@@ -55,11 +55,11 @@ test("only Slip Ons has an STL file; others are out of stock and Magikid/insoles
     ["v3-slides", "slip-ons", "dragonfly", "gators"]
   );
   assert.equal(
-    STL_SHOE_FILES.some((shoe) => shoe.id === "magikid-shoes"),
+    STL_SHOE_FILES.some((shoe) => shoe.id === ("magikid-shoes" as string)),
     false
   );
   assert.equal(
-    STL_SHOE_FILES.some((shoe) => shoe.id === "voronyz-lattice-insoles"),
+    STL_SHOE_FILES.some((shoe) => shoe.id === ("voronyz-lattice-insoles" as string)),
     false
   );
 
