@@ -10,10 +10,10 @@ export default function AboutStory({ priority = false }: AboutStoryProps) {
       <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16">
         <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl ring-1 ring-neutral-200 shadow-lg">
           <Image
-            src="/lifestyle/v3-slides-loft.jpg"
-            alt="Model wearing Voronyz V3 Slides in a sunlit loft"
+            src="/lifestyle/v3-slides-street.jpg"
+            alt="Model wearing Voronyz V3 Slides on a city street beside a sports car"
             fill
-            className="object-cover"
+            className="object-cover object-center"
             priority={priority}
             sizes="(max-width: 1024px) 100vw, 50vw"
           />
@@ -44,19 +44,19 @@ export default function AboutStory({ priority = false }: AboutStoryProps) {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-100 ring-1 ring-neutral-200">
           <Image
-            src="/lifestyle/slip-ons-steps.jpg"
-            alt="Model wearing Voronyz Slip Ons on concrete steps"
+            src="/lifestyle/slip-ons-street.jpg"
+            alt="Model wearing Voronyz Slip Ons on a city street"
             fill
-            className="object-cover"
+            className="object-cover object-center"
             sizes="(max-width: 640px) 100vw, 50vw"
           />
         </div>
         <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-100 ring-1 ring-neutral-200">
           <Image
-            src="/lifestyle/dragonfly-patio.jpg"
-            alt="Model wearing Voronyz Dragonfly sneakers on a patio"
+            src="/lifestyle/dragonfly-street.jpg"
+            alt="Model wearing Voronyz Dragonfly sneakers on a city street"
             fill
-            className="object-cover"
+            className="object-cover object-center"
             sizes="(max-width: 640px) 100vw, 50vw"
           />
         </div>

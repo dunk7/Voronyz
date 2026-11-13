@@ -55,24 +55,20 @@ export default function HomeFootwearHighlights({
       {/* Slip Ons */}
       <section aria-label="Slip Ons" className="space-y-10 sm:space-y-12">
         <HomeProductSpotlight slug={SPOTLIGHT_SLUGS[1]} />
-        <LifestyleBand shot={shot("slip-ons-steps")} />
+        <LifestyleBand shot={shot("slip-ons-street")} />
       </section>
 
       {/* Dragonfly */}
       <section aria-label="The Dragonfly's" className="space-y-10 sm:space-y-12">
         <HomeProductSpotlight slug={SPOTLIGHT_SLUGS[2]} />
-        <LifestyleBand shot={shot("dragonfly-walk")} />
+        <LifestyleBand shot={shot("dragonfly-street")} />
       </section>
 
       {/* Magikid */}
       <section aria-label="Magikid Shoes" className="space-y-10 sm:space-y-12">
         <HomeProductSpotlight slug={SPOTLIGHT_SLUGS[3]} maxImages={4} />
-        <LifestyleBand shot={shot("v3-slides-loft")} />
+        <LifestyleBand shot={shot("v3-slides-green-street")} />
       </section>
-
-      {/* Brand lifestyle break before the full vertical shop */}
-      <LifestyleBand shot={shot("dragonfly-patio")} />
-      <LifestyleBand shot={shot("v3-slides-pool")} />
 
       {/* All footwear — vertical stack, same destination as Shop all footwear */}
       <div className="space-y-8 sm:space-y-10">

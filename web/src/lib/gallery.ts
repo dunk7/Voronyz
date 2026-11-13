@@ -29,31 +29,21 @@ export const GALLERY_PHOTOS: GalleryPhoto[] = [
   {
     id: "lifestyle-v3-slides-street",
     src: "/lifestyle/v3-slides-street.jpg",
-    alt: "Model wearing black Voronyz V3 Slides on a city street",
+    alt: "Model wearing black Voronyz V3 Slides on a city street beside a sports car",
   },
   {
-    id: "lifestyle-slip-ons-steps",
-    src: "/lifestyle/slip-ons-steps.jpg",
-    alt: "Model wearing black Voronyz Slip Ons on concrete steps",
+    id: "lifestyle-slip-ons-street",
+    src: "/lifestyle/slip-ons-street.jpg",
+    alt: "Model wearing black Voronyz Slip Ons on a city street beside a sports car",
   },
   {
-    id: "lifestyle-dragonfly-walk",
-    src: "/lifestyle/dragonfly-walk.jpg",
-    alt: "Model walking in black Voronyz Dragonfly sneakers",
+    id: "lifestyle-dragonfly-street",
+    src: "/lifestyle/dragonfly-street.jpg",
+    alt: "Model walking in black Voronyz Dragonfly sneakers on a city street",
   },
   {
-    id: "lifestyle-v3-slides-loft",
-    src: "/lifestyle/v3-slides-loft.jpg",
-    alt: "Model wearing sage Voronyz V3 Slides in a sunlit loft",
-  },
-  {
-    id: "lifestyle-dragonfly-patio",
-    src: "/lifestyle/dragonfly-patio.jpg",
-    alt: "Model wearing black Voronyz Dragonfly sneakers on a patio",
-  },
-  {
-    id: "lifestyle-v3-slides-pool",
-    src: "/lifestyle/v3-slides-pool.jpg",
-    alt: "Close-up of sage Voronyz V3 Slides worn by a pool",
+    id: "lifestyle-v3-slides-green-street",
+    src: "/lifestyle/v3-slides-green-street.jpg",
+    alt: "Model wearing sage Voronyz V3 Slides on a city street beside a sports car",
   },
 ];

@@ -49,19 +49,19 @@ export default function PrintedFootwearEducation({
       <div className="mt-8 grid grid-cols-1 overflow-hidden rounded-xl sm:grid-cols-2">
         <div className="relative aspect-[16/10] sm:aspect-auto sm:min-h-[220px]">
           <Image
-            src="/lifestyle/dragonfly-walk.jpg"
-            alt="Model walking in Voronyz Dragonfly sneakers"
+            src="/lifestyle/dragonfly-street.jpg"
+            alt="Model walking in Voronyz Dragonfly sneakers on a city street"
             fill
-            className="object-cover"
+            className="object-cover object-center"
             sizes="(max-width: 640px) 100vw, 50vw"
           />
         </div>
         <div className="relative aspect-[16/10] sm:aspect-auto sm:min-h-[220px]">
           <Image
             src="/lifestyle/v3-slides-street.jpg"
-            alt="Model wearing Voronyz V3 Slides on a city street"
+            alt="Model wearing Voronyz V3 Slides on a city street beside a sports car"
             fill
-            className="object-cover"
+            className="object-cover object-center"
             sizes="(max-width: 640px) 100vw, 50vw"
           />
         </div>
