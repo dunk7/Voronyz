@@ -306,6 +306,11 @@ export default function AddToCart({
       ) {
         return primaryParam.toLowerCase();
       }
+      // Filament page frame sets the gallery default (black TPU 90A).
+      const filamentDefault = filamentPageSelection?.key;
+      if (filamentDefault && primaryColors.includes(filamentDefault)) {
+        return filamentDefault;
+      }
       // Prefer first in-stock color (matches display order: available first)
       const firstAvailable = primaryColors.find((color) => {
         if (unavailableColors.includes(color)) return false;
