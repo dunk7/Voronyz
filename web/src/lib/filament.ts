@@ -232,7 +232,7 @@ export function getAccessoryCatalogSeed(): AccessoryListProduct[] {
 
 /** Local catalog fallback when Postgres is unavailable. */
 export function filamentCatalogProduct() {
-  const listedAt = catalogSeedListedAt(FILAMENT_SLUG);
+  const listedAt = new Date(catalogSeedListedAt(FILAMENT_SLUG));
   return {
     id: `catalog-${FILAMENT_SLUG}`,
     slug: FILAMENT_SLUG,
