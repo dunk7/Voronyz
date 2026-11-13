@@ -25,28 +25,26 @@ test("STL listing is Voronyz STL at $1 per shoe file", () => {
   assert.equal(orderIncludesStlDownload([{ name: "Slip Ons" }]), false);
 });
 
-test("STL thumbnail is Slip On wireframe; gallery 2 and 3 are real Slip On photos", () => {
+test("STL thumbnail is wireframe art; product photos come after for gallery scroll", () => {
   assert.equal(STL_FILES_THUMBNAIL_URL, "/products/stl-files/cover.jpg");
-  // Thumbnail stays on dedicated wireframe art — never a Slip On product photo path.
-  assert.equal(STL_FILES_THUMBNAIL_URL.includes("/products/slip-ons/"), false);
+  assert.equal(STL_FILES_ALT_IMAGE_URL, "/products/stl-files/alt.jpg");
   assert.equal(STL_FILES_IMAGES[0], STL_FILES_THUMBNAIL_URL);
+  assert.equal(STL_FILES_IMAGES[1], STL_FILES_ALT_IMAGE_URL);
+  // Listing art stays on the dedicated stl-files wireframe assets.
+  assert.equal(STL_FILES_THUMBNAIL_URL.includes("/products/slip-ons/"), false);
+  assert.equal(STL_FILES_ALT_IMAGE_URL.includes("/products/slip-ons/"), false);
+  // After click, shoppers can scroll past the mesh to real Slip On photos.
   assert.deepEqual(
-    [...STL_FILES_IMAGES.slice(1)],
+    [...STL_FILES_IMAGES.slice(2)],
     [...STL_FILES_PRODUCT_PREVIEW_IMAGES]
   );
-  assert.equal(STL_FILES_PRODUCT_PREVIEW_IMAGES.length, 2);
+  assert.ok(STL_FILES_PRODUCT_PREVIEW_IMAGES.length >= 3);
   assert.equal(
     STL_FILES_PRODUCT_PREVIEW_IMAGES.every((src) =>
       src.startsWith("/products/slip-ons/")
     ),
     true
   );
-  assert.equal(STL_FILES_ALT_IMAGE_URL, STL_FILES_PRODUCT_PREVIEW_IMAGES[0]);
-  assert.deepEqual([...STL_FILES_IMAGES], [
-    "/products/stl-files/cover.jpg",
-    "/products/slip-ons/InShot_20260405_203151152.jpg",
-    "/products/slip-ons/InShot_20260405_203425292.jpg",
-  ]);
 });
 
 test("only Slip Ons has an STL file; others are out of stock and Magikid/insoles are gone", () => {
