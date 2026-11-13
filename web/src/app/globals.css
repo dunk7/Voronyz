@@ -139,11 +139,90 @@ video {
 }
 
 /*
-  Homepage hero: solid black behind the GIF so the white headline stays
-  readable. Shop panels use the hex honeycomb.
+  Homepage: solid black below the fold. The top stage (.hero-paper) is a
+  full-bleed crinkled black poster sheet. Product/shop pages keep the hex honeycomb.
 */
 .hero-stage {
   background-color: #000;
+}
+
+.hero-paper {
+  /* Fallback + belt: paper is the stage itself, not a inset card on flat black. */
+  background-color: #0a0a0a;
+  background-image: url("/graphics/crinkled-poster.jpg");
+  background-size: cover;
+  background-position: center 28%;
+  background-repeat: no-repeat;
+  min-height: min(94svh, 58rem);
+}
+
+.hero-paper-sheet {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 28%;
+  pointer-events: none;
+  user-select: none;
+  /* Asset is already contrast-lifted; no filter — filters create isolation groups. */
+}
+
+/*
+  Zellerfeld-style side falloff on the paper stage. Desktop only — a
+  left-to-right fade under the stacked mobile headline reads uneven.
+*/
+.hero-side-shade {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .hero-side-shade {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: linear-gradient(
+      to right,
+      #000 0%,
+      rgb(0 0 0 / 0.55) 7%,
+      transparent 16%,
+      transparent 84%,
+      rgb(0 0 0 / 0.55) 93%,
+      #000 100%
+    );
+  }
+}
+
+.hero-paper-kicker {
+  color: #f0f0f0;
+  text-shadow: 0 1px 12px rgb(0 0 0 / 0.55);
+}
+
+.hero-paper-title {
+  color: #fff;
+  text-shadow: 0 2px 24px rgb(0 0 0 / 0.55);
+}
+
+.hero-paper-support {
+  color: #e8e8e8;
+  text-shadow: 0 1px 14px rgb(0 0 0 / 0.5);
+}
+
+.hero-foot-glow {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Cap height so the support line stays under the mark in the first viewport. */
+.hero-foot-glow .foot-glow-frame {
+  width: auto;
+  max-width: 100%;
+  height: min(50vh, 28rem);
+  aspect-ratio: 2000 / 1399;
 }
 
 .bg-texture-white {
@@ -613,7 +692,7 @@ html.site-dark ::selection {
   filter: drop-shadow(0 22px 28px rgb(0 0 0 / 0.28));
 }
 
-/* Crinkled black poster paper around the glow / running shoes. */
+/* Crinkled black poster paper around the glow / product spin. */
 .glow-poster {
   margin-inline: auto;
   width: 100%;
@@ -636,12 +715,12 @@ html.site-dark ::selection {
 }
 
 .glow-poster-run {
-  max-width: 28rem;
+  max-width: 22rem;
 }
 
 @media (min-width: 640px) {
   .glow-poster-run {
-    max-width: 32rem;
+    max-width: 26rem;
   }
 }
 
@@ -653,6 +732,15 @@ html.site-dark ::selection {
     0 22px 40px rgb(0 0 0 / 0.42),
     0 0 0 1px rgb(255 255 255 / 0.08);
   transform: rotate(-0.7deg);
+}
+
+/* White studio void for the V3 360° spin — no ground, no paper grain. */
+.glow-poster-sheet-spin {
+  background: #ffffff;
+  transform: none;
+  box-shadow:
+    0 18px 36px rgb(0 0 0 / 0.12),
+    0 0 0 1px rgb(0 0 0 / 0.06);
 }
 
 .glow-poster-paper {
@@ -689,22 +777,21 @@ html.site-dark ::selection {
 }
 
 .foot-glow-hero-frame {
-  overflow: hidden;
+  overflow: visible;
+  isolation: auto;
+  background-color: transparent !important;
 }
 
+/* Transparent glow PNGs — paper shows through; no mix-blend stacking traps. */
 .foot-glow-hero-frame .foot-glow-layer {
-  object-fit: cover;
-  object-position: center top;
-  /*
-    The x-ray PNG has ~8.3% empty canvas above the glow and ~7.5% below.
-    Shift and enlarge so the glow meets the header with no black strip.
-  */
-  inset: auto;
-  left: 0;
-  right: 0;
-  top: -10%;
-  width: 100%;
-  height: 120%;
+  object-fit: contain;
+  object-position: center center;
+  mix-blend-mode: normal;
+}
+
+.foot-glow-hero-frame .foot-glow-hatch {
+  mix-blend-mode: screen;
+  opacity: 0.9;
 }
 
 .foot-glow-print-frame {

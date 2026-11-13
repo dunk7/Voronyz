@@ -1,15 +1,15 @@
 import type { ReactNode } from "react";
-import DragonflySprint from "@/components/DragonflySprint";
+import ProductSpin from "@/components/ProductSpin";
 
 type FootGlowSectionProps = {
   className?: string;
   /** Smaller print — homepage placement above the catalog. */
   poster?: boolean;
   /**
-   * Homepage keeps the foot x-ray. All Footwear uses a separate lattice-shoe outline.
+   * Homepage keeps the foot x-ray. All Footwear uses the V3 Slides 360° spin.
    */
   variant?: "xray" | "print";
-  /** Homepage hero. The x-ray sits on a small crinkled poster. */
+  /** Homepage hero. Dominant foot glow on the full-bleed paper stage. */
   hero?: boolean;
   /** Sits under the poster, left-aligned, so it never covers the artwork. */
   caption?: ReactNode;
@@ -18,26 +18,35 @@ type FootGlowSectionProps = {
 /** Original artwork, served as uploaded. The glow is opacity only. */
 const XRAY_SRC = "/graphics/foot-xray.png";
 const HATCH_SRC = "/graphics/foot-hatch.png";
+/** Hero assets: near-black punched to alpha so paper shows through (no blend trap). */
+const XRAY_HERO_SRC = "/graphics/foot-xray-glow.png";
+const HATCH_HERO_SRC = "/graphics/foot-hatch-glow.png";
 const PAPER_SRC = "/graphics/crinkled-poster.jpg";
 const POSTER_LINE = "Shaped around your foot.";
+const SPIN_LINE = "Foamed TPU lattice — every angle.";
 
 function GlowPoster({
   children,
   compact = false,
   line = POSTER_LINE,
+  paper = true,
 }: {
   children: ReactNode;
   compact?: boolean;
   line?: string;
+  /** Crinkled overlay — skip for the white product-spin stage. */
+  paper?: boolean;
 }) {
   return (
     <figure
       className={`glow-poster ${compact ? "glow-poster-compact" : "glow-poster-run"}`}
     >
-      <div className="glow-poster-sheet">
+      <div className={`glow-poster-sheet ${paper ? "" : "glow-poster-sheet-spin"}`}>
         {children}
-        {/* eslint-disable-next-line @next/next/no-img-element -- paper grain overlay */}
-        <img src={PAPER_SRC} alt="" aria-hidden className="glow-poster-paper" />
+        {paper ? (
+          // eslint-disable-next-line @next/next/no-img-element -- paper grain overlay
+          <img src={PAPER_SRC} alt="" aria-hidden className="glow-poster-paper" />
+        ) : null}
       </div>
       <figcaption className="glow-poster-copy">{line}</figcaption>
     </figure>
@@ -47,7 +56,7 @@ function GlowPoster({
 /**
  * Full-bleed pause between Footwear and Apparel.
  * The line drawing sits over the x-ray as a soft screen overlay and slowly breathes.
- * All Footwear uses the ghost Dragonfly pair sprinting on a crinkled poster.
+ * All Footwear uses a clean 360° spin of the V3 Slides mesh.
  */
 export default function FootGlowSection({
   className = "",
@@ -56,15 +65,18 @@ export default function FootGlowSection({
   caption,
   variant = "xray",
 }: FootGlowSectionProps) {
+  const xraySrc = hero ? XRAY_HERO_SRC : XRAY_SRC;
+  const hatchSrc = hero ? HATCH_HERO_SRC : HATCH_SRC;
+
   const xray = (
         <div
-          className={`foot-glow-frame relative aspect-[2000/1399] w-full bg-black ${
-            poster ? "foot-glow-poster-frame" : ""
-          }`}
+          className={`foot-glow-frame relative aspect-[2000/1399] w-full ${
+            hero ? "foot-glow-hero-frame" : "bg-black"
+          } ${poster ? "foot-glow-poster-frame" : ""}`}
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- keep the uploaded PNG bytes, no optimizer */}
           <img
-            src={XRAY_SRC}
+            src={xraySrc}
             alt="X-ray of a foot inside a shoe"
             width={1500}
             height={1049}
@@ -73,7 +85,7 @@ export default function FootGlowSection({
           />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={HATCH_SRC}
+            src={hatchSrc}
             alt=""
             aria-hidden
             width={2000}
@@ -86,8 +98,8 @@ export default function FootGlowSection({
 
   if (hero) {
     return (
-      <div className={`bg-black ${className}`}>
-        <GlowPoster compact>{xray}</GlowPoster>
+      <div aria-hidden className={`hero-foot-glow ${className}`}>
+        {xray}
       </div>
     );
   }
@@ -111,11 +123,11 @@ export default function FootGlowSection({
   if (variant === "print") {
     return (
       <section
-        aria-label="Dragonfly shoes running"
+        aria-label="Voronyz V3 Slides 360 degree spin"
         className={`foot-glow-section relative py-10 sm:py-14 ${className}`}
       >
-        <GlowPoster>
-          <DragonflySprint />
+        <GlowPoster paper={false} line={SPIN_LINE}>
+          <ProductSpin />
         </GlowPoster>
       </section>
     );

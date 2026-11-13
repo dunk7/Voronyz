@@ -28,6 +28,21 @@ test("homepage hero stage stays black and does not reuse the shop hex tile", () 
   assert.match(hero[0], /background-color:\s*#000/);
 });
 
+test("top hero fills the viewport with clearly crinkled black paper", () => {
+  assert.match(home, /hero-paper/);
+  assert.match(home, /hero-paper-sheet/);
+  assert.match(home, /crinkled-poster\.jpg/);
+  const paper = css.match(/\.hero-paper \{[\s\S]*?\n\}/);
+  assert.ok(paper, "expected a full-bleed paper stage on the top hero");
+  assert.match(paper[0], /background-image:\s*url\("\/graphics\/crinkled-poster\.jpg"\)/);
+  assert.match(paper[0], /background-size:\s*cover/);
+  const sheet = css.match(/\.hero-paper-sheet \{[\s\S]*?\n\}/);
+  assert.ok(sheet, "expected a full-bleed paper sheet on the top hero");
+  assert.match(sheet[0], /object-fit:\s*cover/);
+  assert.match(home, /max-w-7xl/);
+  assert.doesNotMatch(home, /glow-poster-compact/);
+});
+
 test("shop hex tiles stay static and are not pointer-driven", () => {
   const shopMesh = css.match(/\.bg-texture-white::before \{[\s\S]*?\n\}/);
   assert.ok(shopMesh, "expected a hex overlay on shop panels");
@@ -40,11 +55,13 @@ test("shop hex tiles stay static and are not pointer-driven", () => {
   assert.doesNotMatch(css, /HexTextureMotion/);
 });
 
-test("homepage keeps hex shop panels without a hero Voronoi lattice", () => {
+test("homepage uses solid black without hex; shop pages keep the honeycomb", () => {
   assert.doesNotMatch(home, /HeroVoronoiLattice/);
   assert.doesNotMatch(home, /shop-hex-rail/);
   assert.doesNotMatch(home, /bg-texture-hex/);
-  assert.match(home, /className="bg-texture-white"/);
+  assert.doesNotMatch(home, /bg-texture-white/);
+  assert.match(home, /className="bg-black"/);
+  assert.match(home, /hero-paper/);
   assert.match(footer, /bg-texture-white/);
   assert.doesNotMatch(footer, /bg-texture-hex/);
   assert.doesNotMatch(css, /\.shop-hex-rail/);
@@ -61,4 +78,5 @@ test("hero stage has no colorful Voronoi topology behind the GIF", () => {
   assert.ok(hero, "expected a homepage hero stage");
   assert.match(hero[0], /background-color:\s*#000/);
   assert.doesNotMatch(hero[0], /background-image/);
+  assert.doesNotMatch(css, /\.hero-paper::before \{[\s\S]*?#ff4d6d/);
 });
