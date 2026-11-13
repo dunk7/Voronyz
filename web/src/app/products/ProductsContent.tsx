@@ -112,7 +112,7 @@ type ProductsContentProps = {
   showScrollCue?: boolean;
   /** Skip the hex wrapper — homepage uses solid black; shop pages keep the honeycomb. */
   embedded?: boolean;
-  /** Homepage scroll clip, placed between the footwear grid and apparel. */
+  /** Optional mid-page slot between the footwear grid and apparel (unused on the current homepage). */
   betweenFootwearAndApparel?: ReactNode;
 };
 

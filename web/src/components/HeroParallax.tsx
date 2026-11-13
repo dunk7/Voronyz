@@ -23,20 +23,26 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
-        const rect = el.getBoundingClientRect();
-        const elementHeight = rect.height || el.offsetHeight || 1;
-        // Scrub against viewport entry (not offsetTop) so a section below
-        // the hero does not look finished as soon as the page moves.
-        // Desktop holds the closed frame until the slide is mostly in front
-        // of the reader. Mobile starts sooner — tall phones otherwise keep
-        // the closed frame on screen for a long scroll before it opens.
-        const entered = window.innerHeight - rect.top;
-        const isNarrow = window.matchMedia("(max-width: 767px)").matches;
-        const arrived = window.innerHeight * (isNarrow ? 0.28 : 0.72);
-        const travel = isNarrow
-          ? Math.max(elementHeight * 0.7, window.innerHeight * 0.45)
-          : Math.max(elementHeight * 0.85, window.innerHeight * 0.65);
-        const rawProgress = Math.max(0, Math.min(1, (entered - arrived) / travel));
+        // Prefer a tall sticky scrub track (`data-hero-scrub`) so the open
+        // spans a full scroll through the section instead of finishing after
+        // a tiny nudge once the canvas enters view.
+        const track = el.closest("[data-hero-scrub]") as HTMLElement | null;
+        let rawProgress = 0;
+        if (track) {
+          const trackRect = track.getBoundingClientRect();
+          const range = Math.max(1, track.offsetHeight - window.innerHeight);
+          const scrolled = Math.min(range, Math.max(0, -trackRect.top));
+          // Hold closed briefly, then open across most of the remaining travel.
+          const t = scrolled / range;
+          rawProgress = Math.max(0, Math.min(1, (t - 0.06) / 0.82));
+        } else {
+          const rect = el.getBoundingClientRect();
+          const elementHeight = rect.height || el.offsetHeight || 1;
+          const entered = window.innerHeight - rect.top;
+          const arrived = window.innerHeight * 0.45;
+          const travel = Math.max(elementHeight * 1.35, window.innerHeight * 1.1);
+          rawProgress = Math.max(0, Math.min(1, (entered - arrived) / travel));
+        }
         smoothedRef.current = rawProgress;
         setSmoothedProgress(rawProgress);
         ticking = false;
@@ -208,7 +214,7 @@ export default function HeroParallax({ children }: { children: React.ReactNode }
   return (
     <div
       ref={ref}
-      className="relative overflow-visible bg-black min-h-[300px] md:min-h-[50vh] lg:min-h-[62vh]"
+      className="relative overflow-visible bg-black min-h-[min(70vh,560px)] w-full md:min-h-[58vh] lg:min-h-[64vh]"
     >
       <canvas
         ref={canvasRef}
