@@ -1,9 +1,4 @@
 import {
-  MAGIKID_SHOES_BASE_PRICE_CENTS,
-  MAGIKID_SHOES_DESCRIPTION_SHORT,
-  MAGIKID_SHOES_IMAGES,
-} from "@/lib/magikidShoesThumbnail";
-import {
   GATORS_DESCRIPTION_SHORT,
   GATORS_IMAGES,
   GATORS_NAME,
@@ -60,7 +55,8 @@ export type FootwearCatalogItem = {
 
 /**
  * Display order for All Footwear:
- * Slides → Slip Ons → Sneakers (Dragonfly) → Magikid → Lattice Insoles → Gators.
+ * Slides → Slip Ons → Sneakers (Dragonfly) → Lattice Insoles → Gators.
+ * Magikid Shoes are delisted for now (module kept for a later restore).
  * Gators stay last while they still use a coming-soon placeholder image.
  */
 export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
@@ -116,13 +112,6 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
       "/products/dragonfly/InShot_20260212_155809942.jpg",
       "/products/dragonfly/InShot_20260212_160512335.jpg",
     ],
-  },
-  {
-    slug: "magikid-shoes",
-    name: "Magikid Shoes",
-    description: MAGIKID_SHOES_DESCRIPTION_SHORT,
-    priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
-    images: [...MAGIKID_SHOES_IMAGES],
   },
   {
     slug: LATTICE_INSOLES_SLUG,

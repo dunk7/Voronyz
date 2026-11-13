@@ -16,7 +16,6 @@ export const FOOTWEAR_SWATCH_COLORS: Record<string, readonly string[]> = {
   dragonfly: ["black", "white", "red", "#007FFF", "pink"],
   "slip-ons": ["black", "grey", "white", "orange", "pink"],
   [GATORS_SLUG]: GATORS_PRIMARY_COLORS,
-  "magikid-shoes": ["black", "grey", "white", "orange", "pink"],
   [LATTICE_INSOLES_SLUG]: LATTICE_INSOLES_PRIMARY_COLORS,
 };
 
@@ -33,6 +32,7 @@ const NAMED_SWATCH: Record<string, string> = {
 };
 
 export function footwearBrandLabel(slug: string): string {
+  // Magikid Shoes are delisted; keep the brand label for older order rows.
   return slug.trim().toLowerCase() === "magikid-shoes" ? "MAGIKID" : "VORONYZ";
 }
 
