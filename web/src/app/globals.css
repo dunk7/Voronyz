@@ -196,19 +196,48 @@ video {
   }
 }
 
+/*
+  Soft local darkening behind the hero type so white letters lift off the
+  crinkled paper without a boxed card.
+*/
+.hero-paper-copy {
+  position: relative;
+  isolation: isolate;
+}
+
+.hero-paper-copy::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  z-index: -1;
+  width: min(112%, 62rem);
+  height: calc(100% + 5.5rem);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 74% 70% at 50% 48%,
+    rgb(0 0 0 / 0.88) 0%,
+    rgb(0 0 0 / 0.58) 40%,
+    rgb(0 0 0 / 0.22) 66%,
+    transparent 82%
+  );
+}
+
 .hero-paper-kicker {
-  color: #f0f0f0;
-  text-shadow: 0 1px 12px rgb(0 0 0 / 0.55);
+  color: #fff;
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 0.95),
+    0 4px 24px rgb(0 0 0 / 0.75),
+    0 0 40px rgb(0 0 0 / 0.4);
 }
 
 .hero-paper-title {
   color: #fff;
-  text-shadow: 0 2px 24px rgb(0 0 0 / 0.55);
-}
-
-.hero-paper-support {
-  color: #e8e8e8;
-  text-shadow: 0 1px 14px rgb(0 0 0 / 0.5);
+  text-shadow:
+    0 1px 2px rgb(0 0 0 / 0.95),
+    0 6px 36px rgb(0 0 0 / 0.8),
+    0 0 60px rgb(0 0 0 / 0.5);
 }
 
 .hero-foot-glow {
@@ -217,12 +246,70 @@ video {
   justify-content: center;
 }
 
-/* Cap height so the support line stays under the mark in the first viewport. */
+/*
+  One shared width for skeleton + support line. Text size uses cqw so it
+  tracks that same measure as the glow scales.
+*/
+.hero-foot-glow-stack {
+  --hero-foot-h: min(34vh, 20rem);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: min(100%, calc(var(--hero-foot-h) * 2000 / 1399));
+  container-type: inline-size;
+  container-name: hero-foot;
+}
+
+@media (min-width: 1024px) {
+  .hero-foot-glow-stack {
+    --hero-foot-h: min(32vh, 18rem);
+  }
+}
+
 .hero-foot-glow .foot-glow-frame {
-  width: auto;
-  max-width: 100%;
-  height: min(50vh, 28rem);
+  display: block;
+  width: 100%;
+  height: auto;
   aspect-ratio: 2000 / 1399;
+}
+
+.hero-paper-support {
+  position: relative;
+  isolation: isolate;
+  margin-top: 0.75rem;
+  width: 100%;
+  padding-inline: 2%;
+  box-sizing: border-box;
+  text-align: center;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.015em;
+  color: #fff;
+  /* Track the skeleton width — larger when the glow is larger. */
+  font-size: clamp(1.25rem, 8cqw, 2.35rem);
+  text-shadow:
+    0 1px 1px rgb(0 0 0 / 1),
+    0 2px 4px rgb(0 0 0 / 0.95),
+    0 8px 32px rgb(0 0 0 / 0.95),
+    0 0 56px rgb(0 0 0 / 0.6);
+}
+
+.hero-paper-support::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: -1;
+  width: 112%;
+  height: calc(100% + 1.35rem);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 72% 85% at 50% 50%,
+    rgb(0 0 0 / 0.88) 0%,
+    rgb(0 0 0 / 0.45) 52%,
+    transparent 78%
+  );
 }
 
 .bg-texture-white {

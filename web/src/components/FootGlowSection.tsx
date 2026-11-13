@@ -92,8 +92,11 @@ export default function FootGlowSection({
 
   if (hero) {
     return (
-      <div aria-hidden className={`hero-foot-glow ${className}`}>
-        {xray}
+      <div className={`hero-foot-glow ${className}`}>
+        <figure className="hero-foot-glow-stack">
+          {xray}
+          <figcaption className="hero-paper-support">{POSTER_LINE}</figcaption>
+        </figure>
       </div>
     );
   }

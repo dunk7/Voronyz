@@ -48,24 +48,21 @@ export default function Home() {
           className="hero-paper-sheet"
         />
         <div className="hero-side-shade" aria-hidden />
-        <div className="relative z-[1] mx-auto flex min-h-[inherit] w-full max-w-[90rem] flex-col px-4 pb-10 pt-6 sm:px-6 sm:pb-14 sm:pt-8 lg:px-10">
-          {/* Brand + headline lead the first viewport from the top center. */}
-          <div className="mx-auto w-full max-w-3xl space-y-3 text-center sm:space-y-4">
-            <p className="hero-paper-kicker text-[11px] font-medium uppercase tracking-[0.18em] sm:text-xs">
+        <div className="relative z-[1] mx-auto flex min-h-[inherit] w-full max-w-[90rem] flex-col justify-start px-4 pb-8 pt-6 sm:px-6 sm:pb-10 sm:pt-8 lg:px-10">
+          {/* Product line leads; brand kicker stays smaller and clear of the nav mark. */}
+          <div className="hero-paper-copy mx-auto mt-12 w-full max-w-5xl space-y-3 text-center sm:mt-14 sm:space-y-4 lg:mt-16">
+            <p className="hero-paper-kicker font-logo text-sm font-semibold uppercase tracking-[0.2em] sm:text-base sm:tracking-[0.22em] md:text-lg">
               Voronyz Engineering
             </p>
 
-            <h1 className="hero-paper-title text-3xl font-semibold leading-[1.08] tracking-tight xs:text-4xl sm:text-5xl sm:leading-[1.1] md:text-6xl">
+            <h1 className="hero-paper-title text-4xl font-semibold leading-[1.06] tracking-tight xs:text-5xl sm:text-6xl sm:leading-[1.05] md:text-7xl">
               3D Printed<br className="hidden sm:block" /> Footwear
             </h1>
           </div>
 
-          {/* Foot glow stays the dominant visual; support line sits tight under it. */}
-          <div className="mx-auto mt-4 w-full max-w-3xl sm:mt-5 sm:max-w-4xl lg:max-w-5xl">
+          {/* Foot glow stays the dominant visual; support line locks to its width. */}
+          <div className="mx-auto mt-3 w-full max-w-3xl sm:mt-4 sm:max-w-4xl lg:max-w-5xl">
             <FootGlowSection hero />
-            <p className="hero-paper-support mt-2 text-center text-base leading-relaxed sm:mt-2.5 sm:text-lg">
-              Shaped around your foot.
-            </p>
           </div>
         </div>
       </section>
