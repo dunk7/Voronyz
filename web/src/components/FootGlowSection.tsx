@@ -34,7 +34,7 @@ function GlowPoster({
   children: ReactNode;
   compact?: boolean;
   line?: string;
-  /** Crinkled overlay — skip for the white product-spin stage. */
+  /** Crinkled overlay — skip for the black product-spin stage. */
   paper?: boolean;
 }) {
   return (

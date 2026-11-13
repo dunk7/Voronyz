@@ -1,32 +1,26 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
-/** Exact V3 Slides mesh turntable — rendered from v29.stl, white void, no ground. */
-const SPIN_MP4 = "/graphics/v3-slides-spin.mp4";
-const SPIN_GIF = "/graphics/v3-slides-spin.gif";
-const SPIN_POSTER = "/graphics/v3-slides-spin-poster.png";
+/** Exact V3 Slides mesh turntable — white TPU on black void, no ground. */
+const SPIN_MP4 = "/graphics/v3-slides-spin-v2.mp4";
+const SPIN_POSTER = "/graphics/v3-slides-spin-v2-poster.png";
 
 /**
- * Clean 360° product spin of one V3 Slide.
- * Prefers the sharp MP4; falls back to the GIF if video cannot play.
+ * Smooth 360° product spin of one V3 Slide.
+ * High-frame-rate MP4 only — no GIF path (GIF dither reads as choppy).
  */
 export default function ProductSpin() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [useGif, setUseGif] = useState(false);
 
   useEffect(() => {
-    if (useGif) return;
     const el = videoRef.current;
     if (!el) return;
 
     const tryPlay = () => {
       el.muted = true;
-      void el.play().catch(() => setUseGif(true));
+      void el.play().catch(() => {});
     };
-
-    const onError = () => setUseGif(true);
-    el.addEventListener("error", onError);
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -38,31 +32,14 @@ export default function ProductSpin() {
     observer.observe(el);
     tryPlay();
 
-    return () => {
-      observer.disconnect();
-      el.removeEventListener("error", onError);
-    };
-  }, [useGif]);
-
-  if (useGif) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element -- looping product GIF asset
-      <img
-        src={SPIN_GIF}
-        alt="Voronyz V3 Slides spinning 360 degrees"
-        width={560}
-        height={560}
-        className="block h-auto w-full bg-white"
-        draggable={false}
-      />
-    );
-  }
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <video
       ref={videoRef}
       src={SPIN_MP4}
-      className="block h-auto w-full bg-white"
+      className="block h-auto w-full bg-black"
       style={{ aspectRatio: "1 / 1" }}
       poster={SPIN_POSTER}
       muted
@@ -71,7 +48,6 @@ export default function ProductSpin() {
       autoPlay
       preload="auto"
       aria-label="Voronyz V3 Slides spinning 360 degrees"
-      onError={() => setUseGif(true)}
     />
   );
 }
