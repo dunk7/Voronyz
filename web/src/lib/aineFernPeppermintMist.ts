@@ -23,11 +23,10 @@ export const PEPPERMINT_MIST_HOW_ITS_MADE =
 export const PEPPERMINT_MIST_META_DESCRIPTION =
   "Áine & Fern — peppermint freshening mist that pairs with footwear, bags & belongings. 3 FL OZ. $20 on Voronyz Collaborative.";
 
-/** Front → side → back; thumbnail is front only (not the old 3-up mock). */
+/** Front → side; thumbnail is front only (not the old 3-up mock). */
 export const PEPPERMINT_MIST_IMAGES = [
   PEPPERMINT_MIST_THUMBNAIL_URL,
   "/products/aine-fern-peppermint-freshening-mist/peppermint-freshening-mist-side.jpg",
-  "/products/aine-fern-peppermint-freshening-mist/peppermint-freshening-mist-back.jpg",
 ] as const;
 
 export const PEPPERMINT_MIST_PRIMARY_COLORS = ["peppermint"] as const;
