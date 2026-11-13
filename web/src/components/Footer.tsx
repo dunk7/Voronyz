@@ -9,8 +9,14 @@ export default function Footer() {
     return null;
   }
 
+  // Homepage stays solid black; shop/product pages keep the hex copyright strip.
+  const isHome = pathname === "/";
+  const copyrightClass = isHome
+    ? "border-t border-black/5 py-4 text-center text-xs text-neutral-500 bg-black"
+    : "border-t border-black/5 py-4 text-center text-xs text-neutral-500 bg-texture-white";
+
   return (
-    <footer className="border-t border-black/5 bg-white">
+    <footer className={`border-t border-black/5 ${isHome ? "bg-black" : "bg-white"}`}>
       <div className="container py-10 grid gap-8 md:grid-cols-4 text-sm text-neutral-600">
         <div className="space-y-3">
           <div className="font-logo text-black font-semibold">Voronyz</div>
@@ -40,7 +46,7 @@ export default function Footer() {
           <Link className="hover:text-black" href="/privacy">Privacy</Link>
         </div>
       </div>
-      <div className="border-t border-black/5 py-4 text-center text-xs text-neutral-500 bg-texture-white">© {new Date().getFullYear()} Voronyz. All rights reserved.</div>
+      <div className={copyrightClass}>© {new Date().getFullYear()} Voronyz. All rights reserved.</div>
     </footer>
   );
 }

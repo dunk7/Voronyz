@@ -110,7 +110,7 @@ type ProductsContentProps = {
   category?: "footwear" | "accessories" | "health" | "all";
   /** When true (home page), show a bounce arrow under the bold heading as a scroll cue. */
   showScrollCue?: boolean;
-  /** Skip the hex wrapper when the parent already provides one (homepage). */
+  /** Skip the hex wrapper — homepage uses solid black; shop pages keep the honeycomb. */
   embedded?: boolean;
   /** Homepage scroll clip, placed between the footwear grid and apparel. */
   betweenFootwearAndApparel?: ReactNode;

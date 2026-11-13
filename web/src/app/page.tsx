@@ -70,7 +70,8 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="bg-texture-white">
+      {/* Solid black below the paper hero — hex honeycomb stays on /products and other shop pages. */}
+      <div className="bg-black">
         <Suspense
           fallback={
             <div className="container flex min-h-[40vh] items-center justify-center py-16">
