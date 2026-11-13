@@ -6,7 +6,7 @@ import HomeProductSpotlight from "@/components/footwear/HomeProductSpotlight";
 import LifestyleBand from "@/components/footwear/LifestyleBand";
 import FootwearBrowse from "@/components/footwear/FootwearBrowse";
 import type { FootwearListProduct } from "@/lib/footwear";
-import { HOME_LIFESTYLE_SHOTS } from "@/lib/homeLifestyle";
+import { V3_SLIDES_STREET_SHOT } from "@/lib/homeLifestyle";
 
 /** Main wearable shoes highlighted individually before the full vertical shop. */
 const SPOTLIGHT_SLUGS = ["v3-slides", "slip-ons", "dragonfly", "magikid-shoes"] as const;
@@ -19,10 +19,6 @@ type HomeFootwearHighlightsProps = {
   getImages: (p: FootwearListProduct) => { cover: string; alt?: string };
   scrollCue?: ReactNode;
 };
-
-function shot(id: string) {
-  return HOME_LIFESTYLE_SHOTS.find((item) => item.id === id)!;
-}
 
 export default function HomeFootwearHighlights({
   products,
@@ -46,28 +42,22 @@ export default function HomeFootwearHighlights({
         </p>
       </header>
 
-      {/* V3 Slides */}
+      {/* V3 Slides + the approved lifestyle model frame */}
       <section aria-label="V3 Slides" className="space-y-10 sm:space-y-12">
         <HomeProductSpotlight slug={SPOTLIGHT_SLUGS[0]} />
-        <LifestyleBand shot={shot("v3-slides-street")} priority />
+        <LifestyleBand shot={V3_SLIDES_STREET_SHOT} priority />
       </section>
 
-      {/* Slip Ons */}
-      <section aria-label="Slip Ons" className="space-y-10 sm:space-y-12">
+      <section aria-label="Slip Ons">
         <HomeProductSpotlight slug={SPOTLIGHT_SLUGS[1]} />
-        <LifestyleBand shot={shot("slip-ons-street")} />
       </section>
 
-      {/* Dragonfly */}
-      <section aria-label="The Dragonfly's" className="space-y-10 sm:space-y-12">
+      <section aria-label="The Dragonfly's">
         <HomeProductSpotlight slug={SPOTLIGHT_SLUGS[2]} />
-        <LifestyleBand shot={shot("dragonfly-street")} />
       </section>
 
-      {/* Magikid */}
-      <section aria-label="Magikid Shoes" className="space-y-10 sm:space-y-12">
+      <section aria-label="Magikid Shoes">
         <HomeProductSpotlight slug={SPOTLIGHT_SLUGS[3]} maxImages={4} />
-        <LifestyleBand shot={shot("v3-slides-green-street")} />
       </section>
 
       {/* All footwear — vertical stack, same destination as Shop all footwear */}

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { V3_SLIDES_STREET_SHOT } from "@/lib/homeLifestyle";
 
 type PrintedFootwearEducationProps = {
   className?: string;
@@ -46,25 +47,14 @@ export default function PrintedFootwearEducation({
         step of this right.
       </p>
 
-      <div className="mt-8 grid grid-cols-1 overflow-hidden rounded-xl sm:grid-cols-2">
-        <div className="relative aspect-[16/10] sm:aspect-auto sm:min-h-[220px]">
-          <Image
-            src="/lifestyle/dragonfly-street.jpg"
-            alt="Model walking in Voronyz Dragonfly sneakers on a city street"
-            fill
-            className="object-cover object-center"
-            sizes="(max-width: 640px) 100vw, 50vw"
-          />
-        </div>
-        <div className="relative aspect-[16/10] sm:aspect-auto sm:min-h-[220px]">
-          <Image
-            src="/lifestyle/v3-slides-street.jpg"
-            alt="Model wearing Voronyz V3 Slides on a city street beside a sports car"
-            fill
-            className="object-cover object-center"
-            sizes="(max-width: 640px) 100vw, 50vw"
-          />
-        </div>
+      <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-xl">
+        <Image
+          src={V3_SLIDES_STREET_SHOT.src}
+          alt={V3_SLIDES_STREET_SHOT.alt}
+          fill
+          className="object-cover object-center"
+          sizes="(max-width: 768px) 100vw, 56rem"
+        />
       </div>
 
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
