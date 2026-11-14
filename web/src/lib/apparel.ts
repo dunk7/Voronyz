@@ -5,7 +5,7 @@ export const APPAREL_ONE_SIZE = ["One Size"] as const;
  * Apparel sub-sections.
  * - `collection`: multi-product listing pages (shirts, sweaters, …) —
  *   add new designs to APPAREL_CATALOG with the matching subcategory.
- * - `standalone`: Accessories only (stickers, shades, jewelry, drone parts, …) — never mixed
+ * - `standalone`: Accessories only (logo stickers + cool shades) — never mixed
  *   into clothing collections, and never shown on Engineering `/accessories`.
  */
 export type ApparelSubcategoryId =
@@ -55,7 +55,7 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
   {
     id: "accessories",
     label: "Accessories",
-    description: "Logo stickers, shades, jewelry, lace locks, and drone parts",
+    description: "Logo stickers and cool shades",
     listing: "standalone",
   },
 ];
@@ -167,6 +167,9 @@ export const OBSOLETE_APPAREL_SLUGS = [
   "voronyz-water-bottle",
   "voronyz-lock-squirt-bottle",
   "voronyz-performance-socks",
+  "voronyz-jewelry-collab",
+  "voronyz-drone-parts",
+  "voronyz-lace-locks",
 ] as const;
 
 /**
@@ -297,44 +300,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     sizes: [...APPAREL_ONE_SIZE],
     image: "/products/apparel/cool-shades.jpg",
     skuPrefix: "APP-SHDE",
-    comingSoon: true,
-  },
-  {
-    slug: "voronyz-jewelry-collab",
-    subcategory: "accessories",
-    name: "Jewelry Collab",
-    description: "Limited jewelry collab drop — sculptural pieces from the Voronyz studio.",
-    priceCents: 7200,
-    colors: ["black", "gold"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/jewelry-collab.jpg",
-    skuPrefix: "APP-JLRY",
-    comingSoon: true,
-  },
-  {
-    slug: "voronyz-drone-parts",
-    subcategory: "accessories",
-    name: "Drone Parts",
-    description: "Precision 3D-printed drone mounts, guards, and frame accessories.",
-    priceCents: 2800,
-    colors: ["black", "grey"],
-    outOfStockColors: ["grey"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/drone-parts.jpg",
-    skuPrefix: "APP-DRNE",
-    comingSoon: true,
-  },
-  {
-    slug: "voronyz-lace-locks",
-    subcategory: "accessories",
-    name: "Lace Locks",
-    description: "3D-printed lace locks that keep your footwear dialed without retying.",
-    priceCents: 1600,
-    colors: ["black", "white", "grey"],
-    outOfStockColors: ["grey"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/lace-locks.jpg",
-    skuPrefix: "APP-LACE",
     comingSoon: true,
   },
 ];

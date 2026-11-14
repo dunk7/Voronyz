@@ -84,6 +84,22 @@ const nextConfig: NextConfig = {
         destination: "/apparel/accessories",
         permanent: true,
       },
+      // Retired accessory listings — only stickers + cool shades remain live.
+      {
+        source: "/products/voronyz-jewelry-collab",
+        destination: "/apparel/accessories",
+        permanent: true,
+      },
+      {
+        source: "/products/voronyz-drone-parts",
+        destination: "/apparel/accessories",
+        permanent: true,
+      },
+      {
+        source: "/products/voronyz-lace-locks",
+        destination: "/apparel/accessories",
+        permanent: true,
+      },
       // Removed Collaborative Keychain (pony bead animals) listing.
       {
         source: "/products/keychain",
