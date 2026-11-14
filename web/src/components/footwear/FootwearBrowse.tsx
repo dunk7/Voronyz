@@ -19,7 +19,7 @@ type BrowseProduct = FootwearListProduct;
 type FootwearBrowseProps = {
   products: BrowseProduct[];
   getImages: (p: BrowseProduct) => { cover: string; alt?: string };
-  /** Home embeds the same vertical shop under product spotlights. */
+  /** Home embeds the same vertical shop near the bottom of the page. */
   variant?: "page" | "home";
   heading?: string;
 };
