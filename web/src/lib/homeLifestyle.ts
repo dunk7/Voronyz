@@ -1,6 +1,6 @@
 /**
  * Lifestyle / model photography for the homepage and related brand surfaces.
- * Only the approved V3 Slides street (car) frame ships on-site.
+ * Homepage post-slides band uses the gallery redhead boat frame.
  */
 export type LifestyleShot = {
   id: string;
@@ -12,9 +12,9 @@ export type LifestyleShot = {
 };
 
 export const V3_SLIDES_STREET_SHOT: LifestyleShot = {
-  id: "v3-slides-street",
-  src: "/lifestyle/v3-slides-street.jpg",
-  alt: "Model wearing black Voronyz V3 Slides on a city street beside a sports car",
+  id: "v3-slides-redhead-boat",
+  src: "/gallery/voronyz-02.jpg",
+  alt: "Redhead kid on a boat holding up a pair of Voronyz V3 Slides",
   productSlug: "v3-slides",
   aspect: "portrait",
 };
