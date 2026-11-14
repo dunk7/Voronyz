@@ -5,6 +5,7 @@ import AddToCart, { type AddToCartProps } from "@/components/cart/AddToCart";
 import V3Gallery from "@/components/V3Gallery";
 import LogoLoader from "@/components/ui/LogoLoader";
 import { slipOnsImagesForColor } from "@/lib/footwear";
+import { footwearImageRecolor } from "@/lib/footwearRanking";
 
 type Media = {
   type: "image" | "video";
@@ -71,15 +72,25 @@ export default function PdpGalleryBuyBox({
     media[0]?.src ??
     "";
 
+  // Real per-color photos (apparel / filament) already match the swatch —
+  // only recolor black footwear studio shots when we don't have color-specific media.
+  const hasColorPhotos =
+    !!color &&
+    !!colorImages?.[color.trim().toLowerCase()]?.length;
+  const imageRecolor = hasColorPhotos
+    ? { kind: "none" as const }
+    : footwearImageRecolor(color);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 xl:gap-12 items-start">
       <div className="lg:col-span-8">
         <div className="lg:rounded-none -mx-0 sm:mx-0">
           <V3Gallery
-            key={color ?? "default"}
+            key={`${color ?? "default"}-${imageRecolor.kind}`}
             media={galleryMedia}
             aspect="square"
             fit={fit}
+            imageRecolor={imageRecolor}
             className={galleryClassName}
           />
         </div>
