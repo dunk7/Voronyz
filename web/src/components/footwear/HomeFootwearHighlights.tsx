@@ -42,7 +42,7 @@ export default function HomeFootwearHighlights({
         </p>
       </header>
 
-      {/* V3 Slides + the approved lifestyle model frame */}
+      {/* V3 Slides + gallery redhead lifestyle frame */}
       <section aria-label="V3 Slides" className="space-y-10 sm:space-y-12">
         <HomeProductSpotlight slug={SPOTLIGHT_SLUGS[0]} />
         <LifestyleBand shot={V3_SLIDES_STREET_SHOT} priority />
