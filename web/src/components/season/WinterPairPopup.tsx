@@ -3,14 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Fredoka } from "next/font/google";
 import { isWinterPairSeason, writeWinterPairOptIn } from "@/lib/winterPair";
-
-const fredoka = Fredoka({
-  weight: ["500", "600"],
-  subsets: ["latin"],
-  display: "swap",
-});
 
 /** Resets on a full reload, so a refresh shows the popup again. */
 let shownThisLoad = false;
@@ -101,7 +94,7 @@ export default function WinterPairPopup() {
           </p>
           <h2
             id="winter-pair-title"
-            className={`${fredoka.className} mt-2 flex items-center justify-center gap-2 text-[48px] font-semibold leading-none text-[#c8e7ff]`}
+            className="mt-2 flex items-center justify-center gap-2 text-[48px] font-semibold leading-none text-[#c8e7ff]"
           >
             <GhostMark />
             Winter
