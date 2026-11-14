@@ -13,7 +13,7 @@ export const FILAMENT_YOUNG_PRICE_CENTS = 2000;
 
 /** Face-on black clear spool — never use pink photos for the listing card. */
 export const FILAMENT_THUMBNAIL_URL =
-  "/products/tpu-90a-filament/filament-clear-spool.jpg";
+  "/products/tpu-90a-filament/filament-clear-spool-card.jpg";
 
 export const FILAMENT_DESCRIPTION_SHORT =
   "1kg spools of TPU 90A, foaming TPU Air, and rigid PLA. Free US shipping.";

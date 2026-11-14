@@ -11,8 +11,8 @@ export const STL_FILES_PRICE_CENTS = 100;
  * Real Slip On photos follow so shoppers can scroll the gallery to see
  * what they’re printing after they open the listing.
  */
-export const STL_FILES_THUMBNAIL_URL = "/products/stl-files/cover.jpg";
-export const STL_FILES_ALT_IMAGE_URL = "/products/stl-files/alt.jpg";
+export const STL_FILES_THUMBNAIL_URL = "/products/stl-files/cover-card.jpg";
+export const STL_FILES_ALT_IMAGE_URL = "/products/stl-files/alt-card.jpg";
 /** Product photos shown after the wireframe on the PDP gallery. */
 export const STL_FILES_PRODUCT_PREVIEW_IMAGES = [
   "/products/slip-ons/InShot_20260405_203151152.jpg",

@@ -26,8 +26,8 @@ test("STL listing is Voronyz STL at $1 per shoe file", () => {
 });
 
 test("STL thumbnail is wireframe art; product photos come after for gallery scroll", () => {
-  assert.equal(STL_FILES_THUMBNAIL_URL, "/products/stl-files/cover.jpg");
-  assert.equal(STL_FILES_ALT_IMAGE_URL, "/products/stl-files/alt.jpg");
+  assert.equal(STL_FILES_THUMBNAIL_URL, "/products/stl-files/cover-card.jpg");
+  assert.equal(STL_FILES_ALT_IMAGE_URL, "/products/stl-files/alt-card.jpg");
   assert.equal(STL_FILES_IMAGES[0], STL_FILES_THUMBNAIL_URL);
   assert.equal(STL_FILES_IMAGES[1], STL_FILES_ALT_IMAGE_URL);
   // Listing art stays on the dedicated stl-files wireframe assets.
