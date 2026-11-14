@@ -9,7 +9,7 @@ import type { FootwearListProduct } from "@/lib/footwear";
 import { V3_SLIDES_STREET_SHOT } from "@/lib/homeLifestyle";
 
 /** Main wearable shoes highlighted individually before the full vertical shop. */
-const SPOTLIGHT_SLUGS = ["v3-slides", "slip-ons", "dragonfly", "magikid-shoes"] as const;
+const SPOTLIGHT_SLUGS = ["v3-slides", "slip-ons", "dragonfly"] as const;
 
 const SHOP_ALL_CTA_CLASS =
   "inline-flex h-11 w-60 items-center justify-center whitespace-nowrap rounded-md bg-neutral-900 px-7 text-sm font-medium text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] transition-colors hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2";
@@ -54,10 +54,6 @@ export default function HomeFootwearHighlights({
 
       <section aria-label="The Dragonfly's">
         <HomeProductSpotlight slug={SPOTLIGHT_SLUGS[2]} />
-      </section>
-
-      <section aria-label="Magikid Shoes">
-        <HomeProductSpotlight slug={SPOTLIGHT_SLUGS[3]} maxImages={4} />
       </section>
 
       {/* All footwear — vertical stack, same destination as Shop all footwear */}

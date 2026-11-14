@@ -43,7 +43,6 @@ const NAME_SLUG_HINTS: Array<[RegExp, string]> = [
   [/v3 slide/i, "v3-slides"],
   [/dragonfly/i, "dragonfly"],
   [/\bgators?\b/i, "gators"],
-  [/magikid/i, "magikid-shoes"],
   [/voronyz tee|oversized tee|\bnice shirt\b/i, OVERSIZED_TEE_SLUG],
   [/atelier hoodie|core hoodie/i, ATELIER_HOODIE_SLUG],
   [/logo sticker|\bstickers?\b/i, "voronyz-stickers"],
