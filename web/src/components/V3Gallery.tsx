@@ -10,6 +10,8 @@ import {
   useLayoutEffect,
 } from "react";
 import { apparelCoverObjectPositionClass } from "@/lib/apparel";
+import type { FootwearImageRecolor } from "@/lib/footwearRanking";
+import { SLIP_ONS_WHITE_AD_IMAGE } from "@/lib/footwear";
 
 type Media = {
   type: "image" | "video";
@@ -33,11 +35,18 @@ export default function V3Gallery({
    * Videos ignore contain/inset so they keep a constant full-frame crop.
    */
   fit = "cover",
+  /**
+   * Recolor black footwear studio shots on every slide (and thumbnail).
+   * Chromatic colors use mix-blend lighten; white uses a CSS filter wrapper.
+   * Real white product photos are left alone.
+   */
+  imageRecolor,
 }: {
   media: Media[];
   className?: string;
   aspect?: "square" | "landscape";
   fit?: "cover" | "contain";
+  imageRecolor?: FootwearImageRecolor;
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [fadeKey, setFadeKey] = useState(0);
@@ -328,9 +337,23 @@ export default function V3Gallery({
   const innerPadFor = (m: Media | undefined) =>
     fit === "contain" && m?.type === "image" ? containInnerPad : "";
 
+  const lightenColor =
+    imageRecolor?.kind === "lighten" ? imageRecolor.color : undefined;
+  const whiten = imageRecolor?.kind === "whiten";
+  /**
+   * Lift near-black shoes toward white. Low brightness barely moves RGB(15…)
+   * so we push hard, then ease contrast so lattice texture still reads.
+   */
+  const whitenFilter =
+    "brightness(5.2) contrast(0.58) saturate(0) grayscale(1)";
+
   const renderMedia = (m: Media, index: number, isActive: boolean) => {
     if (m.type === "image") {
-      return (
+      // Real white product photo — never recolor it.
+      const skipRecolor = m.src === SLIP_ONS_WHITE_AD_IMAGE;
+      const showLighten = !skipRecolor && lightenColor;
+      const showWhiten = !skipRecolor && whiten;
+      const image = (
         <SoftImage
           key={m.src}
           src={m.src}
@@ -342,6 +365,24 @@ export default function V3Gallery({
           sizes="(max-width: 1024px) 100vw, 75vw"
           draggable={false}
         />
+      );
+      return (
+        <>
+          {showWhiten ? (
+            <div className="absolute inset-0" style={{ filter: whitenFilter }}>
+              {image}
+            </div>
+          ) : (
+            image
+          )}
+          {showLighten ? (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 z-[1] mix-blend-lighten"
+              style={{ backgroundColor: lightenColor }}
+            />
+          ) : null}
+        </>
       );
     }
     return (
@@ -524,15 +565,41 @@ export default function V3Gallery({
               aria-label={`Show media ${i + 1}`}
             >
               {m.type === "image" ? (
-                <Image
-                  src={m.src}
-                  alt={m.alt || "Thumb"}
-                  fill
-                  className={`object-cover ${apparelCoverObjectPositionClass(m.src)} transition-transform duration-200 group-hover/thumb:scale-105`}
-                  loading={i < 4 ? "eager" : "lazy"}
-                  sizes="80px"
-                  draggable={false}
-                />
+                <>
+                  {m.src !== SLIP_ONS_WHITE_AD_IMAGE && whiten ? (
+                    <div
+                      className="absolute inset-0"
+                      style={{ filter: whitenFilter }}
+                    >
+                      <Image
+                        src={m.src}
+                        alt={m.alt || "Thumb"}
+                        fill
+                        className={`object-cover ${apparelCoverObjectPositionClass(m.src)} transition-transform duration-200 group-hover/thumb:scale-105`}
+                        loading={i < 4 ? "eager" : "lazy"}
+                        sizes="80px"
+                        draggable={false}
+                      />
+                    </div>
+                  ) : (
+                    <Image
+                      src={m.src}
+                      alt={m.alt || "Thumb"}
+                      fill
+                      className={`object-cover ${apparelCoverObjectPositionClass(m.src)} transition-transform duration-200 group-hover/thumb:scale-105`}
+                      loading={i < 4 ? "eager" : "lazy"}
+                      sizes="80px"
+                      draggable={false}
+                    />
+                  )}
+                  {m.src !== SLIP_ONS_WHITE_AD_IMAGE && lightenColor ? (
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 z-[1] mix-blend-lighten"
+                      style={{ backgroundColor: lightenColor }}
+                    />
+                  ) : null}
+                </>
               ) : (
                 <div className="relative h-full w-full">
                   {m.poster ? (

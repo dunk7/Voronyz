@@ -3,8 +3,11 @@ import { test } from "node:test";
 import {
   colorToCss,
   footwearBrandLabel,
+  footwearImageRecolor,
+  footwearImageTint,
   footwearSwatches,
   formatUsdFromCents,
+  isBlackFootwearColor,
   sortFootwearForTab,
 } from "./footwearRanking";
 
@@ -56,4 +59,21 @@ test("swatches map named colors to CSS", () => {
   assert.ok(footwearSwatches("dragonfly").includes("#007FFF"));
   assert.equal(colorToCss("pink"), "#ec4899");
   assert.equal(colorToCss("#007FFF"), "#007FFF");
+});
+
+test("footwear image tint skips black and maps other swatches", () => {
+  assert.equal(isBlackFootwearColor("black"), true);
+  assert.equal(isBlackFootwearColor("#111111"), true);
+  assert.equal(isBlackFootwearColor(undefined), true);
+  assert.equal(isBlackFootwearColor("white"), false);
+  assert.equal(footwearImageTint("black"), undefined);
+  assert.equal(footwearImageTint("white"), undefined);
+  assert.equal(footwearImageTint("orange"), "#f97316");
+  assert.equal(footwearImageTint("#007FFF"), "#007FFF");
+  assert.deepEqual(footwearImageRecolor("black"), { kind: "none" });
+  assert.deepEqual(footwearImageRecolor("white"), { kind: "whiten" });
+  assert.deepEqual(footwearImageRecolor("orange"), {
+    kind: "lighten",
+    color: "#f97316",
+  });
 });
