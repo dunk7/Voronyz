@@ -46,11 +46,6 @@ function productCardImageFitClass(slug: string, src: string): string {
   return `object-cover ${apparelCoverObjectPositionClass(src)}`;
 }
 
-function productCardNeedsInset(slug: string): boolean {
-  const key = (slug || "").trim().toLowerCase();
-  return key === PEPPERMINT_MIST_SLUG;
-}
-
 /** Shop-all CTA under the home Footwear and Apparel teasers — shared width so both match. */
 const SHOP_ALL_CTA_CLASS =
   "inline-flex h-11 w-60 items-center justify-center whitespace-nowrap rounded-md bg-neutral-900 px-7 text-sm font-medium text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] transition-colors hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2";
@@ -453,7 +448,6 @@ export default function ProductsContent({
               const { cover, alt } = getImages(p);
               const meta = cardMetaForSlug(slugKey);
               const isNavigating = navigatingSlug === p.slug;
-              const inset = productCardNeedsInset(slugKey);
 
               return (
                 <Link
@@ -469,7 +463,7 @@ export default function ProductsContent({
                       isNavigating ? "ring-black/10 shadow-xl" : ""
                     }`}
                   >
-                    <div className={inset ? "absolute inset-3 sm:inset-4" : "absolute inset-0"}>
+                    <div className="absolute inset-0">
                       <SoftImage
                         key={cover}
                         src={cover}
@@ -612,8 +606,8 @@ export default function ProductsContent({
                 Áine & Fern
               </h2>
             </div>
-            {/* Same half-width square card as Footwear, centered — Áine & Fern is its own home block (still under Collaborative in the menu). */}
-            <div className="mx-auto w-1/2">
+            {/* Match footwear spotlight width so the bottle fills the frame (still Collaborative in the menu). */}
+            <div className="mx-auto w-full max-w-3xl">
               {HOME_AINE_FERN_TEASER_SLUGS.flatMap((slug) => {
                 const p = getHealthCatalogSeed().find(
                   (item) => (item.slug || "").trim().toLowerCase() === slug,
@@ -623,7 +617,6 @@ export default function ProductsContent({
                 const slugKey = (p.slug || "").trim().toLowerCase();
                 const { cover, alt } = getImages(p);
                 const isNavigating = navigatingSlug === p.slug;
-                const inset = productCardNeedsInset(slugKey);
                 return (
                   <Link
                     key={p.id}
@@ -634,11 +627,11 @@ export default function ProductsContent({
                     }`}
                   >
                     <div
-                      className={`relative aspect-square w-full overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:shadow-xl group-hover:ring-black/10 ${
+                      className={`relative aspect-square w-full overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:shadow-xl group-hover:ring-black/10 sm:rounded-3xl ${
                         isNavigating ? "ring-black/10 shadow-xl" : ""
                       }`}
                     >
-                      <div className={inset ? "absolute inset-3 sm:inset-4" : "absolute inset-0"}>
+                      <div className="absolute inset-0">
                         <SoftImage
                           key={cover}
                           src={cover}
@@ -647,7 +640,7 @@ export default function ProductsContent({
                           className={`${productCardImageFitClass(slugKey, cover)} transition-all duration-500 ${
                             alt ? "group-hover:opacity-0" : "group-hover:scale-105"
                           } ${isNavigating ? "scale-105 brightness-90" : ""}`}
-                          sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                          sizes="(max-width: 768px) 100vw, 48rem"
                         />
                         {alt && (
                           <SoftImage
@@ -657,7 +650,7 @@ export default function ProductsContent({
                             fill
                             showLogoPlaceholder={false}
                             className={`${productCardImageFitClass(slugKey, alt)} opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105`}
-                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                            sizes="(max-width: 768px) 100vw, 48rem"
                             loading="lazy"
                           />
                         )}
