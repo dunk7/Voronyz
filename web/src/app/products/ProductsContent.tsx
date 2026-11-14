@@ -201,7 +201,7 @@ export default function ProductsContent({
   const isHomeFootwearTeaser =
     showScrollCue && category === "footwear" && !searchQuery;
   const showApparelContinuation = category === "footwear" && !searchQuery;
-  /** Shopping catalog on All Footwear; home uses per-shoe spotlights + vertical All Footwear. */
+  /** Shopping catalog on All Footwear; home uses per-shoe spotlights, with All Footwear at the bottom. */
   const useFootwearBrowse =
     category === "footwear" && !searchQuery && !isHomeFootwearTeaser;
 
@@ -443,12 +443,8 @@ export default function ProductsContent({
             </Link>
           </div>
         ) : isHomeFootwearTeaser ? (
-          /* ── Homepage: per-shoe spotlights, then vertical All Footwear ── */
-          <HomeFootwearHighlights
-            products={products}
-            getImages={getImages}
-            scrollCue={scrollCue}
-          />
+          /* ── Homepage: per-shoe spotlights (All Footwear lives at the bottom) ── */
+          <HomeFootwearHighlights scrollCue={scrollCue} />
         ) : (
           /* ── Product grid (Engineering / Collaborative / search) ── */
           <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 xl:grid-cols-4">
@@ -692,6 +688,20 @@ export default function ProductsContent({
             <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
             <HomeSecondaryLinks className="mt-12 sm:mt-16" />
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
+            {/* All footwear catalog — bottom of home, after spotlights and other sections */}
+            <div className="mt-16 space-y-8 sm:mt-24 sm:space-y-10 lg:mt-28">
+              <FootwearBrowse
+                products={products}
+                getImages={getImages}
+                variant="home"
+                heading="All Footwear"
+              />
+              <div className="flex justify-center px-4">
+                <Link href="/products" className={SHOP_ALL_CTA_CLASS}>
+                  Shop all footwear
+                </Link>
+              </div>
+            </div>
           </>
         )}
       </div>
