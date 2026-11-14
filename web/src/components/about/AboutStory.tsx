@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { V3_SLIDES_STREET_SHOT } from "@/lib/homeLifestyle";
 
 type AboutStoryProps = {
   priority?: boolean;
@@ -9,10 +10,10 @@ export default function AboutStory({ priority = false }: AboutStoryProps) {
     <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16 max-w-6xl mx-auto">
       <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl ring-1 ring-neutral-200 shadow-lg">
         <Image
-          src="/349.jpg"
-          alt="Voronyz — behind the scenes"
+          src={V3_SLIDES_STREET_SHOT.src}
+          alt={V3_SLIDES_STREET_SHOT.alt}
           fill
-          className="object-cover"
+          className="object-cover object-center"
           priority={priority}
           sizes="(max-width: 1024px) 100vw, 50vw"
         />

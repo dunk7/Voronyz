@@ -26,4 +26,9 @@ export const GALLERY_PHOTOS: GalleryPhoto[] = [
     src: "/gallery/voronyz-03.jpg",
     alt: "Pair of white Voronyz slip-ons on a black textured surface",
   },
+  {
+    id: "lifestyle-v3-slides-street",
+    src: "/lifestyle/v3-slides-street.jpg",
+    alt: "Model wearing black Voronyz V3 Slides on a city street beside a sports car",
+  },
 ];
