@@ -393,7 +393,7 @@ export default function ProductsContent({
     isHomeFootwearTeaser ? (
       <section
         aria-labelledby="advanced-footwear-heading"
-        className="mt-16 sm:mt-24 lg:mt-28 mb-16 sm:mb-24 lg:mb-28"
+        className="mb-16 sm:mb-24 lg:mb-28"
       >
         <MotionMediaCarousel href="/products" linkLabel="Shop all footwear" />
         <div className="mt-4 max-w-xl text-left sm:mt-5">
@@ -403,10 +403,6 @@ export default function ProductsContent({
           >
             Advanced Footwear
           </h2>
-          <p className="mt-3 text-base leading-relaxed text-neutral-600 sm:text-lg">
-            Voronyz prints the shoe around the foot — lattice cushion, a real outsole,
-            and a finish you&apos;d wear out tonight. Once it&apos;s on, nothing else feels this engineered.
-          </p>
         </div>
       </section>
     ) : null;
@@ -443,8 +439,11 @@ export default function ProductsContent({
             </Link>
           </div>
         ) : isHomeFootwearTeaser ? (
-          /* ── Homepage: per-shoe spotlights (All Footwear lives at the bottom) ── */
-          <HomeFootwearHighlights scrollCue={scrollCue} />
+          /* ── Homepage: Advanced Footwear, then per-shoe spotlights (All Footwear at bottom) ── */
+          <>
+            {advancedFootwear}
+            <HomeFootwearHighlights scrollCue={scrollCue} />
+          </>
         ) : (
           /* ── Product grid (Engineering / Collaborative / search) ── */
           <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 xl:grid-cols-4">
@@ -684,7 +683,6 @@ export default function ProductsContent({
 
         {isHomeFootwearTeaser && (
           <>
-            {advancedFootwear}
             <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
             <HomeSecondaryLinks className="mt-12 sm:mt-16" />
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
