@@ -101,6 +101,12 @@ const nextConfig: NextConfig = {
         destination: "/products/voronyz-oversized-tee",
         permanent: true,
       },
+      // Magikid Shoes delisted for now — may return later.
+      {
+        source: "/products/magikid-shoes",
+        destination: "/products",
+        permanent: false,
+      },
       // Removed Socks listing.
       {
         source: "/products/voronyz-performance-socks",

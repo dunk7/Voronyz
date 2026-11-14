@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { MAGIKID_SHOES_IMAGES, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT, MAGIKID_SHOES_BASE_PRICE_CENTS, MAGIKID_PRIMARY_COLORS, MAGIKID_VARIANTS } from "@/lib/magikidShoesThumbnail";
 import {
   TRAIL_MIX_DESCRIPTION_SHORT,
   TRAIL_MIX_FLAVOR_IDS,
@@ -147,7 +146,6 @@ const FOOTWEAR_SIZES = ["5", "6", "7", "8", "9", "10", "11", "12"];
 /** Idempotently upsert core footwear so listings/PDPs work without a manual seed. */
 export async function ensureFootwearProducts(): Promise<void> {
   for (const item of FOOTWEAR_CATALOG) {
-    if (item.slug === "magikid-shoes") continue; // handled by ensureMagikidShoes
     if (item.slug === GATORS_SLUG) continue; // handled by ensureGators
     if (item.slug === LATTICE_INSOLES_SLUG) continue; // handled by ensureLatticeInsoles
 
@@ -282,57 +280,28 @@ async function ensureFootwearStock(): Promise<void> {
   }
 }
 
-/** Idempotently upsert Magikid Shoes so new catalog entries appear without a manual seed run. */
-export async function ensureMagikidShoes(): Promise<void> {
-  const existing = await prisma.product.findUnique({ where: { slug: "magikid-shoes" } });
-
-  if (!existing) {
-    await prisma.product.create({
-      data: {
-        slug: "magikid-shoes",
-        name: "Magikid Shoes",
-        description: MAGIKID_SHOES_DESCRIPTION_SHORT,
-        priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
-        currency: "usd",
-        category: "footwear",
-        images: [...MAGIKID_SHOES_IMAGES],
-        primaryColors: [...MAGIKID_PRIMARY_COLORS],
-        secondaryColors: [],
-        sizes: MAGIKID_SHOES_KIDS_SIZES,
-        variants: {
-          create: MAGIKID_VARIANTS.map((v) => ({ ...v })),
-        },
-      },
-    });
-    return;
-  }
-
-  await prisma.product.update({
-    where: { id: existing.id },
-    data: {
-      name: "Magikid Shoes",
-      description: MAGIKID_SHOES_DESCRIPTION_SHORT,
-      priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
-      category: "footwear",
-      images: [...MAGIKID_SHOES_IMAGES],
-      primaryColors: [...MAGIKID_PRIMARY_COLORS],
-      secondaryColors: [],
-      sizes: MAGIKID_SHOES_KIDS_SIZES,
-    },
+/** Remove the Magikid Shoes listing (and cart rows) so it cannot resurface. Module kept for a later restore. */
+export async function removeMagikidShoes(): Promise<void> {
+  const existing = await prisma.product.findUnique({
+    where: { slug: "magikid-shoes" },
+    select: { id: true },
   });
+  if (!existing) return;
 
-  for (const v of MAGIKID_VARIANTS) {
-    await prisma.variant.upsert({
-      where: { sku: v.sku },
-      update: { stock: v.stock },
-      create: {
-        product: { connect: { id: existing.id } },
-        color: v.color,
-        sku: v.sku,
-        stock: v.stock,
-      },
+  const variants = await prisma.variant.findMany({
+    where: { productId: existing.id },
+    select: { id: true },
+  });
+  const variantIds = variants.map((variant) => variant.id);
+  if (variantIds.length > 0) {
+    await prisma.cartItem.deleteMany({
+      where: { variantId: { in: variantIds } },
+    });
+    await prisma.variant.deleteMany({
+      where: { id: { in: variantIds } },
     });
   }
+  await prisma.product.delete({ where: { id: existing.id } });
 }
 
 /** Remove the retired Glock 43x Holster listing (and any cart rows pointing at it). */
@@ -932,7 +901,7 @@ export async function ensureCatalogProducts(): Promise<void> {
       const results = await Promise.allSettled([
         ensureFootwearProducts(),
         ensureFootwearStock(),
-        ensureMagikidShoes(),
+        removeMagikidShoes(),
         ensureGators(),
         ensureLatticeInsoles(),
         removeGunHolster(),
@@ -982,7 +951,7 @@ export async function ensureFootwearCatalog(): Promise<void> {
       await ensureFootwearStock();
       await ensureGators();
       await ensureLatticeInsoles();
-      await ensureMagikidShoes();
+      await removeMagikidShoes();
       footwearEnsureAt = Date.now();
     } catch (error) {
       console.error("ensureFootwearCatalog failed:", error);
