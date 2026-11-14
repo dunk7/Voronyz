@@ -41,18 +41,16 @@ const BLACK_90A_IMAGES = [
   "/products/tpu-90a-filament/tpu-black-tire-rover.jpg",
 ] as const;
 
-/** Tan face-on + side roll, then soft TPU tire on a Mars rover. */
+/** Tan face-on + matching three-quarter side roll. */
 const TAN_90A_IMAGES = [
   "/products/tpu-90a-filament/tpu-90a-tan-spool.jpg",
   "/products/tpu-90a-filament/tpu-90a-tan-spool-angle.jpg",
-  "/products/tpu-90a-filament/tpu-tan-tire-rover.jpg",
 ] as const;
 
-/** Pink face-on + side roll, then soft TPU tire on a Mars rover. */
+/** Matching pink face-on side view + three-quarter roll. */
 const PINK_90A_IMAGES = [
   "/products/tpu-90a-filament/tpu-90a-pink-spool.jpg",
   "/products/tpu-90a-filament/tpu-90a-pink-spool-angle.jpg",
-  "/products/tpu-90a-filament/tpu-pink-tire-rover.jpg",
 ] as const;
 
 /** Charcoal Air spool, then hand-squished foaming TPU tire. */
