@@ -19,7 +19,18 @@ export const V3_SLIDES_STREET_SHOT: LifestyleShot = {
   aspect: "portrait",
 };
 
-export const HOME_LIFESTYLE_SHOTS: LifestyleShot[] = [V3_SLIDES_STREET_SHOT];
+export const DRAGONFLY_STREET_SHOT: LifestyleShot = {
+  id: "dragonfly-street",
+  src: "/lifestyle/dragonfly-street.jpg",
+  alt: "Model crouching in grey Voronyz Dragonfly sneakers on an asphalt path",
+  productSlug: "dragonfly",
+  aspect: "portrait",
+};
+
+export const HOME_LIFESTYLE_SHOTS: LifestyleShot[] = [
+  V3_SLIDES_STREET_SHOT,
+  DRAGONFLY_STREET_SHOT,
+];
 
 export function lifestyleForProduct(slug: string): LifestyleShot[] {
   const key = slug.trim().toLowerCase();
