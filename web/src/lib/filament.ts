@@ -34,26 +34,25 @@ export function filamentVariantColor(materialId: string, colorId: string) {
   return `${materialId}:${colorId}`;
 }
 
-/** Face-on black spool, side roll, then soft TPU tire on Mars. */
+/** Face-on black spool, side roll, then soft TPU tire on a Mars rover. */
 const BLACK_90A_IMAGES = [
   "/products/tpu-90a-filament/filament-clear-spool.jpg",
   "/products/tpu-90a-filament/tpu-90a-black-spool.jpg",
-  "/products/tpu-90a-filament/tpu-black-tire-mars.jpg",
+  "/products/tpu-90a-filament/tpu-black-tire-rover.jpg",
 ] as const;
 
-/** Tan face-on + side roll, then TPU football on the field. */
+/** Tan face-on + side roll, then soft TPU tire on a Mars rover. */
 const TAN_90A_IMAGES = [
   "/products/tpu-90a-filament/tpu-90a-tan-spool.jpg",
   "/products/tpu-90a-filament/tpu-90a-tan-spool-angle.jpg",
-  "/products/tpu-90a-filament/tpu-tan-football-field.jpg",
+  "/products/tpu-90a-filament/tpu-tan-tire-rover.jpg",
 ] as const;
 
-/** Pink face-on + side roll, then football on grass and tire on Mars. */
+/** Pink face-on + side roll, then soft TPU tire on a Mars rover. */
 const PINK_90A_IMAGES = [
   "/products/tpu-90a-filament/tpu-90a-pink-spool.jpg",
   "/products/tpu-90a-filament/tpu-90a-pink-spool-angle.jpg",
-  "/products/tpu-90a-filament/tpu-pink-football-field.jpg",
-  "/products/tpu-90a-filament/tpu-pink-tire-mars.jpg",
+  "/products/tpu-90a-filament/tpu-pink-tire-rover.jpg",
 ] as const;
 
 /** Charcoal Air spool, then hand-squished foaming TPU tire. */
