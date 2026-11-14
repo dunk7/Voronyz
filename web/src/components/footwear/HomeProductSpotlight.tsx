@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   useMemo,
   useState,
-  useCallback,
   useRef,
   type PointerEvent as ReactPointerEvent,
 } from "react";
@@ -41,6 +41,7 @@ export default function HomeProductSpotlight({
   maxImages = 6,
   className = "",
 }: HomeProductSpotlightProps) {
+  const router = useRouter();
   const item = FOOTWEAR_CATALOG.find(
     (product) => product.slug.trim().toLowerCase() === slug.trim().toLowerCase(),
   );
@@ -49,16 +50,6 @@ export default function HomeProductSpotlight({
     colors[0],
   );
   const pointerStart = useRef<{ x: number; y: number } | null>(null);
-
-  const cycleColor = useCallback(() => {
-    if (colors.length === 0) return;
-    const current = selectedColor ?? colors[0];
-    const index = colors.findIndex(
-      (c) => c.trim().toLowerCase() === current.trim().toLowerCase(),
-    );
-    const next = colors[(index + 1) % colors.length];
-    setSelectedColor(next);
-  }, [colors, selectedColor]);
 
   const images = useMemo(() => {
     if (!item) return [] as string[];
@@ -83,7 +74,14 @@ export default function HomeProductSpotlight({
     [images, item?.name],
   );
 
-  /** Tap (not swipe) on the product image cycles colors; gallery chrome stays interactive. */
+  if (!item) return null;
+
+  const href =
+    selectedColor != null
+      ? `/products/${item.slug}?primary=${encodeURIComponent(selectedColor)}`
+      : `/products/${item.slug}`;
+
+  /** Tap (not swipe) on the product image opens the listing; gallery chrome stays interactive. */
   function handlePointerDown(e: ReactPointerEvent<HTMLDivElement>) {
     const target = e.target as HTMLElement;
     if (target.closest("button, a, [role='button']")) {
@@ -101,15 +99,8 @@ export default function HomeProductSpotlight({
     if (target.closest("button, a, [role='button']")) return;
     const dx = Math.abs(e.clientX - start.x);
     const dy = Math.abs(e.clientY - start.y);
-    if (dx < 10 && dy < 10) cycleColor();
+    if (dx < 10 && dy < 10) router.push(href);
   }
-
-  if (!item) return null;
-
-  const href =
-    selectedColor != null
-      ? `/products/${item.slug}?primary=${encodeURIComponent(selectedColor)}`
-      : `/products/${item.slug}`;
 
   return (
     <article
@@ -118,7 +109,7 @@ export default function HomeProductSpotlight({
     >
       <div className="mx-auto max-w-3xl">
         <div
-          className="relative overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/5 sm:rounded-3xl"
+          className="relative cursor-pointer overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/5 transition hover:ring-black/15 sm:rounded-3xl"
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
           onPointerCancel={() => {
@@ -190,7 +181,7 @@ export default function HomeProductSpotlight({
               })}
               <span className="ml-1 text-xs text-neutral-400">
                 {colorLabel(selectedColor ?? colors[0])}
-                <span className="hidden sm:inline"> · tap the shoe or a dot to change</span>
+                <span className="hidden sm:inline"> · tap a dot to preview</span>
               </span>
             </div>
           ) : null}

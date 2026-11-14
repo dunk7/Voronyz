@@ -395,7 +395,7 @@ export default function ProductsContent({
         aria-labelledby="advanced-footwear-heading"
         className="mt-16 sm:mt-24 lg:mt-28 mb-16 sm:mb-24 lg:mb-28"
       >
-        <MotionMediaCarousel href="/products" linkLabel="Shop all footwear" />
+        <MotionMediaCarousel href="/products/slip-ons" linkLabel="Shop Slip Ons" />
         <div className="mt-4 max-w-xl text-left sm:mt-5">
           <h2
             id="advanced-footwear-heading"
