@@ -684,8 +684,8 @@ export default function ProductsContent({
 
         {isHomeFootwearTeaser && (
           <>
-            {advancedFootwear}
             <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
+            {advancedFootwear}
             <HomeSecondaryLinks className="mt-12 sm:mt-16" />
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
             {/* All footwear catalog — bottom of home, after spotlights and other sections */}
