@@ -37,15 +37,10 @@ const HOME_APPAREL_TEASER_SLUGS = [
 /** Homepage Áine & Fern teaser — peppermint mist only (still listed under Collaborative in the menu /health). */
 const HOME_AINE_FERN_TEASER_SLUGS = [PEPPERMINT_MIST_SLUG] as const;
 
-/** Keep framed product art fully visible — mist bottle, STL wireframe, filament spool. */
+/** Keep framed product art fully visible — mist bottle only. */
 function productCardImageFitClass(slug: string, src: string): string {
   const key = (slug || "").trim().toLowerCase();
-  if (
-    key === PEPPERMINT_MIST_SLUG ||
-    key === STL_FILES_SLUG ||
-    key === FILAMENT_SLUG ||
-    key === "tpu-90a-filament"
-  ) {
+  if (key === PEPPERMINT_MIST_SLUG) {
     return "object-contain object-center";
   }
   return `object-cover ${apparelCoverObjectPositionClass(src)}`;
@@ -53,12 +48,7 @@ function productCardImageFitClass(slug: string, src: string): string {
 
 function productCardNeedsInset(slug: string): boolean {
   const key = (slug || "").trim().toLowerCase();
-  return (
-    key === PEPPERMINT_MIST_SLUG ||
-    key === STL_FILES_SLUG ||
-    key === FILAMENT_SLUG ||
-    key === "tpu-90a-filament"
-  );
+  return key === PEPPERMINT_MIST_SLUG;
 }
 
 /** Shop-all CTA under the home Footwear and Apparel teasers — shared width so both match. */
@@ -554,6 +544,7 @@ export default function ProductsContent({
             </div>
             <div className="grid grid-cols-2 gap-4 sm:gap-6">
               {getAccessoryCatalogSeed().map((p) => {
+                const slugKey = (p.slug || "").trim().toLowerCase();
                 const { cover, alt } = getImages(p);
                 const isNavigating = navigatingSlug === p.slug;
                 return (
@@ -570,30 +561,28 @@ export default function ProductsContent({
                         isNavigating ? "ring-black/10 shadow-xl" : ""
                       }`}
                     >
-                      <div className="absolute inset-3 sm:inset-4">
+                      <SoftImage
+                        key={cover}
+                        src={cover}
+                        alt={p.name}
+                        fill
+                        className={`${productCardImageFitClass(slugKey, cover)} transition-all duration-500 ${
+                          alt ? "group-hover:opacity-0" : "group-hover:scale-105"
+                        } ${isNavigating ? "scale-105 brightness-90" : ""}`}
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                      />
+                      {alt && (
                         <SoftImage
-                          key={cover}
-                          src={cover}
-                          alt={p.name}
+                          key={alt}
+                          src={alt}
+                          alt={`${p.name} – alternate view`}
                           fill
-                          className={`object-contain transition-all duration-500 ${
-                            alt ? "group-hover:opacity-0" : "group-hover:scale-105"
-                          } ${isNavigating ? "scale-105 brightness-90" : ""}`}
+                          showLogoPlaceholder={false}
+                          className={`${productCardImageFitClass(slugKey, alt)} opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105`}
                           sizes="(max-width: 768px) 50vw, 33vw"
+                          loading="lazy"
                         />
-                        {alt && (
-                          <SoftImage
-                            key={alt}
-                            src={alt}
-                            alt={`${p.name} – alternate view`}
-                            fill
-                            showLogoPlaceholder={false}
-                            className="object-contain opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105"
-                            sizes="(max-width: 768px) 50vw, 33vw"
-                            loading="lazy"
-                          />
-                        )}
-                      </div>
+                      )}
                       {isNavigating && (
                         <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-black/20 backdrop-blur-[2px]">
                           <LogoLoader size="sm" tone="light" showBar={false} className="!gap-0" />
