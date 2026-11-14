@@ -47,13 +47,14 @@ export default function PrintedFootwearEducation({
         step of this right.
       </p>
 
-      <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-xl">
+      <div className="relative mt-8 mx-auto w-full max-w-md overflow-hidden rounded-xl sm:max-w-lg">
         <Image
           src={V3_SLIDES_STREET_SHOT.src}
           alt={V3_SLIDES_STREET_SHOT.alt}
-          fill
-          className="object-cover object-center"
-          sizes="(max-width: 768px) 100vw, 56rem"
+          width={864}
+          height={1152}
+          className="h-auto w-full"
+          sizes="(max-width: 640px) 100vw, 32rem"
         />
       </div>
 

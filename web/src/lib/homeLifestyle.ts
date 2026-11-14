@@ -1,5 +1,5 @@
 /**
- * Lifestyle / model photography for the homepage and related brand surfaces.
+ * Lifestyle / model photography for brand surfaces (education, about).
  * Only the approved V3 Slides street (car) frame ships on-site.
  */
 export type LifestyleShot = {
