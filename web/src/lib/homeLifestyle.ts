@@ -1,6 +1,6 @@
 /**
  * Lifestyle / model photography for the homepage and related brand surfaces.
- * Homepage post-slides band uses the gallery redhead boat frame.
+ * Homepage shows the gallery redhead boat frame once, near the bottom.
  */
 export type LifestyleShot = {
   id: string;
