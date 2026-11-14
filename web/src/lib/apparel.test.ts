@@ -17,8 +17,10 @@ import {
   getApparelItem,
   getApparelListingOffer,
   getApparelSizeOffer,
+  getStandaloneApparelItems,
   isApparelColorOutOfStock,
   isApparelSizeAvailable,
+  isObsoleteApparelSlug,
 } from "./apparel";
 import { isComingSoonPreOrderProduct } from "./preorder";
 
@@ -128,6 +130,19 @@ test("accessory listings still return to Accessories", () => {
   assert.equal(apparelProductShopLabel("voronyz-cool-shades"), "Back to Accessories");
   assert.equal(apparelProductShopHref("voronyz-stickers"), "/apparel/accessories");
   assert.equal(apparelProductShopLabel("voronyz-stickers"), "Back to Accessories");
+});
+
+test("live accessories are only logo stickers and cool shades", () => {
+  assert.deepEqual(
+    getStandaloneApparelItems().map((item) => item.slug),
+    ["voronyz-stickers", "voronyz-cool-shades"],
+  );
+  assert.equal(getApparelItem("voronyz-jewelry-collab"), null);
+  assert.equal(getApparelItem("voronyz-drone-parts"), null);
+  assert.equal(getApparelItem("voronyz-lace-locks"), null);
+  assert.equal(isObsoleteApparelSlug("voronyz-jewelry-collab"), true);
+  assert.equal(isObsoleteApparelSlug("voronyz-drone-parts"), true);
+  assert.equal(isObsoleteApparelSlug("voronyz-lace-locks"), true);
 });
 
 test("logo stickers replace the keychain as a live accessory listing", () => {

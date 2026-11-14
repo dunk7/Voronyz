@@ -13,7 +13,11 @@ import {
   STL_FILES_SLUG,
   STL_FILES_THUMBNAIL_URL,
 } from "@/lib/stlFiles";
-import { APPAREL_CATALOG, apparelCoverObjectPositionClass } from "@/lib/apparel";
+import {
+  APPAREL_CATALOG,
+  apparelCoverObjectPositionClass,
+  getStandaloneApparelItems,
+} from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
@@ -32,6 +36,12 @@ import { PEPPERMINT_MIST_SLUG } from "@/lib/aineFernPeppermintMist";
 const HOME_APPAREL_TEASER_SLUGS = [
   "voronyz-oversized-tee",
   "voronyz-core-hoodie",
+] as const;
+
+/** Homepage accessories teaser — logo stickers + cool shades only. */
+const HOME_ACCESSORIES_TEASER_SLUGS = [
+  "voronyz-stickers",
+  "voronyz-cool-shades",
 ] as const;
 
 /** Homepage Áine & Fern teaser — peppermint mist only (still listed under Collaborative in the menu /health). */
@@ -268,6 +278,31 @@ export default function ProductsContent({
     });
   }, [showApparelContinuation]);
 
+  const accessoriesTeaserProducts = useMemo((): ApparelGridProduct[] => {
+    if (!showApparelContinuation) return [];
+    const bySlug = new Map(
+      getStandaloneApparelItems().map((item) => [item.slug, item]),
+    );
+    return HOME_ACCESSORIES_TEASER_SLUGS.flatMap((slug) => {
+      const item = bySlug.get(slug);
+      if (!item) return [];
+      return [
+        {
+          id: `catalog-${item.slug}`,
+          slug: item.slug,
+          name: item.name,
+          description: item.description,
+          priceCents: item.priceCents,
+          currency: "usd",
+          cover: item.image,
+          colors: item.colors,
+          sizes: item.sizes,
+          subcategory: item.subcategory,
+        },
+      ];
+    });
+  }, [showApparelContinuation]);
+
   const homeSectionTitleClass =
     "text-2xl sm:text-[1.75rem] font-semibold tracking-tight text-neutral-900 text-center";
   const sectionHeadingClass =
@@ -395,6 +430,33 @@ export default function ProductsContent({
       </section>
       ) : null;
 
+  const accessoriesSection =
+    showApparelContinuation && accessoriesTeaserProducts.length > 0 ? (
+      <section
+        id="accessories"
+        aria-labelledby="home-accessories-heading"
+        className={
+          useFootwearBrowse
+            ? "container pb-16 sm:pb-24"
+            : "mt-16 sm:mt-24"
+        }
+      >
+        <div className="mb-8 sm:mb-10 text-center">
+          <h2 id="home-accessories-heading" className={homeSectionTitleClass}>
+            Accessories
+          </h2>
+        </div>
+
+        <ApparelProductGrid products={accessoriesTeaserProducts} />
+
+        <div className="mt-10 sm:mt-12 flex justify-center">
+          <Link href="/apparel/accessories" className={SHOP_ALL_CTA_CLASS}>
+            Shop accessories
+          </Link>
+        </div>
+      </section>
+    ) : null;
+
   const footGlow = showApparelContinuation && !isHomeFootwearTeaser ? (
     <FootGlowSection variant="print" />
   ) : null;
@@ -428,6 +490,7 @@ export default function ProductsContent({
           <FootwearBrowse products={products} getImages={getImages} />
           {footGlow}
           {apparelSection}
+          {accessoriesSection}
         </>
       ) : (
       <div className="container py-16">
@@ -696,6 +759,7 @@ export default function ProductsContent({
         ) : null}
         {footGlow}
         {apparelSection}
+        {accessoriesSection}
 
         {isHomeFootwearTeaser && (
           <>
