@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { V3_SLIDES_STREET_SHOT } from "@/lib/homeLifestyle";
 
 type AboutStoryProps = {
   priority?: boolean;
@@ -8,25 +7,45 @@ type AboutStoryProps = {
 export default function AboutStory({ priority = false }: AboutStoryProps) {
   return (
     <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16 max-w-6xl mx-auto">
-      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl ring-1 ring-neutral-200 shadow-lg">
+      <figure className="relative aspect-square w-full overflow-hidden rounded-2xl ring-1 ring-neutral-200 shadow-lg">
         <Image
-          src={V3_SLIDES_STREET_SHOT.src}
-          alt={V3_SLIDES_STREET_SHOT.alt}
+          src="/about/max-chapman.jpg"
+          alt="Portrait of Max Chapman, founder of Voronyz, sitting outdoors in casual streetwear"
           fill
           className="object-cover object-center"
           priority={priority}
           sizes="(max-width: 1024px) 100vw, 50vw"
         />
-      </div>
+        <figcaption className="sr-only">Max Chapman, Founder</figcaption>
+      </figure>
 
-      <div className="prose prose-lg text-neutral-700 leading-relaxed space-y-5">
-        <p>
-          We&apos;ve spent years perfecting 3D-printed footwear — the materials, the fit, the way a pair should feel when you actually wear it. Foamed TPU, lattice construction, and finishing that turns a print into a shoe. That work is how we got here.
+      <div className="space-y-5 text-neutral-700 leading-relaxed">
+        <div>
+          <p className="uppercase tracking-[0.2em] text-xs text-neutral-500 mb-2">
+            Founder
+          </p>
+          <h2 className="text-2xl md:text-3xl font-semibold text-neutral-900 tracking-tight">
+            Max Chapman
+          </h2>
+        </div>
+
+        <p className="text-lg">
+          Voronyz started with Max Chapman — one of the founders — and a simple
+          conviction: 3D-printed footwear could feel like a real shoe, not a
+          prototype.
         </p>
-        <p>
-          Voronyz makes footwear meant for everyday life: light, cushioned, and built to last. Recyclable where it counts, designed around the foot, and finished to the standard of a real shoe company.
+        <p className="text-lg">
+          He spent years refining the materials, the fit, and the finishing.
+          Foamed TPU, lattice construction, and a process that turns a print into
+          something you actually want to wear every day. That work became the
+          foundation of the brand.
         </p>
-        <p>
+        <p className="text-lg">
+          Today Voronyz makes light, cushioned footwear built around the foot —
+          recyclable where it counts, designed to last, and finished to the
+          standard of a real shoe company.
+        </p>
+        <p className="text-lg">
           Follow along on{" "}
           <a
             href="https://instagram.com/voronyz"
