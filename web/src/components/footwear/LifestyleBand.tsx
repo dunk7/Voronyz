@@ -19,7 +19,8 @@ export default function LifestyleBand({
   priority = false,
 }: LifestyleBandProps) {
   const portrait = shot.aspect === "portrait";
-  const href = shot.productSlug ? `/products/${shot.productSlug}` : null;
+  const productSlug = shot.productSlug?.trim() || null;
+  const href = productSlug ? `/products/${productSlug}` : null;
 
   const frame = (
     <div
@@ -48,10 +49,10 @@ export default function LifestyleBand({
     <figure
       className={`relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 overflow-hidden ${className}`}
     >
-      {href ? (
+      {href && productSlug ? (
         <Link
           href={href}
-          aria-label={`Shop ${shot.productSlug.replace(/-/g, " ")}`}
+          aria-label={`Shop ${productSlug.replace(/-/g, " ")}`}
           className="block outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2"
         >
           {frame}
