@@ -8,7 +8,7 @@ export type LifestyleShot = {
   alt: string;
   /** Product this shot primarily features */
   productSlug?: string;
-  aspect: "portrait" | "landscape";
+  aspect: "portrait" | "tall-portrait" | "landscape";
 };
 
 export const V3_SLIDES_STREET_SHOT: LifestyleShot = {
@@ -24,7 +24,8 @@ export const DRAGONFLY_STREET_SHOT: LifestyleShot = {
   src: "/lifestyle/dragonfly-street.jpg",
   alt: "Model crouching in grey Voronyz Dragonfly sneakers on an asphalt path",
   productSlug: "dragonfly",
-  aspect: "portrait",
+  // Match the uploaded frame (~9:16) so object-cover keeps head and sneakers in frame.
+  aspect: "tall-portrait",
 };
 
 export const HOME_LIFESTYLE_SHOTS: LifestyleShot[] = [
