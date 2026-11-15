@@ -25,7 +25,6 @@ import HomeFootwearHighlights from "@/components/footwear/HomeFootwearHighlights
 import LifestyleBand from "@/components/footwear/LifestyleBand";
 import FootGlowSection from "@/components/FootGlowSection";
 import MotionMediaCarousel from "@/components/MotionMediaCarousel";
-import { MAGIKID_SHOES_THUMBNAIL_URL } from "@/lib/magikidShoesThumbnail";
 import { GATORS_SLUG, GATORS_THUMBNAIL_URL } from "@/lib/gators";
 import { PEPPERMINT_MIST_SLUG } from "@/lib/aineFernPeppermintMist";
 import { V3_SLIDES_STREET_SHOT } from "@/lib/homeLifestyle";
@@ -68,9 +67,6 @@ const productMeta: Record<string, {
   "slip-ons": {
     altImage: "/products/slip-ons/InShot_20260405_203425292.jpg",
   },
-  "magikid-shoes": {
-    altImage: MAGIKID_SHOES_THUMBNAIL_URL,
-  },
   "tpu-90a-filament": {},
   [STL_FILES_SLUG]: {
     altImage: STL_FILES_ALT_IMAGE_URL,
@@ -86,8 +82,6 @@ function cardMetaForSlug(slug: string) {
       return productMeta.dragonfly;
     case "slip-ons":
       return productMeta["slip-ons"];
-    case "magikid-shoes":
-      return productMeta["magikid-shoes"];
     case FILAMENT_SLUG:
     case "tpu-90a-filament":
       return productMeta["tpu-90a-filament"];

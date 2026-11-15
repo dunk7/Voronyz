@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import { MAGIKID_SHOES_IMAGES, MAGIKID_SHOES_KIDS_SIZES, MAGIKID_SHOES_DESCRIPTION_SHORT, MAGIKID_SHOES_BASE_PRICE_CENTS } from "../src/lib/magikidShoesThumbnail";
 import {
   TRAIL_MIX_DESCRIPTION_SHORT,
   TRAIL_MIX_FLAVOR_IDS,
@@ -331,69 +330,20 @@ async function main() {
       console.log("Updated Slip Ons product and variants.");
     }
 
-    // ── Magikid Shoes ──
-    const magikidShoesImages = [...MAGIKID_SHOES_IMAGES];
+    // ── Remove Magikid Shoes listing (kept in code for a later restore) ──
     const existingMk = await prisma.product.findUnique({ where: { slug: "magikid-shoes" } });
-    console.log("Magikid Shoes product check:", existingMk ? "Found" : "Not found");
-    if (!existingMk) {
-      const mkProduct = await prisma.product.create({
-        data: {
-          slug: "magikid-shoes",
-          name: "Magikid Shoes",
-          description: MAGIKID_SHOES_DESCRIPTION_SHORT,
-          priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
-          currency: "usd",
-          images: magikidShoesImages,
-          primaryColors: ["black", "grey", "white", "orange", "pink"],
-          secondaryColors: [],
-          sizes: MAGIKID_SHOES_KIDS_SIZES,
-          variants: {
-            create: [
-              { color: "black", sku: "MK-BLK", stock: 999 },
-              { color: "grey", sku: "MK-GRY", stock: 999 },
-              { color: "white", sku: "MK-WHT", stock: 0 },
-              { color: "orange", sku: "MK-ORG", stock: 0 },
-              { color: "pink", sku: "MK-PNK", stock: 999 },
-            ],
-          },
-        },
-        include: { variants: true },
+    if (existingMk) {
+      const mkVariants = await prisma.variant.findMany({
+        where: { productId: existingMk.id },
+        select: { id: true },
       });
-      console.log("Seeded product:", mkProduct.slug);
-    } else {
-      console.log("Updating existing Magikid Shoes product...");
-      await prisma.product.update({
-        where: { id: existingMk.id },
-        data: {
-          name: "Magikid Shoes",
-          description: MAGIKID_SHOES_DESCRIPTION_SHORT,
-          priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
-          images: magikidShoesImages,
-          primaryColors: ["black", "grey", "white", "orange", "pink"],
-          secondaryColors: [],
-          sizes: MAGIKID_SHOES_KIDS_SIZES,
-        },
-      });
-      const mkVariants = [
-        { color: "black", sku: "MK-BLK", stock: 999 },
-        { color: "grey", sku: "MK-GRY", stock: 999 },
-        { color: "white", sku: "MK-WHT", stock: 0 },
-        { color: "orange", sku: "MK-ORG", stock: 0 },
-        { color: "pink", sku: "MK-PNK", stock: 999 },
-      ];
-      for (const v of mkVariants) {
-        await prisma.variant.upsert({
-          where: { sku: v.sku },
-          update: { stock: v.stock },
-          create: {
-            product: { connect: { id: existingMk.id } },
-            color: v.color,
-            sku: v.sku,
-            stock: v.stock,
-          },
-        });
+      const mkVariantIds = mkVariants.map((v) => v.id);
+      if (mkVariantIds.length > 0) {
+        await prisma.cartItem.deleteMany({ where: { variantId: { in: mkVariantIds } } });
+        await prisma.variant.deleteMany({ where: { id: { in: mkVariantIds } } });
       }
-      console.log("Updated Magikid Shoes product and variants.");
+      await prisma.product.delete({ where: { id: existingMk.id } });
+      console.log("Removed Magikid Shoes product.");
     }
 
     // ── Remove retired Glock 43x Holster listing ──

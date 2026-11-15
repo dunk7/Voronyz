@@ -108,11 +108,18 @@ test("All Footwear lists Gators last while they are coming soon", () => {
     "v3-slides",
     "slip-ons",
     "dragonfly",
-    "magikid-shoes",
     "voronyz-lattice-insoles",
     "gators",
   ]);
   assert.equal(FOOTWEAR_CATALOG.at(-1)?.slug, "gators");
+});
+
+test("Magikid Shoes are delisted from the live footwear catalog", () => {
+  assert.equal(FOOTWEAR_SLUGS.includes("magikid-shoes"), false);
+  assert.equal(
+    FOOTWEAR_CATALOG.some((item) => item.slug === "magikid-shoes"),
+    false,
+  );
 });
 
 test("white color names match the White swatch", () => {

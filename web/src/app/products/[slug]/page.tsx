@@ -11,17 +11,6 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
 import {
-  MAGIKID_SHOES_COVER,
-  MAGIKID_SHOES_IMAGES,
-  MAGIKID_SHOES_DESCRIPTION,
-  MAGIKID_SHOES_HOW_ITS_MADE,
-  MAGIKID_SHOES_META_DESCRIPTION,
-  MAGIKID_SHOES_BASE_PRICE_CENTS,
-  MAGIKID_SHOES_SHIPPED_PRICE_CENTS,
-  magikidCatalogProduct,
-} from "@/lib/magikidShoesThumbnail";
-import MagikidShoesStory from "@/components/products/MagikidShoesStory";
-import {
   TRAIL_MIX_DESCRIPTION,
   TRAIL_MIX_FLAVORS,
   TRAIL_MIX_HOW_ITS_MADE,
@@ -180,8 +169,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     const catalogFallback = getApparelItem(slug);
     if (catalogFallback) {
       product = apparelCatalogProduct(catalogFallback);
-    } else if (slug === "magikid-shoes") {
-      product = magikidCatalogProduct();
     } else if (slug === STL_FILES_SLUG) {
       product = stlFilesCatalogProduct();
     } else if (slug === LATTICE_INSOLES_SLUG) {
@@ -209,7 +196,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   if (!product) {
     const catalogFallback = getApparelItem(slug);
     if (catalogFallback) product = apparelCatalogProduct(catalogFallback);
-    else if (slug === "magikid-shoes") product = magikidCatalogProduct();
     else if (slug === STL_FILES_SLUG) product = stlFilesCatalogProduct();
     else if (slug === LATTICE_INSOLES_SLUG) product = latticeInsolesCatalogProduct();
     else if (slug === GATORS_SLUG) product = gatorsCatalogProduct();
@@ -253,15 +239,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     "/products/slip-ons/InShot_20260405_204113872.jpg",
     "/products/slip-ons/InShot_20260405_204333303.jpg",
   ];
-  const magikidShoesImages = [...MAGIKID_SHOES_IMAGES];
   const images = slug === "v3-slides"
     ? defaultImages
     : slug === "dragonfly"
     ? dragonflyImages
     : slug === "slip-ons"
     ? slipOnsImages
-    : slug === "magikid-shoes"
-    ? magikidShoesImages
     : slug === TRAIL_MIX_SLUG
     ? [...TRAIL_MIX_IMAGES]
     : slug === PEPPERMINT_MIST_SLUG
@@ -288,7 +271,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   const isDragonfly = slug === "dragonfly";
   const isSlipOns = slug === "slip-ons";
-  const isMagikidShoes = slug === "magikid-shoes";
   const isTrailMix = slug === TRAIL_MIX_SLUG;
   const isPeppermintMist = slug === PEPPERMINT_MIST_SLUG;
   const isGators = slug === GATORS_SLUG;
@@ -337,8 +319,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     ? "Engineered for comfort, built to last. Lightweight slides with a foamed TPU lattice underfoot and a breathable upper."
     : slug === "dragonfly"
     ? DRAGONFLY_DESCRIPTION
-    : isMagikidShoes
-    ? MAGIKID_SHOES_DESCRIPTION
     : isSlipOns
     ? SLIP_ONS_DESCRIPTION
     : isTrailMix
@@ -376,7 +356,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H21M3.375 14.25V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.026M14.25 6.375h3.223c.398 0 .78.158 1.061.44l2.777 2.778a1.5 1.5 0 01.44 1.06V14.25m-8.25 0h8.25" />
           </svg>
-          {isMagikidShoes ? "+$7 shipping" : isStlFiles ? "Digital file" : "Free US shipping"}
+          {isStlFiles ? "Digital file" : "Free US shipping"}
         </span>
       )}
 
@@ -417,10 +397,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       )}
       {!isTrailMix && !isApparel && !isFilament && !isStlFiles && !isLatticeInsoles && !isPeppermintMist && (
         <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
-          {isMagikidShoes ? "Made to order in <7 days" : "Made to order in <2 days"}
+          {"Made to order in <2 days"}
         </span>
       )}
-      {!isMagikidShoes && !isTrailMix && !isApparel && !isFilament && !isStlFiles && !isLatticeInsoles && !isPeppermintMist && (
+      {!isTrailMix && !isApparel && !isFilament && !isStlFiles && !isLatticeInsoles && !isPeppermintMist && (
         <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">500 miles or 2 years</span>
       )}
       {isTrailMix && (
@@ -434,9 +414,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       )}
       {isSlipOns && (
         <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Single-tone upper</span>
-      )}
-      {isMagikidShoes && (
-        <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Magikid Lab pickup available</span>
       )}
     </div>
   );
@@ -479,24 +456,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             ...(isDragonfly && {
               secondaryColors: (product.secondaryColors as string[]).filter(c => c.toLowerCase() !== "#007fff"),
               secondaryLabel: "Lace Color",
-            }),
-            ...(isMagikidShoes && {
-              defaultGender: "kids" as const,
-              requireStudentName: true,
-              fulfillmentOptions: [
-                {
-                  id: "pickup",
-                  label: "Magikid Lab pickup",
-                  priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
-                  description: "No shipping fee",
-                },
-                {
-                  id: "shipping",
-                  label: "Ship to me",
-                  priceCents: MAGIKID_SHOES_SHIPPED_PRICE_CENTS,
-                  description: "Includes shipping",
-                },
-              ],
             }),
             ...(isTrailMix && {
               hideSizeSelector: true,
@@ -555,7 +514,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  {isMagikidShoes ? "+$7 shipping" : isStlFiles ? "Digital file" : "Free US shipping"}
+                  {isStlFiles ? "Digital file" : "Free US shipping"}
                 </span>
               )}
               {isApparel && apparelItem?.comingSoon && (
@@ -583,38 +542,33 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       </div>
 
       <div className="container pb-12">
-        {isMagikidShoes ? <MagikidShoesStory /> : null}
         {isFilament ? <FilamentPrintSettings /> : null}
         {!isFilament && (
         <div className="mt-10 overflow-hidden rounded-3xl ring-1 ring-black/5 bg-white">
           <div className="bg-black text-white px-6 py-4 text-sm font-medium">
             {isDragonfly
               ? "Crafted for you"
-              : isMagikidShoes
-                ? "Magikid program"
-                : isSlipOns
-                  ? "Print + finish"
-                  : isTrailMix
-                      ? "Collaborative"
-                      : isPeppermintMist
-                        ? "Áine & Fern"
-                      : isApparel
-                        ? "Apparel"
-                        : isGators
-                          ? "Comfort clog"
-                          : isFilament
-                            ? "Print settings"
-                            : isStlFiles
-                              ? "STL file"
-                            : isLatticeInsoles
-                              ? "TPU lattice"
-                            : "How it's made"}
+              : isSlipOns
+                ? "Print + finish"
+                : isTrailMix
+                    ? "Collaborative"
+                    : isPeppermintMist
+                      ? "Áine & Fern"
+                    : isApparel
+                      ? "Apparel"
+                      : isGators
+                        ? "Comfort clog"
+                        : isFilament
+                          ? "Print settings"
+                          : isStlFiles
+                            ? "STL file"
+                          : isLatticeInsoles
+                            ? "TPU lattice"
+                          : "How it's made"}
           </div>
           <div className="px-6 py-5 text-neutral-700 leading-relaxed">
             {(isDragonfly
               ? "3D-printed with our TPU lattice for a springy feel, a breathable upper, and your choice of lace color."
-              : isMagikidShoes
-              ? MAGIKID_SHOES_HOW_ITS_MADE
               : isSlipOns
               ? "Printed in one piece per colorway, then finished for flex and daily wear."
               : isTrailMix
@@ -657,13 +611,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "How long does production take?", a: "Each pair is 3D-printed to order. Production takes about 1-2 days, then ships out next business day." },
               { q: "Is shipping really free?", a: "Yes! We offer free shipping on all domestic US orders. No minimum purchase required. We currently only ship within the US." },
               { q: "Can I wash them?", a: "Absolutely. The lattice sole and upper are fully washable — toss them in the washer on a gentle cycle." },
-            ] : isMagikidShoes ? [
-              { q: "Is this a public Voronyz shoe?", a: "No. This is a Magikid Robotics Lab program we run with them — footwear design camps for Magikid students. It is not a stock pair we sell to everybody." },
-              { q: "What are the kids actually ordering?", a: "Their own design. In camp they start from our slip-on base and model their own holes, cutouts, and graphics. We print that student file. Put the student's name at checkout so we print the right pair — there isn't a finished off-the-shelf shoe to buy." },
-              { q: "What colors can I order?", a: "Black, grey, and pink are in stock. White and orange are listed but currently out of stock. Color is the print color of the student's designed pair." },
-              { q: "How does Magikid Lab pickup work?", a: "Choose pickup at checkout — you pay $30 for the printed student pair with no shipping fee. We'll email you when it's ready to collect in person at Magikid Lab." },
-              { q: "How does shipping work?", a: "The pair is $30. Shipping is an extra $7. Pickup at Magikid Lab is $30 with no shipping fee." },
-              { q: "How long does production take?", a: "Made to order in under 7 days, then we ship or hold for pickup." },
             ] : isSlipOns ? [
               { q: "What colors can I order?", a: "Black, grey, white, orange, and pink. Each pair is one solid body color (no two-tone option)." },
               { q: "Are they true to size?", a: "Use the Men's / Women's / Kids' toggles on the product page to pick your usual US size." },
@@ -760,18 +707,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const description =
       `Minimal 3D-printed slip-ons with a flexible lattice sole. $${SLIP_ONS_PRICE_CENTS / 100}.`;
     const images = ["/products/slip-ons/InShot_20260405_203151152.jpg"];
-    return {
-      title,
-      description,
-      openGraph: { title, description, images },
-      twitter: { card: "summary_large_image", title, description, images },
-    };
-  }
-
-  if (slug === "magikid-shoes") {
-    const title = "Magikid Shoes – Voronyz";
-    const description = MAGIKID_SHOES_META_DESCRIPTION;
-    const images = [MAGIKID_SHOES_COVER];
     return {
       title,
       description,
