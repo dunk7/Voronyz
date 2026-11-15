@@ -49,10 +49,10 @@ const HOME_ACCESSORIES_TEASER_SLUGS = [
 /** Homepage Áine & Fern teaser — peppermint mist only (still listed under Collaborative in the menu /health). */
 const HOME_AINE_FERN_TEASER_SLUGS = [PEPPERMINT_MIST_SLUG] as const;
 
-/** Keep framed product art fully visible — mist bottle only. */
+/** Keep framed product art fully visible — mist bottle + STL wireframe (no crop-zoom). */
 function productCardImageFitClass(slug: string, src: string): string {
   const key = (slug || "").trim().toLowerCase();
-  if (key === PEPPERMINT_MIST_SLUG) {
+  if (key === PEPPERMINT_MIST_SLUG || key === STL_FILES_SLUG) {
     return "object-contain object-center";
   }
   return `object-cover ${apparelCoverObjectPositionClass(src)}`;

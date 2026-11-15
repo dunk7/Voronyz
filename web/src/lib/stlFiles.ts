@@ -10,8 +10,11 @@ export const STL_FILES_PRICE_CENTS = 100;
  * CAD wireframe art leads — reads as an STL file, not a product photo.
  * Real Slip On photos follow so shoppers can scroll the gallery to see
  * what they’re printing after they open the listing.
+ *
+ * cover-slip-on.jpg is the approved open-back Slip On mesh (not Dragonfly).
+ * New filename busts the immutable CDN cache that kept serving the old shoe.
  */
-export const STL_FILES_THUMBNAIL_URL = "/products/stl-files/cover.jpg";
+export const STL_FILES_THUMBNAIL_URL = "/products/stl-files/cover-slip-on.jpg";
 export const STL_FILES_ALT_IMAGE_URL = "/products/stl-files/alt.jpg";
 /** Product photos shown after the wireframe on the PDP gallery. */
 export const STL_FILES_PRODUCT_PREVIEW_IMAGES = [

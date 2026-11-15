@@ -26,12 +26,13 @@ test("STL listing is Voronyz STL at $1 per shoe file", () => {
 });
 
 test("STL thumbnail is wireframe art; product photos come after for gallery scroll", () => {
-  assert.equal(STL_FILES_THUMBNAIL_URL, "/products/stl-files/cover.jpg");
+  assert.equal(STL_FILES_THUMBNAIL_URL, "/products/stl-files/cover-slip-on.jpg");
   assert.equal(STL_FILES_ALT_IMAGE_URL, "/products/stl-files/alt.jpg");
   assert.equal(STL_FILES_IMAGES[0], STL_FILES_THUMBNAIL_URL);
   assert.equal(STL_FILES_IMAGES[1], STL_FILES_ALT_IMAGE_URL);
-  // Listing art stays on the dedicated stl-files wireframe assets.
+  // Listing art stays on the dedicated stl-files Slip On wireframe (not Dragonfly photos).
   assert.equal(STL_FILES_THUMBNAIL_URL.includes("/products/slip-ons/"), false);
+  assert.equal(STL_FILES_THUMBNAIL_URL.includes("dragonfly"), false);
   assert.equal(STL_FILES_ALT_IMAGE_URL.includes("/products/slip-ons/"), false);
   // After click, shoppers can scroll past the mesh to real Slip On photos.
   assert.deepEqual(
