@@ -12,10 +12,10 @@ import V3Gallery from "@/components/V3Gallery";
 import {
   FOOTWEAR_CATALOG,
   slipOnsImagesForColor,
-  SLIP_ONS_WHITE_AD_IMAGE,
 } from "@/lib/footwear";
 import {
   colorToCss,
+  footwearImageRecolor,
   footwearSwatches,
   formatUsdFromCents,
 } from "@/lib/footwearRanking";
@@ -56,10 +56,6 @@ export default function HomeProductSpotlight({
     let list = [...item.images];
     if (slug.trim().toLowerCase() === "slip-ons") {
       list = slipOnsImagesForColor(list, selectedColor);
-      // Keep white ad first when white is selected; otherwise drop it.
-      if (selectedColor?.trim().toLowerCase() !== "white") {
-        list = list.filter((src) => src !== SLIP_ONS_WHITE_AD_IMAGE);
-      }
     }
     return list.slice(0, maxImages);
   }, [item, maxImages, selectedColor, slug]);
@@ -80,6 +76,7 @@ export default function HomeProductSpotlight({
     selectedColor != null
       ? `/products/${item.slug}?primary=${encodeURIComponent(selectedColor)}`
       : `/products/${item.slug}`;
+  const imageRecolor = footwearImageRecolor(selectedColor);
 
   /** Tap (not swipe) on the product image opens the listing; gallery chrome stays interactive. */
   function handlePointerDown(e: ReactPointerEvent<HTMLDivElement>) {
@@ -121,6 +118,7 @@ export default function HomeProductSpotlight({
             media={media}
             aspect="square"
             fit="contain"
+            imageRecolor={imageRecolor}
             className="[&>div:first-of-type]:rounded-2xl sm:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0"
           />
         </div>

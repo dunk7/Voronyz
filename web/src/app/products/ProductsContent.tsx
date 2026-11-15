@@ -22,11 +22,13 @@ import HomeSecondaryLinks from "@/components/HomeSecondaryLinks";
 import PrintedFootwearEducation from "@/components/apparel/PrintedFootwearEducation";
 import FootwearBrowse from "@/components/footwear/FootwearBrowse";
 import HomeFootwearHighlights from "@/components/footwear/HomeFootwearHighlights";
+import LifestyleBand from "@/components/footwear/LifestyleBand";
 import FootGlowSection from "@/components/FootGlowSection";
 import MotionMediaCarousel from "@/components/MotionMediaCarousel";
 import { MAGIKID_SHOES_THUMBNAIL_URL } from "@/lib/magikidShoesThumbnail";
 import { GATORS_SLUG, GATORS_THUMBNAIL_URL } from "@/lib/gators";
 import { PEPPERMINT_MIST_SLUG } from "@/lib/aineFernPeppermintMist";
+import { V3_SLIDES_STREET_SHOT } from "@/lib/homeLifestyle";
 
 /** Homepage apparel teaser — a couple of highlights, not the full catalog. */
 const HOME_APPAREL_TEASER_SLUGS = [
@@ -44,11 +46,6 @@ function productCardImageFitClass(slug: string, src: string): string {
     return "object-contain object-center";
   }
   return `object-cover ${apparelCoverObjectPositionClass(src)}`;
-}
-
-function productCardNeedsInset(slug: string): boolean {
-  const key = (slug || "").trim().toLowerCase();
-  return key === PEPPERMINT_MIST_SLUG;
 }
 
 /** Shop-all CTA under the home Footwear and Apparel teasers — shared width so both match. */
@@ -453,7 +450,6 @@ export default function ProductsContent({
               const { cover, alt } = getImages(p);
               const meta = cardMetaForSlug(slugKey);
               const isNavigating = navigatingSlug === p.slug;
-              const inset = productCardNeedsInset(slugKey);
 
               return (
                 <Link
@@ -469,7 +465,7 @@ export default function ProductsContent({
                       isNavigating ? "ring-black/10 shadow-xl" : ""
                     }`}
                   >
-                    <div className={inset ? "absolute inset-3 sm:inset-4" : "absolute inset-0"}>
+                    <div className="absolute inset-0">
                       <SoftImage
                         key={cover}
                         src={cover}
@@ -612,8 +608,8 @@ export default function ProductsContent({
                 Áine & Fern
               </h2>
             </div>
-            {/* Same half-width square card as Footwear, centered — Áine & Fern is its own home block (still under Collaborative in the menu). */}
-            <div className="mx-auto w-1/2">
+            {/* Match footwear spotlight width so the bottle fills the frame (still Collaborative in the menu). */}
+            <div className="mx-auto w-full max-w-3xl">
               {HOME_AINE_FERN_TEASER_SLUGS.flatMap((slug) => {
                 const p = getHealthCatalogSeed().find(
                   (item) => (item.slug || "").trim().toLowerCase() === slug,
@@ -623,7 +619,6 @@ export default function ProductsContent({
                 const slugKey = (p.slug || "").trim().toLowerCase();
                 const { cover, alt } = getImages(p);
                 const isNavigating = navigatingSlug === p.slug;
-                const inset = productCardNeedsInset(slugKey);
                 return (
                   <Link
                     key={p.id}
@@ -634,11 +629,11 @@ export default function ProductsContent({
                     }`}
                   >
                     <div
-                      className={`relative aspect-square w-full overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:shadow-xl group-hover:ring-black/10 ${
+                      className={`relative aspect-square w-full overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:shadow-xl group-hover:ring-black/10 sm:rounded-3xl ${
                         isNavigating ? "ring-black/10 shadow-xl" : ""
                       }`}
                     >
-                      <div className={inset ? "absolute inset-3 sm:inset-4" : "absolute inset-0"}>
+                      <div className="absolute inset-0">
                         <SoftImage
                           key={cover}
                           src={cover}
@@ -647,7 +642,7 @@ export default function ProductsContent({
                           className={`${productCardImageFitClass(slugKey, cover)} transition-all duration-500 ${
                             alt ? "group-hover:opacity-0" : "group-hover:scale-105"
                           } ${isNavigating ? "scale-105 brightness-90" : ""}`}
-                          sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                          sizes="(max-width: 768px) 100vw, 48rem"
                         />
                         {alt && (
                           <SoftImage
@@ -657,7 +652,7 @@ export default function ProductsContent({
                             fill
                             showLogoPlaceholder={false}
                             className={`${productCardImageFitClass(slugKey, alt)} opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105`}
-                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                            sizes="(max-width: 768px) 100vw, 48rem"
                             loading="lazy"
                           />
                         )}
@@ -688,6 +683,10 @@ export default function ProductsContent({
             <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
             <HomeSecondaryLinks className="mt-12 sm:mt-16" />
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
+            {/* Redhead boat lifestyle — bottom of home only (removed from above V3 spotlights) */}
+            <div className="mt-16 sm:mt-24 lg:mt-28">
+              <LifestyleBand shot={V3_SLIDES_STREET_SHOT} />
+            </div>
             {/* All footwear catalog — bottom of home, after spotlights and other sections */}
             <div className="mt-16 space-y-8 sm:mt-24 sm:space-y-10 lg:mt-28">
               <FootwearBrowse

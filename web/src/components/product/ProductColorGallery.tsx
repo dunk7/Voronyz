@@ -2,6 +2,7 @@
 
 import V3Gallery from "@/components/V3Gallery";
 import { slipOnsImagesForColor } from "@/lib/footwear";
+import { footwearImageRecolor } from "@/lib/footwearRanking";
 import {
   createContext,
   useContext,
@@ -71,16 +72,18 @@ export default function ProductColorGallery({
     () => ({ selectedColor, setSelectedColor }),
     [selectedColor]
   );
+  const imageRecolor = footwearImageRecolor(selectedColor);
 
   return (
     <ProductColorGalleryContext.Provider value={contextValue}>
       <div className="lg:col-span-8">
         <div className="lg:rounded-none -mx-0 sm:mx-0">
           <V3Gallery
-            key={resolvedMedia.map((item) => item.src).join("|")}
+            key={`${resolvedMedia.map((item) => item.src).join("|")}-${imageRecolor.kind}`}
             media={resolvedMedia}
             aspect={aspect}
             fit={fit}
+            imageRecolor={imageRecolor}
             className={className}
           />
         </div>

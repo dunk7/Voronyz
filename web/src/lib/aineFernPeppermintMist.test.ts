@@ -101,9 +101,14 @@ test("homepage Áine & Fern teaser is its own centered block (still Collaborativ
   assert.match(homeSource, /Áine & Fern/);
   assert.doesNotMatch(homeSource, /Shop all collaborative/);
   assert.doesNotMatch(homeSource, /id="collaborative"/);
-  assert.match(homeSource, /mx-auto w-1\/2/);
+  assert.match(homeSource, /mx-auto w-full max-w-3xl/);
+  assert.doesNotMatch(homeSource, /mx-auto w-1\/2/);
   assert.match(homeSource, /key === PEPPERMINT_MIST_SLUG/);
   assert.match(homeSource, /object-contain object-center/);
+  assert.match(homeSource, /sizes="\(max-width: 768px\) 100vw, 48rem"/);
+  // Studio bottle art already has white margins — fill the card edge-to-edge.
+  assert.doesNotMatch(homeSource, /productCardNeedsInset/);
+  assert.doesNotMatch(homeSource, /inset-3 sm:inset-4/);
 
   const pdpSource = readFileSync(
     new URL("../app/products/[slug]/page.tsx", import.meta.url),
