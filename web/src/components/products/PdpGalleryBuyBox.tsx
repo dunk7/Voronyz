@@ -74,12 +74,16 @@ export default function PdpGalleryBuyBox({
 
   // Real per-color photos (apparel / filament) already match the swatch —
   // only recolor black footwear studio shots when we don't have color-specific media.
+  // Flavor pickers (trail mix, STL shoe files, …) reuse primary selection but are
+  // not footwear colors — never apply the shoe tint overlay to those galleries.
   const hasColorPhotos =
     !!color &&
     !!colorImages?.[color.trim().toLowerCase()]?.length;
-  const imageRecolor = hasColorPhotos
-    ? { kind: "none" as const }
-    : footwearImageRecolor(color);
+  const hasFlavorOptions = (addToCartProps.flavorOptions?.length ?? 0) > 0;
+  const imageRecolor =
+    hasColorPhotos || hasFlavorOptions
+      ? { kind: "none" as const }
+      : footwearImageRecolor(color);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 xl:gap-12 items-start">
