@@ -85,5 +85,5 @@ test("homepage V3 Slides clip is not a sticky scroll trap", () => {
   assert.doesNotMatch(home, /data-hero-scrub/);
   assert.doesNotMatch(home, /220vh/);
   assert.doesNotMatch(home, /sticky top-0/);
-  assert.match(home, /betweenFootwearAndApparel=\{<HomeSlide \/>\}/);
+  assert.match(home, /afterTakeTheQuiz=\{<HomeSlide \/>\}/);
 });
