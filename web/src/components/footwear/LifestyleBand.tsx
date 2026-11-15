@@ -20,18 +20,29 @@ export default function LifestyleBand({
 }: LifestyleBandProps) {
   const portrait = shot.aspect === "portrait";
   const tallPortrait = shot.aspect === "tall-portrait";
+  const square = shot.aspect === "square";
   const productSlug = shot.productSlug?.trim() || null;
   const href = productSlug ? `/products/${productSlug}` : null;
+
+  const objectClass = shot.objectPosition
+    ? "object-cover"
+    : portrait
+      ? "object-cover object-[center_20%]"
+      : square
+        ? "object-cover object-[center_80%]"
+        : "object-cover object-center";
 
   const frame = (
     <div
       className={`relative mx-auto w-full overflow-hidden bg-neutral-100 ${
-        tallPortrait
-          ? "aspect-[9/16] max-h-[85vh] sm:max-w-md lg:max-w-lg"
-          : portrait
-            ? // Near-square portrait so the redhead boat frame keeps face + held slides in view
-              "aspect-[15/16] max-h-[90vh] sm:max-w-3xl lg:max-w-4xl"
-            : "aspect-[16/9] sm:max-w-5xl lg:max-w-6xl"
+        square
+          ? "aspect-square max-h-[85vh] sm:max-w-xl lg:max-w-2xl"
+          : tallPortrait
+            ? "aspect-[9/16] max-h-[85vh] sm:max-w-md lg:max-w-lg"
+            : portrait
+              ? // Near-square portrait so the redhead boat frame keeps face + held slides in view
+                "aspect-[15/16] max-h-[90vh] sm:max-w-3xl lg:max-w-4xl"
+              : "aspect-[16/9] sm:max-w-5xl lg:max-w-6xl"
       } ${href ? "transition ring-black/0 hover:opacity-[0.97]" : ""}`}
     >
       <SoftImage
@@ -39,17 +50,16 @@ export default function LifestyleBand({
         alt={shot.alt}
         fill
         priority={priority}
-        className={
-          portrait
-            ? "object-cover object-[center_20%]"
-            : "object-cover object-center"
-        }
+        className={objectClass}
+        style={shot.objectPosition ? { objectPosition: shot.objectPosition } : undefined}
         sizes={
-          tallPortrait
-            ? "(max-width: 640px) 100vw, (max-width: 1024px) 28rem, 32rem"
-            : portrait
-              ? "(max-width: 640px) 100vw, (max-width: 1024px) 48rem, 56rem"
-              : "(max-width: 1024px) 100vw, 72rem"
+          square
+            ? "(max-width: 640px) 100vw, (max-width: 1024px) 36rem, 42rem"
+            : tallPortrait
+              ? "(max-width: 640px) 100vw, (max-width: 1024px) 28rem, 32rem"
+              : portrait
+                ? "(max-width: 640px) 100vw, (max-width: 1024px) 48rem, 56rem"
+                : "(max-width: 1024px) 100vw, 72rem"
         }
       />
     </div>
