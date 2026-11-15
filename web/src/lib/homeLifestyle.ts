@@ -1,6 +1,6 @@
 /**
- * Lifestyle / model photography for the homepage and related brand surfaces.
- * Homepage shows the gallery redhead boat frame once, near the bottom.
+ * Lifestyle / model photography for brand surfaces (About, etc.).
+ * Redhead boat frame lives on About — not on the homepage.
  */
 export type LifestyleShot = {
   id: string;
