@@ -12,12 +12,14 @@ import {
   PEPPERMINT_MIST_IMAGES,
   PEPPERMINT_MIST_NAME,
   PEPPERMINT_MIST_PRICE_CENTS,
+  PEPPERMINT_MIST_PRIMARY_COLORS,
   PEPPERMINT_MIST_SLUG,
   PEPPERMINT_MIST_THUMBNAIL_URL,
   PEPPERMINT_MIST_VARIANTS,
   peppermintMistCatalogProduct,
   peppermintMistHealthCatalogSeed,
 } from "@/lib/aineFernPeppermintMist";
+import { footwearImageRecolor } from "@/lib/footwearRanking";
 import { getHealthCatalogSeed } from "@/lib/trailMix";
 
 const publicDir = join(dirname(fileURLToPath(import.meta.url)), "../..", "public");
@@ -117,6 +119,9 @@ test("homepage Áine & Fern teaser is its own centered block (still Collaborativ
   assert.match(pdpSource, /isPeppermintMist/);
   assert.match(pdpSource, /fit=\{[^}]*isPeppermintMist[^}]*"contain"/);
   assert.match(pdpSource, /isPeppermintMist\s*\?\s*"Áine & Fern"/);
+  // PDP AddToCart still selects the lone variant color; footwear tint must ignore it.
+  assert.equal(PEPPERMINT_MIST_PRIMARY_COLORS[0], "peppermint");
+  assert.deepEqual(footwearImageRecolor("peppermint"), { kind: "none" });
 
   const headerSource = readFileSync(
     new URL("../components/Header.tsx", import.meta.url),
