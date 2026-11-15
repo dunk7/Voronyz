@@ -19,16 +19,17 @@ export const FOOTWEAR_SWATCH_COLORS: Record<string, readonly string[]> = {
   [LATTICE_INSOLES_SLUG]: LATTICE_INSOLES_PRIMARY_COLORS,
 };
 
+/** Muted TPU-body swatches — avoid neon Tailwind defaults that read as toys. */
 const NAMED_SWATCH: Record<string, string> = {
-  black: "#111111",
-  white: "#f5f5f5",
-  grey: "#9ca3af",
-  gray: "#9ca3af",
-  green: "#22c55e",
-  pink: "#ec4899",
-  red: "#ef4444",
-  orange: "#f97316",
-  tan: "#d2b48c",
+  black: "#1a1a1c",
+  white: "#f3f1ee",
+  grey: "#a2a4aa",
+  gray: "#a2a4aa",
+  green: "#4a7c59",
+  pink: "#d67aa0",
+  red: "#b83c3c",
+  orange: "#cc763a",
+  tan: "#c4a574",
 };
 
 export function footwearBrandLabel(_slug: string): string {
@@ -63,31 +64,35 @@ export function isBlackFootwearColor(color: string | undefined | null): boolean 
 }
 
 /**
- * How to preview a swatch color on black footwear studio shots.
- * - none: leave the photo alone (black / unknown)
- * - lighten: mix-blend lighten overlay for chromatic colors
- * - whiten: CSS filter on a wrapper (lighten-blend with pale fills
- *   washes the shoe into the studio backdrop)
+ * CSS photo tinting looked washed / neon on lattice shoes.
+ * Prefer real per-color hero images (Slip Ons) or an untinted studio shot.
+ * Kept as a no-op so call sites stay stable.
  */
 export type FootwearImageRecolor =
   | { kind: "none" }
   | { kind: "lighten"; color: string }
   | { kind: "whiten" };
 
-export function footwearImageRecolor(
-  color: string | undefined | null,
-): FootwearImageRecolor {
-  if (isBlackFootwearColor(color) || !color) return { kind: "none" };
-  if (color.trim().toLowerCase() === "white") return { kind: "whiten" };
-  return { kind: "lighten", color: colorToCss(color) };
+/** True for named footwear swatches or hex fills — not flavor / SKU ids. */
+export function isFootwearPreviewColor(color: string | undefined | null): boolean {
+  if (!color) return false;
+  const key = color.trim().toLowerCase();
+  if (!key) return false;
+  if (key.startsWith("#")) return true;
+  return Object.prototype.hasOwnProperty.call(NAMED_SWATCH, key);
 }
 
-/** @deprecated Prefer footwearImageRecolor — kept for call sites that only need a fill. */
+export function footwearImageRecolor(
+  _color?: string | null,
+): FootwearImageRecolor {
+  return { kind: "none" };
+}
+
+/** @deprecated Prefer footwearImageRecolor — tint overlays are disabled. */
 export function footwearImageTint(
-  color: string | undefined | null,
+  _color?: string | null,
 ): string | undefined {
-  const recolor = footwearImageRecolor(color);
-  return recolor.kind === "lighten" ? recolor.color : undefined;
+  return undefined;
 }
 
 export function formatUsdFromCents(cents: number): string {

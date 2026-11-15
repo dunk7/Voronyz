@@ -7,9 +7,11 @@ import {
   FilamentPrintSettings,
 } from "@/components/products/FilamentSelection";
 import FAQ from "@/components/FAQ";
+import MoreProducts from "@/components/products/MoreProducts";
 import Link from "next/link";
 import { Metadata } from "next";
 import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
+import { getMoreProducts, moreProductsShopLink } from "@/lib/moreProducts";
 import {
   TRAIL_MIX_DESCRIPTION,
   TRAIL_MIX_FLAVORS,
@@ -61,6 +63,7 @@ import {
   STL_FILES_THUMBNAIL_URL,
   STL_SHOE_FILES,
   stlFilesCatalogProduct,
+  stlImagesByShoe,
 } from "@/lib/stlFiles";
 import {
   LATTICE_INSOLES_DESCRIPTION,
@@ -71,7 +74,14 @@ import {
   latticeInsolesCatalogProduct,
 } from "@/lib/latticeInsoles";
 import { isAccessorySlug, isApparelSlug, isFootwearSlug, isHealthSlug } from "@/lib/productCategories";
-import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION, SLIP_ONS_PRICE_CENTS } from "@/lib/footwear";
+import {
+  DRAGONFLY_DESCRIPTION,
+  SLIP_ONS_DESCRIPTION,
+  SLIP_ONS_PRICE_CENTS,
+  slipOnsColorImages,
+
+  slipOnsCatalogProduct,
+} from "@/lib/footwear";
 import {
   apparelCatalogProduct,
   apparelProductShopHref,
@@ -172,6 +182,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     const catalogFallback = getApparelItem(slug);
     if (catalogFallback) {
       product = apparelCatalogProduct(catalogFallback);
+    } else if (slug === "slip-ons") {
+      product = slipOnsCatalogProduct();
     } else if (slug === STL_FILES_SLUG) {
       product = stlFilesCatalogProduct();
     } else if (slug === LATTICE_INSOLES_SLUG) {
@@ -199,6 +211,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   if (!product) {
     const catalogFallback = getApparelItem(slug);
     if (catalogFallback) product = apparelCatalogProduct(catalogFallback);
+    else if (slug === "slip-ons") product = slipOnsCatalogProduct();
     else if (slug === STL_FILES_SLUG) product = stlFilesCatalogProduct();
     else if (slug === LATTICE_INSOLES_SLUG) product = latticeInsolesCatalogProduct();
     else if (slug === GATORS_SLUG) product = gatorsCatalogProduct();
@@ -316,6 +329,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           : apparelItem
             ? apparelItem.name
           : product.name;
+
+  const moreProducts = getMoreProducts(slug, 8);
+  const moreProductsShop = moreProductsShopLink(slug);
 
   // Product-specific descriptions (oversized tee skips the top blurb — size picker covers fit)
   const displayDescription = slug === "v3-slides" 
@@ -444,7 +460,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         {/* Gallery-first retail layout: large photos lead, buy box sits beside */}
         <PdpGalleryBuyBox
           media={galleryMedia}
-          colorImages={isFilament ? filamentImagesByVariant() : apparelColorImages}
+          colorImages={
+            isFilament
+              ? filamentImagesByVariant()
+              : isStlFiles
+                ? stlImagesByShoe()
+                : isSlipOns
+                  ? slipOnsColorImages()
+                  : apparelColorImages
+          }
           leadWhiteSlipOns={isSlipOns}
           fit={isFootwearSlug(slug) || isPeppermintMist || isStlFiles || isFilament ? "contain" : "cover"}
           galleryClassName="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
@@ -507,7 +531,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             productDescription: displayDescription,
             coverImage: (images[0] as string) || defaultImages[0],
             productSlug: slug,
-            allowOutOfStockColorPreview: isSlipOns,
+            allowOutOfStockColorPreview: isSlipOns || isStlFiles,
           }}
           footer={
             <div className="flex items-center gap-4 text-xs text-neutral-500">
@@ -643,14 +667,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   ? "XS–XXL. Large is priced under Medium — the deal size on this hoodie."
                 : "This piece runs XS–XXL." },
               { q: "What colors are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
-                ? "Black, white, and grey are in stock. Pick a color to see the matching front and back shots."
+                ? "Black, white, and grey are in stock. White and grey cost about $75 more than black because stock is limited. Pick a color to see the matching front and back shots."
                 : apparelItem?.slug === "voronyz-core-hoodie"
-                  ? "Black, grey, and white. Black uses the original hoodie photo; grey costs a little more, and white is the most expensive. The gallery updates to the selected color, with the back of the same hoodie on the second photo."
+                  ? "Black, grey, and white. Black uses the original hoodie photo; grey and white cost about $75 more because stock is limited, and white is the most expensive. The gallery updates to the selected color, with the back of the same hoodie on the second photo."
                   : apparelItem?.outOfStockColors?.includes("grey")
                   ? "Grey is currently out of stock. Choose another listed color."
                   : "Pick any listed color that is in stock." },
               ...(apparelItem?.slug === "voronyz-core-hoodie"
-                ? [{ q: "How much does it cost?", a: "Price depends on size. Each hoodie is marked down about 60% from the listed compare-at — sale prices run from $74 (XS) to $99 (XXL), never under $70." }]
+                ? [{ q: "How much does it cost?", a: "Price depends on size and color. Black sale prices run from $72 (XS) to $86 (XXL), never under $70. Grey and white are about $75 more because stock is limited." }]
                 : []),
               { q: "When will my order ship?", a: "Orders typically ship within a few business days. You'll get updates by email." },
               { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Accessories (logo stickers and cool shades) live under their own Apparel section." },
@@ -683,6 +707,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           />
         </div>
         )}
+
+        <MoreProducts products={moreProducts} shop={moreProductsShop} />
       </div>
     </div>
     </FilamentPageFrame>

@@ -30,7 +30,7 @@ export default function PdpGalleryBuyBox({
 }: {
   media: Media[];
   colorImages?: Record<string, string[]>;
-  /** When true, selecting White leads with the white Slip Ons photo and hides it for other colors. */
+  /** When true (Slip Ons), fall back to per-color hero logic if colorImages is unset. */
   leadWhiteSlipOns?: boolean;
   fit: "cover" | "contain";
   galleryClassName?: string;
@@ -61,6 +61,8 @@ export default function PdpGalleryBuyBox({
         if (existing) return existing;
         return { type: "image", src, alt: media[0]?.alt };
       });
+      // Color hero is a single frame — skip the motion clip so the gallery doesn't scroll.
+      if (color && imageMedia.length === 1) return imageMedia;
       return [...imageMedia, ...videos];
     }
     return media;
@@ -74,12 +76,16 @@ export default function PdpGalleryBuyBox({
 
   // Real per-color photos (apparel / filament) already match the swatch —
   // only recolor black footwear studio shots when we don't have color-specific media.
+  // Flavor pickers (trail mix, STL shoe files, …) reuse primary selection but are
+  // not footwear colors — never apply the shoe tint overlay to those galleries.
   const hasColorPhotos =
     !!color &&
     !!colorImages?.[color.trim().toLowerCase()]?.length;
-  const imageRecolor = hasColorPhotos
-    ? { kind: "none" as const }
-    : footwearImageRecolor(color);
+  const hasFlavorOptions = (addToCartProps.flavorOptions?.length ?? 0) > 0;
+  const imageRecolor =
+    hasColorPhotos || hasFlavorOptions
+      ? { kind: "none" as const }
+      : footwearImageRecolor(color);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 xl:gap-12 items-start">

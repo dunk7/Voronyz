@@ -189,6 +189,12 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     priceCents: 4800,
     colors: ["black", "white", "grey"],
     sizes: [...APPAREL_SIZES],
+    // White and grey stock is thin — charge ~$75 more than black.
+    colorPriceCents: {
+      black: 4800,
+      grey: 12300,
+      white: 12300,
+    },
     sizePriceCents: {
       XS: 4200,
       S: 4500,
@@ -224,10 +230,11 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     priceCents: 7800,
     colors: ["black", "grey", "white"],
     sizes: [...APPAREL_SIZES],
+    // White and grey stock is thin — charge ~$75 more than the prior color ladder.
     colorPriceCents: {
       black: 7800,
-      grey: 8400,
-      white: 9200,
+      grey: 15900,
+      white: 16700,
     },
     // Large is below Medium (and below the size average) so it reads as the deal.
     sizePriceCents: {
@@ -293,12 +300,16 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     slug: "voronyz-cool-shades",
     subcategory: "accessories",
     name: "Cool Shades",
-    description: "Lightweight 3D-printed frames with a sharp geometric silhouette.",
+    description: "Wraparound shield shades with matte black frames and a mirrored rainbow lens.",
     priceCents: 4800,
     colors: ["black", "white", "grey"],
     outOfStockColors: ["grey"],
     sizes: [...APPAREL_ONE_SIZE],
     image: "/products/apparel/cool-shades.jpg",
+    images: [
+      "/products/apparel/cool-shades.jpg",
+      "/products/apparel/cool-shades-angle.jpg",
+    ],
     skuPrefix: "APP-SHDE",
     comingSoon: true,
   },

@@ -89,7 +89,7 @@ export default function Home() {
           <ProductsContent
             showScrollCue
             embedded
-            betweenFootwearAndApparel={<HomeSlide />}
+            afterTakeTheQuiz={<HomeSlide />}
           />
         </Suspense>
       </div>
