@@ -743,6 +743,7 @@ export default function ProductsContent({
         {isHomeFootwearTeaser && (
           <>
             <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
+            {advancedFootwear}
             <HomeSecondaryLinks className="mt-12 sm:mt-16" />
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
             {/* Redhead boat lifestyle — bottom of home only (removed from above V3 spotlights) */}
