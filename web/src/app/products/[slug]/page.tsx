@@ -7,9 +7,11 @@ import {
   FilamentPrintSettings,
 } from "@/components/products/FilamentSelection";
 import FAQ from "@/components/FAQ";
+import MoreProducts from "@/components/products/MoreProducts";
 import Link from "next/link";
 import { Metadata } from "next";
 import { ensureCatalogProducts } from "@/lib/ensureCatalogProducts";
+import { getMoreProducts, moreProductsShopLink } from "@/lib/moreProducts";
 import {
   TRAIL_MIX_DESCRIPTION,
   TRAIL_MIX_FLAVORS,
@@ -316,6 +318,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           : apparelItem
             ? apparelItem.name
           : product.name;
+
+  const moreProducts = getMoreProducts(slug, 8);
+  const moreProductsShop = moreProductsShopLink(slug);
 
   // Product-specific descriptions (oversized tee skips the top blurb — size picker covers fit)
   const displayDescription = slug === "v3-slides" 
@@ -683,6 +688,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           />
         </div>
         )}
+
+        <MoreProducts products={moreProducts} shop={moreProductsShop} />
       </div>
     </div>
     </FilamentPageFrame>
