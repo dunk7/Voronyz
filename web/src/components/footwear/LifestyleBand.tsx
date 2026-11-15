@@ -26,18 +26,12 @@ export default function LifestyleBand({
     >
       <div
         className={`relative mx-auto w-full overflow-hidden bg-neutral-100 ${
-<<<<<<< HEAD
-          portrait
-            ? // Near-square portrait so the redhead boat frame keeps face + held slides in view
-              "aspect-[15/16] max-h-[90vh] sm:max-w-3xl lg:max-w-4xl"
-            : "aspect-[16/9] sm:max-w-5xl lg:max-w-6xl"
-=======
           tallPortrait
             ? "aspect-[9/16] max-h-[85vh] sm:max-w-md lg:max-w-lg"
             : portrait
-              ? "aspect-[3/4] max-h-[78vh] sm:aspect-[4/5] sm:max-w-3xl lg:max-w-4xl"
+              ? // Near-square portrait so the redhead boat frame keeps face + held slides in view
+                "aspect-[15/16] max-h-[90vh] sm:max-w-3xl lg:max-w-4xl"
               : "aspect-[16/9] sm:max-w-5xl lg:max-w-6xl"
->>>>>>> 398de47 (Use tall-portrait framing for Dragonfly lifestyle shot.)
         }`}
       >
         <SoftImage
