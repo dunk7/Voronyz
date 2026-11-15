@@ -3,8 +3,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import HomeProductSpotlight from "@/components/footwear/HomeProductSpotlight";
-import LifestyleBand from "@/components/footwear/LifestyleBand";
-import { V3_SLIDES_STREET_SHOT } from "@/lib/homeLifestyle";
 
 /** Main wearable shoes highlighted individually on the home page. */
 const SPOTLIGHT_SLUGS = ["v3-slides", "slip-ons", "dragonfly", "magikid-shoes"] as const;
@@ -33,10 +31,8 @@ export default function HomeFootwearHighlights({
         </p>
       </header>
 
-      {/* V3 Slides + gallery redhead lifestyle frame */}
-      <section aria-label="V3 Slides" className="space-y-10 sm:space-y-12">
+      <section aria-label="V3 Slides">
         <HomeProductSpotlight slug={SPOTLIGHT_SLUGS[0]} />
-        <LifestyleBand shot={V3_SLIDES_STREET_SHOT} priority />
       </section>
 
       <section aria-label="Slip Ons">
