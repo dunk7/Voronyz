@@ -110,7 +110,6 @@ test("All Footwear lists Gators last while they are coming soon", () => {
     "v3-slides",
     "slip-ons",
     "dragonfly",
-    "magikid-shoes",
     "voronyz-lattice-insoles",
     "gators",
   ]);

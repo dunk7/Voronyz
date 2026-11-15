@@ -89,7 +89,6 @@ function colorLabel(color: string) {
 }
 
 function defaultSizeForProduct(slug: string, sizes: string[]): string {
-  if (slug === "magikid-shoes") return sizes.includes("3") ? "3" : sizes[0] || "3";
   if (getApparelItem(slug) && sizes.includes("M")) return "M";
   return sizes.includes("9") ? "9" : sizes[0] || "9";
 }
@@ -330,7 +329,7 @@ export default function QuizClient() {
     const priceCents = apparelItem
       ? apparelPriceCentsForSelection(apparelItem, { size, color })
       : variant.priceCents ?? product.priceCents;
-    const gender = product.slug === "magikid-shoes" ? "kids" : "men";
+    const gender = "men";
 
     const cart = loadCart();
     const existingIndex = cart.items.findIndex(

@@ -16,7 +16,6 @@ export const FOOTWEAR_SWATCH_COLORS: Record<string, readonly string[]> = {
   dragonfly: ["black", "white", "red", "#007FFF", "pink"],
   "slip-ons": ["black", "grey", "white", "orange", "pink"],
   [GATORS_SLUG]: GATORS_PRIMARY_COLORS,
-  "magikid-shoes": ["black", "grey", "white", "orange", "pink"],
   [LATTICE_INSOLES_SLUG]: LATTICE_INSOLES_PRIMARY_COLORS,
 };
 
@@ -33,8 +32,8 @@ const NAMED_SWATCH: Record<string, string> = {
   tan: "#c4a574",
 };
 
-export function footwearBrandLabel(slug: string): string {
-  return slug.trim().toLowerCase() === "magikid-shoes" ? "MAGIKID" : "VORONYZ";
+export function footwearBrandLabel(_slug: string): string {
+  return "VORONYZ";
 }
 
 export function footwearSwatches(slug: string): readonly string[] {

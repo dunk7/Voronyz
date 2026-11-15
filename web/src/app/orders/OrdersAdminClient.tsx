@@ -24,7 +24,6 @@ import {
   Upload,
   Users,
 } from "lucide-react";
-import MagikidThumbnailPanel from "./MagikidThumbnailPanel";
 import DiscountCodesAdminPanel from "./DiscountCodesAdminPanel";
 import OrdersStatsPanel from "./OrdersStatsPanel";
 import UploadsAdminPanel from "./UploadsAdminPanel";
@@ -842,7 +841,6 @@ export default function OrdersAdminClient() {
         ) : null}
         {tab === "uploads" ? (
           <div className="space-y-6">
-            <MagikidThumbnailPanel />
             <UploadsAdminPanel
               refreshToken={uploadsRefresh}
               onAuthLost={() => setAuthenticated(false)}
