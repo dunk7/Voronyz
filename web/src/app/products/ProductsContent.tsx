@@ -113,8 +113,8 @@ type ProductsContentProps = {
   showScrollCue?: boolean;
   /** Skip the hex wrapper — homepage uses solid black; shop pages keep the honeycomb. */
   embedded?: boolean;
-  /** Homepage scroll clip, placed between the footwear grid and apparel. */
-  betweenFootwearAndApparel?: ReactNode;
+  /** Homepage V3 Slides clip — after apparel, Áine & Fern, and Take the Quiz. */
+  afterTakeTheQuiz?: ReactNode;
 };
 
 function categorySeed(category: ProductsContentProps["category"]): Product[] {
@@ -128,7 +128,7 @@ export default function ProductsContent({
   category = "footwear",
   showScrollCue = false,
   embedded = false,
-  betweenFootwearAndApparel = null,
+  afterTakeTheQuiz = null,
 }: ProductsContentProps) {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q");
@@ -581,7 +581,6 @@ export default function ProductsContent({
           </div>
         )}
 
-        {isHomeFootwearTeaser ? betweenFootwearAndApparel : null}
         {isHomeFootwearTeaser ? (
           <section
             id="engineering"
@@ -740,6 +739,7 @@ export default function ProductsContent({
         {isHomeFootwearTeaser && (
           <>
             <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
+            {afterTakeTheQuiz}
             {advancedFootwear}
             <HomeSecondaryLinks className="mt-12 sm:mt-16" />
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
