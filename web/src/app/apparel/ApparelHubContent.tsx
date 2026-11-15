@@ -179,7 +179,7 @@ export default function ApparelHubContent() {
                   Accessories
                 </h2>
                 <p className="mt-2 max-w-md text-sm text-neutral-500">
-                  Logo stickers and cool shades.
+                  Extra pieces that round out the look.
                 </p>
               </div>
               <span className="text-xs tabular-nums text-neutral-400">

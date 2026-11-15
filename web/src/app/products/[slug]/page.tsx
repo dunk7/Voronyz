@@ -94,27 +94,29 @@ import { redirect } from "next/navigation";
 // This page is rendered on-demand.
 export const dynamic = "force-dynamic";
 
-/** Retired apparel product pages → remaining listing or Apparel/Accessories hub. */
+/** Retired apparel product pages → remaining listing or Apparel hub. */
 const OBSOLETE_APPAREL_PRODUCT_REDIRECTS: Record<string, string> = {
   "voronyz-technical-pants": "/apparel",
   "voronyz-lounge-sweats": "/apparel",
-  "voronyz-lattice-shoe-trees": "/apparel/accessories",
-  "voronyz-charm-bracelet": "/apparel/accessories",
-  "voronyz-keychain": "/products/voronyz-stickers",
-  "voronyz-necklace": "/apparel/accessories",
-  "voronyz-rc-car-stickers": "/apparel/accessories",
+  "voronyz-lattice-shoe-trees": "/apparel",
+  "voronyz-charm-bracelet": "/apparel",
+  "voronyz-keychain": "/apparel",
+  "voronyz-necklace": "/apparel",
+  "voronyz-rc-car-stickers": "/apparel",
   "voronyz-nice-shirt": "/products/voronyz-oversized-tee",
   "voronyz-shorts": "/apparel",
   "voronyz-joggers": "/apparel",
   "voronyz-shell-jacket": "/apparel",
   "voronyz-scarf": "/apparel",
-  "voronyz-uv-hat": "/apparel/accessories",
-  "voronyz-water-bottle": "/apparel/accessories",
-  "voronyz-lock-squirt-bottle": "/apparel/accessories",
+  "voronyz-uv-hat": "/apparel",
+  "voronyz-water-bottle": "/apparel",
+  "voronyz-lock-squirt-bottle": "/apparel",
   "voronyz-performance-socks": "/apparel",
-  "voronyz-jewelry-collab": "/apparel/accessories",
-  "voronyz-drone-parts": "/apparel/accessories",
-  "voronyz-lace-locks": "/apparel/accessories",
+  "voronyz-jewelry-collab": "/apparel",
+  "voronyz-drone-parts": "/apparel",
+  "voronyz-lace-locks": "/apparel",
+  "voronyz-stickers": "/apparel",
+  "voronyz-cool-shades": "/apparel",
 };
 
 type Media = {
@@ -401,12 +403,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">US shoe sizes</span>
         </>
       )}
-      {apparelItem?.slug === "voronyz-stickers" && (
-        <>
-          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">3-pack vinyl</span>
-          <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">Weatherproof</span>
-        </>
-      )}
       {!isTrailMix && !isApparel && !isFilament && !isStlFiles && !isLatticeInsoles && !isPeppermintMist && (
         <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-neutral-700">
           Made to order in &lt;2 days
@@ -597,8 +593,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               ? "Cut oversized on purpose — soft hand-feel, roomy through the body and sleeves."
               : apparelItem?.slug === "voronyz-core-hoodie"
               ? "Heavyweight fleece with a clean, modern cut. Swipe to the second photo for the back."
-              : apparelItem?.slug === "voronyz-stickers"
-              ? "Kiss-cut weatherproof vinyl with three VORONYZ logo strips."
               : isApparel && apparelItem?.comingSoon
               ? "Pay now to join the waitlist. We ship when the drop arrives."
               : isApparel
@@ -645,12 +639,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "How do I use it?", a: "Shake well, lightly mist as needed, and allow to dry. Test a small area of skin and an inconspicuous area of fabric before first use." },
               { q: "How much does it cost?", a: "$20 for a 3 FL OZ (89 mL) bottle." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
-            ] : apparelItem?.slug === "voronyz-stickers" ? [
-              { q: "What is included?", a: "One vinyl sheet with three stacked VORONYZ logo strips — peel and apply each strip, or keep the sheet together." },
-              { q: "Where can I put them?", a: "Laptops, bottles, notebooks, boards, cases — any clean, smooth surface. The vinyl is weatherproof." },
-              { q: "How much do they cost?", a: "$8 per sheet, with free shipping on domestic US orders." },
-              { q: "Does it come in sizes or colors?", a: "One size, one color — charcoal bars with white VORONYZ lettering, matching the physical stickers." },
-              { q: "When will my order ship?", a: "Orders typically ship within a few business days. You'll get updates by email." },
             ] : isApparel && !apparelItem?.comingSoon ? [
               { q: "What sizes are available?", a: apparelItem?.slug === "voronyz-oversized-tee"
                 ? "The Voronyz Tee ships in XS, S, M, L, XL, and XXL. Smaller sizes cost less than Medium; larger sizes cost more."
@@ -668,14 +656,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 ? [{ q: "How much does it cost?", a: "Price depends on size. Each hoodie is marked down about 60% from the listed compare-at — sale prices run from $74 (XS) to $99 (XXL), never under $70." }]
                 : []),
               { q: "When will my order ship?", a: "Orders typically ship within a few business days. You'll get updates by email." },
-              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Accessories (logo stickers and cool shades) live under their own Apparel section." },
+              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isApparel ? [
-              { q: "What sizes are available?", a: "Most pieces run XS–XXL. Stickers and cool shades are One Size." },
+              { q: "What sizes are available?", a: "Most pieces run XS–XXL." },
               { q: "What colors are available?", a: "Grey is currently out of stock on apparel. Other listed colors can be pre-ordered." },
               { q: "Can I pre-order coming soon pieces?", a: "Yes. Choose your color and size, then pay now to join the waitlist. We ship your order when that product arrives — timing can be a day or much longer depending on the drop." },
               { q: "When will my pre-order ship?", a: "As soon as we receive the product. You'll get updates by email. Pre-orders are paid reservations, not instant ship." },
-              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Accessories (logo stickers and cool shades) live under their own Apparel section. Engineering is separate. Lattice Insoles are on All Footwear." },
+              { q: "Where can I browse the lineup?", a: "Open Apparel to browse by type — Shirts, Sweaters, and more. Engineering is separate. Lattice Insoles are on All Footwear." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders once your pre-order ships." },
             ] : isGators ? [
               { q: "What is The Gators?", a: "A comfort clog named for the alligator 🐊 — closed toe, open back, thick cushioned platform, and easy slip-on wear for all-day comfort." },

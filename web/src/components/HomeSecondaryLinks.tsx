@@ -22,10 +22,6 @@ export default function HomeSecondaryLinks({ className = "" }: { className?: str
         About
       </Link>
       <span className={sepClass}>·</span>
-      <Link href="/apparel/accessories" className={linkClass}>
-        Accessories
-      </Link>
-      <span className={sepClass}>·</span>
       <Link href="/affiliates" className={linkClass}>
         Affiliates
       </Link>

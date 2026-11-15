@@ -56,48 +56,70 @@ const nextConfig: NextConfig = {
         destination: "/apparel",
         permanent: true,
       },
-      // Removed UV hat and water bottles from Accessories.
+      // Removed Accessories listings (UV hat, bottles, stickers, cool shades, …).
       {
         source: "/products/voronyz-uv-hat",
-        destination: "/apparel/accessories",
+        destination: "/apparel",
         permanent: true,
       },
       {
         source: "/products/voronyz-water-bottle",
-        destination: "/apparel/accessories",
+        destination: "/apparel",
         permanent: true,
       },
       {
         source: "/products/voronyz-lock-squirt-bottle",
-        destination: "/apparel/accessories",
+        destination: "/apparel",
         permanent: true,
       },
-      // Retired keychain listing is now Logo Stickers.
       {
         source: "/products/voronyz-keychain",
-        destination: "/products/voronyz-stickers",
+        destination: "/apparel",
         permanent: true,
       },
-      // Removed RC Car Stickers — never show again (old URLs → Accessories).
       {
         source: "/products/voronyz-rc-car-stickers",
-        destination: "/apparel/accessories",
+        destination: "/apparel",
         permanent: true,
       },
-      // Retired accessory listings — only stickers + cool shades remain live.
       {
         source: "/products/voronyz-jewelry-collab",
-        destination: "/apparel/accessories",
+        destination: "/apparel",
         permanent: true,
       },
       {
         source: "/products/voronyz-drone-parts",
-        destination: "/apparel/accessories",
+        destination: "/apparel",
         permanent: true,
       },
       {
         source: "/products/voronyz-lace-locks",
-        destination: "/apparel/accessories",
+        destination: "/apparel",
+        permanent: true,
+      },
+      {
+        source: "/products/voronyz-stickers",
+        destination: "/apparel",
+        permanent: true,
+      },
+      {
+        source: "/products/voronyz-cool-shades",
+        destination: "/apparel",
+        permanent: true,
+      },
+      {
+        source: "/apparel/accessories",
+        destination: "/apparel",
+        permanent: true,
+      },
+      {
+        source: "/apparel/hats",
+        destination: "/apparel",
+        permanent: true,
+      },
+      {
+        source: "/apparel/bottles",
+        destination: "/apparel",
         permanent: true,
       },
       // Removed Collaborative Keychain (pony bead animals) listing.

@@ -125,43 +125,20 @@ test("flat-lay tee photos keep a centered square crop", () => {
   );
 });
 
-test("accessory listings still return to Accessories", () => {
-  assert.equal(apparelProductShopHref("voronyz-cool-shades"), "/apparel/accessories");
-  assert.equal(apparelProductShopLabel("voronyz-cool-shades"), "Back to Accessories");
-  assert.equal(apparelProductShopHref("voronyz-stickers"), "/apparel/accessories");
-  assert.equal(apparelProductShopLabel("voronyz-stickers"), "Back to Accessories");
-});
-
-test("live accessories are only logo stickers and cool shades", () => {
-  assert.deepEqual(
-    getStandaloneApparelItems().map((item) => item.slug),
-    ["voronyz-stickers", "voronyz-cool-shades"],
-  );
+test("retired accessory listings are obsolete and not live", () => {
+  assert.deepEqual(getStandaloneApparelItems().map((item) => item.slug), []);
+  assert.equal(getApparelItem("voronyz-stickers"), null);
+  assert.equal(getApparelItem("voronyz-cool-shades"), null);
   assert.equal(getApparelItem("voronyz-jewelry-collab"), null);
   assert.equal(getApparelItem("voronyz-drone-parts"), null);
   assert.equal(getApparelItem("voronyz-lace-locks"), null);
+  assert.equal(isObsoleteApparelSlug("voronyz-stickers"), true);
+  assert.equal(isObsoleteApparelSlug("voronyz-cool-shades"), true);
   assert.equal(isObsoleteApparelSlug("voronyz-jewelry-collab"), true);
   assert.equal(isObsoleteApparelSlug("voronyz-drone-parts"), true);
   assert.equal(isObsoleteApparelSlug("voronyz-lace-locks"), true);
-});
-
-test("logo stickers replace the keychain as a live accessory listing", () => {
-  const stickers = getApparelItem("voronyz-stickers");
-  assert.ok(stickers);
-  assert.equal(stickers.name, "Logo Stickers");
-  assert.equal(stickers.subcategory, "accessories");
-  assert.equal(stickers.comingSoon, false);
-  assert.equal(stickers.priceCents, 800);
-  assert.deepEqual(stickers.colors, ["black"]);
-  assert.deepEqual(stickers.sizes, ["One Size"]);
   assert.equal(isComingSoonPreOrderProduct("voronyz-stickers"), false);
-  assert.equal(apparelVariantStock(stickers, "black"), 999);
-  assert.deepEqual(getApparelImages(stickers), [
-    "/products/apparel/voronyz-stickers-studio.jpg",
-    "/products/apparel/voronyz-stickers-laptop.jpg",
-    "/products/apparel/voronyz-stickers-bottle.jpg",
-    "/products/apparel/voronyz-stickers-notebook.jpg",
-  ]);
+  assert.equal(isComingSoonPreOrderProduct("voronyz-cool-shades"), false);
 });
 
 test("unknown apparel slugs fall back to Apparel", () => {
@@ -169,11 +146,10 @@ test("unknown apparel slugs fall back to Apparel", () => {
   assert.equal(apparelProductShopLabel("not-a-product"), "Back to Apparel");
 });
 
-test("grey is in stock on tees and the hoodie, and out of stock on shades; oversized tee sizes XS–XXL are in stock", () => {
+test("grey is in stock on tees and the hoodie; oversized tee sizes XS–XXL are in stock", () => {
   const tee = getApparelItem("voronyz-oversized-tee");
   const hoodie = getApparelItem("voronyz-core-hoodie");
-  const shades = getApparelItem("voronyz-cool-shades");
-  assert.ok(tee && hoodie && shades);
+  assert.ok(tee && hoodie);
 
   assert.equal(isApparelColorOutOfStock(tee, "grey"), false);
   assert.equal(isApparelColorOutOfStock(tee, "white"), false);
@@ -191,10 +167,6 @@ test("grey is in stock on tees and the hoodie, and out of stock on shades; overs
   assert.equal(isApparelColorOutOfStock(hoodie, "white"), false);
   assert.equal(apparelVariantStock(hoodie, "grey"), 999);
   assert.equal(isApparelSizeAvailable(hoodie, "M"), true);
-
-  assert.equal(isApparelColorOutOfStock(shades, "grey"), true);
-  assert.equal(apparelVariantStock(shades, "black"), 0);
-  assert.equal(apparelVariantStock(shades, "grey"), 0);
 });
 
 test("oversized tee price goes down for smaller sizes and up for larger sizes", () => {

@@ -45,8 +45,6 @@ const NAME_SLUG_HINTS: Array<[RegExp, string]> = [
   [/\bgators?\b/i, "gators"],
   [/voronyz tee|oversized tee|\bnice shirt\b/i, OVERSIZED_TEE_SLUG],
   [/atelier hoodie|core hoodie/i, ATELIER_HOODIE_SLUG],
-  [/logo sticker|\bstickers?\b/i, "voronyz-stickers"],
-  [/cool shades|\bshades\b/i, "voronyz-cool-shades"],
 ];
 
 function normalizeSlug(value: string | null | undefined): string {

@@ -5,16 +5,19 @@ export const APPAREL_ONE_SIZE = ["One Size"] as const;
  * Apparel sub-sections.
  * - `collection`: multi-product listing pages (shirts, sweaters, …) —
  *   add new designs to APPAREL_CATALOG with the matching subcategory.
- * - `standalone`: Accessories only (logo stickers + cool shades) — never mixed
+ * - `standalone`: reserved for future Accessories-only products — never mixed
  *   into clothing collections, and never shown on Engineering `/accessories`.
  */
 export type ApparelSubcategoryId =
   | "shirts"
-  | "sweaters"
-  | "accessories";
+  | "sweaters";
 
-/** Legacy apparel collection paths that now live under Accessories. */
-export const LEGACY_APPAREL_ACCESSORY_SUBCATEGORIES = ["hats", "bottles"] as const;
+/** Legacy apparel paths that used to list under Accessories (now removed). */
+export const LEGACY_APPAREL_ACCESSORY_SUBCATEGORIES = [
+  "hats",
+  "bottles",
+  "accessories",
+] as const;
 
 /** Retired clothing sections with no remaining listings. */
 export const LEGACY_REMOVED_APPAREL_SUBCATEGORIES = [
@@ -51,12 +54,6 @@ export const APPAREL_SUBCATEGORIES: ApparelSubcategory[] = [
     description:
       "Voronyz comfort, not just in the shoes. Generous fit that goes with everything — durable, easy on the body, warm without running hot.",
     listing: "collection",
-  },
-  {
-    id: "accessories",
-    label: "Accessories",
-    description: "Logo stickers and cool shades",
-    listing: "standalone",
   },
 ];
 
@@ -170,6 +167,8 @@ export const OBSOLETE_APPAREL_SLUGS = [
   "voronyz-jewelry-collab",
   "voronyz-drone-parts",
   "voronyz-lace-locks",
+  "voronyz-stickers",
+  "voronyz-cool-shades",
 ] as const;
 
 /**
@@ -268,44 +267,6 @@ export const APPAREL_CATALOG: ApparelCatalogItem[] = [
     skuPrefix: "APP-HOOD",
     comingSoon: false,
   },
-  // ── Accessories only (never mixed into clothing collections) ────────────
-  // Lattice Insoles live on All Footwear as a live listing (see latticeInsoles.ts).
-  {
-    slug: "voronyz-stickers",
-    subcategory: "accessories",
-    name: "Logo Stickers",
-    description:
-      "Three-pack vinyl VORONYZ mark. Weatherproof. For laptops, bottles, notebooks, and anything else that needs the logo.",
-    priceCents: 800,
-    colors: ["black"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/voronyz-stickers-studio.jpg",
-    images: [
-      "/products/apparel/voronyz-stickers-studio.jpg",
-      "/products/apparel/voronyz-stickers-laptop.jpg",
-      "/products/apparel/voronyz-stickers-bottle.jpg",
-      "/products/apparel/voronyz-stickers-notebook.jpg",
-    ],
-    skuPrefix: "APP-STKR",
-    comingSoon: false,
-  },
-  {
-    slug: "voronyz-cool-shades",
-    subcategory: "accessories",
-    name: "Cool Shades",
-    description: "Wraparound shield shades with matte black frames and a mirrored rainbow lens.",
-    priceCents: 4800,
-    colors: ["black", "white", "grey"],
-    outOfStockColors: ["grey"],
-    sizes: [...APPAREL_ONE_SIZE],
-    image: "/products/apparel/cool-shades.jpg",
-    images: [
-      "/products/apparel/cool-shades.jpg",
-      "/products/apparel/cool-shades-angle.jpg",
-    ],
-    skuPrefix: "APP-SHDE",
-    comingSoon: true,
-  },
 ];
 
 export const APPAREL_SLUGS = APPAREL_CATALOG.map((item) => item.slug);
@@ -401,15 +362,14 @@ export function getSubcategoryCover(id: ApparelSubcategoryId): string | null {
   return getApparelBySubcategory(id)[0]?.image ?? null;
 }
 
-/** Listing URL for a subcategory (`/apparel/shirts`, `/apparel/accessories`, …). */
+/** Listing URL for a subcategory (`/apparel/shirts`, `/apparel/sweaters`, …). */
 export function apparelSubcategoryHref(id: ApparelSubcategoryId): string {
   return `/apparel/${id}`;
 }
 
 /**
  * Back-link target for a product detail page.
- * Clothing listings (tees, hoodies) return to the Apparel hub; accessories
- * stay on their own Accessories listing.
+ * Live apparel listings return to the Apparel hub.
  */
 export function apparelProductShopHref(slug: string | null | undefined): string {
   const item = getApparelItem(slug);
@@ -424,7 +384,7 @@ export function apparelProductShopLabel(slug: string | null | undefined): string
   const item = getApparelItem(slug);
   if (!item) return "Back to Apparel";
   const sub = getApparelSubcategory(item.subcategory);
-  if (sub?.listing === "standalone") return "Back to Accessories";
+  if (sub?.listing === "standalone") return `Back to ${sub.label}`;
   return "Back to Apparel";
 }
 
