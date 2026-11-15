@@ -1,6 +1,7 @@
 /**
  * Lifestyle / model photography for the homepage and related brand surfaces.
  * Homepage shows the gallery redhead boat frame once, near the bottom.
+ * Dragonfly crouch lives on /gallery only (not as a home lifestyle band).
  */
 export type LifestyleShot = {
   id: string;
@@ -19,19 +20,7 @@ export const V3_SLIDES_STREET_SHOT: LifestyleShot = {
   aspect: "portrait",
 };
 
-export const DRAGONFLY_STREET_SHOT: LifestyleShot = {
-  id: "dragonfly-street",
-  src: "/lifestyle/dragonfly-street.jpg",
-  alt: "Model crouching in grey Voronyz Dragonfly sneakers on an asphalt path",
-  productSlug: "dragonfly",
-  // Match the uploaded frame (~9:16) so object-cover keeps head and sneakers in frame.
-  aspect: "tall-portrait",
-};
-
-export const HOME_LIFESTYLE_SHOTS: LifestyleShot[] = [
-  V3_SLIDES_STREET_SHOT,
-  DRAGONFLY_STREET_SHOT,
-];
+export const HOME_LIFESTYLE_SHOTS: LifestyleShot[] = [V3_SLIDES_STREET_SHOT];
 
 export function lifestyleForProduct(slug: string): LifestyleShot[] {
   const key = slug.trim().toLowerCase();
