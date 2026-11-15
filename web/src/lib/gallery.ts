@@ -34,6 +34,6 @@ export const GALLERY_PHOTOS: GalleryPhoto[] = [
   {
     id: "lifestyle-dragonfly-street",
     src: "/lifestyle/dragonfly-street.jpg",
-    alt: "Model crouching in grey Voronyz Dragonfly sneakers on an asphalt path",
+    alt: "Grey Voronyz Dragonfly sneakers in a crouch on an asphalt path",
   },
 ];

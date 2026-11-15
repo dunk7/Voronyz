@@ -63,6 +63,11 @@ export default async function GalleryPage() {
                 alt={photo.alt}
                 fill
                 className="object-cover transition duration-300 group-hover:scale-[1.03]"
+                style={
+                  photo.id === "lifestyle-dragonfly-street"
+                    ? { objectPosition: "center bottom" }
+                    : undefined
+                }
                 sizes="(max-width: 1024px) 33vw, 20vw"
                 priority={photo.id === photos[0]?.id}
                 unoptimized={photo.unoptimized}
