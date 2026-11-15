@@ -29,7 +29,7 @@ export default function HomeFootwearHighlights({
         </h2>
         {scrollCue}
         <p className="mx-auto mt-3 max-w-md text-sm text-neutral-500">
-          Swipe each pair for more angles. Tap a color dot — or the shoe — to preview colors.
+          Swipe for more angles. Tap the shoe to open the listing — use the color dots to preview.
         </p>
       </header>
 
