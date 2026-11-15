@@ -55,9 +55,15 @@ export default function HomeProductSpotlight({
     if (!item) return [] as string[];
     let list = [...item.images];
     if (slug.trim().toLowerCase() === "slip-ons") {
+      // One hero per swatch — same as the PDP (white ad, tinted body colors, black studio).
       list = slipOnsImagesForColor(list, selectedColor);
+      return list.slice(0, 1);
     }
-    return list.slice(0, maxImages);
+    // Other footwear: keep a short gallery on black; collapse to the cover when
+    // previewing a non-black swatch so shoppers aren't scrolling black shoes.
+    const isBlack =
+      !selectedColor || selectedColor.trim().toLowerCase() === "black";
+    return list.slice(0, isBlack ? maxImages : 1);
   }, [item, maxImages, selectedColor, slug]);
 
   const media = useMemo(
