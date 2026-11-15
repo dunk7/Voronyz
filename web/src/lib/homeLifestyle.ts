@@ -9,7 +9,7 @@ export type LifestyleShot = {
   alt: string;
   /** Product this shot primarily features */
   productSlug?: string;
-  aspect: "portrait" | "tall-portrait" | "landscape";
+  aspect: "portrait" | "tall-portrait" | "landscape" | "circle";
 };
 
 export const V3_SLIDES_STREET_SHOT: LifestyleShot = {
@@ -17,7 +17,8 @@ export const V3_SLIDES_STREET_SHOT: LifestyleShot = {
   src: "/gallery/voronyz-02.jpg",
   alt: "Redhead kid on a boat holding up a pair of Voronyz V3 Slides",
   productSlug: "v3-slides",
-  aspect: "portrait",
+  // Circle crop keeps the held slides in frame and cuts clutter on the left.
+  aspect: "circle",
 };
 
 export const HOME_LIFESTYLE_SHOTS: LifestyleShot[] = [V3_SLIDES_STREET_SHOT];

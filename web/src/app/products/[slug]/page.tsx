@@ -63,6 +63,7 @@ import {
   STL_FILES_THUMBNAIL_URL,
   STL_SHOE_FILES,
   stlFilesCatalogProduct,
+  stlImagesByShoe,
 } from "@/lib/stlFiles";
 import {
   LATTICE_INSOLES_DESCRIPTION,
@@ -462,9 +463,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           colorImages={
             isFilament
               ? filamentImagesByVariant()
-              : isSlipOns
-                ? slipOnsColorImages()
-                : apparelColorImages
+              : isStlFiles
+                ? stlImagesByShoe()
+                : isSlipOns
+                  ? slipOnsColorImages()
+                  : apparelColorImages
           }
           leadWhiteSlipOns={isSlipOns}
           fit={isFootwearSlug(slug) || isPeppermintMist || isStlFiles || isFilament ? "contain" : "cover"}
@@ -528,7 +531,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             productDescription: displayDescription,
             coverImage: (images[0] as string) || defaultImages[0],
             productSlug: slug,
-            allowOutOfStockColorPreview: isSlipOns,
+            allowOutOfStockColorPreview: isSlipOns || isStlFiles,
           }}
           footer={
             <div className="flex items-center gap-4 text-xs text-neutral-500">

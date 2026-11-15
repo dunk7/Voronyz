@@ -51,7 +51,7 @@ test("STL thumbnail is wireframe art; product photos come after for gallery scro
 test("only Slip Ons has an STL file; others are out of stock and Magikid/insoles are gone", () => {
   assert.deepEqual(
     STL_SHOE_FILES.map((shoe) => shoe.id),
-    ["v3-slides", "slip-ons", "dragonfly", "gators"]
+    ["slip-ons", "dragonfly", "v3-slides", "gators"]
   );
   assert.equal(
     STL_SHOE_FILES.some((shoe) => shoe.id === "magikid-shoes"),
@@ -74,4 +74,17 @@ test("only Slip Ons has an STL file; others are out of stock and Magikid/insoles
     assert.ok(shoe);
     assert.equal(variant.stock, stlShoeHasFile(shoe) ? 9999 : 0);
   }
+});
+
+test("STL gallery thumbnail follows the selected shoe", () => {
+  assert.equal(STL_FILES_THUMBNAIL_URL, STL_SHOE_THUMBNAILS["slip-ons"]);
+  assert.equal(stlThumbnailForShoe("slip-ons"), STL_SHOE_THUMBNAILS["slip-ons"]);
+  assert.equal(stlThumbnailForShoe("dragonfly"), STL_SHOE_THUMBNAILS.dragonfly);
+  assert.notEqual(stlThumbnailForShoe("slip-ons"), stlThumbnailForShoe("dragonfly"));
+
+  const byShoe = stlImagesByShoe();
+  assert.equal(byShoe["slip-ons"][0], STL_SHOE_THUMBNAILS["slip-ons"]);
+  assert.deepEqual(byShoe.dragonfly, [STL_SHOE_THUMBNAILS.dragonfly]);
+  assert.deepEqual(byShoe["v3-slides"], [STL_SHOE_THUMBNAILS["v3-slides"]]);
+  assert.deepEqual(byShoe.gators, [STL_SHOE_THUMBNAILS.gators]);
 });
