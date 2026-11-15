@@ -31,13 +31,14 @@ export function isWhiteColor(color: string | undefined | null): boolean {
 }
 
 /**
- * The white Slip Ons photo is only in the gallery when White is selected,
- * and then it leads. Other colors stay on the studio shots.
+ * The white Slip Ons photo is the only gallery image when White is selected
+ * (studio shots are black and would break the color preview if left in).
+ * Other colors stay on the studio shots and drop the white ad.
  */
 export function slipOnsImagesForColor(baseImages: string[], color?: string | null): string[] {
   const withoutWhiteAd = baseImages.filter((src) => src !== SLIP_ONS_WHITE_AD_IMAGE);
   if (isWhiteColor(color)) {
-    return [SLIP_ONS_WHITE_AD_IMAGE, ...withoutWhiteAd];
+    return [SLIP_ONS_WHITE_AD_IMAGE];
   }
   return withoutWhiteAd;
 }

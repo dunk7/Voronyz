@@ -46,6 +46,51 @@ export function colorToCss(color: string): string {
   return NAMED_SWATCH[key.toLowerCase()] ?? "#d4d4d4";
 }
 
+/** True when the swatch is the natural black product photo (no CSS tint). */
+export function isBlackFootwearColor(color: string | undefined | null): boolean {
+  if (!color) return true;
+  const key = color.trim().toLowerCase();
+  if (!key || key === "black") return true;
+  if (!key.startsWith("#")) return false;
+  const hex = key.length === 4
+    ? `#${key[1]}${key[1]}${key[2]}${key[2]}${key[3]}${key[3]}`
+    : key;
+  if (!/^#[0-9a-f]{6}$/.test(hex)) return false;
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  // Near-black studio shoes — leave the photo alone.
+  return r < 40 && g < 40 && b < 40;
+}
+
+/**
+ * How to preview a swatch color on black footwear studio shots.
+ * - none: leave the photo alone (black / unknown)
+ * - lighten: mix-blend lighten overlay for chromatic colors
+ * - whiten: CSS filter on a wrapper (lighten-blend with pale fills
+ *   washes the shoe into the studio backdrop)
+ */
+export type FootwearImageRecolor =
+  | { kind: "none" }
+  | { kind: "lighten"; color: string }
+  | { kind: "whiten" };
+
+export function footwearImageRecolor(
+  color: string | undefined | null,
+): FootwearImageRecolor {
+  if (isBlackFootwearColor(color) || !color) return { kind: "none" };
+  if (color.trim().toLowerCase() === "white") return { kind: "whiten" };
+  return { kind: "lighten", color: colorToCss(color) };
+}
+
+/** @deprecated Prefer footwearImageRecolor — kept for call sites that only need a fill. */
+export function footwearImageTint(
+  color: string | undefined | null,
+): string | undefined {
+  const recolor = footwearImageRecolor(color);
+  return recolor.kind === "lighten" ? recolor.color : undefined;
+}
+
 export function formatUsdFromCents(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }

@@ -13,7 +13,11 @@ import {
   STL_FILES_SLUG,
   STL_FILES_THUMBNAIL_URL,
 } from "@/lib/stlFiles";
-import { APPAREL_CATALOG, apparelCoverObjectPositionClass } from "@/lib/apparel";
+import {
+  APPAREL_CATALOG,
+  apparelCoverObjectPositionClass,
+  getStandaloneApparelItems,
+} from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
@@ -22,16 +26,24 @@ import HomeSecondaryLinks from "@/components/HomeSecondaryLinks";
 import PrintedFootwearEducation from "@/components/apparel/PrintedFootwearEducation";
 import FootwearBrowse from "@/components/footwear/FootwearBrowse";
 import HomeFootwearHighlights from "@/components/footwear/HomeFootwearHighlights";
+import LifestyleBand from "@/components/footwear/LifestyleBand";
 import FootGlowSection from "@/components/FootGlowSection";
 import MotionMediaCarousel from "@/components/MotionMediaCarousel";
 import { MAGIKID_SHOES_THUMBNAIL_URL } from "@/lib/magikidShoesThumbnail";
 import { GATORS_SLUG, GATORS_THUMBNAIL_URL } from "@/lib/gators";
 import { PEPPERMINT_MIST_SLUG } from "@/lib/aineFernPeppermintMist";
+import { V3_SLIDES_STREET_SHOT } from "@/lib/homeLifestyle";
 
 /** Homepage apparel teaser — a couple of highlights, not the full catalog. */
 const HOME_APPAREL_TEASER_SLUGS = [
   "voronyz-oversized-tee",
   "voronyz-core-hoodie",
+] as const;
+
+/** Homepage accessories teaser — logo stickers + cool shades only. */
+const HOME_ACCESSORIES_TEASER_SLUGS = [
+  "voronyz-stickers",
+  "voronyz-cool-shades",
 ] as const;
 
 /** Homepage Áine & Fern teaser — peppermint mist only (still listed under Collaborative in the menu /health). */
@@ -44,12 +56,6 @@ function productCardImageFitClass(slug: string, src: string): string {
     return "object-contain object-center";
   }
   return `object-cover ${apparelCoverObjectPositionClass(src)}`;
-}
-
-function productCardNeedsInset(slug: string): boolean {
-  const key = (slug || "").trim().toLowerCase();
-  // Mist keeps a small inset; STL stays edge-to-edge with contain (no over-crop).
-  return key === PEPPERMINT_MIST_SLUG;
 }
 
 /** Shop-all CTA under the home Footwear and Apparel teasers — shared width so both match. */
@@ -259,6 +265,31 @@ export default function ProductsContent({
     });
   }, [showApparelContinuation]);
 
+  const accessoriesTeaserProducts = useMemo((): ApparelGridProduct[] => {
+    if (!showApparelContinuation) return [];
+    const bySlug = new Map(
+      getStandaloneApparelItems().map((item) => [item.slug, item]),
+    );
+    return HOME_ACCESSORIES_TEASER_SLUGS.flatMap((slug) => {
+      const item = bySlug.get(slug);
+      if (!item) return [];
+      return [
+        {
+          id: `catalog-${item.slug}`,
+          slug: item.slug,
+          name: item.name,
+          description: item.description,
+          priceCents: item.priceCents,
+          currency: "usd",
+          cover: item.image,
+          colors: item.colors,
+          sizes: item.sizes,
+          subcategory: item.subcategory,
+        },
+      ];
+    });
+  }, [showApparelContinuation]);
+
   const homeSectionTitleClass =
     "text-2xl sm:text-[1.75rem] font-semibold tracking-tight text-neutral-900 text-center";
   const sectionHeadingClass =
@@ -386,6 +417,33 @@ export default function ProductsContent({
       </section>
       ) : null;
 
+  const accessoriesSection =
+    showApparelContinuation && accessoriesTeaserProducts.length > 0 ? (
+      <section
+        id="accessories"
+        aria-labelledby="home-accessories-heading"
+        className={
+          useFootwearBrowse
+            ? "container pb-16 sm:pb-24"
+            : "mt-16 sm:mt-24"
+        }
+      >
+        <div className="mb-8 sm:mb-10 text-center">
+          <h2 id="home-accessories-heading" className={homeSectionTitleClass}>
+            Accessories
+          </h2>
+        </div>
+
+        <ApparelProductGrid products={accessoriesTeaserProducts} />
+
+        <div className="mt-10 sm:mt-12 flex justify-center">
+          <Link href="/apparel/accessories" className={SHOP_ALL_CTA_CLASS}>
+            Shop accessories
+          </Link>
+        </div>
+      </section>
+    ) : null;
+
   const footGlow = showApparelContinuation && !isHomeFootwearTeaser ? (
     <FootGlowSection variant="print" />
   ) : null;
@@ -394,7 +452,7 @@ export default function ProductsContent({
     isHomeFootwearTeaser ? (
       <section
         aria-labelledby="advanced-footwear-heading"
-        className="mt-16 sm:mt-24 lg:mt-28 mb-16 sm:mb-24 lg:mb-28"
+        className="mb-16 sm:mb-24 lg:mb-28"
       >
         <MotionMediaCarousel href="/products" linkLabel="Shop all footwear" />
         <div className="mt-4 max-w-xl text-left sm:mt-5">
@@ -404,10 +462,6 @@ export default function ProductsContent({
           >
             Advanced Footwear
           </h2>
-          <p className="mt-3 text-base leading-relaxed text-neutral-600 sm:text-lg">
-            Voronyz prints the shoe around the foot — lattice cushion, a real outsole,
-            and a finish you&apos;d wear out tonight. Once it&apos;s on, nothing else feels this engineered.
-          </p>
         </div>
       </section>
     ) : null;
@@ -419,6 +473,7 @@ export default function ProductsContent({
           <FootwearBrowse products={products} getImages={getImages} />
           {footGlow}
           {apparelSection}
+          {accessoriesSection}
         </>
       ) : (
       <div className="container py-16">
@@ -444,8 +499,11 @@ export default function ProductsContent({
             </Link>
           </div>
         ) : isHomeFootwearTeaser ? (
-          /* ── Homepage: per-shoe spotlights (All Footwear lives at the bottom) ── */
-          <HomeFootwearHighlights scrollCue={scrollCue} />
+          /* ── Homepage: Advanced Footwear, then per-shoe spotlights (All Footwear at bottom) ── */
+          <>
+            {advancedFootwear}
+            <HomeFootwearHighlights scrollCue={scrollCue} />
+          </>
         ) : (
           /* ── Product grid (Engineering / Collaborative / search) ── */
           <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 xl:grid-cols-4">
@@ -454,7 +512,6 @@ export default function ProductsContent({
               const { cover, alt } = getImages(p);
               const meta = cardMetaForSlug(slugKey);
               const isNavigating = navigatingSlug === p.slug;
-              const inset = productCardNeedsInset(slugKey);
 
               return (
                 <Link
@@ -470,7 +527,7 @@ export default function ProductsContent({
                       isNavigating ? "ring-black/10 shadow-xl" : ""
                     }`}
                   >
-                    <div className={inset ? "absolute inset-3 sm:inset-4" : "absolute inset-0"}>
+                    <div className="absolute inset-0">
                       <SoftImage
                         key={cover}
                         src={cover}
@@ -613,8 +670,8 @@ export default function ProductsContent({
                 Áine & Fern
               </h2>
             </div>
-            {/* Same half-width square card as Footwear, centered — Áine & Fern is its own home block (still under Collaborative in the menu). */}
-            <div className="mx-auto w-1/2">
+            {/* Match footwear spotlight width so the bottle fills the frame (still Collaborative in the menu). */}
+            <div className="mx-auto w-full max-w-3xl">
               {HOME_AINE_FERN_TEASER_SLUGS.flatMap((slug) => {
                 const p = getHealthCatalogSeed().find(
                   (item) => (item.slug || "").trim().toLowerCase() === slug,
@@ -624,7 +681,6 @@ export default function ProductsContent({
                 const slugKey = (p.slug || "").trim().toLowerCase();
                 const { cover, alt } = getImages(p);
                 const isNavigating = navigatingSlug === p.slug;
-                const inset = productCardNeedsInset(slugKey);
                 return (
                   <Link
                     key={p.id}
@@ -635,11 +691,11 @@ export default function ProductsContent({
                     }`}
                   >
                     <div
-                      className={`relative aspect-square w-full overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:shadow-xl group-hover:ring-black/10 ${
+                      className={`relative aspect-square w-full overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/5 transition-all duration-300 group-hover:shadow-xl group-hover:ring-black/10 sm:rounded-3xl ${
                         isNavigating ? "ring-black/10 shadow-xl" : ""
                       }`}
                     >
-                      <div className={inset ? "absolute inset-3 sm:inset-4" : "absolute inset-0"}>
+                      <div className="absolute inset-0">
                         <SoftImage
                           key={cover}
                           src={cover}
@@ -648,7 +704,7 @@ export default function ProductsContent({
                           className={`${productCardImageFitClass(slugKey, cover)} transition-all duration-500 ${
                             alt ? "group-hover:opacity-0" : "group-hover:scale-105"
                           } ${isNavigating ? "scale-105 brightness-90" : ""}`}
-                          sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                          sizes="(max-width: 768px) 100vw, 48rem"
                         />
                         {alt && (
                           <SoftImage
@@ -658,7 +714,7 @@ export default function ProductsContent({
                             fill
                             showLogoPlaceholder={false}
                             className={`${productCardImageFitClass(slugKey, alt)} opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:scale-105`}
-                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                            sizes="(max-width: 768px) 100vw, 48rem"
                             loading="lazy"
                           />
                         )}
@@ -682,13 +738,18 @@ export default function ProductsContent({
         ) : null}
         {footGlow}
         {apparelSection}
+        {accessoriesSection}
 
         {isHomeFootwearTeaser && (
           <>
-            {advancedFootwear}
             <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
+            {advancedFootwear}
             <HomeSecondaryLinks className="mt-12 sm:mt-16" />
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
+            {/* Redhead boat lifestyle — bottom of home only (removed from above V3 spotlights) */}
+            <div className="mt-16 sm:mt-24 lg:mt-28">
+              <LifestyleBand shot={V3_SLIDES_STREET_SHOT} />
+            </div>
             {/* All footwear catalog — bottom of home, after spotlights and other sections */}
             <div className="mt-16 space-y-8 sm:mt-24 sm:space-y-10 lg:mt-28">
               <FootwearBrowse
