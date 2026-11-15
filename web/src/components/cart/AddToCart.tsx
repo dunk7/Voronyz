@@ -3,8 +3,13 @@ import { useMemo, useState, useEffect } from "react";
 import { formatCentsAsCurrency, SHOP_PRICE_CLASS } from "@/lib/money";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { normalizeStudentName } from "@/lib/magikidShoesThumbnail";
 import { getApparelSizeOffer } from "@/lib/apparel";
+
+function normalizeStudentName(value: string): string | null {
+  const trimmed = value.trim();
+  if (trimmed.length < 2 || trimmed.length > 80) return null;
+  return trimmed;
+}
 import SalePrice from "@/components/ui/SalePrice";
 import { isWhiteColor, SLIP_ONS_WHITE_AD_IMAGE } from "@/lib/footwear";
 import { useFilamentSelection } from "@/components/products/FilamentSelection";
@@ -1068,7 +1073,7 @@ export default function AddToCart({
               className="w-full rounded-xl border border-black/10 px-4 py-3 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-black/10"
             />
             <p className="text-xs text-neutral-500">
-              Required so we print that student&apos;s Magikid camp design — not a stock pair.
+              Student name for this custom pair.
             </p>
           </div>
         )}

@@ -26,7 +26,6 @@ export function normalizeProductImages(images: unknown): string[] {
   return [];
 }
 
-import { MAGIKID_SHOES_COVER } from "@/lib/magikidShoesThumbnail";
 import { TRAIL_MIX_THUMBNAIL_URL } from "@/lib/trailMix";
 import {
   PEPPERMINT_MIST_SLUG,
@@ -46,7 +45,6 @@ export function getProductThumbnail(input: { slug?: string; images?: unknown }):
   if (input.slug === "v3-slides") return "/products/v3-slides/InShot_20260212_194352014.jpg";
   if (input.slug === "dragonfly") return "/products/dragonfly/InShot_20260212_153903491.jpg";
   if (input.slug === "slip-ons") return "/products/slip-ons/InShot_20260405_203151152.jpg";
-  if (input.slug === "magikid-shoes") return MAGIKID_SHOES_COVER;
   if (input.slug === "antioxidant-trail-mix") return TRAIL_MIX_THUMBNAIL_URL;
   if (input.slug === PEPPERMINT_MIST_SLUG) return PEPPERMINT_MIST_THUMBNAIL_URL;
   if (input.slug === GATORS_SLUG) return GATORS_THUMBNAIL_URL;
