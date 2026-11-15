@@ -74,10 +74,22 @@ export type FootwearImageRecolor =
   | { kind: "lighten"; color: string }
   | { kind: "whiten" };
 
+/** True for named footwear swatches or hex fills — not flavor / SKU ids. */
+export function isFootwearPreviewColor(color: string | undefined | null): boolean {
+  if (!color) return false;
+  const key = color.trim().toLowerCase();
+  if (!key) return false;
+  if (key.startsWith("#")) return true;
+  return Object.prototype.hasOwnProperty.call(NAMED_SWATCH, key);
+}
+
 export function footwearImageRecolor(
   color: string | undefined | null,
 ): FootwearImageRecolor {
   if (isBlackFootwearColor(color) || !color) return { kind: "none" };
+  // Flavor ids (e.g. wild-berry) and other non-swatch values must not get the
+  // footwear mix-blend lighten overlay — that washes non-shoe product photos out.
+  if (!isFootwearPreviewColor(color)) return { kind: "none" };
   if (color.trim().toLowerCase() === "white") return { kind: "whiten" };
   return { kind: "lighten", color: colorToCss(color) };
 }

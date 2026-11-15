@@ -74,3 +74,10 @@ test("footwear image tint skips black and maps other swatches", () => {
     color: "#f97316",
   });
 });
+
+test("footwear image recolor ignores trail-mix flavor ids", () => {
+  assert.deepEqual(footwearImageRecolor("wild-berry"), { kind: "none" });
+  assert.deepEqual(footwearImageRecolor("super-protein"), { kind: "none" });
+  assert.deepEqual(footwearImageRecolor("chocolate"), { kind: "none" });
+  assert.equal(footwearImageTint("wild-berry"), undefined);
+});
