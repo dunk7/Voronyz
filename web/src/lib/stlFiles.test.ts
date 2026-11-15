@@ -10,9 +10,12 @@ import {
   STL_FILES_THUMBNAIL_URL,
   STL_FILES_VARIANTS,
   STL_SHOE_FILES,
+  STL_SHOE_THUMBNAILS,
   isDigitalProductSlug,
   orderIncludesStlDownload,
+  stlImagesByShoe,
   stlShoeHasFile,
+  stlThumbnailForShoe,
 } from "./stlFiles";
 
 test("STL listing is Voronyz STL at $1 per shoe file", () => {
