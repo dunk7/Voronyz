@@ -74,6 +74,7 @@ export default function PdpGalleryBuyBox({
 
   // Real per-color photos (apparel / filament) already match the swatch —
   // only recolor black footwear studio shots when we don't have color-specific media.
+  // Non-footwear variant labels (e.g. Áine & Fern "peppermint") resolve to kind:"none".
   const hasColorPhotos =
     !!color &&
     !!colorImages?.[color.trim().toLowerCase()]?.length;

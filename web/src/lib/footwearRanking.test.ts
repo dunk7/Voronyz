@@ -73,4 +73,8 @@ test("footwear image tint skips black and maps other swatches", () => {
     kind: "lighten",
     color: "#f97316",
   });
+  // Collaborative mist auto-selects color "peppermint" on the PDP — must not
+  // get the footwear gray lighten overlay (that washed the bottle out).
+  assert.deepEqual(footwearImageRecolor("peppermint"), { kind: "none" });
+  assert.equal(footwearImageTint("peppermint"), undefined);
 });

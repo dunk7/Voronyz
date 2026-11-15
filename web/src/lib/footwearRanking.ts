@@ -78,8 +78,15 @@ export function footwearImageRecolor(
   color: string | undefined | null,
 ): FootwearImageRecolor {
   if (isBlackFootwearColor(color) || !color) return { kind: "none" };
-  if (color.trim().toLowerCase() === "white") return { kind: "whiten" };
-  return { kind: "lighten", color: colorToCss(color) };
+  const key = color.trim().toLowerCase();
+  if (key === "white") return { kind: "whiten" };
+  // Only real footwear swatches get a tint. Unknown labels (e.g. Collaborative
+  // "peppermint") used to fall through to a gray lighten overlay and wash out
+  // the product photo on the PDP.
+  if (key.startsWith("#") || Object.prototype.hasOwnProperty.call(NAMED_SWATCH, key)) {
+    return { kind: "lighten", color: colorToCss(color) };
+  }
+  return { kind: "none" };
 }
 
 /** @deprecated Prefer footwearImageRecolor — kept for call sites that only need a fill. */
