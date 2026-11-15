@@ -20,8 +20,10 @@ import {
 import {
   FOOTWEAR_CATALOG,
   FOOTWEAR_SLUGS,
+  SLIP_ONS_COLOR_IMAGES,
   SLIP_ONS_WHITE_AD_IMAGE,
   isWhiteColor,
+  slipOnsColorImages,
   slipOnsImagesForColor,
 } from "./footwear";
 import { getProductThumbnail } from "./productImages";
@@ -123,8 +125,7 @@ test("white color names match the White swatch", () => {
   assert.equal(isWhiteColor(undefined), false);
 });
 
-test("slip-ons gallery shows only the white photo when White is selected", () => {
-  assert.deepEqual(slipOnsImagesForColor(studio, "black"), [...studio]);
+test("slip-ons gallery is one hero image per selected color", () => {
   assert.deepEqual(slipOnsImagesForColor(studio, undefined), [...studio]);
   assert.deepEqual(slipOnsImagesForColor(studio, "white"), [
     SLIP_ONS_WHITE_AD_IMAGE,
@@ -132,12 +133,32 @@ test("slip-ons gallery shows only the white photo when White is selected", () =>
   assert.deepEqual(slipOnsImagesForColor(studio, "White"), [
     SLIP_ONS_WHITE_AD_IMAGE,
   ]);
+  assert.deepEqual(slipOnsImagesForColor(studio, "black"), [
+    SLIP_ONS_COLOR_IMAGES.black,
+  ]);
+  assert.deepEqual(slipOnsImagesForColor(studio, "grey"), [
+    SLIP_ONS_COLOR_IMAGES.grey,
+  ]);
+  assert.deepEqual(slipOnsImagesForColor(studio, "orange"), [
+    SLIP_ONS_COLOR_IMAGES.orange,
+  ]);
+  assert.deepEqual(slipOnsImagesForColor(studio, "pink"), [
+    SLIP_ONS_COLOR_IMAGES.pink,
+  ]);
 });
 
-test("white photo is dropped for non-white colors even if already in the list", () => {
-  const withAd = [studio[0], SLIP_ONS_WHITE_AD_IMAGE, studio[1]];
-  assert.deepEqual(slipOnsImagesForColor(withAd, "white"), [
-    SLIP_ONS_WHITE_AD_IMAGE,
-  ]);
-  assert.deepEqual(slipOnsImagesForColor(withAd, "grey"), [studio[0], studio[1]]);
+test("slip-ons color heroes exist on disk and map 1:1 for the PDP", () => {
+  const publicDir = join(dirname(fileURLToPath(import.meta.url)), "../..", "public");
+  const mapped = slipOnsColorImages();
+  for (const [color, shots] of Object.entries(mapped)) {
+    assert.equal(shots.length, 1);
+    assert.equal(shots[0], SLIP_ONS_COLOR_IMAGES[color]);
+    assert.ok(existsSync(join(publicDir, shots[0]!)), shots[0]);
+  }
+  assert.equal(SLIP_ONS_COLOR_IMAGES.white, SLIP_ONS_WHITE_AD_IMAGE);
+});
+
+test("color heroes and white ad are stripped from the studio fallback list", () => {
+  const withAd = [studio[0], SLIP_ONS_WHITE_AD_IMAGE, studio[1], SLIP_ONS_COLOR_IMAGES.pink];
+  assert.deepEqual(slipOnsImagesForColor(withAd, undefined), [studio[0], studio[1]]);
 });

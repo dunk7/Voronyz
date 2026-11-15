@@ -6,7 +6,7 @@ import Link from "next/link";
 import { normalizeStudentName } from "@/lib/magikidShoesThumbnail";
 import { getApparelSizeOffer } from "@/lib/apparel";
 import SalePrice from "@/components/ui/SalePrice";
-import { isWhiteColor, SLIP_ONS_WHITE_AD_IMAGE } from "@/lib/footwear";
+import { slipOnsHeroForColor } from "@/lib/footwear";
 import { useFilamentSelection } from "@/components/products/FilamentSelection";
 import ShareProductButton from "@/components/products/ShareProductButton";
 
@@ -371,9 +371,7 @@ export default function AddToCart({
   const activeCarryStyleId = selectedCarryStyleId || selectedSize;
   const resolvedCoverImage =
     (selectedPrimary && coverImagesByColor?.[selectedPrimary]) ||
-    (productSlug === "slip-ons" && isWhiteColor(selectedPrimary)
-      ? SLIP_ONS_WHITE_AD_IMAGE
-      : undefined) ||
+    (productSlug === "slip-ons" ? slipOnsHeroForColor(selectedPrimary) : undefined) ||
     carryStyles.find((style) => style.id === activeCarryStyleId)?.image ||
     coverImage;
 
@@ -563,12 +561,15 @@ export default function AddToCart({
 
   const colorSwatch = (color: string) => {
     const map: Record<string, string> = {
-      grey: "#9ca3af",
-      gray: "#9ca3af",
-      tan: "#d2b48c",
-      pink: "#ec4899",
-      black: "#111111",
-      white: "#f5f5f5",
+      grey: "#a2a4aa",
+      gray: "#a2a4aa",
+      tan: "#c4a574",
+      pink: "#d67aa0",
+      orange: "#cc763a",
+      green: "#4a7c59",
+      red: "#b83c3c",
+      black: "#1a1a1c",
+      white: "#f3f1ee",
     };
     return map[color.toLowerCase()] ?? color;
   };

@@ -82,7 +82,14 @@ import {
   latticeInsolesCatalogProduct,
 } from "@/lib/latticeInsoles";
 import { isAccessorySlug, isApparelSlug, isFootwearSlug, isHealthSlug } from "@/lib/productCategories";
-import { DRAGONFLY_DESCRIPTION, SLIP_ONS_DESCRIPTION, SLIP_ONS_PRICE_CENTS } from "@/lib/footwear";
+import {
+  DRAGONFLY_DESCRIPTION,
+  SLIP_ONS_DESCRIPTION,
+  SLIP_ONS_PRICE_CENTS,
+  slipOnsColorImages,
+
+  slipOnsCatalogProduct,
+} from "@/lib/footwear";
 import {
   apparelCatalogProduct,
   apparelProductShopHref,
@@ -185,6 +192,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       product = apparelCatalogProduct(catalogFallback);
     } else if (slug === "magikid-shoes") {
       product = magikidCatalogProduct();
+    } else if (slug === "slip-ons") {
+      product = slipOnsCatalogProduct();
     } else if (slug === STL_FILES_SLUG) {
       product = stlFilesCatalogProduct();
     } else if (slug === LATTICE_INSOLES_SLUG) {
@@ -213,6 +222,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     const catalogFallback = getApparelItem(slug);
     if (catalogFallback) product = apparelCatalogProduct(catalogFallback);
     else if (slug === "magikid-shoes") product = magikidCatalogProduct();
+    else if (slug === "slip-ons") product = slipOnsCatalogProduct();
     else if (slug === STL_FILES_SLUG) product = stlFilesCatalogProduct();
     else if (slug === LATTICE_INSOLES_SLUG) product = latticeInsolesCatalogProduct();
     else if (slug === GATORS_SLUG) product = gatorsCatalogProduct();
@@ -467,7 +477,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         {/* Gallery-first retail layout: large photos lead, buy box sits beside */}
         <PdpGalleryBuyBox
           media={galleryMedia}
-          colorImages={isFilament ? filamentImagesByVariant() : apparelColorImages}
+          colorImages={
+            isFilament
+              ? filamentImagesByVariant()
+              : isSlipOns
+                ? slipOnsColorImages()
+                : apparelColorImages
+          }
           leadWhiteSlipOns={isSlipOns}
           fit={isFootwearSlug(slug) || isPeppermintMist || isStlFiles || isFilament ? "contain" : "cover"}
           galleryClassName="[&>div:first-of-type]:rounded-none sm:[&>div:first-of-type]:rounded-2xl lg:[&>div:first-of-type]:rounded-3xl [&>div:first-of-type]:ring-0 sm:[&>div:first-of-type]:ring-1"
