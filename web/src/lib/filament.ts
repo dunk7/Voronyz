@@ -34,13 +34,14 @@ export function filamentVariantColor(materialId: string, colorId: string) {
   return `${materialId}:${colorId}`;
 }
 
-/** Face-on black spool first; scroll to the three-quarter side roll. */
+/** Face-on black spool, side roll, then soft TPU tire on a Mars rover. */
 const BLACK_90A_IMAGES = [
   "/products/tpu-90a-filament/filament-clear-spool.jpg",
   "/products/tpu-90a-filament/tpu-90a-black-spool.jpg",
+  "/products/tpu-90a-filament/tpu-black-tire-rover.jpg",
 ] as const;
 
-/** Actually tan face-on + matching three-quarter side roll. */
+/** Tan face-on + matching three-quarter side roll. */
 const TAN_90A_IMAGES = [
   "/products/tpu-90a-filament/tpu-90a-tan-spool.jpg",
   "/products/tpu-90a-filament/tpu-90a-tan-spool-angle.jpg",
@@ -51,7 +52,12 @@ const PINK_90A_IMAGES = [
   "/products/tpu-90a-filament/tpu-90a-pink-spool.jpg",
   "/products/tpu-90a-filament/tpu-90a-pink-spool-angle.jpg",
 ] as const;
-const AIR_IMAGES = ["/products/tpu-90a-filament/tpu-air-charcoal-spool.jpg"] as const;
+
+/** Charcoal Air spool, then hand-squished foaming TPU tire. */
+const AIR_IMAGES = [
+  "/products/tpu-90a-filament/tpu-air-charcoal-spool.jpg",
+  "/products/tpu-90a-filament/tpu-air-squish-tire.jpg",
+] as const;
 const PLA_IMAGES = ["/products/tpu-90a-filament/pla-white-spool.jpg"] as const;
 
 export const FILAMENT_MATERIALS = [
