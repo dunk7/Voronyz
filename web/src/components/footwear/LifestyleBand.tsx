@@ -19,16 +19,19 @@ export default function LifestyleBand({
   priority = false,
 }: LifestyleBandProps) {
   const portrait = shot.aspect === "portrait";
+  const tallPortrait = shot.aspect === "tall-portrait";
   const productSlug = shot.productSlug?.trim() || null;
   const href = productSlug ? `/products/${productSlug}` : null;
 
   const frame = (
     <div
       className={`relative mx-auto w-full overflow-hidden bg-neutral-100 ${
-        portrait
-          ? // Near-square portrait so the redhead boat frame keeps face + held slides in view
-            "aspect-[15/16] max-h-[90vh] sm:max-w-3xl lg:max-w-4xl"
-          : "aspect-[16/9] sm:max-w-5xl lg:max-w-6xl"
+        tallPortrait
+          ? "aspect-[9/16] max-h-[85vh] sm:max-w-md lg:max-w-lg"
+          : portrait
+            ? // Near-square portrait so the redhead boat frame keeps face + held slides in view
+              "aspect-[15/16] max-h-[90vh] sm:max-w-3xl lg:max-w-4xl"
+            : "aspect-[16/9] sm:max-w-5xl lg:max-w-6xl"
       } ${href ? "transition ring-black/0 hover:opacity-[0.97]" : ""}`}
     >
       <SoftImage
@@ -42,9 +45,11 @@ export default function LifestyleBand({
             : "object-cover object-center"
         }
         sizes={
-          portrait
-            ? "(max-width: 640px) 100vw, (max-width: 1024px) 48rem, 56rem"
-            : "(max-width: 1024px) 100vw, 72rem"
+          tallPortrait
+            ? "(max-width: 640px) 100vw, (max-width: 1024px) 28rem, 32rem"
+            : portrait
+              ? "(max-width: 640px) 100vw, (max-width: 1024px) 48rem, 56rem"
+              : "(max-width: 1024px) 100vw, 72rem"
         }
       />
     </div>

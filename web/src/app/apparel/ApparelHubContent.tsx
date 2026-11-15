@@ -7,6 +7,7 @@ import { ListFilter } from "lucide-react";
 import {
   APPAREL_CATALOG,
   APPAREL_COLLECTION_SUBCATEGORIES,
+  getStandaloneApparelItems,
 } from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
@@ -41,6 +42,11 @@ export default function ApparelHubContent() {
       APPAREL_CATALOG.filter((item) =>
         APPAREL_COLLECTION_SUBCATEGORIES.some((sub) => sub.id === item.subcategory),
       ).map(toGridProduct),
+    [],
+  );
+
+  const accessoryProducts = useMemo(
+    () => getStandaloneApparelItems().map(toGridProduct),
     [],
   );
 
@@ -157,6 +163,33 @@ export default function ApparelHubContent() {
             <ApparelProductGrid products={collectionProducts} />
           )}
         </section>
+
+        {accessoryProducts.length > 0 && (
+          <section
+            id="accessories"
+            aria-labelledby="apparel-accessories-heading"
+            className="mt-16 sm:mt-20 lg:mt-24"
+          >
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h2
+                  id="apparel-accessories-heading"
+                  className="text-2xl font-semibold tracking-tight text-neutral-900 sm:text-[1.75rem]"
+                >
+                  Accessories
+                </h2>
+                <p className="mt-2 max-w-md text-sm text-neutral-500">
+                  Logo stickers and cool shades.
+                </p>
+              </div>
+              <span className="text-xs tabular-nums text-neutral-400">
+                {accessoryProducts.length} listing
+                {accessoryProducts.length === 1 ? "" : "s"}
+              </span>
+            </div>
+            <ApparelProductGrid products={accessoryProducts} />
+          </section>
+        )}
       </div>
     </div>
   );

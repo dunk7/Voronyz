@@ -13,7 +13,11 @@ import {
   STL_FILES_SLUG,
   STL_FILES_THUMBNAIL_URL,
 } from "@/lib/stlFiles";
-import { APPAREL_CATALOG, apparelCoverObjectPositionClass } from "@/lib/apparel";
+import {
+  APPAREL_CATALOG,
+  apparelCoverObjectPositionClass,
+  getStandaloneApparelItems,
+} from "@/lib/apparel";
 import ApparelProductGrid, {
   type ApparelGridProduct,
 } from "@/components/apparel/ApparelProductGrid";
@@ -36,13 +40,19 @@ const HOME_APPAREL_TEASER_SLUGS = [
   "voronyz-core-hoodie",
 ] as const;
 
+/** Homepage accessories teaser — logo stickers + cool shades only. */
+const HOME_ACCESSORIES_TEASER_SLUGS = [
+  "voronyz-stickers",
+  "voronyz-cool-shades",
+] as const;
+
 /** Homepage Áine & Fern teaser — peppermint mist only (still listed under Collaborative in the menu /health). */
 const HOME_AINE_FERN_TEASER_SLUGS = [PEPPERMINT_MIST_SLUG] as const;
 
-/** Keep framed product art fully visible — mist bottle only. */
+/** Keep framed product art fully visible — mist bottle + STL wireframe (no crop-zoom). */
 function productCardImageFitClass(slug: string, src: string): string {
   const key = (slug || "").trim().toLowerCase();
-  if (key === PEPPERMINT_MIST_SLUG) {
+  if (key === PEPPERMINT_MIST_SLUG || key === STL_FILES_SLUG) {
     return "object-contain object-center";
   }
   return `object-cover ${apparelCoverObjectPositionClass(src)}`;
@@ -255,6 +265,31 @@ export default function ProductsContent({
     });
   }, [showApparelContinuation]);
 
+  const accessoriesTeaserProducts = useMemo((): ApparelGridProduct[] => {
+    if (!showApparelContinuation) return [];
+    const bySlug = new Map(
+      getStandaloneApparelItems().map((item) => [item.slug, item]),
+    );
+    return HOME_ACCESSORIES_TEASER_SLUGS.flatMap((slug) => {
+      const item = bySlug.get(slug);
+      if (!item) return [];
+      return [
+        {
+          id: `catalog-${item.slug}`,
+          slug: item.slug,
+          name: item.name,
+          description: item.description,
+          priceCents: item.priceCents,
+          currency: "usd",
+          cover: item.image,
+          colors: item.colors,
+          sizes: item.sizes,
+          subcategory: item.subcategory,
+        },
+      ];
+    });
+  }, [showApparelContinuation]);
+
   const homeSectionTitleClass =
     "text-2xl sm:text-[1.75rem] font-semibold tracking-tight text-neutral-900 text-center";
   const sectionHeadingClass =
@@ -382,6 +417,33 @@ export default function ProductsContent({
       </section>
       ) : null;
 
+  const accessoriesSection =
+    showApparelContinuation && accessoriesTeaserProducts.length > 0 ? (
+      <section
+        id="accessories"
+        aria-labelledby="home-accessories-heading"
+        className={
+          useFootwearBrowse
+            ? "container pb-16 sm:pb-24"
+            : "mt-16 sm:mt-24"
+        }
+      >
+        <div className="mb-8 sm:mb-10 text-center">
+          <h2 id="home-accessories-heading" className={homeSectionTitleClass}>
+            Accessories
+          </h2>
+        </div>
+
+        <ApparelProductGrid products={accessoriesTeaserProducts} />
+
+        <div className="mt-10 sm:mt-12 flex justify-center">
+          <Link href="/apparel/accessories" className={SHOP_ALL_CTA_CLASS}>
+            Shop accessories
+          </Link>
+        </div>
+      </section>
+    ) : null;
+
   const footGlow = showApparelContinuation && !isHomeFootwearTeaser ? (
     <FootGlowSection variant="print" />
   ) : null;
@@ -400,10 +462,6 @@ export default function ProductsContent({
           >
             Advanced Footwear
           </h2>
-          <p className="mt-3 text-base leading-relaxed text-neutral-600 sm:text-lg">
-            Voronyz prints the shoe around the foot — lattice cushion, a real outsole,
-            and a finish you&apos;d wear out tonight. Once it&apos;s on, nothing else feels this engineered.
-          </p>
         </div>
       </section>
     ) : null;
@@ -415,6 +473,7 @@ export default function ProductsContent({
           <FootwearBrowse products={products} getImages={getImages} />
           {footGlow}
           {apparelSection}
+          {accessoriesSection}
         </>
       ) : (
       <div className="container py-16">
@@ -676,11 +735,12 @@ export default function ProductsContent({
         ) : null}
         {footGlow}
         {apparelSection}
+        {accessoriesSection}
 
         {isHomeFootwearTeaser && (
           <>
-            {advancedFootwear}
             <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
+            {advancedFootwear}
             <HomeSecondaryLinks className="mt-12 sm:mt-16" />
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
             {/* Redhead boat lifestyle — bottom of home only (removed from above V3 spotlights) */}
