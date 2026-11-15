@@ -22,6 +22,7 @@ export const VALID_DISCOUNT_CODES = [
   "pedro30",
   "nicole50",
   "andy50",
+  "arabella50",
   "young",
 ] as const;
 
@@ -81,6 +82,8 @@ export function getDiscountCodeDescription(
       return "$50 fixed unit price";
     case "andy50":
       return "$50 fixed unit price";
+    case "arabella50":
+      return "$50 fixed unit price";
     case "young":
       return "$20/spool TPU-90A (checkout-only)";
     default:
@@ -101,6 +104,7 @@ export function getDiscountCodeShopperDescription(
     case "chud25":
     case "nicole50":
     case "andy50":
+    case "arabella50":
       return "All items just $50 each";
     case "famzero":
       return "One item free";
@@ -165,6 +169,7 @@ export function getDiscountedUnitPriceCents(
   if (normalizedCode === "pedro30") return 3000;
   if (normalizedCode === "nicole50") return 5000;
   if (normalizedCode === "andy50") return 5000;
+  if (normalizedCode === "arabella50") return 5000;
 
   return baseUnitPriceCents;
 }
