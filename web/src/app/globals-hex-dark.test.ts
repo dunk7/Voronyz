@@ -85,5 +85,32 @@ test("homepage V3 Slides clip is not a sticky scroll trap", () => {
   assert.doesNotMatch(home, /data-hero-scrub/);
   assert.doesNotMatch(home, /220vh/);
   assert.doesNotMatch(home, /sticky top-0/);
-  assert.match(home, /betweenFootwearAndApparel=\{<HomeSlide \/>\}/);
+  assert.match(home, /afterAboutBlock=\{<HomeSlide \/>\}/);
+});
+
+test("homepage sliding clips sit below About links and the blocks under them", () => {
+  const products = readFileSync(join(dir, "products/ProductsContent.tsx"), "utf8");
+  const blockStart = products.lastIndexOf("{isHomeFootwearTeaser && (");
+  assert.ok(blockStart >= 0, "expected homepage teaser block");
+  const block = products.slice(blockStart, blockStart + 1600);
+  const order = [
+    "TakeTheQuizPromo",
+    "HomeSecondaryLinks",
+    "PrintedFootwearEducation",
+    "LifestyleBand",
+    "afterAboutBlock",
+    "advancedFootwear",
+    "FootwearBrowse",
+  ].map((name) => {
+    const at = block.indexOf(name);
+    assert.ok(at >= 0, `expected ${name} in homepage bottom stack`);
+    return at;
+  });
+  for (let i = 1; i < order.length; i++) {
+    assert.ok(
+      order[i] > order[i - 1],
+      "sliding clips must come after About links + education/lifestyle, before All Footwear",
+    );
+  }
+  assert.doesNotMatch(products, /betweenFootwearAndApparel/);
 });

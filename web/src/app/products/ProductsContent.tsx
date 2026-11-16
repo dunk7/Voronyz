@@ -100,8 +100,11 @@ type ProductsContentProps = {
   showScrollCue?: boolean;
   /** Skip the hex wrapper — homepage uses solid black; shop pages keep the honeycomb. */
   embedded?: boolean;
-  /** Homepage scroll clip, placed between the footwear grid and apparel. */
-  betweenFootwearAndApparel?: ReactNode;
+  /**
+   * Homepage V3 Slides clip — after About links and the blocks under them
+   * (education + lifestyle), still above All Footwear.
+   */
+  afterAboutBlock?: ReactNode;
 };
 
 function categorySeed(category: ProductsContentProps["category"]): Product[] {
@@ -115,7 +118,7 @@ export default function ProductsContent({
   category = "footwear",
   showScrollCue = false,
   embedded = false,
-  betweenFootwearAndApparel = null,
+  afterAboutBlock = null,
 }: ProductsContentProps) {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q");
@@ -515,7 +518,6 @@ export default function ProductsContent({
           </div>
         )}
 
-        {isHomeFootwearTeaser ? betweenFootwearAndApparel : null}
         {isHomeFootwearTeaser ? (
           <section
             id="engineering"
@@ -673,13 +675,15 @@ export default function ProductsContent({
         {isHomeFootwearTeaser && (
           <>
             <TakeTheQuizPromo className="mt-16 sm:mt-24 lg:mt-28" />
-            {advancedFootwear}
+            {/* About links + everything under them, then the sliding clips */}
             <HomeSecondaryLinks className="mt-12 sm:mt-16" />
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
             {/* Redhead boat lifestyle — bottom of home only (removed from above V3 spotlights) */}
             <div className="mt-16 sm:mt-24 lg:mt-28">
               <LifestyleBand shot={V3_SLIDES_STREET_SHOT} />
             </div>
+            {afterAboutBlock}
+            {advancedFootwear}
             {/* All footwear catalog — bottom of home, after spotlights and other sections */}
             <div className="mt-16 space-y-8 sm:mt-24 sm:space-y-10 lg:mt-28">
               <FootwearBrowse
