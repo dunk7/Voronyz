@@ -31,9 +31,4 @@ export const GALLERY_PHOTOS: GalleryPhoto[] = [
     src: "/lifestyle/v3-slides-street.jpg",
     alt: "Model wearing black Voronyz V3 Slides on a city street beside a sports car",
   },
-  {
-    id: "lifestyle-dragonfly-street",
-    src: "/lifestyle/dragonfly-street.jpg",
-    alt: "Grey Voronyz Dragonfly sneakers in a crouch on an asphalt path",
-  },
 ];
