@@ -25,12 +25,10 @@ import HomeSecondaryLinks from "@/components/HomeSecondaryLinks";
 import PrintedFootwearEducation from "@/components/apparel/PrintedFootwearEducation";
 import FootwearBrowse from "@/components/footwear/FootwearBrowse";
 import HomeFootwearHighlights from "@/components/footwear/HomeFootwearHighlights";
-import LifestyleBand from "@/components/footwear/LifestyleBand";
 import FootGlowSection from "@/components/FootGlowSection";
 import MotionMediaCarousel from "@/components/MotionMediaCarousel";
 import { GATORS_SLUG, GATORS_THUMBNAIL_URL } from "@/lib/gators";
 import { PEPPERMINT_MIST_SLUG } from "@/lib/aineFernPeppermintMist";
-import { V3_SLIDES_STREET_SHOT } from "@/lib/homeLifestyle";
 
 /** Homepage apparel teaser — a couple of highlights, not the full catalog. */
 const HOME_APPAREL_TEASER_SLUGS = [
@@ -678,10 +676,6 @@ export default function ProductsContent({
             {/* About links + everything under them, then the sliding clips */}
             <HomeSecondaryLinks className="mt-12 sm:mt-16" />
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
-            {/* Redhead boat lifestyle — bottom of home only (removed from above V3 spotlights) */}
-            <div className="mt-16 sm:mt-24 lg:mt-28">
-              <LifestyleBand shot={V3_SLIDES_STREET_SHOT} />
-            </div>
             {afterAboutBlock}
             {advancedFootwear}
             {/* All footwear catalog — bottom of home, after spotlights and other sections */}

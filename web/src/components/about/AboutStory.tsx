@@ -8,14 +8,14 @@ type AboutStoryProps = {
 export default function AboutStory({ priority = false }: AboutStoryProps) {
   return (
     <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16 max-w-6xl mx-auto">
-      <div className="relative aspect-[15/16] w-full overflow-hidden rounded-2xl ring-1 ring-neutral-200 shadow-lg">
+      <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-full ring-1 ring-neutral-200 shadow-lg lg:mx-0 lg:max-w-lg">
         <Image
           src={V3_SLIDES_STREET_SHOT.src}
           alt={V3_SLIDES_STREET_SHOT.alt}
           fill
-          className="object-cover object-[center_20%]"
+          className="object-cover object-center"
           priority={priority}
-          sizes="(max-width: 1024px) 100vw, 50vw"
+          sizes="(max-width: 1024px) 100vw, 32rem"
         />
       </div>
 
