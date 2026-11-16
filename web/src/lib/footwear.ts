@@ -22,8 +22,8 @@ export const DRAGONFLY_PRICE_CENTS = 16000; // $160
 export const SLIP_ONS_WHITE_AD_IMAGE = "/products/slip-ons/white-ad.jpg";
 
 /**
- * One strong hero per Slip On body color. Selecting a swatch swaps to that
- * single image (no scroll) — same pattern as the white ad shot.
+ * One strong hero per Slip On body color. Grey / white / orange / pink swap to
+ * a single square shot (no scroll). Black keeps the multi-angle studio gallery.
  */
 export const SLIP_ONS_COLOR_IMAGES: Record<string, string> = {
   black: "/products/slip-ons/color-black.jpg",
@@ -41,28 +41,45 @@ export function isWhiteColor(color: string | undefined | null): boolean {
   return color?.trim().toLowerCase() === "white";
 }
 
+/** True for the default black Slip On swatch (studio gallery, scrollable). */
+export function isBlackSlipOnColor(color: string | undefined | null): boolean {
+  if (!color) return true;
+  return color.trim().toLowerCase() === "black";
+}
+
 export function slipOnsHeroForColor(color?: string | null): string | undefined {
   if (!color) return undefined;
   return SLIP_ONS_COLOR_IMAGES[color.trim().toLowerCase()];
 }
 
+/** Studio product shots for Slip Ons (square) — used when Black is selected. */
+export function slipOnsStudioImages(): string[] {
+  const item = FOOTWEAR_CATALOG.find((entry) => entry.slug === "slip-ons");
+  return item ? [...item.images] : [];
+}
+
 /**
- * Gallery for a Slip On color swatch: one hero image when a color is selected
- * (white, black, grey, orange, pink). No color selected → studio shots only.
+ * Gallery for a Slip On color swatch:
+ * - Black (or no color) → scrollable studio shots
+ * - Grey / white / orange / pink → one square hero
  */
 export function slipOnsImagesForColor(baseImages: string[], color?: string | null): string[] {
   const withoutColorHeroes = baseImages.filter(
     (src) => !SLIP_ONS_COLOR_IMAGE_PATHS.has(src) && src !== SLIP_ONS_WHITE_AD_IMAGE,
   );
+  if (isBlackSlipOnColor(color)) return withoutColorHeroes;
   const hero = slipOnsHeroForColor(color);
   if (hero) return [hero];
   return withoutColorHeroes;
 }
 
-/** PDP `colorImages` map — each swatch is a single-frame gallery. */
+/**
+ * PDP `colorImages` map — black is the multi-shot studio gallery;
+ * other swatches are a single square hero.
+ */
 export function slipOnsColorImages(): Record<string, string[]> {
   return {
-    black: [SLIP_ONS_COLOR_IMAGES.black],
+    black: slipOnsStudioImages(),
     grey: [SLIP_ONS_COLOR_IMAGES.grey],
     white: [SLIP_ONS_COLOR_IMAGES.white],
     orange: [SLIP_ONS_COLOR_IMAGES.orange],
