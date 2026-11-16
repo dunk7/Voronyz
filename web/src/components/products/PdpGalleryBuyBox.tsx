@@ -30,7 +30,7 @@ export default function PdpGalleryBuyBox({
 }: {
   media: Media[];
   colorImages?: Record<string, string[]>;
-  /** When true, selecting White leads with the white Slip Ons photo and hides it for other colors. */
+  /** When true (Slip Ons), fall back to per-color hero logic if colorImages is unset. */
   leadWhiteSlipOns?: boolean;
   fit: "cover" | "contain";
   galleryClassName?: string;
@@ -61,6 +61,8 @@ export default function PdpGalleryBuyBox({
         if (existing) return existing;
         return { type: "image", src, alt: media[0]?.alt };
       });
+      // Color hero is a single frame — skip the motion clip so the gallery doesn't scroll.
+      if (color && imageMedia.length === 1) return imageMedia;
       return [...imageMedia, ...videos];
     }
     return media;

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import {
   APPAREL_SUBCATEGORIES,
+  LEGACY_APPAREL_ACCESSORY_SUBCATEGORIES,
   LEGACY_REMOVED_APPAREL_SUBCATEGORIES,
-  apparelSubcategoryHref,
   getApparelBySubcategory,
   getApparelSubcategory,
   isApparelSubcategoryId,
@@ -20,23 +20,18 @@ type PageProps = {
 export function generateStaticParams() {
   return [
     ...APPAREL_SUBCATEGORIES.map((sub) => ({ subcategory: sub.id })),
-    // Keep legacy hats/bottles and retired collection paths buildable so they can redirect.
-    { subcategory: "hats" },
-    { subcategory: "bottles" },
+    // Keep retired apparel paths buildable so they can redirect to /apparel.
+    ...LEGACY_APPAREL_ACCESSORY_SUBCATEGORIES.map((subcategory) => ({ subcategory })),
     ...LEGACY_REMOVED_APPAREL_SUBCATEGORIES.map((subcategory) => ({ subcategory })),
   ];
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { subcategory } = await params;
-  if (isLegacyApparelAccessorySubcategory(subcategory)) {
-    return {
-      title: "Accessories – Apparel – Voronyz",
-      description:
-        "Logo stickers and cool shades from Voronyz Apparel.",
-    };
-  }
-  if (isLegacyRemovedApparelSubcategory(subcategory)) {
+  if (
+    isLegacyApparelAccessorySubcategory(subcategory) ||
+    isLegacyRemovedApparelSubcategory(subcategory)
+  ) {
     return {
       title: "Apparel – Voronyz",
       description: "Shop Voronyz Apparel by type: shirts and sweaters.",
@@ -55,10 +50,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ApparelSubcategoryPage({ params }: PageProps) {
   const { subcategory } = await params;
-  if (isLegacyApparelAccessorySubcategory(subcategory)) {
-    redirect(apparelSubcategoryHref("accessories"));
-  }
-  if (isLegacyRemovedApparelSubcategory(subcategory)) {
+  if (
+    isLegacyApparelAccessorySubcategory(subcategory) ||
+    isLegacyRemovedApparelSubcategory(subcategory)
+  ) {
     redirect("/apparel");
   }
   if (!isApparelSubcategoryId(subcategory)) {

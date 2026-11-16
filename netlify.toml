@@ -53,7 +53,7 @@
 
 [[redirects]]
   from = "/products/voronyz-rc-car-stickers"
-  to = "/apparel/accessories"
+  to = "/apparel"
   status = 301
   force = true
 

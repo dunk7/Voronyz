@@ -14,9 +14,9 @@ type PageProps = {
 
 export default async function ApparelPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  // Legacy bookmark: /apparel?type=accessories → /apparel/accessories
+  // Legacy bookmark: /apparel?type=accessories → Apparel hub (Accessories retired).
   if ((params.type || "").trim().toLowerCase() === "accessories") {
-    redirect("/apparel/accessories");
+    redirect("/apparel");
   }
   return <ApparelHubContent />;
 }

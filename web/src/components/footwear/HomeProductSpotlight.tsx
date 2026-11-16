@@ -11,6 +11,7 @@ import {
 import V3Gallery from "@/components/V3Gallery";
 import {
   FOOTWEAR_CATALOG,
+  isBlackSlipOnColor,
   slipOnsImagesForColor,
 } from "@/lib/footwear";
 import {
@@ -55,9 +56,18 @@ export default function HomeProductSpotlight({
     if (!item) return [] as string[];
     let list = [...item.images];
     if (slug.trim().toLowerCase() === "slip-ons") {
+      // Black → scrollable studio gallery; other colors → one square hero.
       list = slipOnsImagesForColor(list, selectedColor);
+      return list.slice(
+        0,
+        isBlackSlipOnColor(selectedColor) ? maxImages : 1,
+      );
     }
-    return list.slice(0, maxImages);
+    // Other footwear: keep a short gallery on black; collapse to the cover when
+    // previewing a non-black swatch so shoppers aren't scrolling black shoes.
+    const isBlack =
+      !selectedColor || selectedColor.trim().toLowerCase() === "black";
+    return list.slice(0, isBlack ? maxImages : 1);
   }, [item, maxImages, selectedColor, slug]);
 
   const media = useMemo(

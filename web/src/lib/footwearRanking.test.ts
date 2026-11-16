@@ -16,7 +16,6 @@ const sample = [
   { slug: "slip-ons", priceCents: 11000 },
   { slug: "gators", priceCents: 10000 },
   { slug: "dragonfly", priceCents: 16000 },
-  { slug: "magikid-shoes", priceCents: 3000 },
   { slug: "voronyz-lattice-insoles", priceCents: 6300 },
 ];
 
@@ -28,7 +27,6 @@ test("trending keeps catalog order", () => {
       "v3-slides",
       "slip-ons",
       "dragonfly",
-      "magikid-shoes",
       "voronyz-lattice-insoles",
       "gators",
     ],
@@ -39,7 +37,7 @@ test("all-time ranks by price descending", () => {
   const ranked = sortFootwearForTab(sample, "all-time");
   assert.equal(ranked[0]?.slug, "dragonfly");
   assert.equal(ranked[1]?.slug, "slip-ons");
-  assert.equal(ranked.at(-2)?.slug, "magikid-shoes");
+  assert.equal(ranked.at(-2)?.slug, "voronyz-lattice-insoles");
   assert.equal(ranked.at(-1)?.slug, "gators");
 });
 
@@ -52,28 +50,26 @@ test("new-in reverses catalog order and keeps coming-soon Gators last", () => {
 test("formats prices and brand labels", () => {
   assert.equal(formatUsdFromCents(17900), "$179.00");
   assert.equal(footwearBrandLabel("dragonfly"), "VORONYZ");
-  assert.equal(footwearBrandLabel("magikid-shoes"), "MAGIKID");
 });
 
-test("swatches map named colors to CSS", () => {
+test("swatches map named colors to muted TPU CSS", () => {
   assert.ok(footwearSwatches("dragonfly").includes("#007FFF"));
-  assert.equal(colorToCss("pink"), "#ec4899");
+  assert.equal(colorToCss("pink"), "#d67aa0");
+  assert.equal(colorToCss("orange"), "#cc763a");
+  assert.equal(colorToCss("green"), "#4a7c59");
   assert.equal(colorToCss("#007FFF"), "#007FFF");
 });
 
-test("footwear image tint skips black and maps other swatches", () => {
+test("footwear image CSS tint is disabled in favor of real color heroes", () => {
   assert.equal(isBlackFootwearColor("black"), true);
   assert.equal(isBlackFootwearColor("#111111"), true);
   assert.equal(isBlackFootwearColor(undefined), true);
   assert.equal(isBlackFootwearColor("white"), false);
   assert.equal(footwearImageTint("black"), undefined);
   assert.equal(footwearImageTint("white"), undefined);
-  assert.equal(footwearImageTint("orange"), "#f97316");
-  assert.equal(footwearImageTint("#007FFF"), "#007FFF");
+  assert.equal(footwearImageTint("orange"), undefined);
+  assert.equal(footwearImageTint("#007FFF"), undefined);
   assert.deepEqual(footwearImageRecolor("black"), { kind: "none" });
-  assert.deepEqual(footwearImageRecolor("white"), { kind: "whiten" });
-  assert.deepEqual(footwearImageRecolor("orange"), {
-    kind: "lighten",
-    color: "#f97316",
-  });
+  assert.deepEqual(footwearImageRecolor("white"), { kind: "none" });
+  assert.deepEqual(footwearImageRecolor("orange"), { kind: "none" });
 });

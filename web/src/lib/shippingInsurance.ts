@@ -31,7 +31,7 @@ export function cartNeedsShippingAddress(items: InsurableCartItem[]): boolean {
   return items.some(itemNeedsShipping);
 }
 
-/** Items fulfilled via Magikid Lab pickup or digital download are not insurable. */
+/** Items fulfilled via pickup or digital download are not insurable. */
 export function isInsurableCartItem(item: InsurableCartItem): boolean {
   return itemNeedsShipping(item);
 }

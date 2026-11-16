@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
 import { formatCentsAsCurrency } from "@/lib/money";
-import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 import {
   getDiscountedUnitPriceCents,
   getOneFreeItemLineIndex,
@@ -442,12 +441,6 @@ export default function CartClient() {
     setBusy(true);
     try {
       const checkoutItems = buildCheckoutItems();
-      const validationError = validateMagikidCheckoutItems(checkoutItems);
-      if (validationError) {
-        setMessage(validationError);
-        setBusy(false);
-        return;
-      }
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -613,11 +606,7 @@ export default function CartClient() {
                   )}
                   {it.attributes?.fulfillment && (
                     <span className="rounded-full bg-black/5 px-2 py-0.5 capitalize">
-                      {it.attributes.fulfillment === "pickup"
-                        ? "Magikid Lab pickup"
-                        : it.productSlug === "magikid-shoes"
-                        ? "+$7 shipping"
-                        : "Free shipping"}
+                      {it.attributes.fulfillment === "pickup" ? "Pickup" : "Shipping"}
                     </span>
                   )}
                 </div>
@@ -967,12 +956,6 @@ export default function CartClient() {
             setIsNanoCheckingOut(true);
             try {
               const checkoutItems = buildCheckoutItems();
-              const validationError = validateMagikidCheckoutItems(checkoutItems);
-              if (validationError) {
-                setMessage(validationError);
-                setIsNanoCheckingOut(false);
-                return;
-              }
 
               const response = await fetch('/api/checkout/nano', {
                 method: 'POST',

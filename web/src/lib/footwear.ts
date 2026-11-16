@@ -1,9 +1,4 @@
 import {
-  MAGIKID_SHOES_BASE_PRICE_CENTS,
-  MAGIKID_SHOES_DESCRIPTION_SHORT,
-  MAGIKID_SHOES_IMAGES,
-} from "@/lib/magikidShoesThumbnail";
-import {
   GATORS_DESCRIPTION_SHORT,
   GATORS_IMAGES,
   GATORS_NAME,
@@ -23,24 +18,73 @@ import { catalogSeedListedAt } from "@/lib/newListing";
 export const SLIP_ONS_PRICE_CENTS = 11000; // $110
 export const DRAGONFLY_PRICE_CENTS = 16000; // $160
 
-/** White Slip Ons product photo — only shown, and shown first, when White is selected. */
+/** White Slip Ons product photo — only shown when White is selected. */
 export const SLIP_ONS_WHITE_AD_IMAGE = "/products/slip-ons/white-ad.jpg";
+
+/**
+ * One strong hero per Slip On body color. Grey / white / orange / pink swap to
+ * a single square shot (no scroll). Black keeps the multi-angle studio gallery.
+ */
+export const SLIP_ONS_COLOR_IMAGES: Record<string, string> = {
+  black: "/products/slip-ons/color-black.jpg",
+  grey: "/products/slip-ons/color-grey.jpg",
+  gray: "/products/slip-ons/color-grey.jpg",
+  white: SLIP_ONS_WHITE_AD_IMAGE,
+  orange: "/products/slip-ons/color-orange.jpg",
+  pink: "/products/slip-ons/color-pink.jpg",
+};
+
+/** All Slip On color hero paths (including aliases) — strip these from studio lists. */
+export const SLIP_ONS_COLOR_IMAGE_PATHS = new Set(Object.values(SLIP_ONS_COLOR_IMAGES));
 
 export function isWhiteColor(color: string | undefined | null): boolean {
   return color?.trim().toLowerCase() === "white";
 }
 
+/** True for the default black Slip On swatch (studio gallery, scrollable). */
+export function isBlackSlipOnColor(color: string | undefined | null): boolean {
+  if (!color) return true;
+  return color.trim().toLowerCase() === "black";
+}
+
+export function slipOnsHeroForColor(color?: string | null): string | undefined {
+  if (!color) return undefined;
+  return SLIP_ONS_COLOR_IMAGES[color.trim().toLowerCase()];
+}
+
+/** Studio product shots for Slip Ons (square) — used when Black is selected. */
+export function slipOnsStudioImages(): string[] {
+  const item = FOOTWEAR_CATALOG.find((entry) => entry.slug === "slip-ons");
+  return item ? [...item.images] : [];
+}
+
 /**
- * The white Slip Ons photo is the only gallery image when White is selected
- * (studio shots are black and would break the color preview if left in).
- * Other colors stay on the studio shots and drop the white ad.
+ * Gallery for a Slip On color swatch:
+ * - Black (or no color) → scrollable studio shots
+ * - Grey / white / orange / pink → one square hero
  */
 export function slipOnsImagesForColor(baseImages: string[], color?: string | null): string[] {
-  const withoutWhiteAd = baseImages.filter((src) => src !== SLIP_ONS_WHITE_AD_IMAGE);
-  if (isWhiteColor(color)) {
-    return [SLIP_ONS_WHITE_AD_IMAGE];
-  }
-  return withoutWhiteAd;
+  const withoutColorHeroes = baseImages.filter(
+    (src) => !SLIP_ONS_COLOR_IMAGE_PATHS.has(src) && src !== SLIP_ONS_WHITE_AD_IMAGE,
+  );
+  if (isBlackSlipOnColor(color)) return withoutColorHeroes;
+  const hero = slipOnsHeroForColor(color);
+  if (hero) return [hero];
+  return withoutColorHeroes;
+}
+
+/**
+ * PDP `colorImages` map — black is the multi-shot studio gallery;
+ * other swatches are a single square hero.
+ */
+export function slipOnsColorImages(): Record<string, string[]> {
+  return {
+    black: slipOnsStudioImages(),
+    grey: [SLIP_ONS_COLOR_IMAGES.grey],
+    white: [SLIP_ONS_COLOR_IMAGES.white],
+    orange: [SLIP_ONS_COLOR_IMAGES.orange],
+    pink: [SLIP_ONS_COLOR_IMAGES.pink],
+  };
 }
 
 /** PDP / listing copy — colors live on the swatches, not in this paragraph. */
@@ -61,7 +105,7 @@ export type FootwearCatalogItem = {
 
 /**
  * Display order for All Footwear:
- * Slides → Slip Ons → Sneakers (Dragonfly) → Magikid → Lattice Insoles → Gators.
+ * Slides → Slip Ons → Sneakers (Dragonfly) → Lattice Insoles → Gators.
  * Gators stay last while they still use a coming-soon placeholder image.
  */
 export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
@@ -119,13 +163,6 @@ export const FOOTWEAR_CATALOG: FootwearCatalogItem[] = [
     ],
   },
   {
-    slug: "magikid-shoes",
-    name: "Magikid Shoes",
-    description: MAGIKID_SHOES_DESCRIPTION_SHORT,
-    priceCents: MAGIKID_SHOES_BASE_PRICE_CENTS,
-    images: [...MAGIKID_SHOES_IMAGES],
-  },
-  {
     slug: LATTICE_INSOLES_SLUG,
     name: LATTICE_INSOLES_NAME,
     description: LATTICE_INSOLES_DESCRIPTION_SHORT,
@@ -173,4 +210,43 @@ export function getFootwearCatalogSeed(): FootwearListProduct[] {
       updatedAt: listedAt,
     };
   });
+}
+
+/** Slip Ons variants for catalog fallback. */
+export const SLIP_ONS_VARIANTS = [
+  { color: "black", sku: "SO-BLK", stock: 999 },
+  { color: "grey", sku: "SO-GRY", stock: 999 },
+  { color: "white", sku: "SO-WHT", stock: 999 },
+  { color: "orange", sku: "SO-ORG", stock: 999 },
+  { color: "pink", sku: "SO-PNK", stock: 999 },
+] as const;
+
+export const SLIP_ONS_SIZES = ["5", "6", "7", "8", "9", "10", "11", "12"] as const;
+export const SLIP_ONS_PRIMARY_COLORS = ["black", "grey", "white", "orange", "pink"] as const;
+
+/** In-memory listing when the catalog DB is unreachable. */
+export function slipOnsCatalogProduct() {
+  const now = new Date(0);
+  const slipOnsItem = FOOTWEAR_CATALOG.find(item => item.slug === "slip-ons")!;
+  return {
+    id: "slip-ons",
+    slug: "slip-ons",
+    name: "Slip Ons",
+    description: SLIP_ONS_DESCRIPTION,
+    priceCents: SLIP_ONS_PRICE_CENTS,
+    currency: "usd",
+    images: slipOnsItem.images,
+    primaryColors: [...SLIP_ONS_PRIMARY_COLORS],
+    secondaryColors: [] as string[],
+    sizes: [...SLIP_ONS_SIZES],
+    variants: SLIP_ONS_VARIANTS.map((v) => ({
+      id: v.sku,
+      color: v.color,
+      sku: v.sku,
+      stock: v.stock,
+      priceCents: null as number | null,
+    })),
+    createdAt: now,
+    updatedAt: now,
+  };
 }

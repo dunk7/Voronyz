@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
-import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 import {
   applyOneFreeItemToStripeLineItems,
   getDiscountedUnitPriceCents,
@@ -116,11 +115,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const magikidValidationError = validateMagikidCheckoutItems(items);
-    if (magikidValidationError) {
-      return NextResponse.json({ error: magikidValidationError }, { status: 400 });
-    }
-
     const hasPickupOnly = items.every((item: { fulfillment?: string }) => item.fulfillment === 'pickup');
     const needsShipping = cartNeedsShippingAddress(items);
     const shippingAddress = needsShipping ? parseVerifiedShipping(rawShipping) : null;
@@ -196,7 +190,7 @@ export async function POST(request: NextRequest) {
 
         const genderLabel = item.gender === "men" ? "Men's" : item.gender === "women" ? "Women's" : item.gender === "kids" ? "Kids'" : "";
         const sizeLabel = item.size ? `${item.size}${genderLabel ? ` (${genderLabel})` : ''}` : 'N/A';
-        const fulfillmentLabel = item.fulfillment === 'pickup' ? ' — Magikid Lab pickup' : '';
+        const fulfillmentLabel = item.fulfillment === 'pickup' ? ' — Pickup' : '';
         const studentLabel = item.studentName?.trim() ? ` — Student: ${item.studentName.trim()}` : '';
         const isPreOrder = resolveIsPreOrder({
           isPreOrder: item.isPreOrder,
@@ -256,7 +250,7 @@ export async function POST(request: NextRequest) {
 
         const genderLabel = item.gender === "men" ? "Men's" : item.gender === "women" ? "Women's" : item.gender === "kids" ? "Kids'" : "";
         const sizeLabel = item.size ? `${item.size}${genderLabel ? ` (${genderLabel})` : ''}` : 'N/A';
-        const fulfillmentLabel = item.fulfillment === 'pickup' ? ' — Magikid Lab pickup' : '';
+        const fulfillmentLabel = item.fulfillment === 'pickup' ? ' — Pickup' : '';
         const studentLabel = item.studentName?.trim() ? ` — Student: ${item.studentName.trim()}` : '';
         const isPreOrder = resolveIsPreOrder({
           isPreOrder: item.isPreOrder,

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
-import { validateMagikidCheckoutItems } from "@/lib/magikidShoesThumbnail";
 import {
   applyOneFreeItemToQuantityPricedLines,
   getDiscountedUnitPriceCents,
@@ -56,11 +55,6 @@ export async function POST(request: NextRequest) {
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "No items provided" }, { status: 400 });
-    }
-
-    const magikidValidationError = validateMagikidCheckoutItems(items);
-    if (magikidValidationError) {
-      return NextResponse.json({ error: magikidValidationError }, { status: 400 });
     }
 
     const hasPickupOnly = items.every(
