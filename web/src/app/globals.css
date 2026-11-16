@@ -197,13 +197,48 @@ video {
 }
 
 .hero-paper-kicker {
-  color: #f0f0f0;
-  text-shadow: 0 1px 12px rgb(0 0 0 / 0.55);
+  color: #e8f6ff;
+  text-shadow:
+    0 0 10px rgb(186 230 253 / 0.55),
+    0 0 28px rgb(56 189 248 / 0.35),
+    0 1px 12px rgb(0 0 0 / 0.55);
 }
 
 .hero-paper-title {
   color: #fff;
-  text-shadow: 0 2px 24px rgb(0 0 0 / 0.55);
+  text-shadow:
+    0 0 10px rgb(255 255 255 / 0.65),
+    0 0 28px rgb(186 230 253 / 0.55),
+    0 0 64px rgb(56 189 248 / 0.4),
+    0 2px 24px rgb(0 0 0 / 0.5);
+  animation: hero-title-glow 4.8s ease-in-out infinite;
+}
+
+@keyframes hero-title-glow {
+  0%,
+  100% {
+    text-shadow:
+      0 0 8px rgb(255 255 255 / 0.45),
+      0 0 22px rgb(186 230 253 / 0.38),
+      0 0 48px rgb(56 189 248 / 0.26),
+      0 2px 24px rgb(0 0 0 / 0.5);
+  }
+  50% {
+    text-shadow:
+      0 0 16px rgb(255 255 255 / 0.9),
+      0 0 42px rgb(186 230 253 / 0.75),
+      0 0 88px rgb(56 189 248 / 0.52),
+      0 2px 24px rgb(0 0 0 / 0.5);
+  }
+}
+
+.home-display-glow {
+  color: #fff;
+  text-shadow:
+    0 0 10px rgb(255 255 255 / 0.7),
+    0 0 28px rgb(186 230 253 / 0.55),
+    0 0 64px rgb(56 189 248 / 0.42);
+  animation: hero-title-glow 4.8s ease-in-out infinite;
 }
 
 .hero-paper-support {
@@ -339,6 +374,11 @@ html.site-dark .bg-texture-white .bg-texture-white::before {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .hero-paper-title,
+  .home-display-glow {
+    animation: none;
+  }
+
   .logo-loader-mark,
   .logo-loader-bar-fill {
     animation: none;

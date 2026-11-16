@@ -393,7 +393,7 @@ export default function ProductsContent({
         <div className="mt-4 max-w-xl text-left sm:mt-5">
           <h2
             id="advanced-footwear-heading"
-            className="text-2xl sm:text-[1.75rem] font-semibold tracking-tight text-neutral-900 text-left"
+            className="home-display-glow text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-white text-left"
           >
             Advanced Footwear
           </h2>
@@ -523,7 +523,10 @@ export default function ProductsContent({
             className="mt-16 sm:mt-24"
           >
             <div className="mb-8 sm:mb-10 text-center">
-              <h2 id="home-engineering-heading" className={homeSectionTitleClass}>
+              <h2
+                id="home-engineering-heading"
+                className="home-display-glow text-center text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl"
+              >
                 Engineering
               </h2>
             </div>

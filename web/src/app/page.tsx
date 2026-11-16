@@ -57,12 +57,12 @@ export default function Home() {
         <div className="hero-side-shade" aria-hidden />
         <div className="relative z-[1] mx-auto flex min-h-[inherit] w-full max-w-[90rem] flex-col px-4 pb-10 pt-6 sm:px-6 sm:pb-14 sm:pt-8 lg:px-10">
           {/* Product line leads; brand sits directly under it. */}
-          <div className="mx-auto w-full max-w-3xl space-y-3 text-center sm:space-y-4">
-            <h1 className="hero-paper-title text-3xl font-semibold leading-[1.08] tracking-tight xs:text-4xl sm:text-5xl sm:leading-[1.1] md:text-6xl">
+          <div className="mx-auto w-full max-w-4xl space-y-4 text-center sm:space-y-5">
+            <h1 className="hero-paper-title text-5xl font-semibold leading-[0.98] tracking-tight xs:text-6xl sm:text-7xl sm:leading-[0.96] md:text-8xl">
               3D Printed<br className="hidden sm:block" /> Footwear
             </h1>
 
-            <p className="hero-paper-kicker text-[11px] font-medium uppercase tracking-[0.18em] sm:text-xs">
+            <p className="hero-paper-kicker text-sm font-medium uppercase tracking-[0.22em] sm:text-base">
               Voronyz Engineering
             </p>
           </div>
