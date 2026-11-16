@@ -118,6 +118,16 @@ test("All Footwear lists Gators last while they are coming soon", () => {
   assert.equal(FOOTWEAR_CATALOG.at(-1)?.slug, "gators");
 });
 
+test("home spotlights skip Dragonfly; All Footwear still lists it", () => {
+  const highlights = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "../components/footwear/HomeFootwearHighlights.tsx"),
+    "utf8",
+  );
+  assert.match(highlights, /const SPOTLIGHT_SLUGS = \["v3-slides", "slip-ons"\]/);
+  assert.doesNotMatch(highlights, /"dragonfly"/);
+  assert.ok(FOOTWEAR_SLUGS.includes("dragonfly"));
+});
+
 test("white color names match the White swatch", () => {
   assert.equal(isWhiteColor("white"), true);
   assert.equal(isWhiteColor("White"), true);

@@ -4,8 +4,9 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import HomeProductSpotlight from "@/components/footwear/HomeProductSpotlight";
 
-/** Main wearable shoes highlighted individually on the home page. */
-const SPOTLIGHT_SLUGS = ["v3-slides", "slip-ons", "dragonfly"] as const;
+/** Main wearable shoes highlighted individually on the home page.
+ *  Dragonfly stays in All Footwear only — a third spotlight took too much space. */
+const SPOTLIGHT_SLUGS = ["v3-slides", "slip-ons"] as const;
 
 type HomeFootwearHighlightsProps = {
   scrollCue?: ReactNode;
@@ -37,10 +38,6 @@ export default function HomeFootwearHighlights({
 
       <section aria-label="Slip Ons">
         <HomeProductSpotlight slug={SPOTLIGHT_SLUGS[1]} />
-      </section>
-
-      <section aria-label="The Dragonfly's">
-        <HomeProductSpotlight slug={SPOTLIGHT_SLUGS[2]} />
       </section>
     </div>
   );
