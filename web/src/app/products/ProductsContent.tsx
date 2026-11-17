@@ -435,7 +435,7 @@ export default function ProductsContent({
           </div>
         ) : isHomeFootwearTeaser ? (
           /* ── Homepage: per-shoe spotlights (All Footwear lives at the bottom) ── */
-          <HomeFootwearHighlights scrollCue={scrollCue} />
+          <HomeFootwearHighlights />
         ) : (
           /* ── Product grid (Engineering / Collaborative / search) ── */
           <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 xl:grid-cols-4">
