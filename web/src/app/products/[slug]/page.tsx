@@ -490,7 +490,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   id: color.id,
                   label: color.label,
                   swatch: color.swatch,
-                  ...("note" in color ? { note: color.note } : {}),
                 })),
               })),
             }),
