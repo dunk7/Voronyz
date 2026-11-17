@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { V3_SLIDES_REDHEAD_BOAT_SHOT } from "@/lib/homeLifestyle";
+import { V3_SLIDES_REDHEAD_CHEST_SHOT } from "@/lib/homeLifestyle";
 
 type PrintedFootwearEducationProps = {
   className?: string;
@@ -47,13 +47,13 @@ export default function PrintedFootwearEducation({
         step of this right.
       </p>
 
-      <div className="relative mt-8 mx-auto aspect-[3/4] w-full max-w-md overflow-hidden rounded-xl sm:max-w-lg">
+      <div className="relative mt-8 mx-auto aspect-[3/1] w-full max-w-3xl overflow-hidden rounded-xl sm:max-w-4xl">
         <Image
-          src={V3_SLIDES_REDHEAD_BOAT_SHOT.src}
-          alt={V3_SLIDES_REDHEAD_BOAT_SHOT.alt}
+          src={V3_SLIDES_REDHEAD_CHEST_SHOT.src}
+          alt={V3_SLIDES_REDHEAD_CHEST_SHOT.alt}
           fill
-          className="object-cover object-[center_20%]"
-          sizes="(max-width: 640px) 100vw, 32rem"
+          className="object-cover object-center"
+          sizes="(max-width: 768px) 100vw, 56rem"
         />
       </div>
 
