@@ -26,7 +26,6 @@ import PrintedFootwearEducation from "@/components/apparel/PrintedFootwearEducat
 import FootwearBrowse from "@/components/footwear/FootwearBrowse";
 import HomeFootwearHighlights from "@/components/footwear/HomeFootwearHighlights";
 import FootGlowSection from "@/components/FootGlowSection";
-import MotionMediaCarousel from "@/components/MotionMediaCarousel";
 import { GATORS_SLUG, GATORS_THUMBNAIL_URL } from "@/lib/gators";
 import { PEPPERMINT_MIST_SLUG } from "@/lib/aineFernPeppermintMist";
 
@@ -100,7 +99,7 @@ type ProductsContentProps = {
   embedded?: boolean;
   /**
    * Homepage V3 Slides clip — after About links and the blocks under them
-   * (education + lifestyle), still above All Footwear.
+   * (education + lifestyle), still above Advanced Footwear.
    */
   afterAboutBlock?: ReactNode;
 };
@@ -384,16 +383,6 @@ export default function ProductsContent({
     <FootGlowSection variant="print" />
   ) : null;
 
-  const advancedFootwear =
-    isHomeFootwearTeaser ? (
-      <section
-        aria-label="Slip Ons video"
-        className="mt-16 sm:mt-24 lg:mt-28 mb-16 sm:mb-24 lg:mb-28"
-      >
-        <MotionMediaCarousel href="/products/slip-ons" linkLabel="Shop Slip Ons" />
-      </section>
-    ) : null;
-
   return (
     <div className={shellClass}>
       {useFootwearBrowse ? (
@@ -672,8 +661,7 @@ export default function ProductsContent({
             <HomeSecondaryLinks className="mt-12 sm:mt-16" />
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
             {afterAboutBlock}
-            {advancedFootwear}
-            {/* Advanced Footwear catalog — bottom of home, after spotlights and other sections */}
+            {/* Footwear catalog — bottom of home, after spotlights and other sections */}
             <div className="mt-16 space-y-8 sm:mt-24 sm:space-y-10 lg:mt-28">
               <FootwearBrowse
                 products={products}
