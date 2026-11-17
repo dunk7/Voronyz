@@ -14,6 +14,13 @@ import SalePrice from "@/components/ui/SalePrice";
 import { slipOnsHeroForColor } from "@/lib/footwear";
 import { useFilamentSelection } from "@/components/products/FilamentSelection";
 import ShareProductButton from "@/components/products/ShareProductButton";
+import {
+  FILAMENT_BULK_PRICE_CENTS,
+  FILAMENT_BULK_QTY_THRESHOLD,
+  FILAMENT_PRICE_CENTS,
+  filamentUnitPriceCents,
+  isFilamentProductSlug,
+} from "@/lib/filament";
 
 interface VariantProps {
   id: string;
@@ -438,11 +445,14 @@ export default function AddToCart({
     selectedSize && typeof sizePriceCents[selectedSize] === "number"
       ? sizePriceCents[selectedSize]
       : undefined;
-  const priceCents = apparelOffer
-    ? apparelOffer.priceCents
-    : hasFulfillmentOptions
-      ? (selectedFulfillmentOption?.priceCents ?? productPriceCents ?? 7500)
-      : (sizeUnitPrice ?? selectedVariant?.priceCents ?? productPriceCents ?? 7500);
+  const isFilament = isFilamentProductSlug(productSlug) || hasFilamentMaterials;
+  const priceCents = isFilament
+    ? filamentUnitPriceCents(quantity)
+    : apparelOffer
+      ? apparelOffer.priceCents
+      : hasFulfillmentOptions
+        ? (selectedFulfillmentOption?.priceCents ?? productPriceCents ?? 7500)
+        : (sizeUnitPrice ?? selectedVariant?.priceCents ?? productPriceCents ?? 7500);
   const hasSizePrices = Object.keys(sizePriceCents).length > 0;
   const totalCents = priceCents * quantity;
   const formattedTotal = formatCentsAsCurrency(totalCents);
@@ -624,10 +634,12 @@ export default function AddToCart({
       if (existingItemIndex >= 0) {
         // Update existing
         const existingItem = cart[existingItemIndex];
+        const nextQty = existingItem.quantity + quantity;
+        const nextUnit = isFilament ? filamentUnitPriceCents(nextQty) : priceCents;
         cart[existingItemIndex] = { 
           ...existingItem, 
-          quantity: existingItem.quantity + quantity,
-          priceCents: priceCents,
+          quantity: nextQty,
+          priceCents: nextUnit,
           image: resolvedCoverImage,
           message: existingItem.message || ''
         };
@@ -1086,6 +1098,14 @@ export default function AddToCart({
             percentOff={apparelOffer?.percentOff}
             quantity={quantity}
           />
+        ) : null}
+        {isFilament ? (
+          <p className="text-xs text-neutral-500">
+            {formatCentsAsCurrency(FILAMENT_PRICE_CENTS)} per spool
+            {quantity > FILAMENT_BULK_QTY_THRESHOLD
+              ? ` — bulk rate ${formatCentsAsCurrency(FILAMENT_BULK_PRICE_CENTS)} each (more than ${FILAMENT_BULK_QTY_THRESHOLD} spools).`
+              : ` · Order more than ${FILAMENT_BULK_QTY_THRESHOLD} for ${formatCentsAsCurrency(FILAMENT_BULK_PRICE_CENTS)} each.`}
+          </p>
         ) : null}
         <div className="flex items-center gap-3">
           <input

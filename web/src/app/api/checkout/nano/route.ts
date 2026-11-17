@@ -118,6 +118,7 @@ export async function POST(request: NextRequest) {
           productSlug: slug,
           size: item.size,
           color: item.variantName || variant?.color,
+          quantity: item.quantity,
           fallbackCents,
         });
         unitAmount = getDiscountedUnitPriceCents(baseUnitAmount, normalizedDiscountCode, {
@@ -138,7 +139,14 @@ export async function POST(request: NextRequest) {
       } catch {
         // Fallback pricing when DB is unavailable
         unitAmount = getDiscountedUnitPriceCents(
-          typeof item.priceCents === "number" && item.priceCents > 0 ? item.priceCents : 7500,
+          catalogUnitPriceCents({
+            productSlug,
+            size: item.size,
+            color: item.variantName,
+            quantity: item.quantity,
+            fallbackCents:
+              typeof item.priceCents === "number" && item.priceCents > 0 ? item.priceCents : 7500,
+          }),
           normalizedDiscountCode,
           {
             productSlug,

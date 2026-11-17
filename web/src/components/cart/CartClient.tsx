@@ -106,6 +106,7 @@ export default function CartClient() {
       productSlug: it.productSlug,
       size: it.attributes?.size != null ? String(it.attributes.size) : undefined,
       color: it.variant?.name,
+      quantity: it.quantity,
       fallbackCents: stored,
     });
   };

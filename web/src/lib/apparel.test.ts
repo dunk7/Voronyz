@@ -196,6 +196,16 @@ test("oversized tee price goes down for smaller sizes and up for larger sizes", 
     size: "9",
     fallbackCents: 7500,
   }), 7500);
+  assert.equal(catalogUnitPriceCents({
+    productSlug: "tpu-90a-filament",
+    quantity: 1,
+    fallbackCents: 9999,
+  }), 4500);
+  assert.equal(catalogUnitPriceCents({
+    productSlug: "tpu-90a-filament",
+    quantity: 11,
+    fallbackCents: 9999,
+  }), 3000);
 });
 
 test("hoodie sale prices change by size, stay $70–$100, and advertise a deep cut off the raised compare-at", () => {

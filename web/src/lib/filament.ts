@@ -3,23 +3,40 @@ import { getStlFilesCatalogProduct } from "@/lib/stlFiles";
 
 export const FILAMENT_SLUG = "tpu-90a-filament";
 export const FILAMENT_NAME = "Filament";
-export const FILAMENT_PRICE_CENTS = 3000; // $30 — black TPU 90A, TPU Air, and PLA
-/** Pink TPU 90A is the lower price. */
-export const FILAMENT_PINK_PRICE_CENTS = 2000;
+/** Base unit price for in-stock TPU 90A (tan / pink). */
+export const FILAMENT_PRICE_CENTS = 4500; // $45
+/** Unit price when the line quantity is more than FILAMENT_BULK_QTY_THRESHOLD. */
+export const FILAMENT_BULK_PRICE_CENTS = 3000; // $30
+/** More than this many spools → bulk unit price. */
+export const FILAMENT_BULK_QTY_THRESHOLD = 10;
+/** @deprecated Pink matches tan at FILAMENT_PRICE_CENTS; kept for older imports. */
+export const FILAMENT_PINK_PRICE_CENTS = FILAMENT_PRICE_CENTS;
 /** Shown only on the filament product page — crossed out next to the sale price. */
 export const FILAMENT_COMPARE_AT_CENTS = 20000;
 /** Checkout-only via code Young — do not show on PDP/marketing. */
 export const FILAMENT_YOUNG_PRICE_CENTS = 2000;
+
+export function isFilamentProductSlug(slug?: string | null): boolean {
+  return (slug || "").toLowerCase() === FILAMENT_SLUG;
+}
+
+/** Unit price for a filament line: $45, or $30 when quantity is more than 10. */
+export function filamentUnitPriceCents(quantity = 1): number {
+  const qty = Number.isFinite(quantity) ? Math.floor(Number(quantity)) : 1;
+  return qty > FILAMENT_BULK_QTY_THRESHOLD
+    ? FILAMENT_BULK_PRICE_CENTS
+    : FILAMENT_PRICE_CENTS;
+}
 
 /** Face-on black clear spool — never use pink photos for the listing card. */
 export const FILAMENT_THUMBNAIL_URL =
   "/products/tpu-90a-filament/filament-clear-spool.jpg";
 
 export const FILAMENT_DESCRIPTION_SHORT =
-  "1kg spools of TPU 90A, foaming TPU Air, and rigid PLA. Free US shipping.";
+  "1kg spools of TPU 90A (tan and pink in stock), foaming TPU Air, and rigid PLA. Free US shipping.";
 
 export const FILAMENT_DESCRIPTION =
-  "One listing, three materials. TPU 90A stays flexible at a fixed 90 Shore A and prints footwear great — not only TPU Air makes shoes. TPU Air foams as the nozzle gets hotter, so the part gets lighter and softer (sold out). PLA stays rigid, holds detail, and prints faster. Each spool is 1kg of 1.75mm. Free US shipping.";
+  "One listing, three materials. TPU 90A stays flexible at a fixed 90 Shore A and prints footwear great — not only TPU Air makes shoes (black sold out; tan and pink in stock). TPU Air foams as the nozzle gets hotter, so the part gets lighter and softer (sold out). PLA stays rigid, holds detail, and prints faster (sold out). Each spool is 1kg of 1.75mm. $45 each, or $30 each when you order more than 10 spools. Free US shipping.";
 
 export const FILAMENT_HOW_ITS_MADE =
   "TPU 90A holds a steady 90 Shore A and prints footwear great. TPU Air foams as the nozzle gets hotter. PLA stays firm and prints faster than either TPU.";
@@ -59,9 +76,9 @@ export const FILAMENT_MATERIALS = [
     id: FILAMENT_MATERIAL_90A,
     label: "TPU 90A",
     description:
-      "Flexible filament that holds a steady 90 Shore A — and it prints footwear great. People sometimes think only foaming TPU Air can make shoes; TPU 90A does too. It bends and springs back for printable shoes, wearables, and anything that should flex without foaming. 1.75mm, 1kg, in black, tan, or pink. Free US shipping.",
+      "Flexible filament that holds a steady 90 Shore A — and it prints footwear great. People sometimes think only foaming TPU Air can make shoes; TPU 90A does too. It bends and springs back for printable shoes, wearables, and anything that should flex without foaming. 1.75mm, 1kg — tan and pink in stock; black sold out. $45 per spool, or $30 each when you order more than 10. Free US shipping.",
     summary:
-      "Regular flexible TPU at a fixed 90 Shore A. Prints footwear great — same job as TPU Air for shoes, without the foam. 1.75mm, 1kg. Black, tan, and pink.",
+      "Regular flexible TPU at a fixed 90 Shore A. Prints footwear great — same job as TPU Air for shoes, without the foam. 1.75mm, 1kg. Tan and pink in stock; black sold out.",
     printNotes: [
       "Nozzle 220–240°C. Start around 225°C.",
       "Bed 40–60°C. A cool bed works if you use a glue stick.",
@@ -76,7 +93,6 @@ export const FILAMENT_MATERIALS = [
         id: "pink",
         label: "Pink",
         swatch: "#ec4899",
-        note: "Better deal",
         images: PINK_90A_IMAGES,
       },
     ],
@@ -108,9 +124,9 @@ export const FILAMENT_MATERIALS = [
     id: FILAMENT_MATERIAL_PLA,
     label: "PLA",
     description:
-      "Rigid everyday filament. It holds fine detail, prints faster than either TPU, and stays firm — the spool for shells, jigs, and prototypes that should not flex. 1.75mm, 1kg, white. Free US shipping.",
+      "Rigid everyday filament — currently sold out. It holds fine detail, prints faster than either TPU, and stays firm — the spool for shells, jigs, and prototypes that should not flex. 1.75mm, 1kg, white. Free US shipping.",
     summary:
-      "Stiff PLA. It does not flex like TPU and it does not foam. Use it when the part should keep its shape. 1.75mm, 1kg, white.",
+      "Stiff PLA — sold out right now. It does not flex like TPU and it does not foam. Use it when the part should keep its shape. 1.75mm, 1kg, white.",
     printNotes: [
       "Nozzle 190–220°C. Start at 205°C.",
       "Bed 50–60°C. A clean PEI sheet or a glue stick is enough.",
@@ -126,10 +142,10 @@ export const FILAMENT_PRIMARY_COLORS = FILAMENT_MATERIALS.flatMap((material) =>
   material.colors.map((color) => filamentVariantColor(material.id, color.id)),
 );
 
-/** Default PDP / gallery selection — black first so the page does not open on pink. */
+/** Default PDP / gallery selection — tan (black is sold out). */
 export const FILAMENT_DEFAULT_COLOR = filamentVariantColor(
   FILAMENT_MATERIAL_90A,
-  "black",
+  "tan",
 );
 
 /** One Size = 1kg spool — buy UI hides footwear size selectors. */
@@ -139,7 +155,7 @@ export const FILAMENT_VARIANTS = [
   {
     color: filamentVariantColor(FILAMENT_MATERIAL_90A, "black"),
     sku: "TPU90-BLK",
-    stock: 40,
+    stock: 0,
     priceCents: FILAMENT_PRICE_CENTS,
   },
   {
@@ -152,7 +168,7 @@ export const FILAMENT_VARIANTS = [
     color: filamentVariantColor(FILAMENT_MATERIAL_90A, "pink"),
     sku: "TPU90-PNK",
     stock: 70,
-    priceCents: FILAMENT_PINK_PRICE_CENTS,
+    priceCents: FILAMENT_PRICE_CENTS,
   },
   {
     color: filamentVariantColor(FILAMENT_MATERIAL_AIR, "black"),
@@ -163,7 +179,7 @@ export const FILAMENT_VARIANTS = [
   {
     color: filamentVariantColor(FILAMENT_MATERIAL_PLA, "white"),
     sku: "PLA-WHT",
-    stock: 24,
+    stock: 0,
     priceCents: FILAMENT_PRICE_CENTS,
   },
 ] as const;

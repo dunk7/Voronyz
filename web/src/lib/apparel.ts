@@ -1,3 +1,8 @@
+import {
+  filamentUnitPriceCents,
+  isFilamentProductSlug,
+} from "@/lib/filament";
+
 export const APPAREL_SIZES = ["XS", "S", "M", "L", "XL", "XXL"] as const;
 export const APPAREL_ONE_SIZE = ["One Size"] as const;
 
@@ -520,15 +525,19 @@ export function getApparelListingOffer(slug: string | null | undefined): Apparel
 }
 
 /**
- * Checkout/cart unit price: apparel size map when present, otherwise the
- * database (or cart) fallback. Non-apparel slugs pass through unchanged.
+ * Checkout/cart unit price: apparel size map when present, filament bulk tiers
+ * when the slug is filament, otherwise the database (or cart) fallback.
  */
 export function catalogUnitPriceCents(args: {
   productSlug?: string | null;
   size?: string | null;
   color?: string | null;
+  quantity?: number | null;
   fallbackCents: number;
 }): number {
+  if (isFilamentProductSlug(args.productSlug)) {
+    return filamentUnitPriceCents(args.quantity ?? 1);
+  }
   const item = getApparelItem(args.productSlug);
   if (!item) return args.fallbackCents;
   return apparelPriceCentsForSelection(item, { size: args.size, color: args.color });
