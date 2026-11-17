@@ -387,18 +387,10 @@ export default function ProductsContent({
   const advancedFootwear =
     isHomeFootwearTeaser ? (
       <section
-        aria-labelledby="advanced-footwear-heading"
+        aria-label="Slip Ons video"
         className="mt-16 sm:mt-24 lg:mt-28 mb-16 sm:mb-24 lg:mb-28"
       >
         <MotionMediaCarousel href="/products/slip-ons" linkLabel="Shop Slip Ons" />
-        <div className="mt-4 max-w-xl text-left sm:mt-5">
-          <h2
-            id="advanced-footwear-heading"
-            className="home-display-glow text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-white text-left"
-          >
-            Advanced Footwear
-          </h2>
-        </div>
       </section>
     ) : null;
 
@@ -681,13 +673,13 @@ export default function ProductsContent({
             <PrintedFootwearEducation className="mt-16 sm:mt-24 lg:mt-28" />
             {afterAboutBlock}
             {advancedFootwear}
-            {/* All footwear catalog — bottom of home, after spotlights and other sections */}
+            {/* Advanced Footwear catalog — bottom of home, after spotlights and other sections */}
             <div className="mt-16 space-y-8 sm:mt-24 sm:space-y-10 lg:mt-28">
               <FootwearBrowse
                 products={products}
                 getImages={getImages}
                 variant="home"
-                heading="All Footwear"
+                heading="Advanced Footwear"
               />
               <div className="flex justify-center px-4">
                 <Link href="/products" className={SHOP_ALL_CTA_CLASS}>
