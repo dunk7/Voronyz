@@ -41,16 +41,26 @@ export default function PdpGalleryBuyBox({
   const [color, setColor] = useState<string | undefined>(undefined);
 
   const galleryMedia = useMemo(() => {
+    const videos = media.filter((item) => item.type === "video");
     if (color && colorImages) {
       const shots = colorImages[color.trim().toLowerCase()];
       if (shots && shots.length > 0) {
         const alt = media[0]?.alt;
-        return shots.map((src) => ({ type: "image" as const, src, alt }));
+        const imageMedia = shots.map((src) => ({
+          type: "image" as const,
+          src,
+          alt,
+        }));
+        // Slip Ons black multi-shot gallery keeps the motion clip near the end.
+        // Single-frame color heroes stay image-only so they don't scroll.
+        if (leadWhiteSlipOns && imageMedia.length > 1 && videos.length > 0) {
+          return [...imageMedia, ...videos];
+        }
+        return imageMedia;
       }
     }
     if (leadWhiteSlipOns) {
       const images = media.filter((item) => item.type === "image");
-      const videos = media.filter((item) => item.type !== "image");
       const ordered = slipOnsImagesForColor(
         images.map((item) => item.src),
         color,

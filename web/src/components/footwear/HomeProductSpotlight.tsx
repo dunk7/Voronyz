@@ -70,15 +70,32 @@ export default function HomeProductSpotlight({
     return list.slice(0, isBlack ? maxImages : 1);
   }, [item, maxImages, selectedColor, slug]);
 
-  const media = useMemo(
-    () =>
-      images.map((src) => ({
-        type: "image" as const,
-        src,
-        alt: item?.name ?? "Voronyz footwear",
-      })),
-    [images, item?.name],
-  );
+  const media = useMemo(() => {
+    const items: Array<{
+      type: "image" | "video";
+      src: string;
+      alt?: string;
+      poster?: string;
+    }> = images.map((src) => ({
+      type: "image" as const,
+      src,
+      alt: item?.name ?? "Voronyz footwear",
+    }));
+    // Slip Ons black gallery: motion clip as one of the last scroll frames.
+    if (
+      slug.trim().toLowerCase() === "slip-ons" &&
+      isBlackSlipOnColor(selectedColor) &&
+      images.length > 1
+    ) {
+      items.push({
+        type: "video",
+        src: "/products/slip-ons/C1150.mp4",
+        alt: "Slip Ons in motion",
+        poster: "/products/slip-ons/InShot_20260405_203151152.jpg",
+      });
+    }
+    return items;
+  }, [images, item?.name, selectedColor, slug]);
 
   if (!item) return null;
 

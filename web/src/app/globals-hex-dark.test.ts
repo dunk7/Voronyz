@@ -97,9 +97,7 @@ test("homepage sliding clips sit below About links and the blocks under them", (
     "TakeTheQuizPromo",
     "HomeSecondaryLinks",
     "PrintedFootwearEducation",
-    "LifestyleBand",
     "afterAboutBlock",
-    "advancedFootwear",
     "FootwearBrowse",
   ].map((name) => {
     const at = block.indexOf(name);
@@ -109,8 +107,11 @@ test("homepage sliding clips sit below About links and the blocks under them", (
   for (let i = 1; i < order.length; i++) {
     assert.ok(
       order[i] > order[i - 1],
-      "sliding clips must come after About links + education/lifestyle, before All Footwear",
+      "V3 clip must come after About links + education, before Advanced Footwear",
     );
   }
+  assert.match(block, /heading="Advanced Footwear"/);
   assert.doesNotMatch(products, /betweenFootwearAndApparel/);
+  assert.doesNotMatch(products, /MotionMediaCarousel/);
+  assert.doesNotMatch(products, /advancedFootwear/);
 });
