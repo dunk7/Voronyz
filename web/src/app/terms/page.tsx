@@ -300,6 +300,7 @@ export default function TermsPage() {
           </p>
           <div className="space-y-2 text-neutral-700">
             <p><strong>Email:</strong> <a href="mailto:maximus.chapman.23@gmail.com" className="text-black hover:underline">maximus.chapman.23@gmail.com</a></p>
+            <p><strong>Email:</strong> <a href="mailto:voronyzfootwear@gmail.com" className="text-black hover:underline">voronyzfootwear@gmail.com</a></p>
             <p><strong>Phone:</strong> <a href="tel:+12066788381" className="text-black hover:underline">206 678 8381</a></p>
           </div>
         </section>

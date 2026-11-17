@@ -95,9 +95,14 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <div className="font-medium text-neutral-900">Email</div>
-                    <a href="mailto:maximus.chapman.23@gmail.com" className="text-neutral-600 hover:text-black transition-colors">
-                      maximus.chapman.23@gmail.com
-                    </a>
+                    <div className="flex flex-col gap-1">
+                      <a href="mailto:maximus.chapman.23@gmail.com" className="text-neutral-600 hover:text-black transition-colors">
+                        maximus.chapman.23@gmail.com
+                      </a>
+                      <a href="mailto:voronyzfootwear@gmail.com" className="text-neutral-600 hover:text-black transition-colors">
+                        voronyzfootwear@gmail.com
+                      </a>
+                    </div>
                   </div>
                 </div>
 

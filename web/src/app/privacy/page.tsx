@@ -194,6 +194,10 @@ export default function PrivacyPage() {
               <a href="mailto:maximus.chapman.23@gmail.com" className="text-black hover:underline">
                 maximus.chapman.23@gmail.com
               </a>
+              {" "}or{" "}
+              <a href="mailto:voronyzfootwear@gmail.com" className="text-black hover:underline">
+                voronyzfootwear@gmail.com
+              </a>
               . We will respond to your request within 30 days.
             </p>
           </div>
@@ -237,6 +241,7 @@ export default function PrivacyPage() {
           </p>
           <div className="space-y-2 text-neutral-700">
             <p><strong>Email:</strong> <a href="mailto:maximus.chapman.23@gmail.com" className="text-black hover:underline">maximus.chapman.23@gmail.com</a></p>
+            <p><strong>Email:</strong> <a href="mailto:voronyzfootwear@gmail.com" className="text-black hover:underline">voronyzfootwear@gmail.com</a></p>
             <p><strong>Phone:</strong> <a href="tel:+12066788381" className="text-black hover:underline">206 678 8381</a></p>
           </div>
         </section>
