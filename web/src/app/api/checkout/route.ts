@@ -175,6 +175,7 @@ export async function POST(request: NextRequest) {
           productSlug,
           size: item.size,
           color: item.variantName || variant?.color,
+          quantity: item.quantity,
           fallbackCents,
         });
         const unitAmount = getDiscountedUnitPriceCents(
@@ -238,7 +239,14 @@ export async function POST(request: NextRequest) {
         const fallbackSlug = item.productSlug || '';
         const fallbackProductName = item.productName || '';
         const unitAmount = getDiscountedUnitPriceCents(
-          typeof item.priceCents === "number" && item.priceCents > 0 ? item.priceCents : 7500,
+          catalogUnitPriceCents({
+            productSlug: fallbackSlug,
+            size: item.size,
+            color: item.variantName,
+            quantity: item.quantity,
+            fallbackCents:
+              typeof item.priceCents === "number" && item.priceCents > 0 ? item.priceCents : 7500,
+          }),
           activeDiscountCode,
           {
             productSlug: fallbackSlug,
