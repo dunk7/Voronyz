@@ -19,7 +19,7 @@ export const GALLERY_PHOTOS: GalleryPhoto[] = [
   {
     id: "voronyz-02",
     src: "/gallery/voronyz-02.jpg",
-    alt: "Person on a boat holding up a pair of Voronyz slides",
+    alt: "Redhead kid on a boat holding up a pair of Voronyz V3 Slides",
   },
   {
     id: "voronyz-03",

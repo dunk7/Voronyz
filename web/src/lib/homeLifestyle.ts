@@ -1,6 +1,7 @@
 /**
- * Lifestyle / model photography for brand surfaces (About, etc.).
- * Redhead boat frame lives on About — not on the homepage.
+ * Lifestyle / model photography for brand surfaces.
+ * About uses the workshop/slides-on-the-floor frame; Why it feels different
+ * uses the redhead boat portrait (rectangle, not circle).
  */
 export type LifestyleShot = {
   id: string;
@@ -11,16 +12,26 @@ export type LifestyleShot = {
   aspect: "portrait" | "tall-portrait" | "landscape" | "circle";
 };
 
-export const V3_SLIDES_STREET_SHOT: LifestyleShot = {
+/** Behind-the-scenes About photo — rows of slides on the floor by the printers. */
+export const ABOUT_WORKSHOP_SHOT: LifestyleShot = {
+  id: "about-workshop-349",
+  src: "/349.jpg",
+  alt: "Voronyz workshop with rows of V3 Slides on the floor beside 3D printers",
+  productSlug: "v3-slides",
+  aspect: "portrait",
+};
+
+/** Redhead kid holding V3 Slides on a boat — used in Why it feels different. */
+export const V3_SLIDES_REDHEAD_BOAT_SHOT: LifestyleShot = {
   id: "v3-slides-redhead-boat",
   src: "/gallery/voronyz-02.jpg",
   alt: "Redhead kid on a boat holding up a pair of Voronyz V3 Slides",
   productSlug: "v3-slides",
-  // Circle crop keeps the held slides in frame and cuts the LV tote on the left.
-  aspect: "circle",
+  // Portrait rectangle keeps face + held slides in frame.
+  aspect: "portrait",
 };
 
-export const HOME_LIFESTYLE_SHOTS: LifestyleShot[] = [V3_SLIDES_STREET_SHOT];
+export const HOME_LIFESTYLE_SHOTS: LifestyleShot[] = [V3_SLIDES_REDHEAD_BOAT_SHOT];
 
 export function lifestyleForProduct(slug: string): LifestyleShot[] {
   const key = slug.trim().toLowerCase();

@@ -1,3 +1,6 @@
+import Image from "next/image";
+import { V3_SLIDES_REDHEAD_BOAT_SHOT } from "@/lib/homeLifestyle";
+
 type PrintedFootwearEducationProps = {
   className?: string;
 };
@@ -43,6 +46,16 @@ export default function PrintedFootwearEducation({
         finished with the care of a company that has spent years getting every
         step of this right.
       </p>
+
+      <div className="relative mt-8 mx-auto aspect-[3/4] w-full max-w-md overflow-hidden rounded-xl sm:max-w-lg">
+        <Image
+          src={V3_SLIDES_REDHEAD_BOAT_SHOT.src}
+          alt={V3_SLIDES_REDHEAD_BOAT_SHOT.alt}
+          fill
+          className="object-cover object-[center_20%]"
+          sizes="(max-width: 640px) 100vw, 32rem"
+        />
+      </div>
 
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
         {TOPICS.map((topic) => (
