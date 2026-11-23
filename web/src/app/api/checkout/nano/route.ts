@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "Please enter your name and a USPS-verified shipping address before checking out.",
+            "Please enter a USPS-verified shipping address before checking out.",
         },
         { status: 400 }
       );

@@ -1,5 +1,9 @@
 import { createHmac, timingSafeEqual } from "crypto";
-import type { AddressSuggestion, VerifiedAddress } from "@/lib/shippingAddress";
+import {
+  parseUsFreeformAddress,
+  type AddressSuggestion,
+  type VerifiedAddress,
+} from "@/lib/shippingAddress";
 import {
   UspsAddressError,
   verifyUsAddressWithUsps,
@@ -387,6 +391,19 @@ export async function verifyAndSignManualAddress(raw: unknown): Promise<{
   const a = raw as Record<string, unknown>;
   const text = (value: unknown, max: number) =>
     typeof value === "string" ? value.trim().slice(0, max) : "";
+
+  // One-box freeform: "5223 Farmville Rd, Farmville, VA 23901"
+  const freeform = text(a.query ?? a.freeform, 300);
+  if (freeform && !text(a.line1, 200)) {
+    const parsed = parseUsFreeformAddress(freeform);
+    if (!parsed) {
+      throw new AddressLookupError(
+        "Include street, city, state, and ZIP in the address box (e.g. 5223 Farmville Rd, Farmville, VA 23901).",
+        400
+      );
+    }
+    return verifyAndSignManualAddress(parsed);
+  }
 
   const country = text(a.country, 2).toUpperCase() || "US";
   const rawState = text(a.state, 100);

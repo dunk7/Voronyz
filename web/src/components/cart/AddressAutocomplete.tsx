@@ -5,7 +5,7 @@ import {
   formatAddressLine,
   INTERNATIONAL_SHIPPING_CENTS,
   isDomesticCountry,
-  US_STATE_OPTIONS,
+  parseUsFreeformAddress,
   type AddressSuggestion,
   type VerifiedShipping,
 } from "@/lib/shippingAddress";
@@ -17,21 +17,8 @@ type Props = {
 };
 
 type SearchState = "idle" | "loading" | "empty" | "error";
-type EntryMode = "lookup" | "manual";
 
 const MIN_QUERY_LENGTH = 4;
-
-const MANUAL_COUNTRIES: Array<{ code: string; name: string }> = [
-  { code: "US", name: "United States" },
-  { code: "CA", name: "Canada" },
-  { code: "GB", name: "United Kingdom" },
-  { code: "AU", name: "Australia" },
-  { code: "DE", name: "Germany" },
-  { code: "FR", name: "France" },
-  { code: "IT", name: "Italy" },
-  { code: "JP", name: "Japan" },
-  { code: "MX", name: "Mexico" },
-];
 
 const inputClass =
   "w-full rounded-lg border border-black/15 bg-white px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none";
@@ -51,23 +38,15 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [resolvingId, setResolvingId] = useState<string | null>(null);
-  const [entryMode, setEntryMode] = useState<EntryMode>("lookup");
-  const [manual, setManual] = useState({
-    line1: "",
-    line2: "",
-    city: "",
-    state: "",
-    postal_code: "",
-    country: "US",
-  });
   const [manualSubmitting, setManualSubmitting] = useState(false);
+  const [name, setName] = useState("");
+  const [showLine2, setShowLine2] = useState(false);
   const sessionRef = useRef(newSessionToken());
   const containerRef = useRef<HTMLDivElement>(null);
   const line2Ref = useRef<HTMLInputElement>(null);
-  const [showLine2, setShowLine2] = useState(false);
 
   useEffect(() => {
-    if (value || entryMode !== "lookup") return;
+    if (value) return;
     const trimmed = query.trim();
     if (trimmed.length < MIN_QUERY_LENGTH) {
       setSuggestions([]);
@@ -109,7 +88,7 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [query, value, entryMode]);
+  }, [query, value]);
 
   useEffect(() => {
     const onPointerDown = (event: PointerEvent) => {
@@ -119,7 +98,6 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, []);
 
-  const [name, setName] = useState("");
   useEffect(() => {
     if (value) setName(value.address.name);
     else setShowLine2(false);
@@ -128,6 +106,15 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
   useEffect(() => {
     if (showLine2) line2Ref.current?.focus();
   }, [showLine2]);
+
+  const finishSelect = () => {
+    setOpen(false);
+    setSuggestions([]);
+    setQuery("");
+    setSearchState("idle");
+    setErrorMessage("");
+    sessionRef.current = newSessionToken();
+  };
 
   const select = async (suggestion: AddressSuggestion) => {
     setErrorMessage("");
@@ -170,60 +157,40 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
     }
   };
 
-  const finishSelect = () => {
-    setOpen(false);
-    setSuggestions([]);
-    setQuery("");
-    setSearchState("idle");
-    setEntryMode("lookup");
-    sessionRef.current = newSessionToken();
-  };
-
   const clear = () => {
     onChange(null);
     setQuery("");
     setSuggestions([]);
     setSearchState("idle");
     setErrorMessage("");
-    setManual({
-      line1: "",
-      line2: "",
-      city: "",
-      state: "",
-      postal_code: "",
-      country: "US",
-    });
   };
 
-  const switchToManual = () => {
-    setEntryMode("manual");
-    setOpen(false);
-    setSuggestions([]);
+  const submitTypedAddress = async () => {
     setErrorMessage("");
-    setSearchState("idle");
-    // Seed street from whatever they already typed in the lookup box.
-    if (query.trim() && !manual.line1) {
-      setManual((prev) => ({ ...prev, line1: query.trim() }));
-    }
-  };
-
-  const switchToLookup = () => {
-    setEntryMode("lookup");
-    setErrorMessage("");
-  };
-
-  const submitManual = async () => {
-    setErrorMessage("");
-    if (!name.trim()) {
-      setErrorMessage("Enter the full name for the package.");
+    const trimmed = query.trim();
+    if (!trimmed) {
+      setErrorMessage("Type your shipping address to continue.");
       return;
     }
+    if (!name.trim()) {
+      setErrorMessage("Add the name on the package above.");
+      return;
+    }
+    const parsed = parseUsFreeformAddress(trimmed);
+    if (!parsed) {
+      setErrorMessage(
+        "Include street, city, state, and ZIP (e.g. 5223 Farmville Rd, Farmville, VA 23901)."
+      );
+      return;
+    }
+
     setManualSubmitting(true);
+    setOpen(false);
     try {
       const res = await fetch("/api/address/manual", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(manual),
+        body: JSON.stringify({ query: trimmed }),
       });
       const data = (await res.json().catch(() => ({}))) as {
         address?: VerifiedShipping["address"];
@@ -238,7 +205,7 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
         address: {
           ...data.address,
           name: name.trim(),
-          line2: data.address.line2 ?? (manual.line2.trim() || null),
+          line2: data.address.line2 ?? null,
         },
         token: data.token,
       });
@@ -251,41 +218,60 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
   };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!open || suggestions.length === 0) return;
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      setActiveIndex((i) => (i + 1) % suggestions.length);
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      setActiveIndex((i) => (i <= 0 ? suggestions.length - 1 : i - 1));
-    } else if (event.key === "Enter" && activeIndex >= 0) {
-      event.preventDefault();
-      void select(suggestions[activeIndex]);
-    } else if (event.key === "Escape") {
+    if (event.key === "Escape") {
       setOpen(false);
+      return;
+    }
+    if (open && suggestions.length > 0) {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        setActiveIndex((i) => (i + 1) % suggestions.length);
+        return;
+      }
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        setActiveIndex((i) => (i <= 0 ? suggestions.length - 1 : i - 1));
+        return;
+      }
+      if (event.key === "Enter" && activeIndex >= 0) {
+        event.preventDefault();
+        void select(suggestions[activeIndex]);
+        return;
+      }
+    }
+    if (event.key === "Enter") {
+      event.preventDefault();
+      // Same box: if suggestions are open and one is highlighted we already
+      // handled that; otherwise keep the typed text as a manual address.
+      if (suggestions.length === 0 || searchState === "empty") {
+        void submitTypedAddress();
+      }
     }
   };
 
   const international = value ? !isDomesticCountry(value.address.country) : false;
   const trimmedQuery = query.trim();
+  const freeformReady = Boolean(parseUsFreeformAddress(trimmedQuery));
   const showNoMatch =
-    !value &&
-    entryMode === "lookup" &&
-    trimmedQuery.length >= MIN_QUERY_LENGTH &&
-    searchState === "empty";
+    !value && trimmedQuery.length >= MIN_QUERY_LENGTH && searchState === "empty";
   const showPrompt =
     !value &&
-    entryMode === "lookup" &&
     trimmedQuery.length >= MIN_QUERY_LENGTH &&
     suggestions.length > 0 &&
     searchState === "idle";
-  const usManual = manual.country === "US";
+  const showUseTyped =
+    !value &&
+    freeformReady &&
+    searchState !== "loading" &&
+    (showNoMatch ||
+      searchState === "error" ||
+      (suggestions.length === 0 && trimmedQuery.length >= MIN_QUERY_LENGTH));
 
   return (
     <div className="space-y-3" ref={containerRef}>
       <div className="space-y-1">
-        <label htmlFor={`${listId}-name`} className="text-sm font-medium text-neutral-900">
-          Full name
+        <label htmlFor={`${listId}-name`} className="sr-only">
+          Name on the package
         </label>
         <input
           id={`${listId}-name`}
@@ -319,6 +305,7 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
                 Verified address
               </div>
               <div className="mt-1 text-sm text-neutral-900">
+                {value.address.name ? `${value.address.name} · ` : ""}
                 {formatAddressLine({ ...value.address, line2: null })}
               </div>
             </div>
@@ -368,180 +355,9 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
             </p>
           )}
         </div>
-      ) : entryMode === "manual" ? (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <h3 className="text-sm font-medium text-neutral-900">Enter address manually</h3>
-            <button
-              type="button"
-              onClick={switchToLookup}
-              className="text-sm font-medium text-neutral-600 underline underline-offset-2 hover:text-neutral-900"
-            >
-              Use address lookup
-            </button>
-          </div>
-
-          <div className="space-y-1">
-            <label htmlFor={`${listId}-m-line1`} className="text-sm font-medium text-neutral-900">
-              Street address
-            </label>
-            <input
-              id={`${listId}-m-line1`}
-              type="text"
-              autoComplete="address-line1"
-              value={manual.line1}
-              maxLength={200}
-              onChange={(event) => {
-                setManual((prev) => ({ ...prev, line1: event.target.value }));
-                setErrorMessage("");
-              }}
-              placeholder="5223 Farmville Rd"
-              className={inputClass}
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label htmlFor={`${listId}-m-line2`} className="text-xs font-medium text-neutral-700">
-              Apt, suite, unit <span className="font-normal text-neutral-400">(optional)</span>
-            </label>
-            <input
-              id={`${listId}-m-line2`}
-              type="text"
-              autoComplete="address-line2"
-              value={manual.line2}
-              maxLength={100}
-              onChange={(event) => setManual((prev) => ({ ...prev, line2: event.target.value }))}
-              placeholder="Apt 4B"
-              className="w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <div className="col-span-2 space-y-1 sm:col-span-1">
-              <label htmlFor={`${listId}-m-city`} className="text-sm font-medium text-neutral-900">
-                City
-              </label>
-              <input
-                id={`${listId}-m-city`}
-                type="text"
-                autoComplete="address-level2"
-                value={manual.city}
-                maxLength={100}
-                onChange={(event) => {
-                  setManual((prev) => ({ ...prev, city: event.target.value }));
-                  setErrorMessage("");
-                }}
-                placeholder="Farmville"
-                className={inputClass}
-              />
-            </div>
-            <div className="space-y-1">
-              <label htmlFor={`${listId}-m-state`} className="text-sm font-medium text-neutral-900">
-                State
-              </label>
-              {usManual ? (
-                <select
-                  id={`${listId}-m-state`}
-                  autoComplete="address-level1"
-                  value={manual.state}
-                  onChange={(event) => {
-                    setManual((prev) => ({ ...prev, state: event.target.value }));
-                    setErrorMessage("");
-                  }}
-                  className={inputClass}
-                >
-                  <option value="">Select</option>
-                  {US_STATE_OPTIONS.map((state) => (
-                    <option key={state.code} value={state.code}>
-                      {state.code} — {state.name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  id={`${listId}-m-state`}
-                  type="text"
-                  autoComplete="address-level1"
-                  value={manual.state}
-                  maxLength={100}
-                  onChange={(event) => {
-                    setManual((prev) => ({ ...prev, state: event.target.value }));
-                    setErrorMessage("");
-                  }}
-                  placeholder="State / region"
-                  className={inputClass}
-                />
-              )}
-            </div>
-            <div className="space-y-1">
-              <label htmlFor={`${listId}-m-zip`} className="text-sm font-medium text-neutral-900">
-                {usManual ? "ZIP" : "Postal code"}
-              </label>
-              <input
-                id={`${listId}-m-zip`}
-                type="text"
-                autoComplete="postal-code"
-                value={manual.postal_code}
-                maxLength={20}
-                onChange={(event) => {
-                  setManual((prev) => ({ ...prev, postal_code: event.target.value }));
-                  setErrorMessage("");
-                }}
-                placeholder={usManual ? "23901" : "Postal code"}
-                className={inputClass}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label htmlFor={`${listId}-m-country`} className="text-sm font-medium text-neutral-900">
-              Country
-            </label>
-            <select
-              id={`${listId}-m-country`}
-              autoComplete="country"
-              value={manual.country}
-              onChange={(event) => {
-                const country = event.target.value;
-                setManual((prev) => ({
-                  ...prev,
-                  country,
-                  state: country === "US" && prev.state.length === 2 ? prev.state : country === "US" ? "" : prev.state,
-                }));
-                setErrorMessage("");
-              }}
-              className={inputClass}
-            >
-              {MANUAL_COUNTRIES.map((country) => (
-                <option key={country.code} value={country.code}>
-                  {country.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {errorMessage && (
-            <p className="text-sm text-red-600" role="alert">
-              {errorMessage}
-            </p>
-          )}
-
-          <button
-            type="button"
-            disabled={manualSubmitting}
-            onClick={() => void submitManual()}
-            className="w-full rounded-lg bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {manualSubmitting ? "Checking with USPS…" : "Verify & use this address"}
-          </button>
-          <p className="text-xs text-neutral-500">
-            We check domestic addresses against the USPS database (same source Pirate
-            Ship uses) and save the standardized form when it matches.
-          </p>
-        </div>
       ) : (
         <div className="relative space-y-1">
-          <label htmlFor={`${listId}-search`} className="text-sm font-medium text-neutral-900">
+          <label htmlFor={`${listId}-search`} className="sr-only">
             Shipping address
           </label>
           <input
@@ -551,7 +367,7 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
             aria-expanded={open && suggestions.length > 0}
             aria-controls={`${listId}-options`}
             aria-autocomplete="list"
-            autoComplete="off"
+            autoComplete="street-address"
             value={query}
             onChange={(event) => {
               setQuery(event.target.value);
@@ -560,7 +376,7 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
             }}
             onFocus={() => setOpen(true)}
             onKeyDown={onKeyDown}
-            placeholder="Start typing your street address"
+            placeholder="Street, city, state, ZIP"
             className={inputClass}
           />
           {open && suggestions.length > 0 && (
@@ -593,27 +409,30 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
             <p className="text-xs text-neutral-500">Looking up addresses…</p>
           )}
           {showPrompt && (
-            <p className="text-xs text-neutral-500">Pick your address from the list to continue.</p>
-          )}
-          {showNoMatch && (
-            <p className="text-sm text-red-600" role="alert">
-              We couldn&apos;t find that address in suggestions. You can still enter it manually.
+            <p className="text-xs text-neutral-500">
+              Pick a suggestion, or keep typing the full address to use it as entered.
             </p>
           )}
-          {searchState === "error" && errorMessage && (
+          {showNoMatch && (
+            <p className="text-xs text-neutral-500">
+              No suggestions for that text — we&apos;ll use the address you typed after a USPS check.
+            </p>
+          )}
+          {showUseTyped && (
+            <button
+              type="button"
+              disabled={manualSubmitting}
+              onClick={() => void submitTypedAddress()}
+              className="w-full rounded-lg bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {manualSubmitting ? "Checking with USPS…" : "Use this address"}
+            </button>
+          )}
+          {(searchState === "error" || errorMessage) && errorMessage && (
             <p className="text-sm text-red-600" role="alert">
               {errorMessage}
             </p>
           )}
-          <button
-            type="button"
-            onClick={switchToManual}
-            className="pt-1 text-sm font-medium text-neutral-600 underline underline-offset-2 hover:text-neutral-900"
-          >
-            {showNoMatch || searchState === "error"
-              ? "Enter address manually"
-              : "Can't find your address?"}
-          </button>
         </div>
       )}
     </div>

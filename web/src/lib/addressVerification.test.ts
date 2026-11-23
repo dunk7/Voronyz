@@ -98,6 +98,16 @@ test("manual Farmville address verifies via USPS-style check and signs", async (
   assert.equal(parsed?.line1, signed.address.line1);
 });
 
+test("one-box freeform Farmville query verifies the same way", async () => {
+  const signed = await verifyAndSignManualAddress({
+    query: "5223 Farmville Rd, Farmville, VA 23901",
+  });
+  assert.match(signed.address.line1.toUpperCase(), /5223\s+FARMVILLE\s+RD/);
+  assert.equal(signed.address.city.toUpperCase(), "FARMVILLE");
+  assert.equal(signed.address.state, "VA");
+  assert.match(signed.address.postal_code, /^23901(-\d{4})?$/);
+});
+
 test("manual made-up address is rejected by USPS-style check", async () => {
   await assert.rejects(
     () =>
