@@ -397,6 +397,20 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
                   <div className="text-xs text-neutral-500">{suggestion.secondary}</div>
                 </li>
               ))}
+              {showUseTyped && (
+                <li
+                  role="option"
+                  aria-selected={false}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => void submitTypedAddress()}
+                  className="cursor-pointer border-t border-black/10 px-3 py-2.5 text-sm"
+                >
+                  <div className="font-medium text-neutral-900">
+                    {manualSubmitting ? "Checking with USPS…" : "Use the address you typed"}
+                  </div>
+                  <div className="truncate text-xs text-neutral-500">{trimmedQuery}</div>
+                </li>
+              )}
             </ul>
           )}
           {searchState === "loading" && trimmedQuery.length >= MIN_QUERY_LENGTH && (
@@ -410,17 +424,11 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
               No suggestions yet — keep typing street, city, state, and ZIP.
             </p>
           )}
-          {showUseTyped && (
+          {showUseTyped && !(open && suggestions.length > 0) && (
             <div className="space-y-1.5 pt-1">
-              {suggestions.length > 0 ? (
-                <p className="text-xs text-neutral-500">
-                  Pick a suggestion above, or use the address you typed.
-                </p>
-              ) : (
-                <p className="text-xs text-neutral-500">
-                  No matching suggestions — we&apos;ll verify the address you typed with USPS.
-                </p>
-              )}
+              <p className="text-xs text-neutral-500">
+                No matching suggestions — we&apos;ll verify the address you typed with USPS.
+              </p>
               <button
                 type="button"
                 disabled={manualSubmitting}
