@@ -8,6 +8,7 @@ import {
   GATORS_SIZES,
   GATORS_SLUG,
   GATORS_THUMBNAIL_URL,
+  GATORS_VARIANTS,
 } from "./gators";
 import {
   LATTICE_INSOLES_PRODUCT_IMAGE_URL,
@@ -15,12 +16,15 @@ import {
   LATTICE_INSOLES_SIZES,
   LATTICE_INSOLES_SLUG,
   LATTICE_INSOLES_THUMBNAIL_URL,
+  LATTICE_INSOLES_VARIANTS,
   latticeInsolesCatalogProduct,
 } from "./latticeInsoles";
 import {
   FOOTWEAR_CATALOG,
   FOOTWEAR_SLUGS,
   SLIP_ONS_COLOR_IMAGES,
+  SLIP_ONS_PRIMARY_COLORS,
+  SLIP_ONS_VARIANTS,
   SLIP_ONS_WHITE_AD_IMAGE,
   isBlackSlipOnColor,
   isWhiteColor,
@@ -39,6 +43,34 @@ const studio = [
   "/products/slip-ons/InShot_20260405_202911983.jpg",
   "/products/slip-ons/InShot_20260405_203151152.jpg",
 ];
+
+test("footwear body colors: only tan and pink are in stock", () => {
+  for (const variant of SLIP_ONS_VARIANTS) {
+    if (variant.color === "tan" || variant.color === "pink") {
+      assert.ok(variant.stock > 0, `${variant.color} should be in stock`);
+    } else {
+      assert.equal(variant.stock, 0, `${variant.color} should be sold out`);
+    }
+  }
+  assert.ok(SLIP_ONS_PRIMARY_COLORS.includes("tan"));
+  assert.ok(SLIP_ONS_PRIMARY_COLORS.includes("pink"));
+
+  for (const variant of GATORS_VARIANTS) {
+    if (variant.color === "tan" || variant.color === "pink") {
+      assert.ok(variant.stock > 0, `gators ${variant.color} should be in stock`);
+    } else {
+      assert.equal(variant.stock, 0, `gators ${variant.color} should be sold out`);
+    }
+  }
+
+  for (const variant of LATTICE_INSOLES_VARIANTS) {
+    if (variant.color === "tan" || variant.color === "pink") {
+      assert.ok(variant.stock > 0, `insoles ${variant.color} should be in stock`);
+    } else {
+      assert.equal(variant.stock, 0, `insoles ${variant.color} should be sold out`);
+    }
+  }
+});
 
 test("lattice insoles use the same US sizes as the rest of the footwear lineup", () => {
   assert.deepEqual([...LATTICE_INSOLES_SIZES], [...GATORS_SIZES]);
