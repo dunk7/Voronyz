@@ -5,6 +5,7 @@ import {
   formatAddressLine,
   INTERNATIONAL_SHIPPING_CENTS,
   isDomesticCountry,
+  parseUsFreeformAddress,
   type AddressSuggestion,
   type VerifiedShipping,
 } from "@/lib/shippingAddress";
@@ -18,6 +19,9 @@ type Props = {
 type SearchState = "idle" | "loading" | "empty" | "error";
 
 const MIN_QUERY_LENGTH = 4;
+
+const inputClass =
+  "w-full rounded-lg border border-black/15 bg-white px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none";
 
 function newSessionToken() {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -34,10 +38,12 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [resolvingId, setResolvingId] = useState<string | null>(null);
+  const [manualSubmitting, setManualSubmitting] = useState(false);
+  const [name, setName] = useState("");
+  const [showLine2, setShowLine2] = useState(false);
   const sessionRef = useRef(newSessionToken());
   const containerRef = useRef<HTMLDivElement>(null);
   const line2Ref = useRef<HTMLInputElement>(null);
-  const [showLine2, setShowLine2] = useState(false);
 
   useEffect(() => {
     if (value) return;
@@ -92,7 +98,6 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, []);
 
-  const [name, setName] = useState("");
   useEffect(() => {
     if (value) setName(value.address.name);
     else setShowLine2(false);
@@ -101,6 +106,15 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
   useEffect(() => {
     if (showLine2) line2Ref.current?.focus();
   }, [showLine2]);
+
+  const finishSelect = () => {
+    setOpen(false);
+    setSuggestions([]);
+    setQuery("");
+    setSearchState("idle");
+    setErrorMessage("");
+    sessionRef.current = newSessionToken();
+  };
 
   const select = async (suggestion: AddressSuggestion) => {
     setErrorMessage("");
@@ -143,14 +157,6 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
     }
   };
 
-  const finishSelect = () => {
-    setOpen(false);
-    setSuggestions([]);
-    setQuery("");
-    setSearchState("idle");
-    sessionRef.current = newSessionToken();
-  };
-
   const clear = () => {
     onChange(null);
     setQuery("");
@@ -159,24 +165,90 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
     setErrorMessage("");
   };
 
+  const submitTypedAddress = async () => {
+    setErrorMessage("");
+    const trimmed = query.trim();
+    if (!trimmed) {
+      setErrorMessage("Type your shipping address to continue.");
+      return;
+    }
+    if (!name.trim()) {
+      setErrorMessage("Add the name on the package above.");
+      return;
+    }
+    const parsed = parseUsFreeformAddress(trimmed);
+    if (!parsed) {
+      setErrorMessage(
+        "Include street, city, state, and ZIP (e.g. 5223 Farmville Rd, Farmville, VA 23901)."
+      );
+      return;
+    }
+
+    setManualSubmitting(true);
+    setOpen(false);
+    try {
+      const res = await fetch("/api/address/manual", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: trimmed }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        address?: VerifiedShipping["address"];
+        token?: string;
+        error?: string;
+      };
+      if (!res.ok || !data.address || !data.token) {
+        setErrorMessage(data.error || "Please check the address and try again.");
+        return;
+      }
+      onChange({
+        address: {
+          ...data.address,
+          name: name.trim(),
+          line2: data.address.line2 ?? null,
+        },
+        token: data.token,
+      });
+      finishSelect();
+    } catch {
+      setErrorMessage("Address lookup is unavailable right now.");
+    } finally {
+      setManualSubmitting(false);
+    }
+  };
+
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!open || suggestions.length === 0) return;
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      setActiveIndex((i) => (i + 1) % suggestions.length);
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      setActiveIndex((i) => (i <= 0 ? suggestions.length - 1 : i - 1));
-    } else if (event.key === "Enter" && activeIndex >= 0) {
-      event.preventDefault();
-      void select(suggestions[activeIndex]);
-    } else if (event.key === "Escape") {
+    if (event.key === "Escape") {
       setOpen(false);
+      return;
+    }
+    if (open && suggestions.length > 0) {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        setActiveIndex((i) => (i + 1) % suggestions.length);
+        return;
+      }
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        setActiveIndex((i) => (i <= 0 ? suggestions.length - 1 : i - 1));
+        return;
+      }
+      if (event.key === "Enter" && activeIndex >= 0) {
+        event.preventDefault();
+        void select(suggestions[activeIndex]);
+        return;
+      }
+    }
+    if (event.key === "Enter") {
+      event.preventDefault();
+      // Same box: highlighted suggestion takes priority; otherwise keep typed text.
+      if (parseUsFreeformAddress(query.trim())) void submitTypedAddress();
     }
   };
 
   const international = value ? !isDomesticCountry(value.address.country) : false;
   const trimmedQuery = query.trim();
+  const freeformReady = Boolean(parseUsFreeformAddress(trimmedQuery));
   const showNoMatch =
     !value && trimmedQuery.length >= MIN_QUERY_LENGTH && searchState === "empty";
   const showPrompt =
@@ -184,12 +256,16 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
     trimmedQuery.length >= MIN_QUERY_LENGTH &&
     suggestions.length > 0 &&
     searchState === "idle";
+  // Always offer the typed freeform once it looks complete — suggestions can
+  // miss rural streets (e.g. Farmville Rd) while still returning nearby hits.
+  const showUseTyped =
+    !value && freeformReady && searchState !== "loading";
 
   return (
     <div className="space-y-3" ref={containerRef}>
       <div className="space-y-1">
-        <label htmlFor={`${listId}-name`} className="text-sm font-medium text-neutral-900">
-          Full name
+        <label htmlFor={`${listId}-name`} className="sr-only">
+          Name on the package
         </label>
         <input
           id={`${listId}-name`}
@@ -204,7 +280,7 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
             }
           }}
           placeholder="Name on the package"
-          className="w-full rounded-lg border border-black/15 bg-white px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none"
+          className={inputClass}
         />
       </div>
 
@@ -223,6 +299,7 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
                 Verified address
               </div>
               <div className="mt-1 text-sm text-neutral-900">
+                {value.address.name ? `${value.address.name} · ` : ""}
                 {formatAddressLine({ ...value.address, line2: null })}
               </div>
             </div>
@@ -274,7 +351,7 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
         </div>
       ) : (
         <div className="relative space-y-1">
-          <label htmlFor={`${listId}-search`} className="text-sm font-medium text-neutral-900">
+          <label htmlFor={`${listId}-search`} className="sr-only">
             Shipping address
           </label>
           <input
@@ -284,7 +361,7 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
             aria-expanded={open && suggestions.length > 0}
             aria-controls={`${listId}-options`}
             aria-autocomplete="list"
-            autoComplete="off"
+            autoComplete="street-address"
             value={query}
             onChange={(event) => {
               setQuery(event.target.value);
@@ -293,8 +370,8 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
             }}
             onFocus={() => setOpen(true)}
             onKeyDown={onKeyDown}
-            placeholder="Start typing your street address"
-            className="w-full rounded-lg border border-black/15 bg-white px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none"
+            placeholder="Street, city, state, ZIP"
+            className={inputClass}
           />
           {open && suggestions.length > 0 && (
             <ul
@@ -320,21 +397,49 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
                   <div className="text-xs text-neutral-500">{suggestion.secondary}</div>
                 </li>
               ))}
+              {showUseTyped && (
+                <li
+                  role="option"
+                  aria-selected={false}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => void submitTypedAddress()}
+                  className="cursor-pointer border-t border-black/10 px-3 py-2.5 text-sm"
+                >
+                  <div className="font-medium text-neutral-900">
+                    {manualSubmitting ? "Checking with USPS…" : "Use the address you typed"}
+                  </div>
+                  <div className="truncate text-xs text-neutral-500">{trimmedQuery}</div>
+                </li>
+              )}
             </ul>
           )}
           {searchState === "loading" && trimmedQuery.length >= MIN_QUERY_LENGTH && (
             <p className="text-xs text-neutral-500">Looking up addresses…</p>
           )}
-          {showPrompt && (
-            <p className="text-xs text-neutral-500">Pick your address from the list to continue.</p>
+          {showPrompt && !showUseTyped && (
+            <p className="text-xs text-neutral-500">Pick your address from the list.</p>
           )}
-          {showNoMatch && (
-            <p className="text-sm text-red-600" role="alert">
-              We couldn&apos;t find that address. Check the street number, street name, and city —
-              only real addresses can be used.
+          {showNoMatch && !showUseTyped && (
+            <p className="text-xs text-neutral-500">
+              No suggestions yet — keep typing street, city, state, and ZIP.
             </p>
           )}
-          {searchState === "error" && errorMessage && (
+          {showUseTyped && !(open && suggestions.length > 0) && (
+            <div className="space-y-1.5 pt-1">
+              <p className="text-xs text-neutral-500">
+                No matching suggestions — we&apos;ll verify the address you typed with USPS.
+              </p>
+              <button
+                type="button"
+                disabled={manualSubmitting}
+                onClick={() => void submitTypedAddress()}
+                className="w-full rounded-lg bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {manualSubmitting ? "Checking with USPS…" : "Use this address"}
+              </button>
+            </div>
+          )}
+          {(searchState === "error" || errorMessage) && errorMessage && (
             <p className="text-sm text-red-600" role="alert">
               {errorMessage}
             </p>

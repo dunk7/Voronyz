@@ -1,13 +1,24 @@
 import { createHmac, timingSafeEqual } from "crypto";
-import type { AddressSuggestion, VerifiedAddress } from "@/lib/shippingAddress";
+import {
+  parseUsFreeformAddress,
+  type AddressSuggestion,
+  type VerifiedAddress,
+} from "@/lib/shippingAddress";
+import {
+  UspsAddressError,
+  verifyUsAddressWithUsps,
+} from "@/lib/uspsAddressVerify";
 
 /**
  * Server-side address lookup + signing.
  *
  * Suggestions come from Google Places when GOOGLE_MAPS_API_KEY is set, otherwise
- * from the free Photon (OpenStreetMap) geocoder. Whichever provider resolved the
- * address, the street/city/state/zip/country are signed so /api/checkout can
- * prove the address was picked from a real result and not typed by hand.
+ * from the free Photon (OpenStreetMap) geocoder. Resolved suggestions are HMAC-
+ * signed so /api/checkout can trust the payload.
+ *
+ * Manual entry is allowed when autocomplete misses an address, but US addresses
+ * must still pass USPS-style verification (same database Pirate Ship uses) and
+ * are saved in the standardized form (incl. ZIP+4 when available).
  */
 
 const TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -235,7 +246,7 @@ export async function resolveGooglePlace(
 /*  Photon (OpenStreetMap) fallback                                    */
 /* ------------------------------------------------------------------ */
 
-const US_STATES: Record<string, string> = {
+export const US_STATES: Record<string, string> = {
   alabama: "AL", alaska: "AK", arizona: "AZ", arkansas: "AR", california: "CA",
   colorado: "CO", connecticut: "CT", delaware: "DE", "district of columbia": "DC",
   florida: "FL", georgia: "GA", hawaii: "HI", idaho: "ID", illinois: "IL",
@@ -250,6 +261,13 @@ const US_STATES: Record<string, string> = {
   wyoming: "WY", "puerto rico": "PR", guam: "GU", "american samoa": "AS",
   "u.s. virgin islands": "VI", "northern mariana islands": "MP",
 };
+
+export function normalizeUsState(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  if (/^[A-Za-z]{2}$/.test(trimmed)) return trimmed.toUpperCase();
+  return US_STATES[trimmed.toLowerCase()] ?? trimmed;
+}
 
 type PhotonFeature = {
   properties?: {
@@ -273,12 +291,7 @@ function photonToAddress(feature: PhotonFeature): AddressCore | null {
   if (!p?.street || !p.housenumber || !p.countrycode) return null;
   const country = p.countrycode.toUpperCase();
   const rawState = p.state?.trim() ?? "";
-  const state =
-    country === "US"
-      ? /^[A-Za-z]{2}$/.test(rawState)
-        ? rawState.toUpperCase()
-        : US_STATES[rawState.toLowerCase()] ?? ""
-      : rawState;
+  const state = country === "US" ? normalizeUsState(rawState) : rawState;
   const address: AddressCore = {
     line1: `${p.housenumber} ${p.street}`.trim(),
     city: p.city || p.town || p.village || p.district || p.county || "",
@@ -359,6 +372,101 @@ export async function resolveSuggestion(
     );
   }
   return { address, token: signAddress(address) };
+}
+
+/**
+ * Validate a hand-typed address, then sign it the same way as autocomplete.
+ *
+ * US addresses must pass USPS-style verification (Pirate Ship / USPS database).
+ * On success we store the standardized form (ZIP+4 when the verifier returns it).
+ * International manual addresses only need completeness checks (USPS is US-only).
+ */
+export async function verifyAndSignManualAddress(raw: unknown): Promise<{
+  address: AddressCore & { line2: string | null };
+  token: string;
+}> {
+  if (!raw || typeof raw !== "object") {
+    throw new AddressLookupError("Address details are required.", 400);
+  }
+  const a = raw as Record<string, unknown>;
+  const text = (value: unknown, max: number) =>
+    typeof value === "string" ? value.trim().slice(0, max) : "";
+
+  // One-box freeform: "5223 Farmville Rd, Farmville, VA 23901"
+  const freeform = text(a.query ?? a.freeform, 300);
+  if (freeform && !text(a.line1, 200)) {
+    const parsed = parseUsFreeformAddress(freeform);
+    if (!parsed) {
+      throw new AddressLookupError(
+        "Include street, city, state, and ZIP in the address box (e.g. 5223 Farmville Rd, Farmville, VA 23901).",
+        400
+      );
+    }
+    return verifyAndSignManualAddress(parsed);
+  }
+
+  const country = text(a.country, 2).toUpperCase() || "US";
+  const rawState = text(a.state, 100);
+  const state = country === "US" ? normalizeUsState(rawState) : rawState;
+  const postal_code = text(a.postal_code, 20).replace(/\s+/g, "");
+  const line1 = text(a.line1, 200);
+  const line2 = text(a.line2, 100) || null;
+  const city = text(a.city, 100);
+
+  const draft: AddressCore = {
+    line1,
+    city,
+    state,
+    postal_code,
+    country,
+  };
+
+  if (!isCompleteAddress(draft)) {
+    if (country === "US") {
+      throw new AddressLookupError(
+        "Enter a street address with a house number, city, 2-letter state, and ZIP code.",
+        400
+      );
+    }
+    throw new AddressLookupError(
+      "Enter a street address with a house number and city.",
+      400
+    );
+  }
+
+  if (country === "US") {
+    try {
+      const verified = await verifyUsAddressWithUsps({
+        line1,
+        line2,
+        city,
+        state,
+        postal_code,
+      });
+      const core = coreOf({
+        line1: verified.line1,
+        city: verified.city,
+        state: verified.state,
+        postal_code: verified.postal_code,
+        country: "US",
+      });
+      return {
+        address: { ...core, line2: verified.line2 },
+        token: signAddress(core),
+      };
+    } catch (error) {
+      if (error instanceof UspsAddressError) {
+        throw new AddressLookupError(error.message, error.status);
+      }
+      throw error;
+    }
+  }
+
+  const normalized = coreOf(draft);
+  return {
+    address: { ...normalized, line2 },
+    token: signAddress(normalized),
+  };
 }
 
 /**
