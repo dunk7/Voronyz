@@ -33,6 +33,7 @@ import GalleryAdminPanel from "./GalleryAdminPanel";
 import { formatCentsAsCurrency } from "@/lib/money";
 import {
   formatShippingAddress,
+  orderRecipientName,
   type AdminOrder,
   type OrderLineItem,
 } from "@/lib/orderTypes";
@@ -164,6 +165,139 @@ function SortButton({
       {label}
       <Icon className="h-3.5 w-3.5" />
     </button>
+  );
+}
+
+function OrderShippingEditor({
+  order,
+  onSaved,
+  onAuthLost,
+}: {
+  order: AdminOrder;
+  onSaved: (order: AdminOrder) => void;
+  onAuthLost: () => void;
+}) {
+  const existingAddress = formatShippingAddress({
+    name: null,
+    address: order.shipping?.address ?? null,
+  });
+  const [editing, setEditing] = useState(!existingAddress);
+  const [name, setName] = useState(order.shipping?.name ?? "");
+  const [addressText, setAddressText] = useState(existingAddress);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const nextAddress = formatShippingAddress({
+      name: null,
+      address: order.shipping?.address ?? null,
+    });
+    setName(order.shipping?.name ?? "");
+    setAddressText(nextAddress);
+    setEditing(!nextAddress);
+    setError(null);
+  }, [order.id, order.shipping]);
+
+  async function saveShipping() {
+    if (saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/orders/admin/${order.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          shipping: { name, addressText },
+        }),
+      });
+      if (res.status === 401) {
+        onAuthLost();
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to save address");
+      }
+      if (data.order) onSaved(data.order);
+      setEditing(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save address");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!editing) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
+            Ship to
+          </h3>
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="text-xs font-medium text-neutral-600 underline underline-offset-2 hover:text-neutral-900 print:hidden"
+          >
+            Edit address
+          </button>
+        </div>
+        <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-neutral-900">
+          {formatShippingAddress(order.shipping) || "No shipping address on file"}
+        </pre>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3 print:hidden">
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
+        Ship to
+      </h3>
+      <p className="text-xs text-neutral-500">
+        Paste the address from Pirate Ship or type it manually. Name stays separate from the street.
+      </p>
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Name on the package"
+        className="w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none"
+      />
+      <textarea
+        value={addressText}
+        onChange={(e) => setAddressText(e.target.value)}
+        rows={4}
+        placeholder={"5223 Farmville Rd\nFarmville, VA 23901"}
+        className="w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none"
+      />
+      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => void saveShipping()}
+          disabled={saving || !addressText.trim()}
+          className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+        >
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          Save address
+        </button>
+        {existingAddress ? (
+          <button
+            type="button"
+            onClick={() => {
+              setEditing(false);
+              setError(null);
+              setName(order.shipping?.name ?? "");
+              setAddressText(existingAddress);
+            }}
+            className="rounded-full border border-black/10 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+          >
+            Cancel
+          </button>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
@@ -1072,7 +1206,7 @@ export default function OrdersAdminClient() {
           <div className="space-y-1.5">
             {filteredOrders.map((order, index) => {
               const expanded = expandedId === order.id;
-              const shipName = order.shipping?.name || order.customer?.name || "—";
+              const shipName = orderRecipientName(order);
               const addressText = formatShippingAddress(order.shipping);
               const showUncompletedSection =
                 ordersView === "all" &&
@@ -1186,14 +1320,19 @@ export default function OrdersAdminClient() {
                       )}
                       <div className="grid gap-6 lg:grid-cols-2 print:grid-cols-2">
                       <div className="space-y-3">
-                        <h3 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-                          Ship to
-                        </h3>
-                        <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-neutral-900">
-                          {addressText || "No shipping address on file"}
-                        </pre>
+                        <OrderShippingEditor
+                          order={order}
+                          onSaved={(next) => {
+                            setOrders((prev) =>
+                              prev.map((o) => (o.id === next.id ? next : o))
+                            );
+                          }}
+                          onAuthLost={() => setAuthenticated(false)}
+                        />
                         <div className="flex flex-wrap gap-2 print:hidden">
-                          <CopyButton text={addressText} label="Address" />
+                          {addressText ? (
+                            <CopyButton text={addressText} label="Address" />
+                          ) : null}
                           {order.customer?.email && (
                             <CopyButton text={order.customer.email} label="Email" />
                           )}

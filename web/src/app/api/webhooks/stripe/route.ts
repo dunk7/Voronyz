@@ -9,10 +9,11 @@ import {
   isShippingInsuranceRequested,
   SHIPPING_INSURANCE_PRODUCT_NAME,
 } from "@/lib/shippingInsurance";
+import { preferNonEmptyShipping } from "@/lib/orderTypes";
 import {
   INTERNATIONAL_SHIPPING_PRODUCT_NAME,
-  shippingFromStripeMetadata,
 } from "@/lib/shippingAddress";
+import { shippingFromStripeSession } from "@/lib/stripeShipping";
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -253,26 +254,12 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
             productSlug: (item as { productSlug?: string }).productSlug,
           }))
     );
-    const shippingDetails = fullSession.collected_information?.shipping_details ?? null;
-
-    // Extract shipping information
-    const stripeShipping = shippingDetails ? {
-      name: shippingDetails.name,
-      address: {
-        line1: shippingDetails.address.line1,
-        line2: shippingDetails.address.line2 || null,
-        city: shippingDetails.address.city,
-        state: shippingDetails.address.state,
-        postal_code: shippingDetails.address.postal_code,
-        country: shippingDetails.address.country,
-      },
-    } : null;
-    // Verified cart address is stored in metadata (Checkout no longer collects shipping itself).
-    const shipping = stripeShipping ?? shippingFromStripeMetadata(fullSession.metadata);
+    // Verified cart address lives in metadata; ignore empty Stripe shipping shells.
+    const shippingFromSession = shippingFromStripeSession(fullSession);
 
     // Extract billing information (if different from shipping)
     const billing = fullSession.customer_details?.address ? {
-      name: fullSession.customer_details.name || shippingDetails?.name || null,
+      name: fullSession.customer_details.name || shippingFromSession?.name || null,
       address: {
         line1: fullSession.customer_details.address.line1,
         line2: fullSession.customer_details.address.line2 || null,
@@ -284,7 +271,7 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
     } : null;
 
     // Extract customer information
-    const customerName = shipping?.name || 
+    const customerName = shippingFromSession?.name || 
                         fullSession.customer_details?.name || 
                         fullSession.customer_details?.email?.split('@')[0] || 
                         null;
@@ -326,6 +313,10 @@ async function handleCheckoutCompleted(stripeClient: Stripe, session: Stripe.Che
       typeof existingMeta.orderNumber === "string" && existingMeta.orderNumber
         ? existingMeta.orderNumber
         : orderNumber;
+    const shipping = preferNonEmptyShipping(
+      shippingFromSession,
+      existingMeta.shipping
+    );
 
     // Create or update order in database with all information
     const order = await prisma.order.upsert({

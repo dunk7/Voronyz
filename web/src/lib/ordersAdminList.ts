@@ -1,4 +1,8 @@
-import type { AdminOrder, OrderLineItem } from "./orderTypes";
+import {
+  orderRecipientName,
+  type AdminOrder,
+  type OrderLineItem,
+} from "./orderTypes";
 
 export type OrdersView = "open" | "completed" | "expired" | "all";
 export type OrdersSortKey = "date" | "price" | "name" | "status";
@@ -63,8 +67,8 @@ function compareOrders(
       cmp = a.totalCents - b.totalCents;
       break;
     case "name": {
-      const an = (a.shipping?.name || a.customer?.name || "").toLowerCase();
-      const bn = (b.shipping?.name || b.customer?.name || "").toLowerCase();
+      const an = orderRecipientName(a).toLowerCase();
+      const bn = orderRecipientName(b).toLowerCase();
       cmp = an.localeCompare(bn);
       break;
     }

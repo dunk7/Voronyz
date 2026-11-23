@@ -5,7 +5,6 @@ import {
   formatAddressLine,
   INTERNATIONAL_SHIPPING_CENTS,
   isDomesticCountry,
-  looksLikeStreetAddress,
   parseUsFreeformAddress,
   type AddressSuggestion,
   type VerifiedShipping,
@@ -44,9 +43,7 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
   const [showLine2, setShowLine2] = useState(false);
   const sessionRef = useRef(newSessionToken());
   const containerRef = useRef<HTMLDivElement>(null);
-  const nameRef = useRef<HTMLInputElement>(null);
   const line2Ref = useRef<HTMLInputElement>(null);
-  const hadValueRef = useRef(Boolean(value));
 
   useEffect(() => {
     if (value) return;
@@ -102,34 +99,13 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
   }, []);
 
   useEffect(() => {
-    if (!value) {
-      setShowLine2(false);
-      return;
-    }
-    if (looksLikeStreetAddress(value.address.name)) {
-      setName("");
-      if (value.address.name) {
-        onChange({ ...value, address: { ...value.address, name: "" } });
-      }
-      return;
-    }
-    setName(value.address.name);
-    // Only re-sync when the verified shipping value changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (value) setName(value.address.name);
+    else setShowLine2(false);
   }, [value]);
 
   useEffect(() => {
     if (showLine2) line2Ref.current?.focus();
   }, [showLine2]);
-
-  useEffect(() => {
-    const hadValue = hadValueRef.current;
-    hadValueRef.current = Boolean(value);
-    // After a fresh verify, jump to the name box so street text never sits there.
-    if (value && !hadValue) {
-      nameRef.current?.focus();
-    }
-  }, [value]);
 
   const finishSelect = () => {
     setOpen(false);
@@ -140,22 +116,14 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
     sessionRef.current = newSessionToken();
   };
 
-  /** Keep a typed recipient name across address changes; never carry street text. */
-  const recipientName = () => {
-    const trimmed = name.trim();
-    if (!trimmed || looksLikeStreetAddress(trimmed)) return "";
-    return trimmed;
-  };
-
   const select = async (suggestion: AddressSuggestion) => {
     setErrorMessage("");
-    const carryName = recipientName();
+    const carryName = name;
     if (suggestion.resolved) {
       onChange({
         address: { ...suggestion.resolved.address, name: carryName, line2: null },
         token: suggestion.resolved.token,
       });
-      if (carryName !== name) setName(carryName);
       finishSelect();
       return;
     }
@@ -180,7 +148,6 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
         address: { ...data.address, name: carryName, line2: null },
         token: data.token,
       });
-      if (carryName !== name) setName(carryName);
       finishSelect();
     } catch {
       setErrorMessage("Address lookup is unavailable right now.");
@@ -203,6 +170,10 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
     const trimmed = query.trim();
     if (!trimmed) {
       setErrorMessage("Type your shipping address to continue.");
+      return;
+    }
+    if (!name.trim()) {
+      setErrorMessage("Add the name on the package above.");
       return;
     }
     const parsed = parseUsFreeformAddress(trimmed);
@@ -230,16 +201,14 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
         setErrorMessage(data.error || "Please check the address and try again.");
         return;
       }
-      const carryName = recipientName();
       onChange({
         address: {
           ...data.address,
-          name: carryName,
+          name: name.trim(),
           line2: data.address.line2 ?? null,
         },
         token: data.token,
       });
-      if (carryName !== name) setName(carryName);
       finishSelect();
     } catch {
       setErrorMessage("Address lookup is unavailable right now.");
@@ -292,15 +261,29 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
   const showUseTyped =
     !value && freeformReady && searchState !== "loading";
 
-  const setRecipientName = (next: string) => {
-    setName(next);
-    if (value) {
-      onChange({ ...value, address: { ...value.address, name: next } });
-    }
-  };
-
   return (
     <div className="space-y-3" ref={containerRef}>
+      <div className="space-y-1">
+        <label htmlFor={`${listId}-name`} className="sr-only">
+          Name on the package
+        </label>
+        <input
+          id={`${listId}-name`}
+          type="text"
+          autoComplete="name"
+          value={name}
+          maxLength={120}
+          onChange={(event) => {
+            setName(event.target.value);
+            if (value) {
+              onChange({ ...value, address: { ...value.address, name: event.target.value } });
+            }
+          }}
+          placeholder="Name on the package"
+          className={inputClass}
+        />
+      </div>
+
       {value ? (
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5">
@@ -316,6 +299,7 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
                 Verified address
               </div>
               <div className="mt-1 text-sm text-neutral-900">
+                {value.address.name ? `${value.address.name} · ` : ""}
                 {formatAddressLine({ ...value.address, line2: null })}
               </div>
             </div>
@@ -327,23 +311,6 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
               Change
             </button>
           </div>
-          <div className="space-y-1">
-            <label htmlFor={`${listId}-name`} className="sr-only">
-              Name on the package
-            </label>
-            <input
-              ref={nameRef}
-              id={`${listId}-name`}
-              type="text"
-              name="shipping_recipient"
-              autoComplete="shipping name"
-              value={name}
-              maxLength={120}
-              onChange={(event) => setRecipientName(event.target.value)}
-              placeholder="Name on the package"
-              className={inputClass}
-            />
-          </div>
           {showLine2 || value.address.line2 ? (
             <div className="space-y-1">
               <label htmlFor={`${listId}-line2`} className="text-xs font-medium text-neutral-700">
@@ -353,7 +320,7 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
                 ref={line2Ref}
                 id={`${listId}-line2`}
                 type="text"
-                autoComplete="shipping address-line2"
+                autoComplete="address-line2"
                 value={value.address.line2 ?? ""}
                 maxLength={100}
                 onChange={(event) =>
@@ -394,8 +361,7 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
             aria-expanded={open && suggestions.length > 0}
             aria-controls={`${listId}-options`}
             aria-autocomplete="list"
-            name="shipping_address_search"
-            autoComplete="off"
+            autoComplete="street-address"
             value={query}
             onChange={(event) => {
               setQuery(event.target.value);

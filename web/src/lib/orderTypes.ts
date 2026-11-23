@@ -1,3 +1,8 @@
+import {
+  looksLikeStreetAddress,
+  parseUsFreeformAddress,
+} from "@/lib/shippingAddress";
+
 export type OrderAddress = {
   line1: string;
   line2?: string | null;
@@ -81,6 +86,67 @@ export function hasAddressContent(address: OrderAddress | null | undefined): boo
         (address.state?.trim() || address.postal_code?.trim())) ||
       address.postal_code?.trim()
   );
+}
+
+/**
+ * If a street address was wrongly stored in `shipping.name` (and the real
+ * address fields are empty), move it into `address` and clear the name.
+ * Keeps person names in `name` and street lines in `address`.
+ */
+export function normalizeOrderShipping(
+  shipping: OrderShipping | null | undefined
+): OrderShipping | null {
+  if (!shipping) return null;
+
+  const rawName = shipping.name?.trim() || null;
+  let address =
+    shipping.address && hasAddressContent(shipping.address)
+      ? shipping.address
+      : null;
+  let name = rawName;
+
+  if (!address && rawName && looksLikeStreetAddress(rawName)) {
+    const parsed = parseUsFreeformAddress(rawName);
+    if (parsed) {
+      address = {
+        line1: parsed.line1,
+        line2: parsed.line2,
+        city: parsed.city,
+        state: parsed.state,
+        postal_code: parsed.postal_code,
+        country: parsed.country,
+      };
+    } else {
+      address = {
+        line1: rawName,
+        line2: null,
+        city: "",
+        state: "",
+        postal_code: "",
+        country: "US",
+      };
+    }
+    name = null;
+  } else if (name && looksLikeStreetAddress(name) && address) {
+    // Name field got a street dump even though address fields exist.
+    name = null;
+  }
+
+  if (!name && !address) return null;
+  return { name, address };
+}
+
+/** Person name for list rows — never a street address. */
+export function orderRecipientName(order: {
+  shipping?: OrderShipping | null;
+  customer?: OrderCustomer | null;
+}): string {
+  const shipping = normalizeOrderShipping(order.shipping ?? null);
+  const name = shipping?.name?.trim();
+  if (name) return name;
+  const customerName = order.customer?.name?.trim();
+  if (customerName && !looksLikeStreetAddress(customerName)) return customerName;
+  return "—";
 }
 
 export function parseAddressFromRecord(
@@ -223,7 +289,7 @@ export function parseOrderMetadata(metadata: unknown): {
       }
     : null;
 
-  const shipping = resolveOrderShipping(metadata);
+  const shipping = normalizeOrderShipping(resolveOrderShipping(metadata));
 
   const lineItems: OrderLineItem[] = [];
   if (Array.isArray(metadata.lineItems)) {
@@ -286,9 +352,10 @@ export function parseOrderMetadata(metadata: unknown): {
 }
 
 export function formatShippingAddress(shipping: OrderShipping | null): string {
-  if (!shipping || !hasAddressContent(shipping.address)) return "";
+  const normalized = normalizeOrderShipping(shipping);
+  if (!normalized || !hasAddressContent(normalized.address)) return "";
 
-  const { address } = shipping;
+  const { address } = normalized;
   const cityLine = [address!.city, address!.state, address!.postal_code]
     .filter((p) => p?.trim())
     .join(", ")
@@ -296,7 +363,7 @@ export function formatShippingAddress(shipping: OrderShipping | null): string {
     .trim();
 
   const lines = [
-    shipping.name || "",
+    normalized.name || "",
     address!.line1,
     address!.line2 || "",
     cityLine,
@@ -304,4 +371,53 @@ export function formatShippingAddress(shipping: OrderShipping | null): string {
   ].filter((line) => line && String(line).trim());
 
   return lines.join("\n");
+}
+
+/**
+ * Build/replace order shipping from an admin freeform paste.
+ * `name` stays a person name; street text goes into address fields.
+ */
+export function shippingFromManualEntry(input: {
+  name?: string | null;
+  addressText?: string | null;
+  address?: OrderAddress | null;
+}): OrderShipping | null {
+  const rawName = (input.name ?? "").trim();
+  const name =
+    rawName && !looksLikeStreetAddress(rawName) ? rawName : null;
+
+  let address: OrderAddress | null =
+    input.address && hasAddressContent(input.address) ? input.address : null;
+
+  const text = (input.addressText ?? "").trim();
+  if (!address && text) {
+    const parsed = parseUsFreeformAddress(text);
+    if (parsed) {
+      address = {
+        line1: parsed.line1,
+        line2: parsed.line2,
+        city: parsed.city,
+        state: parsed.state,
+        postal_code: parsed.postal_code,
+        country: parsed.country,
+      };
+    } else {
+      // Accept imperfect manual paste (e.g. copied from Pirate Ship) as line1.
+      address = {
+        line1: text.replace(/\s+/g, " ").trim(),
+        line2: null,
+        city: "",
+        state: "",
+        postal_code: "",
+        country: "US",
+      };
+    }
+  }
+
+  // If they only pasted into the name box, recover it as the address.
+  if (!address && rawName && looksLikeStreetAddress(rawName)) {
+    return normalizeOrderShipping({ name: rawName, address: null });
+  }
+
+  return normalizeOrderShipping({ name, address });
 }
