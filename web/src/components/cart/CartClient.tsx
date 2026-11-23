@@ -435,7 +435,7 @@ export default function CartClient() {
   const startStripeCheckout = async (method: "ach" | "card") => {
     if (stripeBusy || isNanoCheckingOut) return;
     if (!shippingReady) {
-      setMessage("Select a verified shipping address to continue.");
+      setMessage("Enter a shipping address to continue.");
       return;
     }
     const setBusy = method === "ach" ? setIsCheckingOut : setIsCardCheckingOut;
@@ -918,7 +918,7 @@ export default function CartClient() {
         </button>
         <p className="text-center text-xs text-neutral-500 -mt-1">
           {!shippingReady
-            ? "Select a verified shipping address to continue"
+            ? "Enter a shipping address to continue"
             : isInternational
               ? "International orders are paid by card"
               : orderTotal < 50
@@ -951,7 +951,7 @@ export default function CartClient() {
           onClick={async () => {
             if (isNanoCheckingOut) return;
             if (!shippingReady) {
-              setMessage("Select a verified shipping address to continue.");
+              setMessage("Enter a shipping address to continue.");
               return;
             }
             setIsNanoCheckingOut(true);

@@ -5,6 +5,7 @@ import {
   parseVerifiedShipping,
   signAddress,
   verifyAddressToken,
+  verifyAndSignManualAddress,
 } from "./addressVerification";
 import {
   addressToStripeMetadata,
@@ -74,4 +75,43 @@ test("shipping address round-trips through Stripe metadata", () => {
     address: { ...core, line2: null },
   });
   assert.equal(shippingFromStripeMetadata({}), null);
+});
+
+test("manual Farmville address verifies via USPS-style check and signs", async () => {
+  const signed = await verifyAndSignManualAddress({
+    line1: "5223 Farmville Rd",
+    city: "Farmville",
+    state: "VA",
+    postal_code: "23901",
+    country: "US",
+  });
+  assert.match(signed.address.line1.toUpperCase(), /5223\s+FARMVILLE\s+RD/);
+  assert.equal(signed.address.state, "VA");
+  assert.match(signed.address.postal_code, /^23901(-\d{4})?$/);
+  assert.equal(verifyAddressToken(signed.address, signed.token), true);
+
+  const parsed = parseVerifiedShipping({
+    address: { ...signed.address, name: "Alex" },
+    token: signed.token,
+  });
+  assert.equal(parsed?.name, "Alex");
+  assert.equal(parsed?.line1, signed.address.line1);
+});
+
+test("manual made-up address is rejected by USPS-style check", async () => {
+  await assert.rejects(
+    () =>
+      verifyAndSignManualAddress({
+        line1: "99999 Fake Nowhere Blvd",
+        city: "Farmville",
+        state: "VA",
+        postal_code: "23901",
+        country: "US",
+      }),
+    (error: unknown) => {
+      assert.ok(error && typeof error === "object" && "status" in error);
+      assert.equal((error as { status: number }).status, 422);
+      return true;
+    }
+  );
 });
