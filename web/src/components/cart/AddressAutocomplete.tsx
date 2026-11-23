@@ -241,11 +241,8 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
     }
     if (event.key === "Enter") {
       event.preventDefault();
-      // Same box: if suggestions are open and one is highlighted we already
-      // handled that; otherwise keep the typed text as a manual address.
-      if (suggestions.length === 0 || searchState === "empty") {
-        void submitTypedAddress();
-      }
+      // Same box: highlighted suggestion takes priority; otherwise keep typed text.
+      if (parseUsFreeformAddress(query.trim())) void submitTypedAddress();
     }
   };
 
@@ -259,13 +256,10 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
     trimmedQuery.length >= MIN_QUERY_LENGTH &&
     suggestions.length > 0 &&
     searchState === "idle";
+  // Always offer the typed freeform once it looks complete — suggestions can
+  // miss rural streets (e.g. Farmville Rd) while still returning nearby hits.
   const showUseTyped =
-    !value &&
-    freeformReady &&
-    searchState !== "loading" &&
-    (showNoMatch ||
-      searchState === "error" ||
-      (suggestions.length === 0 && trimmedQuery.length >= MIN_QUERY_LENGTH));
+    !value && freeformReady && searchState !== "loading";
 
   return (
     <div className="space-y-3" ref={containerRef}>
@@ -408,25 +402,34 @@ export default function AddressAutocomplete({ value, onChange }: Props) {
           {searchState === "loading" && trimmedQuery.length >= MIN_QUERY_LENGTH && (
             <p className="text-xs text-neutral-500">Looking up addresses…</p>
           )}
-          {showPrompt && (
-            <p className="text-xs text-neutral-500">
-              Pick a suggestion, or keep typing the full address to use it as entered.
-            </p>
+          {showPrompt && !showUseTyped && (
+            <p className="text-xs text-neutral-500">Pick your address from the list.</p>
           )}
-          {showNoMatch && (
+          {showNoMatch && !showUseTyped && (
             <p className="text-xs text-neutral-500">
-              No suggestions for that text — we&apos;ll use the address you typed after a USPS check.
+              No suggestions yet — keep typing street, city, state, and ZIP.
             </p>
           )}
           {showUseTyped && (
-            <button
-              type="button"
-              disabled={manualSubmitting}
-              onClick={() => void submitTypedAddress()}
-              className="w-full rounded-lg bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {manualSubmitting ? "Checking with USPS…" : "Use this address"}
-            </button>
+            <div className="space-y-1.5 pt-1">
+              {suggestions.length > 0 ? (
+                <p className="text-xs text-neutral-500">
+                  Pick a suggestion above, or use the address you typed.
+                </p>
+              ) : (
+                <p className="text-xs text-neutral-500">
+                  No matching suggestions — we&apos;ll verify the address you typed with USPS.
+                </p>
+              )}
+              <button
+                type="button"
+                disabled={manualSubmitting}
+                onClick={() => void submitTypedAddress()}
+                className="w-full rounded-lg bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {manualSubmitting ? "Checking with USPS…" : "Use this address"}
+              </button>
+            </div>
           )}
           {(searchState === "error" || errorMessage) && errorMessage && (
             <p className="text-sm text-red-600" role="alert">
