@@ -94,32 +94,35 @@ const FOOTWEAR_VARIANTS: Record<
   ReadonlyArray<{ color: string; sku: string; stock: number; priceCents?: number }>
 > = {
   "v3-slides": [
-    { color: "black", sku: "V3-BLK", stock: 999 },
+    { color: "black", sku: "V3-BLK", stock: 0 },
     { color: "white", sku: "V3-WHT", stock: 0 },
-    { color: "grey", sku: "V3-GRY", stock: 999 },
+    { color: "grey", sku: "V3-GRY", stock: 0 },
     { color: "green", sku: "V3-GRN", stock: 0 },
     { color: "pink", sku: "V3-PNK", stock: 999 },
+    { color: "tan", sku: "V3-TAN", stock: 999 },
   ],
   dragonfly: [
-    { color: "black", sku: "DF-BLK", stock: 999, priceCents: DRAGONFLY_PRICE_CENTS },
+    { color: "black", sku: "DF-BLK", stock: 0, priceCents: DRAGONFLY_PRICE_CENTS },
     { color: "white", sku: "DF-WHT", stock: 0, priceCents: DRAGONFLY_PRICE_CENTS },
-    { color: "red", sku: "DF-RED", stock: 999, priceCents: DRAGONFLY_PRICE_CENTS },
-    { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: DRAGONFLY_PRICE_CENTS },
+    { color: "red", sku: "DF-RED", stock: 0, priceCents: DRAGONFLY_PRICE_CENTS },
+    { color: "#007FFF", sku: "DF-AZR", stock: 0, priceCents: DRAGONFLY_PRICE_CENTS },
     { color: "pink", sku: "DF-PNK", stock: 999, priceCents: DRAGONFLY_PRICE_CENTS },
+    { color: "tan", sku: "DF-TAN", stock: 999, priceCents: DRAGONFLY_PRICE_CENTS },
   ],
   "slip-ons": [
-    { color: "black", sku: "SO-BLK", stock: 999 },
-    { color: "grey", sku: "SO-GRY", stock: 999 },
-    { color: "white", sku: "SO-WHT", stock: 999 },
-    { color: "orange", sku: "SO-ORG", stock: 999 },
+    { color: "black", sku: "SO-BLK", stock: 0 },
+    { color: "grey", sku: "SO-GRY", stock: 0 },
+    { color: "white", sku: "SO-WHT", stock: 0 },
+    { color: "orange", sku: "SO-ORG", stock: 0 },
     { color: "pink", sku: "SO-PNK", stock: 999 },
+    { color: "tan", sku: "SO-TAN", stock: 999 },
   ],
 };
 
 const FOOTWEAR_COLORS: Record<string, string[]> = {
-  "v3-slides": ["black", "white", "grey", "green", "pink"],
-  dragonfly: ["black", "white", "red", "#007FFF", "pink"],
-  "slip-ons": ["black", "grey", "white", "orange", "pink"],
+  "v3-slides": ["black", "white", "grey", "green", "pink", "tan"],
+  dragonfly: ["black", "white", "red", "#007FFF", "pink", "tan"],
+  "slip-ons": ["black", "grey", "white", "orange", "pink", "tan"],
 };
 
 const FOOTWEAR_SECONDARY: Record<string, string[]> = {
@@ -227,31 +230,34 @@ const FOOTWEAR_STOCK_SYNC: Array<{
   {
     slug: "v3-slides",
     variants: [
-      { color: "black", sku: "V3-BLK", stock: 999 },
+      { color: "black", sku: "V3-BLK", stock: 0 },
       { color: "white", sku: "V3-WHT", stock: 0 },
-      { color: "grey", sku: "V3-GRY", stock: 999 },
+      { color: "grey", sku: "V3-GRY", stock: 0 },
       { color: "green", sku: "V3-GRN", stock: 0 },
       { color: "pink", sku: "V3-PNK", stock: 999 },
+      { color: "tan", sku: "V3-TAN", stock: 999 },
     ],
   },
   {
     slug: "dragonfly",
     variants: [
-      { color: "black", sku: "DF-BLK", stock: 999, priceCents: DRAGONFLY_PRICE_CENTS },
+      { color: "black", sku: "DF-BLK", stock: 0, priceCents: DRAGONFLY_PRICE_CENTS },
       { color: "white", sku: "DF-WHT", stock: 0, priceCents: DRAGONFLY_PRICE_CENTS },
-      { color: "red", sku: "DF-RED", stock: 999, priceCents: DRAGONFLY_PRICE_CENTS },
-      { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: DRAGONFLY_PRICE_CENTS },
+      { color: "red", sku: "DF-RED", stock: 0, priceCents: DRAGONFLY_PRICE_CENTS },
+      { color: "#007FFF", sku: "DF-AZR", stock: 0, priceCents: DRAGONFLY_PRICE_CENTS },
       { color: "pink", sku: "DF-PNK", stock: 999, priceCents: DRAGONFLY_PRICE_CENTS },
+      { color: "tan", sku: "DF-TAN", stock: 999, priceCents: DRAGONFLY_PRICE_CENTS },
     ],
   },
   {
     slug: "slip-ons",
     variants: [
-      { color: "black", sku: "SO-BLK", stock: 999 },
-      { color: "grey", sku: "SO-GRY", stock: 999 },
-      { color: "white", sku: "SO-WHT", stock: 999 },
-      { color: "orange", sku: "SO-ORG", stock: 999 },
+      { color: "black", sku: "SO-BLK", stock: 0 },
+      { color: "grey", sku: "SO-GRY", stock: 0 },
+      { color: "white", sku: "SO-WHT", stock: 0 },
+      { color: "orange", sku: "SO-ORG", stock: 0 },
       { color: "pink", sku: "SO-PNK", stock: 999 },
+      { color: "tan", sku: "SO-TAN", stock: 999 },
     ],
   },
 ];

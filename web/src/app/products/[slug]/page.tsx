@@ -617,13 +617,13 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "What filament should I use?", a: "TPU-90A, the same material we print footwear with. We sell it on Engineering." },
               { q: "How much is it?", a: "$1 per shoe file. Another shoe is another dollar. No shipping — it's a digital download." },
             ] : isDragonfly ? [
-              { q: "What colors are available?", a: "The Dragonfly's come in Black, White, Red, Azure Blue, and Pink — white is currently out of stock. Laces can be any color you want!" },
+              { q: "What colors are available?", a: "Tan and pink are in stock. Black, white, red, and azure blue are sold out. Laces can be any color you want!" },
               { q: "Are they true to size?", a: "Yes — we offer Men's, Women's, and Kids' sizing. They're designed for a comfortable, snug fit right out of the box." },
               { q: "How long does production take?", a: "Each pair is 3D-printed to order. Production takes about 1-2 days, then ships out next business day." },
               { q: "Is shipping really free?", a: "Yes! We offer free shipping on all domestic US orders. No minimum purchase required. We currently only ship within the US." },
               { q: "Can I wash them?", a: "Absolutely. The lattice sole and upper are fully washable — toss them in the washer on a gentle cycle." },
             ] : isSlipOns ? [
-              { q: "What colors can I order?", a: "Black, grey, white, orange, and pink. Each pair is one solid body color (no two-tone option)." },
+              { q: "What colors can I order?", a: "Tan and pink are in stock. Black, grey, white, and orange are sold out. Each pair is one solid body color (no two-tone option)." },
               { q: "Are they true to size?", a: "Use the Men's / Women's / Kids' toggles on the product page to pick your usual US size." },
               { q: "How long does production take?", a: "About 1–2 days to print, then we ship the next business day." },
             ] : isTrailMix ? [
@@ -666,14 +666,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders once your pre-order ships." },
             ] : isGators ? [
               { q: "What is The Gators?", a: "A comfort clog named for the alligator 🐊 — closed toe, open back, thick cushioned platform, and easy slip-on wear for all-day comfort." },
-              { q: "What colors are available?", a: "Black, pink, grey, and skin-tone tan. This is a new listing with low stock, so grab your size while pairs last." },
+              { q: "What colors are available?", a: "Tan and pink are in stock. Black and grey are sold out. This is a new listing with low stock, so grab your size while pairs last." },
               { q: "How much do they cost?", a: "$100 per pair." },
               { q: "Are they true to size?", a: "Yes — use Men's, Women's, or Kids' sizing and pick your usual US size for a comfortable clog fit." },
               { q: "How long does production take?", a: "Printed to order in about 1–2 days, then ships the next business day." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },
             ] : isLatticeInsoles ? [
               { q: "What sizes are available?", a: "The same US Men's, Women's, and Kids' sizes as Voronyz shoes. Pick the size you wear in our footwear." },
-              { q: "What colors can I order?", a: "Black and grey." },
+              { q: "What colors can I order?", a: "Tan and pink are in stock. Black and grey are sold out." },
               { q: "Will they fit my shoes?", a: "They're printed on the same size scale as Voronyz footwear. Order your usual US size for a drop-in fit in Voronyz shoes and everyday sneakers." },
               { q: "How long does production take?", a: "Printed to order in about 1–2 days, then ships the next business day." },
               { q: "Is shipping free?", a: "Yes — free shipping on domestic US orders." },

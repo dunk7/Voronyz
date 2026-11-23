@@ -20,11 +20,11 @@ export const GATORS_PRIMARY_COLORS = ["black", "pink", "grey", "tan"] as const;
 
 export const GATORS_SIZES = ["5", "6", "7", "8", "9", "10", "11", "12"] as const;
 
-/** Low stock — limited pairs available. */
+/** Tan and pink in stock; black and grey sold out. */
 export const GATORS_VARIANTS = [
-  { color: "black", sku: "GT-BLK", stock: 2 },
+  { color: "black", sku: "GT-BLK", stock: 0 },
   { color: "pink", sku: "GT-PNK", stock: 2 },
-  { color: "grey", sku: "GT-GRY", stock: 2 },
+  { color: "grey", sku: "GT-GRY", stock: 0 },
   { color: "tan", sku: "GT-TAN", stock: 2 },
 ] as const;
 
