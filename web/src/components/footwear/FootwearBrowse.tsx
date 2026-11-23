@@ -144,7 +144,7 @@ export default function FootwearBrowse({
 }: FootwearBrowseProps) {
   const ranked = useMemo(() => sortFootwearForTab(products, "trending"), [products]);
   const isHome = variant === "home";
-  const title = heading ?? (isHome ? "All Footwear" : "Footwear");
+  const title = heading ?? (isHome ? "Advanced Footwear" : "Footwear");
   const TitleTag = isHome ? "h2" : "h1";
 
   return (
@@ -154,7 +154,7 @@ export default function FootwearBrowse({
           ? "overflow-hidden rounded-3xl bg-black text-white ring-1 ring-black/10"
           : "bg-black text-white"
       }
-      aria-labelledby="footwear-browse-heading"
+      aria-labelledby={isHome ? "advanced-footwear-heading" : "footwear-browse-heading"}
     >
       <div
         className={`mx-auto w-full max-w-2xl px-3 pb-12 pt-8 sm:px-5 sm:pt-10 ${
@@ -162,10 +162,10 @@ export default function FootwearBrowse({
         }`}
       >
         <TitleTag
-          id="footwear-browse-heading"
+          id={isHome ? "advanced-footwear-heading" : "footwear-browse-heading"}
           className={
             isHome
-              ? "text-3xl font-bold leading-none tracking-tight sm:text-4xl"
+              ? "home-display-glow text-4xl font-semibold leading-none tracking-tight text-white sm:text-5xl md:text-6xl"
               : "text-[2.65rem] font-bold leading-none tracking-tight sm:text-5xl"
           }
         >
