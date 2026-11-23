@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { parseUsFreeformAddress } from "./shippingAddress";
+import { looksLikeStreetAddress, parseUsFreeformAddress } from "./shippingAddress";
 
 test("parseUsFreeformAddress handles comma and spaced US addresses", () => {
   assert.deepEqual(parseUsFreeformAddress("5223 Farmville Rd, Farmville, VA 23901"), {
@@ -39,4 +39,11 @@ test("parseUsFreeformAddress rejects incomplete or empty text", () => {
   assert.equal(parseUsFreeformAddress("Farmville Rd"), null);
   assert.equal(parseUsFreeformAddress("5223 Farmville Rd"), null);
   assert.equal(parseUsFreeformAddress("5223 Farmville Rd, Farmville"), null);
+});
+
+test("looksLikeStreetAddress keeps person names out of the street check", () => {
+  assert.equal(looksLikeStreetAddress("Alex Rivera"), false);
+  assert.equal(looksLikeStreetAddress(""), false);
+  assert.equal(looksLikeStreetAddress("5223 Farmville Rd, Farmville, VA 23901"), true);
+  assert.equal(looksLikeStreetAddress("123 Main St, Springfield"), true);
 });
