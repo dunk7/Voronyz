@@ -98,7 +98,13 @@ function normalizeFreeformState(raw: string): string {
 export function parseUsFreeformAddress(
   raw: string
 ): ParsedUsFreeformAddress | null {
-  const cleaned = raw.replace(/\s+/g, " ").trim().replace(/,+/g, ",");
+  // Strip trailing country labels people often paste from maps/autofill.
+  const cleaned = raw
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/,+/g, ",")
+    .replace(/,?\s*(USA|U\.S\.A\.|United States(?: of America)?)\s*$/i, "")
+    .trim();
   if (!cleaned || !/\d/.test(cleaned)) return null;
 
   // Prefer comma-separated:

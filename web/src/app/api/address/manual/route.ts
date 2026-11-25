@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   AddressLookupError,
+  UnrecognizedAddressError,
   verifyAndSignManualAddress,
 } from "@/lib/addressVerification";
 
@@ -15,10 +16,11 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { address, token } = await verifyAndSignManualAddress(body);
+    const { address, token, unverified } = await verifyAndSignManualAddress(body);
     return NextResponse.json({
       address: { ...address, name: "" },
       token,
+      ...(unverified ? { unverified: true } : {}),
     });
   } catch (error) {
     const status = error instanceof AddressLookupError ? error.status : 502;
@@ -29,6 +31,14 @@ export async function POST(request: NextRequest) {
     if (!(error instanceof AddressLookupError)) {
       console.error("Manual address verification failed:", error);
     }
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json(
+      {
+        error: message,
+        ...(error instanceof UnrecognizedAddressError
+          ? { code: error.code }
+          : {}),
+      },
+      { status }
+    );
   }
 }

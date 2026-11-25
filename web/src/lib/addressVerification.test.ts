@@ -4,6 +4,7 @@ import {
   isCompleteAddress,
   parseVerifiedShipping,
   signAddress,
+  UnrecognizedAddressError,
   verifyAddressToken,
   verifyAndSignManualAddress,
 } from "./addressVerification";
@@ -119,9 +120,27 @@ test("manual made-up address is rejected by USPS-style check", async () => {
         country: "US",
       }),
     (error: unknown) => {
-      assert.ok(error && typeof error === "object" && "status" in error);
-      assert.equal((error as { status: number }).status, 422);
+      assert.ok(error instanceof UnrecognizedAddressError);
+      assert.equal(error.status, 422);
+      assert.equal(error.code, "UNRECOGNIZED");
       return true;
     }
   );
+});
+
+test("confirmUnverified accepts a complete US address USPS does not recognize", async () => {
+  const signed = await verifyAndSignManualAddress({
+    line1: "99999 Fake Nowhere Blvd",
+    city: "Farmville",
+    state: "VA",
+    postal_code: "23901",
+    country: "US",
+    confirmUnverified: true,
+  });
+  assert.equal(signed.unverified, true);
+  assert.equal(signed.address.line1, "99999 Fake Nowhere Blvd");
+  assert.equal(signed.address.city, "Farmville");
+  assert.equal(signed.address.state, "VA");
+  assert.equal(signed.address.postal_code, "23901");
+  assert.equal(verifyAddressToken(signed.address, signed.token), true);
 });

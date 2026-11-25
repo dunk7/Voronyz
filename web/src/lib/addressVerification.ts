@@ -16,9 +16,10 @@ import {
  * from the free Photon (OpenStreetMap) geocoder. Resolved suggestions are HMAC-
  * signed so /api/checkout can trust the payload.
  *
- * Manual entry is allowed when autocomplete misses an address, but US addresses
- * must still pass USPS-style verification (same database Pirate Ship uses) and
- * are saved in the standardized form (incl. ZIP+4 when available).
+ * Manual entry is allowed when autocomplete misses an address. US addresses are
+ * checked with USPS-style verification (same database Pirate Ship uses) and
+ * saved in standardized form (incl. ZIP+4 when available). Customers can still
+ * confirm an unrecognized complete address as typed so checkout is not blocked.
  */
 
 const TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -374,16 +375,29 @@ export async function resolveSuggestion(
   return { address, token: signAddress(address) };
 }
 
+export class UnrecognizedAddressError extends AddressLookupError {
+  readonly code = "UNRECOGNIZED" as const;
+  constructor(
+    message = "USPS does not recognize that address. Double-check it, or use it as typed."
+  ) {
+    super(message, 422);
+  }
+}
+
 /**
  * Validate a hand-typed address, then sign it the same way as autocomplete.
  *
- * US addresses must pass USPS-style verification (Pirate Ship / USPS database).
- * On success we store the standardized form (ZIP+4 when the verifier returns it).
+ * US addresses are checked with USPS-style verification (Pirate Ship / USPS
+ * database). On success we store the standardized form (ZIP+4 when available).
+ * When USPS does not recognize a complete address, callers may pass
+ * `confirmUnverified: true` to accept the address as typed so checkout is not
+ * blocked for real homes that are missing from the verifier.
  * International manual addresses only need completeness checks (USPS is US-only).
  */
 export async function verifyAndSignManualAddress(raw: unknown): Promise<{
   address: AddressCore & { line2: string | null };
   token: string;
+  unverified?: boolean;
 }> {
   if (!raw || typeof raw !== "object") {
     throw new AddressLookupError("Address details are required.", 400);
@@ -391,6 +405,10 @@ export async function verifyAndSignManualAddress(raw: unknown): Promise<{
   const a = raw as Record<string, unknown>;
   const text = (value: unknown, max: number) =>
     typeof value === "string" ? value.trim().slice(0, max) : "";
+  const confirmUnverified =
+    a.confirmUnverified === true ||
+    a.allowUnverified === true ||
+    a.force === true;
 
   // One-box freeform: "5223 Farmville Rd, Farmville, VA 23901"
   const freeform = text(a.query ?? a.freeform, 300);
@@ -402,7 +420,7 @@ export async function verifyAndSignManualAddress(raw: unknown): Promise<{
         400
       );
     }
-    return verifyAndSignManualAddress(parsed);
+    return verifyAndSignManualAddress({ ...parsed, confirmUnverified });
   }
 
   const country = text(a.country, 2).toUpperCase() || "US";
@@ -456,6 +474,19 @@ export async function verifyAndSignManualAddress(raw: unknown): Promise<{
       };
     } catch (error) {
       if (error instanceof UspsAddressError) {
+        // Let shoppers continue with a complete typed address when USPS does
+        // not recognize it, or when the verifier itself is temporarily down.
+        if (confirmUnverified && (error.status === 422 || error.status === 503)) {
+          const normalized = coreOf(draft);
+          return {
+            address: { ...normalized, line2 },
+            token: signAddress(normalized),
+            unverified: true,
+          };
+        }
+        if (error.status === 422) {
+          throw new UnrecognizedAddressError(error.message);
+        }
         throw new AddressLookupError(error.message, error.status);
       }
       throw error;
