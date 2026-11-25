@@ -5,12 +5,14 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
   GATORS_LISTING_COVER_URL,
+  GATORS_PRIMARY_COLORS,
   GATORS_SIZES,
   GATORS_SLUG,
   GATORS_THUMBNAIL_URL,
   GATORS_VARIANTS,
 } from "./gators";
 import {
+  LATTICE_INSOLES_PRIMARY_COLORS,
   LATTICE_INSOLES_PRODUCT_IMAGE_URL,
   LATTICE_INSOLES_SIDE_IMAGE_URL,
   LATTICE_INSOLES_SIZES,
@@ -44,7 +46,11 @@ const studio = [
   "/products/slip-ons/InShot_20260405_203151152.jpg",
 ];
 
-test("footwear body colors: only tan and pink are in stock", () => {
+test("footwear body colors: only tan and pink are available", () => {
+  assert.deepEqual([...SLIP_ONS_PRIMARY_COLORS], ["tan", "pink"]);
+  assert.deepEqual([...GATORS_PRIMARY_COLORS], ["tan", "pink"]);
+  assert.deepEqual([...LATTICE_INSOLES_PRIMARY_COLORS], ["tan", "pink"]);
+
   for (const variant of SLIP_ONS_VARIANTS) {
     if (variant.color === "tan" || variant.color === "pink") {
       assert.ok(variant.stock > 0, `${variant.color} should be in stock`);
@@ -52,8 +58,6 @@ test("footwear body colors: only tan and pink are in stock", () => {
       assert.equal(variant.stock, 0, `${variant.color} should be sold out`);
     }
   }
-  assert.ok(SLIP_ONS_PRIMARY_COLORS.includes("tan"));
-  assert.ok(SLIP_ONS_PRIMARY_COLORS.includes("pink"));
 
   for (const variant of GATORS_VARIANTS) {
     if (variant.color === "tan" || variant.color === "pink") {

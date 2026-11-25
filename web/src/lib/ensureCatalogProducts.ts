@@ -119,10 +119,11 @@ const FOOTWEAR_VARIANTS: Record<
   ],
 };
 
+/** Only colors shown on PDPs / listings — tan and pink. */
 const FOOTWEAR_COLORS: Record<string, string[]> = {
-  "v3-slides": ["black", "white", "grey", "green", "pink", "tan"],
-  dragonfly: ["black", "white", "red", "#007FFF", "pink", "tan"],
-  "slip-ons": ["black", "grey", "white", "orange", "pink", "tan"],
+  "v3-slides": ["tan", "pink"],
+  dragonfly: ["tan", "pink"],
+  "slip-ons": ["tan", "pink"],
 };
 
 const FOOTWEAR_SECONDARY: Record<string, string[]> = {

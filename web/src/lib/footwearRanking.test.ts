@@ -53,8 +53,11 @@ test("formats prices and brand labels", () => {
 });
 
 test("swatches map named colors to muted TPU CSS", () => {
-  assert.ok(footwearSwatches("dragonfly").includes("#007FFF"));
+  assert.deepEqual([...footwearSwatches("dragonfly")], ["tan", "pink"]);
+  assert.deepEqual([...footwearSwatches("v3-slides")], ["tan", "pink"]);
+  assert.deepEqual([...footwearSwatches("slip-ons")], ["tan", "pink"]);
   assert.equal(colorToCss("pink"), "#d67aa0");
+  assert.equal(colorToCss("tan"), "#c4a574");
   assert.equal(colorToCss("orange"), "#cc763a");
   assert.equal(colorToCss("green"), "#4a7c59");
   assert.equal(colorToCss("#007FFF"), "#007FFF");

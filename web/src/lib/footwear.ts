@@ -223,7 +223,8 @@ export const SLIP_ONS_VARIANTS = [
 ] as const;
 
 export const SLIP_ONS_SIZES = ["5", "6", "7", "8", "9", "10", "11", "12"] as const;
-export const SLIP_ONS_PRIMARY_COLORS = ["black", "grey", "white", "orange", "pink", "tan"] as const;
+/** Only colors shoppers can pick — tan and pink. */
+export const SLIP_ONS_PRIMARY_COLORS = ["tan", "pink"] as const;
 
 /** In-memory listing when the catalog DB is unreachable. */
 export function slipOnsCatalogProduct() {

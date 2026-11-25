@@ -16,7 +16,8 @@ export const GATORS_HOW_ITS_MADE =
 
 export const GATORS_IMAGES = [GATORS_THUMBNAIL_URL] as const;
 
-export const GATORS_PRIMARY_COLORS = ["black", "pink", "grey", "tan"] as const;
+/** Only colors shoppers can pick — tan and pink. */
+export const GATORS_PRIMARY_COLORS = ["tan", "pink"] as const;
 
 export const GATORS_SIZES = ["5", "6", "7", "8", "9", "10", "11", "12"] as const;
 

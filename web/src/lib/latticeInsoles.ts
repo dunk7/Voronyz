@@ -23,7 +23,8 @@ export const LATTICE_INSOLES_IMAGES = [
   LATTICE_INSOLES_SIDE_IMAGE_URL,
 ] as const;
 
-export const LATTICE_INSOLES_PRIMARY_COLORS = ["black", "grey", "pink", "tan"] as const;
+/** Only colors shoppers can pick — tan and pink. */
+export const LATTICE_INSOLES_PRIMARY_COLORS = ["tan", "pink"] as const;
 
 export const LATTICE_INSOLES_SIZES = ["5", "6", "7", "8", "9", "10", "11", "12"] as const;
 
