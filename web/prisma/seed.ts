@@ -90,16 +90,17 @@ async function main() {
             "/products/v3-slides/InShot_20260212_195535113.jpg",
             "/products/v3-slides/InShot_20260212_195649672.jpg",
           ],
-          primaryColors: ["black", "white", "grey", "green", "pink"],
+          primaryColors: ["black", "white", "grey", "green", "pink", "tan"],
           secondaryColors: [],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
           variants: {
             create: [
-              { color: "black", sku: "V3-BLK", stock: 999 },
-              { color: "white", sku: "V3-WHT", stock: 0 },  // Out of stock
-              { color: "grey", sku: "V3-GRY", stock: 999 },
-              { color: "green", sku: "V3-GRN", stock: 0 },  // Out of stock
+              { color: "black", sku: "V3-BLK", stock: 0 },
+              { color: "white", sku: "V3-WHT", stock: 0 },
+              { color: "grey", sku: "V3-GRY", stock: 0 },
+              { color: "green", sku: "V3-GRN", stock: 0 },
               { color: "pink", sku: "V3-PNK", stock: 999 },
+              { color: "tan", sku: "V3-TAN", stock: 999 },
             ],
           },
         },
@@ -124,21 +125,22 @@ async function main() {
             "/products/v3-slides/InShot_20260212_195535113.jpg",
             "/products/v3-slides/InShot_20260212_195649672.jpg",
           ],
-          primaryColors: ["black", "white", "grey", "green", "pink"],
+          primaryColors: ["black", "white", "grey", "green", "pink", "tan"],
           secondaryColors: [],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
         },
       });
       console.log('Product arrays updated.');
 
-      // Upsert variants for each primary color
-      const primaryColors = ["black", "white", "grey", "green", "pink"];
+      // Upsert variants for each primary color — tan and pink in stock only
+      const primaryColors = ["black", "white", "grey", "green", "pink", "tan"];
       const stockMap = {
-        black: 999,
+        black: 0,
         white: 0,
-        grey: 999,
+        grey: 0,
         green: 0,
         pink: 999,
+        tan: 999,
       };
 
       const skuMap: Record<string, string> = {
@@ -147,6 +149,7 @@ async function main() {
         grey: "V3-GRY",
         green: "V3-GRN",
         pink: "V3-PNK",
+        tan: "V3-TAN",
       };
 
       console.log('Starting variant upserts...');
@@ -190,16 +193,17 @@ async function main() {
             "/products/dragonfly/InShot_20260212_155809942.jpg",
             "/products/dragonfly/InShot_20260212_160512335.jpg",
           ],
-          primaryColors: ["black", "white", "red", "#007FFF", "pink"],
+          primaryColors: ["black", "white", "red", "#007FFF", "pink", "tan"],
           secondaryColors: ["black", "white", "grey", "red", "#007FFF", "green", "blue", "maroon", "pink", "purple", "orange", "yellow", "navy", "teal"],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
           variants: {
             create: [
-              { color: "black", sku: "DF-BLK", stock: 999, priceCents: 16000 },
-              { color: "white", sku: "DF-WHT", stock: 0, priceCents: 16000 },  // Out of stock
-              { color: "red", sku: "DF-RED", stock: 999, priceCents: 16000 },
-              { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 16000 },
+              { color: "black", sku: "DF-BLK", stock: 0, priceCents: 16000 },
+              { color: "white", sku: "DF-WHT", stock: 0, priceCents: 16000 },
+              { color: "red", sku: "DF-RED", stock: 0, priceCents: 16000 },
+              { color: "#007FFF", sku: "DF-AZR", stock: 0, priceCents: 16000 },
               { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 16000 },
+              { color: "tan", sku: "DF-TAN", stock: 999, priceCents: 16000 },
             ],
           },
         },
@@ -225,19 +229,20 @@ async function main() {
             "/products/dragonfly/InShot_20260212_155809942.jpg",
             "/products/dragonfly/InShot_20260212_160512335.jpg",
           ],
-          primaryColors: ["black", "white", "red", "#007FFF", "pink"],
+          primaryColors: ["black", "white", "red", "#007FFF", "pink", "tan"],
           secondaryColors: ["black", "white", "grey", "red", "#007FFF", "green", "blue", "maroon", "pink", "purple", "orange", "yellow", "navy", "teal"],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
         },
       });
 
-      // Upsert Dragonfly variants
+      // Upsert Dragonfly variants — tan and pink in stock only
       const dfVariants = [
-        { color: "black", sku: "DF-BLK", stock: 999, priceCents: 16000 },
+        { color: "black", sku: "DF-BLK", stock: 0, priceCents: 16000 },
         { color: "white", sku: "DF-WHT", stock: 0, priceCents: 16000 },
-        { color: "red", sku: "DF-RED", stock: 999, priceCents: 16000 },
-        { color: "#007FFF", sku: "DF-AZR", stock: 999, priceCents: 16000 },
+        { color: "red", sku: "DF-RED", stock: 0, priceCents: 16000 },
+        { color: "#007FFF", sku: "DF-AZR", stock: 0, priceCents: 16000 },
         { color: "pink", sku: "DF-PNK", stock: 999, priceCents: 16000 },
+        { color: "tan", sku: "DF-TAN", stock: 999, priceCents: 16000 },
       ];
       for (const v of dfVariants) {
         await prisma.variant.upsert({
@@ -278,16 +283,17 @@ async function main() {
           priceCents: SLIP_ONS_PRICE_CENTS,
           currency: "usd",
           images: slipOnImages,
-          primaryColors: ["black", "grey", "white", "orange", "pink"],
+          primaryColors: ["black", "grey", "white", "orange", "pink", "tan"],
           secondaryColors: [],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
           variants: {
             create: [
-              { color: "black", sku: "SO-BLK", stock: 999 },
-              { color: "grey", sku: "SO-GRY", stock: 999 },
-              { color: "white", sku: "SO-WHT", stock: 999 },
-              { color: "orange", sku: "SO-ORG", stock: 999 },
+              { color: "black", sku: "SO-BLK", stock: 0 },
+              { color: "grey", sku: "SO-GRY", stock: 0 },
+              { color: "white", sku: "SO-WHT", stock: 0 },
+              { color: "orange", sku: "SO-ORG", stock: 0 },
               { color: "pink", sku: "SO-PNK", stock: 999 },
+              { color: "tan", sku: "SO-TAN", stock: 999 },
             ],
           },
         },
@@ -303,17 +309,18 @@ async function main() {
           description: SLIP_ONS_DESCRIPTION,
           priceCents: SLIP_ONS_PRICE_CENTS,
           images: slipOnImages,
-          primaryColors: ["black", "grey", "white", "orange", "pink"],
+          primaryColors: ["black", "grey", "white", "orange", "pink", "tan"],
           secondaryColors: [],
           sizes: ["5", "6", "7", "8", "9", "10", "11", "12"],
         },
       });
       const soVariants = [
-        { color: "black", sku: "SO-BLK", stock: 999 },
-        { color: "grey", sku: "SO-GRY", stock: 999 },
-        { color: "white", sku: "SO-WHT", stock: 999 },
-        { color: "orange", sku: "SO-ORG", stock: 999 },
+        { color: "black", sku: "SO-BLK", stock: 0 },
+        { color: "grey", sku: "SO-GRY", stock: 0 },
+        { color: "white", sku: "SO-WHT", stock: 0 },
+        { color: "orange", sku: "SO-ORG", stock: 0 },
         { color: "pink", sku: "SO-PNK", stock: 999 },
+        { color: "tan", sku: "SO-TAN", stock: 999 },
       ];
       for (const v of soVariants) {
         await prisma.variant.upsert({
