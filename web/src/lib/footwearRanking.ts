@@ -10,11 +10,11 @@ export type FootwearRankTab = (typeof FOOTWEAR_RANK_TABS)[number];
 
 export const FOOTWEAR_TOP_COUNT = 5;
 
-/** Body colors shown as ranking-card dots. */
+/** Body colors shown as ranking-card dots — tan and pink only. */
 export const FOOTWEAR_SWATCH_COLORS: Record<string, readonly string[]> = {
-  "v3-slides": ["black", "white", "grey", "green", "pink"],
-  dragonfly: ["black", "white", "red", "#007FFF", "pink"],
-  "slip-ons": ["black", "grey", "white", "orange", "pink"],
+  "v3-slides": ["tan", "pink"],
+  dragonfly: ["tan", "pink"],
+  "slip-ons": ["tan", "pink"],
   [GATORS_SLUG]: GATORS_PRIMARY_COLORS,
   [LATTICE_INSOLES_SLUG]: LATTICE_INSOLES_PRIMARY_COLORS,
 };

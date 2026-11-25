@@ -23,13 +23,17 @@ export const LATTICE_INSOLES_IMAGES = [
   LATTICE_INSOLES_SIDE_IMAGE_URL,
 ] as const;
 
-export const LATTICE_INSOLES_PRIMARY_COLORS = ["black", "grey"] as const;
+/** Only colors shoppers can pick — tan and pink. */
+export const LATTICE_INSOLES_PRIMARY_COLORS = ["tan", "pink"] as const;
 
 export const LATTICE_INSOLES_SIZES = ["5", "6", "7", "8", "9", "10", "11", "12"] as const;
 
+/** Tan and pink in stock; black and grey sold out. */
 export const LATTICE_INSOLES_VARIANTS = [
-  { color: "black", sku: "INSL-BLK", stock: 999 },
-  { color: "grey", sku: "INSL-GRY", stock: 999 },
+  { color: "black", sku: "INSL-BLK", stock: 0 },
+  { color: "grey", sku: "INSL-GRY", stock: 0 },
+  { color: "pink", sku: "INSL-PNK", stock: 999 },
+  { color: "tan", sku: "INSL-TAN", stock: 999 },
 ] as const;
 
 /** In-memory listing when the catalog DB is unreachable. */

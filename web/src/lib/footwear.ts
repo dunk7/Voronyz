@@ -212,17 +212,19 @@ export function getFootwearCatalogSeed(): FootwearListProduct[] {
   });
 }
 
-/** Slip Ons variants for catalog fallback. */
+/** Slip Ons variants for catalog fallback. Tan and pink in stock; others sold out. */
 export const SLIP_ONS_VARIANTS = [
-  { color: "black", sku: "SO-BLK", stock: 999 },
-  { color: "grey", sku: "SO-GRY", stock: 999 },
-  { color: "white", sku: "SO-WHT", stock: 999 },
-  { color: "orange", sku: "SO-ORG", stock: 999 },
+  { color: "black", sku: "SO-BLK", stock: 0 },
+  { color: "grey", sku: "SO-GRY", stock: 0 },
+  { color: "white", sku: "SO-WHT", stock: 0 },
+  { color: "orange", sku: "SO-ORG", stock: 0 },
   { color: "pink", sku: "SO-PNK", stock: 999 },
+  { color: "tan", sku: "SO-TAN", stock: 999 },
 ] as const;
 
 export const SLIP_ONS_SIZES = ["5", "6", "7", "8", "9", "10", "11", "12"] as const;
-export const SLIP_ONS_PRIMARY_COLORS = ["black", "grey", "white", "orange", "pink"] as const;
+/** Only colors shoppers can pick — tan and pink. */
+export const SLIP_ONS_PRIMARY_COLORS = ["tan", "pink"] as const;
 
 /** In-memory listing when the catalog DB is unreachable. */
 export function slipOnsCatalogProduct() {
