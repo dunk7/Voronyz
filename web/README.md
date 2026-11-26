@@ -47,8 +47,8 @@ For **production deployment**, set these environment variables in your Netlify d
 - `DIRECT_DATABASE_URL`: Direct (non-pooler) PostgreSQL connection string (recommended). Prisma will use this for migrations/DDL.
 - `STRIPE_SECRET_KEY`: Your Stripe secret key for payments
 - `STRIPE_WEBHOOK_SECRET`: Stripe webhook signing secret (required for reliable order persistence)
-- `GOOGLE_MAPS_API_KEY` (recommended): Server-side Google Places API (New) key used for checkout address suggestions in the single shipping address box. Also used for typed-address USPS-style checks via the Address Validation API (`enableUspsCass`) when no suggestion is picked — enable **Address Validation API** on the same Google Cloud project when possible.
-- `USPS_CLIENT_ID` / `USPS_CLIENT_SECRET` (optional): Official USPS Addresses 3.0 OAuth credentials. When set, typed addresses (no autocomplete match) are validated directly against USPS (same database Pirate Ship uses) and standardized with ZIP+4.
+- `GOOGLE_MAPS_API_KEY` (recommended): Server-side Google Places API (New) key used for checkout address suggestions. Also used for typed/manual-address USPS-style checks via the Address Validation API (`enableUspsCass`) — enable **Address Validation API** on the same Google Cloud project when possible. Customers can still enter a complete address manually (or confirm an unrecognized one as typed) when lookup misses.
+- `USPS_CLIENT_ID` / `USPS_CLIENT_SECRET` (optional): Official USPS Addresses 3.0 OAuth credentials. When set, typed/manual addresses are validated against USPS (same database Pirate Ship uses) and standardized with ZIP+4. Unrecognized complete addresses can still be confirmed as typed at checkout.
 - `ADDRESS_SIGNING_SECRET` (optional): Secret used to sign verified shipping addresses. Defaults to `STRIPE_SECRET_KEY`.
 
 - `NEXT_PUBLIC_SITE_URL`: Your site's base URL (use `https://voronyz.com` in production) for metadata and redirects

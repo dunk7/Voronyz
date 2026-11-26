@@ -32,6 +32,18 @@ test("parseUsFreeformAddress handles comma and spaced US addresses", () => {
     postal_code: "23901",
     country: "US",
   });
+
+  assert.deepEqual(
+    parseUsFreeformAddress("5223 Farmville Rd, Farmville, VA 23901, USA"),
+    {
+      line1: "5223 Farmville Rd",
+      line2: null,
+      city: "Farmville",
+      state: "VA",
+      postal_code: "23901",
+      country: "US",
+    }
+  );
 });
 
 test("parseUsFreeformAddress rejects incomplete or empty text", () => {
