@@ -774,7 +774,7 @@ html.site-dark ::selection {
   transform: rotate(-0.7deg);
 }
 
-/* Black studio void for the V3 360° spin — no ground, no paper grain. */
+/* Black studio void for the V3 cushion-layer loop — no ground, no paper grain. */
 .glow-poster-sheet-spin {
   background: #000000;
   transform: none;

@@ -6,7 +6,7 @@ type FootGlowSectionProps = {
   /** Smaller print — homepage placement above the catalog. */
   poster?: boolean;
   /**
-   * Homepage keeps the foot x-ray. All Footwear uses the V3 Slides 360° spin.
+   * Homepage keeps the foot x-ray. All Footwear uses the V3 Slides cushion-layer loop.
    */
   variant?: "xray" | "print";
   /** Homepage hero. Dominant foot glow on the full-bleed paper stage. */
@@ -23,7 +23,7 @@ const XRAY_HERO_SRC = "/graphics/foot-xray-glow.png";
 const HATCH_HERO_SRC = "/graphics/foot-hatch-glow.png";
 const PAPER_SRC = "/graphics/crinkled-poster.jpg";
 const POSTER_LINE = "Shaped around your foot.";
-const SPIN_LINE = "Foamed TPU lattice — every angle.";
+const SPIN_LINE = "Double-density cushion — open and close.";
 
 function GlowPoster({
   children,
@@ -56,7 +56,7 @@ function GlowPoster({
 /**
  * Full-bleed pause between Footwear and Apparel.
  * The line drawing sits over the x-ray as a soft screen overlay and slowly breathes.
- * All Footwear uses a clean 360° spin of the V3 Slides mesh.
+ * All Footwear uses the newest V3 Slides mesh with cushion layers exploding open.
  */
 export default function FootGlowSection({
   className = "",
@@ -123,7 +123,7 @@ export default function FootGlowSection({
   if (variant === "print") {
     return (
       <section
-        aria-label="Voronyz V3 Slides 360 degree spin"
+        aria-label="Voronyz V3 Slides double density cushion layers"
         className={`foot-glow-section relative py-10 sm:py-14 ${className}`}
       >
         <GlowPoster paper={false} line={SPIN_LINE}>

@@ -14,23 +14,25 @@ const productSpin = readFileSync(
 );
 const css = readFileSync(join(process.cwd(), "src", "app", "globals.css"), "utf8");
 
-test("All Footwear uses the V3 product spin, not the sprint canvas", () => {
+test("All Footwear uses the V3 cushion-layer loop, not the sprint canvas", () => {
   assert.match(footGlow, /ProductSpin/);
   assert.doesNotMatch(footGlow, /DragonflySprint/);
   assert.match(footGlow, /paper=\{false\}/);
-  assert.match(footGlow, /V3 Slides 360/);
+  assert.match(footGlow, /double density cushion layers/);
 });
 
-test("spin ships as a smooth white-on-black MP4 with no GIF fallback", () => {
-  const mp4 = join(root, "v3-slides-spin-v2.mp4");
-  const poster = join(root, "v3-slides-spin-v2-poster.png");
-  assert.ok(existsSync(mp4), "expected v3-slides-spin-v2.mp4");
-  assert.ok(existsSync(poster), "expected v3-slides-spin-v2-poster.png");
-  assert.ok(statSync(mp4).size > 200_000, "MP4 too small");
+test("cushion layers ship as a smooth white-on-black MP4 with no GIF fallback", () => {
+  const mp4 = join(root, "v3-slides-layers-v3.mp4");
+  const poster = join(root, "v3-slides-layers-v3-poster.png");
+  assert.ok(existsSync(mp4), "expected v3-slides-layers-v3.mp4");
+  assert.ok(existsSync(poster), "expected v3-slides-layers-v3-poster.png");
+  assert.ok(statSync(mp4).size > 100_000, "MP4 too small");
   assert.equal(existsSync(join(root, "v3-slides-spin.gif")), false);
   assert.equal(existsSync(join(root, "v3-slides-spin.mp4")), false);
-  assert.match(productSpin, /v3-slides-spin-v2\.mp4/);
+  assert.equal(existsSync(join(root, "v3-slides-spin-v2.mp4")), false);
+  assert.match(productSpin, /v3-slides-layers-v3\.mp4/);
   assert.doesNotMatch(productSpin, /\.gif/);
+  assert.doesNotMatch(productSpin, /spinning 360/);
   assert.match(productSpin, /bg-black/);
   assert.match(css, /\.glow-poster-sheet-spin \{[\s\S]*?#000000/);
 });
