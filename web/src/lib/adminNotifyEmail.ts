@@ -10,6 +10,7 @@ import {
   isRecord,
   parseOrderMetadata,
 } from "@/lib/orderTypes";
+import { formatOwnerSizeDetails } from "@/lib/sizing";
 
 const DEFAULT_ADMIN_EMAIL = "voronyz@gmail.com";
 
@@ -277,7 +278,7 @@ async function sendOrderPaidEmail(order: Order): Promise<boolean> {
       item.isPreOrder ? "[Pre-order]" : null,
       item.productName ?? item.name,
       item.variantName,
-      item.size ? `size ${item.size}` : null,
+      formatOwnerSizeDetails({ size: item.size, gender: item.gender }),
       item.baseColor,
       item.secondaryColor ? `+ ${item.secondaryColor}` : null,
     ]
@@ -324,7 +325,7 @@ async function sendOrderPaidEmail(order: Order): Promise<boolean> {
           item.isPreOrder ? "[Pre-order]" : null,
           item.productName ?? item.name,
           item.variantName,
-          item.size ? `size ${item.size}` : null,
+          formatOwnerSizeDetails({ size: item.size, gender: item.gender }),
         ]
           .filter(Boolean)
           .join(" · ")

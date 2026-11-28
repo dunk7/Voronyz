@@ -24,6 +24,7 @@ import {
   type AdminOrder,
   type OrderLineItem,
 } from "@/lib/orderTypes";
+import { formatOwnerSizeDetails } from "@/lib/sizing";
 import {
   buildInfluencerDiscountUrl,
   getInfluencerLinkForCode,
@@ -59,12 +60,12 @@ function formatDate(iso: string) {
 
 function itemDetails(item: OrderLineItem) {
   const parts: string[] = [];
-  if (item.size) {
-    if (item.size === "OWB") parts.push("OWB — Outside the Waistband");
-    else if (item.size === "IWB") parts.push("IWB — Inside the Waistband");
-    else parts.push(`Size ${item.size}`);
-  }
-  if (item.gender) parts.push(item.gender);
+  // Women's orders show the men's print size so owners can fulfill simply.
+  const sizeDetails = formatOwnerSizeDetails({
+    size: item.size,
+    gender: item.gender,
+  });
+  if (sizeDetails) parts.push(sizeDetails);
   if (item.baseColor) parts.push(item.baseColor);
   if (item.secondaryColor) parts.push(`+ ${item.secondaryColor}`);
   if (item.variantName && !item.baseColor) parts.push(item.variantName);
