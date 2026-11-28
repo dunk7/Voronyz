@@ -2,14 +2,14 @@
 
 import { useEffect, useRef } from "react";
 
-/** Newest V3 Slides mesh — double-density cushion layers on black void. */
-const LAYERS_MP4 = "/graphics/v3-slides-layers-v3.mp4";
-const LAYERS_POSTER = "/graphics/v3-slides-layers-v3-poster.png";
+/** Soft double-density cushion layers — side view, no outer lattice. */
+const LAYERS_MP4 = "/graphics/v3-slides-layers-v4.mp4";
+const LAYERS_POSTER = "/graphics/v3-slides-layers-v4-poster.png";
 
 /**
- * Exploded cushion-layer loop for the newest V3 Slide.
- * Firmer base and softer footbed separate, then reassemble — no spin.
- * High-frame-rate MP4 only — no GIF path (GIF dither reads as choppy).
+ * Side-view double-density cushion loop.
+ * Two soft layers press together, then split apart and reassemble —
+ * no spin, no outer Voronyz lattice shell, no jagged tread.
  */
 export default function ProductSpin() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -48,7 +48,7 @@ export default function ProductSpin() {
       playsInline
       autoPlay
       preload="auto"
-      aria-label="Voronyz V3 Slides double density cushion layers opening and closing"
+      aria-label="Voronyz double density cushion layers splitting apart and closing"
     />
   );
 }

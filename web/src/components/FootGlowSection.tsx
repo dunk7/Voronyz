@@ -23,7 +23,7 @@ const XRAY_HERO_SRC = "/graphics/foot-xray-glow.png";
 const HATCH_HERO_SRC = "/graphics/foot-hatch-glow.png";
 const PAPER_SRC = "/graphics/crinkled-poster.jpg";
 const POSTER_LINE = "Shaped around your foot.";
-const SPIN_LINE = "Double-density cushion — open and close.";
+const SPIN_LINE = "Double-density cushion — soft over firm.";
 
 function GlowPoster({
   children,
@@ -123,7 +123,7 @@ export default function FootGlowSection({
   if (variant === "print") {
     return (
       <section
-        aria-label="Voronyz V3 Slides double density cushion layers"
+        aria-label="Voronyz double density cushion layers side view"
         className={`foot-glow-section relative py-10 sm:py-14 ${className}`}
       >
         <GlowPoster paper={false} line={SPIN_LINE}>
