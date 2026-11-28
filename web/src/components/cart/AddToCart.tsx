@@ -4,6 +4,12 @@ import { formatCentsAsCurrency, SHOP_PRICE_CLASS } from "@/lib/money";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { getApparelSizeOffer } from "@/lib/apparel";
+import {
+  genderDisplayLabel,
+  parseSizeGender,
+  shoeSizesForGender,
+  type SizeGender,
+} from "@/lib/sizing";
 
 function normalizeStudentName(value: string): string | null {
   const trimmed = value.trim();
@@ -74,7 +80,7 @@ export type AddToCartProps = {
   secondaryLabel?: string;
   promoHint?: { code: string; promoPrice: number };
   fulfillmentOptions?: FulfillmentOption[];
-  defaultGender?: "men" | "women" | "kids";
+  defaultGender?: SizeGender;
   requireStudentName?: boolean;
   /** Skip footwear size/gender UI (e.g. accessories with One Size). */
   hideSizeSelector?: boolean;
@@ -121,19 +127,8 @@ export type AddToCartProps = {
   sizePriceCents?: Record<string, number>;
 };
 
-const MENS_SIZES = ["6", "7", "8", "9", "10", "11", "12", "13"];
-const WOMENS_SIZES = ["4", "5", "6", "7", "8", "9", "10", "11"];
-const KIDS_SIZES = ["1", "2", "3", "4", "5", "6", "7"];
-
-function sizesForGender(gender: "men" | "women" | "kids") {
-  if (gender === "women") return WOMENS_SIZES;
-  if (gender === "kids") return KIDS_SIZES;
-  return MENS_SIZES;
-}
-
-function parseGenderParam(value: string | null): "men" | "women" | "kids" | null {
-  if (value === "men" || value === "women" || value === "kids") return value;
-  return null;
+function parseGenderParam(value: string | null): SizeGender | null {
+  return parseSizeGender(value);
 }
 
 interface CartItem {
@@ -345,8 +340,14 @@ export default function AddToCart({
     () => fulfillmentOptions[0]?.id ?? "shipping"
   );
 
-  const [gender, setGender] = useState<"men" | "women" | "kids">(() => {
-    return parseGenderParam(searchParams.get("gender")) ?? defaultGender;
+  const [gender, setGender] = useState<SizeGender>(() => {
+    const fromUrl = parseGenderParam(searchParams.get("gender"));
+    // Apparel catalog sizes are adult only — Men's first, then Women's.
+    if (useCatalogSizes) {
+      if (fromUrl === "women") return "women";
+      return "men";
+    }
+    return fromUrl ?? defaultGender;
   });
 
   const [selectedSize, setSelectedSize] = useState<string | undefined>(() => {
@@ -370,7 +371,7 @@ export default function AddToCart({
       return firstAvailableSize;
     }
     const initialGender = parseGenderParam(searchParams.get("gender")) ?? defaultGender;
-    const initialSizes = sizesForGender(initialGender);
+    const initialSizes = shoeSizesForGender(initialGender);
     if (sizeParam && initialSizes.includes(sizeParam)) {
       return sizeParam;
     }
@@ -467,20 +468,14 @@ export default function AddToCart({
     isSizeAvailable(selectedSize) &&
     (!requireStudentName || Boolean(normalizedStudentName));
 
-  // Get display sizes based on gender
+  // Footwear: gender-specific US numbers. Apparel: same letter chart, Men's first then Women's.
   const displaySizes = useMemo(
-    () => (useCatalogSizes ? catalogSizes : sizesForGender(gender)),
+    () => (useCatalogSizes ? catalogSizes : [...shoeSizesForGender(gender)]),
     [useCatalogSizes, catalogSizes, gender]
   );
 
-  // Get size label based on gender
-  const sizeLabel = useCatalogSizes
-    ? "Size"
-    : gender === "men"
-      ? "Men's"
-      : gender === "women"
-        ? "Women's"
-        : "Kids'";
+  const sizeLabel = genderDisplayLabel(gender) || "Men's";
+  const storesGender = !hideSizeSelector && !hasCarryStyles;
 
   // Keep controlled carry-style selection in sync with the parent gallery.
   useEffect(() => {
@@ -626,7 +621,7 @@ export default function AddToCart({
         Boolean(item.isPreOrder) === Boolean(preOrder) &&
         (hasSecondaryColors ? item.attributes?.color === selectedSecondary : !item.attributes?.color) && 
         item.attributes?.size === selectedSize &&
-        ((hideSizeSelector || hasCarryStyles || useCatalogSizes) ? true : item.attributes?.gender === gender) &&
+        (storesGender ? item.attributes?.gender === gender : true) &&
         (hasFulfillmentOptions ? item.attributes?.fulfillment === selectedFulfillment : !item.attributes?.fulfillment) &&
         (requireStudentName ? item.studentName === normalizedStudentName : !item.studentName)
       );
@@ -663,7 +658,7 @@ export default function AddToCart({
           attributes: { 
             ...(selectedSecondary && { color: selectedSecondary }), 
             size: selectedSize,
-            ...(!hideSizeSelector && !hasCarryStyles && !useCatalogSizes && { gender }),
+            ...(storesGender && { gender }),
             ...(hasFulfillmentOptions && { fulfillment: selectedFulfillment }),
           },
           productSlug,
@@ -973,16 +968,16 @@ export default function AddToCart({
           </div>
         )}
 
-        {/* Size */}
+        {/* Size — Men's first, then Women's (Kids' on footwear only) */}
         {!hideSizeSelector && !hasCarryStyles && (
         <div className="grid gap-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <label className="text-sm text-neutral-700">
-              {useCatalogSizes ? "Size" : `Size (US ${sizeLabel})`}
+              {useCatalogSizes ? `Size (${sizeLabel})` : `Size (US ${sizeLabel})`}
             </label>
-            {!useCatalogSizes && (
             <div className="flex items-center gap-2">
               <button
+                type="button"
                 onClick={() => setGender("men")}
                 className={`text-xs px-2 py-1 rounded-full transition ${
                   gender === "men"
@@ -993,6 +988,7 @@ export default function AddToCart({
                 Men&apos;s
               </button>
               <button
+                type="button"
                 onClick={() => setGender("women")}
                 className={`text-xs px-2 py-1 rounded-full transition ${
                   gender === "women"
@@ -1002,18 +998,20 @@ export default function AddToCart({
               >
                 Women&apos;s
               </button>
-              <button
-                onClick={() => setGender("kids")}
-                className={`text-xs px-2 py-1 rounded-full transition ${
-                  gender === "kids"
-                    ? "bg-black text-white"
-                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                }`}
-              >
-                Kids&apos;
-              </button>
+              {!useCatalogSizes && (
+                <button
+                  type="button"
+                  onClick={() => setGender("kids")}
+                  className={`text-xs px-2 py-1 rounded-full transition ${
+                    gender === "kids"
+                      ? "bg-black text-white"
+                      : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                  }`}
+                >
+                  Kids&apos;
+                </button>
+              )}
             </div>
-            )}
           </div>
           <div className="flex flex-wrap gap-2">
             {displaySizes.map((displaySize) => {
@@ -1027,7 +1025,8 @@ export default function AddToCart({
                   : null;
               return (
                 <button
-                  key={`size-${displaySize}-${useCatalogSizes ? "catalog" : gender}`}
+                  key={`size-${displaySize}-${gender}`}
+                  type="button"
                   onClick={() => {
                     if (!available) return;
                     setSelectedSize(displaySize);
@@ -1036,15 +1035,15 @@ export default function AddToCart({
                   title={
                     available
                       ? sizePriceLabel
-                        ? `${displaySize} — ${sizePriceLabel}`
-                        : displaySize
+                        ? `${sizeLabel} ${displaySize} — ${sizePriceLabel}`
+                        : `${sizeLabel} ${displaySize}`
                       : `${displaySize} — Out of Stock`
                   }
                   aria-label={
                     available
                       ? sizePriceLabel
-                        ? `${displaySize}, ${sizePriceLabel}`
-                        : displaySize
+                        ? `${sizeLabel} ${displaySize}, ${sizePriceLabel}`
+                        : `${sizeLabel} ${displaySize}`
                       : `${displaySize} out of stock`
                   }
                   className={`rounded-full ${
