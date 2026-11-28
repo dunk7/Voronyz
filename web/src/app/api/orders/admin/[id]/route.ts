@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getProductThumbnail } from "@/lib/productImages";
-import { parseOrderMetadata, type AdminOrder, type OrderLineItem } from "@/lib/orderTypes";
+import {
+  parseOrderMetadata,
+  shippingFromManualEntry,
+  type AdminOrder,
+  type OrderLineItem,
+} from "@/lib/orderTypes";
 import { ALLOWED_ORDER_STATUS_FROM } from "@/lib/ordersAdminList";
 import {
   isOrdersAdminAuthenticated,
@@ -67,7 +72,14 @@ export async function PATCH(
 
   const { id } = await params;
 
-  let body: { status?: string; adminNotes?: string };
+  let body: {
+    status?: string;
+    adminNotes?: string;
+    shipping?: {
+      name?: string | null;
+      addressText?: string | null;
+    };
+  };
   try {
     body = await request.json();
   } catch {
@@ -76,10 +88,11 @@ export async function PATCH(
 
   const hasStatus = typeof body.status === "string";
   const hasNotes = typeof body.adminNotes === "string";
+  const hasShipping = body.shipping != null && typeof body.shipping === "object";
 
-  if (!hasStatus && !hasNotes) {
+  if (!hasStatus && !hasNotes && !hasShipping) {
     return NextResponse.json(
-      { error: 'Provide "status" and/or "adminNotes"' },
+      { error: 'Provide "status", "adminNotes", and/or "shipping"' },
       { status: 400 }
     );
   }
@@ -134,6 +147,27 @@ export async function PATCH(
     metadataUpdate = {
       ...metadataUpdate,
       adminNotes: trimmed || null,
+    };
+  }
+
+  if (hasShipping) {
+    const nextShipping = shippingFromManualEntry({
+      name: body.shipping?.name,
+      addressText: body.shipping?.addressText,
+    });
+    if (!nextShipping) {
+      return NextResponse.json(
+        {
+          error:
+            "Enter a shipping address (street, city, state, ZIP) or paste one from Pirate Ship.",
+        },
+        { status: 400 }
+      );
+    }
+    metadataUpdate = {
+      ...metadataUpdate,
+      shipping: nextShipping,
+      shippingManualUpdatedAt: new Date().toISOString(),
     };
   }
 

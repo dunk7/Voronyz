@@ -188,6 +188,17 @@ export function formatAddressLine(address: VerifiedAddress): string {
     .join(", ");
 }
 
+/**
+ * True when text looks like a shipping street rather than a person name.
+ * Used to keep autofilled/pasted addresses out of the recipient name field.
+ */
+export function looksLikeStreetAddress(raw: string): boolean {
+  const trimmed = raw.trim();
+  if (!trimmed) return false;
+  if (parseUsFreeformAddress(trimmed)) return true;
+  return /\d/.test(trimmed) && /,/.test(trimmed);
+}
+
 const META_PREFIX = "ship";
 
 /** Stripe metadata values are capped at 500 chars, so each field gets its own key. */

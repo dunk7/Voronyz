@@ -139,29 +139,17 @@ export async function POST(request: NextRequest) {
     const shippingCents = (actualSession.total_details?.amount_shipping ?? 0);
     const currency = actualSession.currency || 'usd';
     
-    // Extract customer information
-    const customerName = actualSession.shipping_details?.name ||
-                        shippingFromStripeMetadata(actualSession.metadata)?.name || 
-                        actualSession.customer_details?.name || 
-                        actualSession.customer_details?.email?.split('@')[0] || 
-                        null;
+    // Prefer verified metadata / real street details over empty Stripe shipping shells
+    // so addresses never get wiped or stuck only in the name field.
+    let shipping = shippingFromStripeSession(actualSession);
+
+    const customerName =
+      shipping?.name ||
+      actualSession.customer_details?.name ||
+      actualSession.customer_details?.email?.split("@")[0] ||
+      null;
     const customerEmail = actualSession.customer_details?.email || null;
     const customerPhone = actualSession.customer_details?.phone || null;
-    
-    // Extract shipping information
-    const stripeShipping = actualSession.shipping_details ? {
-      name: actualSession.shipping_details.name,
-      address: {
-        line1: actualSession.shipping_details.address.line1,
-        line2: actualSession.shipping_details.address.line2 || null,
-        city: actualSession.shipping_details.address.city,
-        state: actualSession.shipping_details.address.state,
-        postal_code: actualSession.shipping_details.address.postal_code,
-        country: actualSession.shipping_details.address.country,
-      },
-    } : null;
-    // Verified cart address is stored in metadata (Checkout no longer collects shipping itself).
-    const shipping = stripeShipping ?? shippingFromStripeMetadata(actualSession.metadata);
 
     // Extract billing information (if different from shipping)
     const billing = actualSession.customer_details?.address ? {
@@ -311,6 +299,8 @@ export async function POST(request: NextRequest) {
           : {};
       const existingOrderNumber = typeof existingMetadata.orderNumber === "string" ? existingMetadata.orderNumber : undefined;
       const finalOrderNumber = existingOrderNumber || orderNumber;
+
+      shipping = preferNonEmptyShipping(shipping, existingMetadata.shipping);
 
       // Merge to avoid losing fields written by the webhook (tax, shippingCost, etc.)
       const mergedMetadata: Prisma.InputJsonObject = {

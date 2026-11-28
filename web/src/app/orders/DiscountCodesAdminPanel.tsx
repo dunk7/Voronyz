@@ -21,6 +21,7 @@ import {
 } from "@/lib/discountPricing";
 import {
   formatShippingAddress,
+  orderRecipientName,
   type AdminOrder,
   type OrderLineItem,
 } from "@/lib/orderTypes";
@@ -942,7 +943,7 @@ export default function DiscountCodesAdminPanel({
           </p>
           <div className="max-h-[70vh] overflow-y-auto space-y-4 pr-1 scroll-smooth">
             {visibleOrders.map((order) => {
-              const shipName = order.shipping?.name || order.customer?.name || "—";
+              const shipName = orderRecipientName(order);
               const addressText = formatShippingAddress(order.shipping);
               const code = (order.discountCode || "").trim();
 
